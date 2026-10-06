@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3 uid="uid://diqnxd2kabxfk"]
+
+[ext_resource type="Script" uid="uid://b5hrwox1n2lt0" path="res://src/core/audio_main.gd" id="1_tdp82"]
+
+[node name="AudioMain" type="Node2D"]
+process_mode = 3
+script = ExtResource("1_tdp82")
+
+[node name="MenuTheme" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+bus = &"Music"
+
+[node name="MainTheme" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+bus = &"Music"
+
+[node name="EndTheme" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+bus = &"Music"
+
+[node name="Click" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+bus = &"SFX"
