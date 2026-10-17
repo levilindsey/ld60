@@ -2,7 +2,8 @@ class_name DecalSpawner
 extends Node
 ## Spawns runtime decals (skids, dents, cracks) on a part. A decal is a
 ## `Sprite2D` child of the part, so it moves with the part when its layer
-## lifts off. Put one of these in the level as `%Decals`.
+## lifts off. Instance `decal_spawner.tscn` in the level as `%Decals`: it
+## has the sets assigned, and a bare `DecalSpawner.new()` has none.
 ##
 ## `spawn(kind, part, global_position, size, direction)` is the whole API.
 ## The spawner turns on the part's clipping, so callers only pass the part.
