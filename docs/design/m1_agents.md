@@ -353,7 +353,8 @@ edit `src/level/` or the item scenes. They are m1-flow's.
   - **Seized:** `is_seized`, a placeholder rust overlay, the warning
     grind, then 1 damage per stalled try. The oil can (LX21) will call
     an `unseize()` method. Nothing calls it yet.
-  - **Removal and install mode,** replacing m1-core's stand-in tween.
+  - **Removal and install mode,** replacing m1-core's stand-in tween. A
+    turning screw rotates and never scales (Levi).
 - **The flathead (LX11),** in `FlatHeadScrew`, replacing the
   `# Stand-in until LX11.` engage: the twist cycle, the eased drift,
   correcting along the slot, the unseat and the feedback, as flathead.md

@@ -37,15 +37,16 @@ Ledger: **LX10** (M1). Depends on [repairables.md](repairables.md)
 
 ## Removal
 
-- When a screw finishes, it backs out: it lifts and grows a little,
-  then hops off and disappears (MVP) or flies into a screw dish
-  (Later).
+- A turning screw rotates with its driver. It never scales: not as it
+  comes loose, and not when it sits loose (Levi, 2026-10-17).
+- When a screw finishes, it backs out: it turns loose, then hops off
+  and disappears (MVP) or flies into a screw dish (Later).
 - The hole stays, as part of the layer art or as a hole decal.
 
 ## Install mode (putting it back)
 
-- When a layer goes back on, its screws reappear raised and loose in
-  their holes, in INSTALL mode.
+- When a layer goes back on, its screws reappear loose in their holes,
+  in INSTALL mode.
 - The same microgame, shorter: the flathead needs `install_twists` (2),
   and the Phillips meter starts at 0.6. Damage can still happen.
 - A screw that was pulled with pliers is scrap. Its hole shows empty;
