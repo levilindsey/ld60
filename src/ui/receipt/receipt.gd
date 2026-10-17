@@ -41,8 +41,6 @@ var _can_close := false
 var _tween: Tween
 var _stars: Array[StarIcon] = []
 
-@onready var _slide: Control = %Slide
-
 
 func _ready() -> void:
 	for child in %Stars.get_children():
@@ -74,7 +72,7 @@ func open(item_name: String, quality: RepairQuality) -> void:
 	_populate(item_name, quality)
 	visible = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	_slide.position.x = slide_distance_px
+	%Slide.position.x = slide_distance_px
 	_play_sound(&"whoosh")
 
 	var star_count := quality.get_stars()
@@ -85,7 +83,7 @@ func open(item_name: String, quality: RepairQuality) -> void:
 	# Pausing the game pauses the card, and its countdown with it.
 	_tween = create_tween()
 	_tween.tween_property(
-		_slide,
+		%Slide,
 		"position:x",
 		0.0,
 		slide_sec,
@@ -111,7 +109,7 @@ func close() -> void:
 
 	_tween = create_tween()
 	_tween.tween_property(
-		_slide,
+		%Slide,
 		"position:x",
 		slide_distance_px,
 		slide_sec,

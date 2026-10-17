@@ -28,8 +28,6 @@ const _GROUP := &"defect_popups"
 var _origin := Vector2.ZERO
 var _spawn_time_msec := 0
 
-@onready var _label: Label = %Label
-
 
 ## Shows a "-N" at a world position and frees itself a moment later. The
 ## parent can be any node in the level.
@@ -45,7 +43,7 @@ static func spawn(
 
 
 func show_points(points: int, p_global_position: Vector2) -> void:
-	_label.text = "-%d" % absi(points)
+	%Label.text = "-%d" % absi(points)
 	_origin = p_global_position
 	_spawn_time_msec = Time.get_ticks_msec()
 	add_to_group(_GROUP)
