@@ -29,10 +29,6 @@ enum PhysicsLayer {
 
 @export var default_gravity_acceleration := 1400.0
 
-## Instantiated by `Level.spawn_player()` at %PlayerSpawnPoint. Leave
-## unset until the jam's player scene exists; `Level` skips spawning
-## while this is null.
-@export var player_scene: PackedScene
 @export var default_level_scene: PackedScene
 
 

@@ -37,6 +37,8 @@ position = Vector2(0, -549)
 [node name="ToolHolders" type="Node" parent="." unique_id=433542721]
 
 [node name="FlatHeadScrewDriverHolder" type="Area2D" parent="ToolHolders" unique_id=417891166]
+unique_name_in_owner = true
+position = Vector2(497, 174)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
@@ -44,5 +46,5 @@ script = ExtResource("3_af42n")
 metadata/_custom_type_script = "uid://bfo0vmq35oagd"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/FlatHeadScrewDriverHolder" unique_id=1805593427]
-position = Vector2(488, 173)
 shape = SubResource("CircleShape2D_giktf")
+metadata/_edit_lock_ = true

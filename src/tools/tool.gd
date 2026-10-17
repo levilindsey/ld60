@@ -14,8 +14,11 @@ enum Mode {
 }
 
 const ROTATE_DURATION_SEC := 0.3
+const POSITION_DURATION_SEC := 0.3
 
 @export var type := Type.FLAT_HEAD_SCREW_DRIVER
+
+@export var cursor_position: Marker2D
 
 ## The clickable area for grabbing the tool.
 @export var grab_area: Area2D
@@ -31,7 +34,8 @@ var mode := Mode.ENTERING:
 	set(value):
 		_set_mode(value)
 
-@onready var _rotation_tween: Tween
+@onready var position_tween: Tween
+@onready var rotation_tween: Tween
 
 
 func _set_mode(to_mode: Mode) -> void:
@@ -39,6 +43,10 @@ func _set_mode(to_mode: Mode) -> void:
 		Mode.ENTERING, \
 		Mode.STORED:
 			_set_rotation(stored_rotation)
+
+			var holder_area_offset := holder_area.global_position - global_position
+			var holder_position := G.level.get_tool_holder_position(type)
+			_tween_position(holder_position - holder_area_offset)
 		Mode.HELD:
 			_set_rotation(stored_rotation)
 		Mode.IN_USE:
@@ -53,6 +61,8 @@ func _ready() -> void:
 	G.check(grab_area.input_pickable)
 	G.check(grab_area.collision_layer == Settings.PhysicsLayer.TOOLS)
 	grab_area.input_event.connect(_on_grab_area_input_event)
+	grab_area.mouse_entered.connect(_on_mouse_entered)
+	grab_area.mouse_exited.connect(_on_mouse_exited)
 
 	G.check(is_instance_valid(interaction_area))
 	G.check(interaction_area.monitoring)
@@ -67,11 +77,25 @@ func _ready() -> void:
 	holder_area.area_exited.connect(_on_holder_area_exited)
 
 
+func _physics_process(delta: float) -> void:
+	if mode == Mode.HELD:
+		# Have the tool follow the cursor when held.
+		var cursor_position_offset := cursor_position.global_position - global_position
+		global_position = get_global_mouse_position() + cursor_position_offset
+
+
 func _set_rotation(p_rotation: float) -> void:
-	if is_instance_valid(_rotation_tween):
-		_rotation_tween.kill()
-	_rotation_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-	_rotation_tween.tween_property(self, "rotation", p_rotation, ROTATE_DURATION_SEC)
+	if is_instance_valid(rotation_tween):
+		rotation_tween.kill()
+	rotation_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	rotation_tween.tween_property(self, "rotation", p_rotation, ROTATE_DURATION_SEC)
+
+
+func _tween_position(p_global_position: Vector2) -> void:
+	if is_instance_valid(position_tween):
+		position_tween.kill()
+	position_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	position_tween.tween_property(self, "global_position", p_global_position, POSITION_DURATION_SEC)
 
 
 func _on_grab_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
@@ -81,13 +105,26 @@ func _on_grab_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: i
 
 func _on_clicked() -> void:
 	if mode == Mode.ENTERING or mode == Mode.STORED:
-		_pick_up_tool()
+		pick_up_tool()
 
 
-func _pick_up_tool() -> void:
+func _on_mouse_entered() -> void:
+	if mode == Mode.ENTERING or mode == Mode.STORED:
+		# TODO: Add a grab-hand cursor.
+		# TODO: Don't do this if another tool is grabbed.
+		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND)
+
+
+func _on_mouse_exited() -> void:
+	pass
+	# TODO: Don't do this if another tool is grabbed.
+	#DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
+
+
+func pick_up_tool() -> void:
 	_set_mode(Mode.HELD)
-	# TODO(levilindsey): Tween the position and rotation.
-	# TODO(levilindsey): Hide the cursor. Have the tool follow the cursor.
+	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+	# TODO(levilindsey): Tween the position (we'll need to add a pick-up offset, apply the offset in physics_process, and tween that offset).
 	# TODO(levilindsey): Show a grab hand cursor when hovering over tools and nothing is held.
 
 
@@ -106,7 +143,7 @@ func _on_holder_area_entered(holder: Area2D) -> void:
 	holder.on_tool_entered(self)
 
 	if holder.type == type and (mode == Mode.ENTERING or mode == Mode.HELD):
-		_put_tool_away()
+		put_away()
 
 
 func _on_holder_area_exited(holder: Area2D) -> void:
@@ -114,7 +151,7 @@ func _on_holder_area_exited(holder: Area2D) -> void:
 	holder.on_tool_exited(self)
 
 
-func _put_tool_away() -> void:
+func put_away() -> void:
 	_set_mode(Mode.STORED)
-	# TODO(levilindsey): Tween the position and rotation.
-	# TODO(levilindsey): Show the cursor.
+
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)

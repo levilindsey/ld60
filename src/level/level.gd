@@ -30,6 +30,10 @@ func _ready() -> void:
 	# follow logic in _physics_process.
 	%Camera2D.anchor_mode = Camera2D.ANCHOR_MODE_DRAG_CENTER
 
+	# TODO: Add some level and spawn configs to control when what things spawn.
+	spawn_tool(Tool.Type.FLAT_HEAD_SCREW_DRIVER)
+	spawn_repairable(Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	pass
@@ -57,12 +61,13 @@ func spawn_tool(type: Tool.Type) -> void:
 
 	var tool_scene := G.settings.get_tool_scene_from_type(type)
 	G.check(is_instance_valid(tool_scene))
-	var tool := tool_scene.instantiate()
+	var tool: Tool = tool_scene.instantiate()
+	add_child(tool)
 	tool.global_position = %ActiveItemPosition.global_position
 	tools_by_type[type] = tool
 
-	var holder_position := _get_tool_holder_position(type)
-	# TODO(levilindsey): Tween tool position to the holder position. Also tween rotation from an off-angle start.
+	# TODO: Start from an off-angle.
+	tool.put_away()
 
 
 func spawn_repairable(type: Repairable.Type) -> void:
@@ -70,7 +75,8 @@ func spawn_repairable(type: Repairable.Type) -> void:
 
 	var item_scene := G.settings.get_repairable_scene_from_type(type)
 	G.check(is_instance_valid(item_scene))
-	var item := item_scene.instantiate()
+	var item: Repairable = item_scene.instantiate()
+	add_child(item)
 	item.global_position = %ItemSpawnPosition.global_position
 	active_repairable = item
 
@@ -78,7 +84,7 @@ func spawn_repairable(type: Repairable.Type) -> void:
 	# TODO(levilindsey): Tween repairable position to the target position. Also tween rotation from an off-angle start.
 
 
-func _get_tool_holder_position(type: Tool.Type) -> Vector2:
+func get_tool_holder_position(type: Tool.Type) -> Vector2:
 	match type:
 		Tool.Type.FLAT_HEAD_SCREW_DRIVER:
 			return %FlatHeadScrewDriverHolder.global_position

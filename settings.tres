@@ -22,5 +22,5 @@ excluded_log_categories = null
 force_include_log_warnings = null
 include_category_in_logs = null
 verbosity = null
-flat_head_screw_repairable = ExtResource("3_yixrw")
-flat_head_screw_driver = ExtResource("2_xmm7k")
+flat_head_screw_repairable_scene = ExtResource("3_yixrw")
+flat_head_screw_driver_scene = ExtResource("2_xmm7k")
