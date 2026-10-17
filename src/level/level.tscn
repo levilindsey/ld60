@@ -23,6 +23,7 @@ offset_left = -460.0
 offset_top = -92.0
 offset_right = 461.0
 offset_bottom = 236.0
+mouse_filter = 2
 color = Color(0.61, 0.4448934, 0.25620002, 1)
 
 [node name="ActiveItemPosition" type="Marker2D" parent="." unique_id=802295010]
