@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://bfo0vmq35oagd" path="res://src/level/tool_holder.gd" id="3_af42n"]
 [ext_resource type="Texture2D" uid="uid://wk5xvr0y7ksb" path="res://assets/images/props/background.png" id="4_background"]
 [ext_resource type="Script" path="res://src/level/hand.gd" id="5_hand"]
+[ext_resource type="PackedScene" path="res://src/decals/decal_spawner.tscn" id="6_decals"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 34.058773
@@ -20,6 +21,9 @@ unique_name_in_owner = true
 script = ExtResource("2_xv147")
 camera = NodePath("../Camera2D")
 metadata/_custom_type_script = "uid://3xax4i6teywv"
+
+[node name="Decals" parent="." instance=ExtResource("6_decals")]
+unique_name_in_owner = true
 
 [node name="Background" type="Sprite2D" parent="." unique_id=242847735]
 scale = Vector2(0.6666667, 0.6666667)

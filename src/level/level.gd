@@ -137,3 +137,21 @@ func get_set_aside_layers() -> Array[RepairLayer]:
 		if child is RepairLayer:
 			layers.append(child as RepairLayer)
 	return layers
+
+
+## Adds a decal of `kind` to `part` and returns it, or null if it can't.
+## The arguments are those of `DecalSpawner.spawn()`.
+func spawn_decal(
+	kind: DecalSpawner.Kind,
+	part: CanvasItem,
+	world_position: Vector2,
+	size: float,
+	direction := Vector2.RIGHT,
+) -> Sprite2D:
+	return (%Decals as DecalSpawner).spawn(
+		kind,
+		part,
+		world_position,
+		size,
+		direction,
+	)

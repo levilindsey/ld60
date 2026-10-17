@@ -40,6 +40,8 @@ var mode := Mode.ENTERING
 var layers: Array[RepairLayer] = []
 ## True while the item is finished.
 var has_finished := false
+## This repair's score: its defects and its time (`quality.md`).
+var quality := RepairQuality.new()
 
 var position_tween: Tween
 var rotation_tween: Tween
