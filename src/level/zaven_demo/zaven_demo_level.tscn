@@ -1,0 +1,57 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="PackedScene" uid="uid://bukfeupi41tif" path="res://src/level/level.tscn" id="1_level"]
+[ext_resource type="PackedScene" path="res://src/manual/instruction_manual.tscn" id="2_manual"]
+
+[sub_resource type="Gradient" id="Gradient_red"]
+colors = PackedColorArray(0.9, 0.3, 0.3, 1, 0.5, 0.1, 0.1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_red"]
+gradient = SubResource("Gradient_red")
+width = 160
+height = 200
+
+[sub_resource type="Gradient" id="Gradient_orange"]
+colors = PackedColorArray(1, 0.65, 0.2, 1, 0.6, 0.35, 0.05, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_orange"]
+gradient = SubResource("Gradient_orange")
+width = 160
+height = 200
+
+[sub_resource type="Gradient" id="Gradient_green"]
+colors = PackedColorArray(0.4, 0.85, 0.4, 1, 0.1, 0.45, 0.15, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_green"]
+gradient = SubResource("Gradient_green")
+width = 160
+height = 200
+
+[sub_resource type="Gradient" id="Gradient_blue"]
+colors = PackedColorArray(0.35, 0.6, 1, 1, 0.1, 0.2, 0.55, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_blue"]
+gradient = SubResource("Gradient_blue")
+width = 160
+height = 200
+
+[sub_resource type="Gradient" id="Gradient_purple"]
+colors = PackedColorArray(0.75, 0.45, 0.95, 1, 0.35, 0.15, 0.5, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_purple"]
+gradient = SubResource("Gradient_purple")
+width = 160
+height = 200
+
+[node name="ZavenDemoLevel" instance=ExtResource("1_level")]
+
+[node name="Background" type="ColorRect" parent="." index="0"]
+offset_left = -640.0
+offset_top = -360.0
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+color = Color(0.25, 0.2, 0.17, 1)
+
+[node name="InstructionManual" parent="." instance=ExtResource("2_manual")]
+page_contents = Array[Texture2D]([SubResource("GradientTexture2D_red"), SubResource("GradientTexture2D_orange"), SubResource("GradientTexture2D_green"), SubResource("GradientTexture2D_blue"), SubResource("GradientTexture2D_purple")])
