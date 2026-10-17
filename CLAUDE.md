@@ -73,10 +73,14 @@ that finishes it.
   `images/` (tool art, `props/` background + Krita source, `gui/`
   buttons, `placeholders/`), `shaders/sprite_outline.gdshader`.
 - `docs/design/` - One design doc per piece of work.
-- `scripts/` - `check.ps1`, `export_web.ps1`, `serve_web.py`. `build/`
-  holds export outputs (gitignored).
+- `scripts/` - `check.ps1` (run after every change), `godot_helpers.ps1`
+  (shared by `check.ps1` and `tests/run.ps1`), `export_web.ps1`,
+  `serve_web.py`. `build/` holds export and check outputs (gitignored).
+- `tests/` - Headless probes that play the game (`run.ps1`,
+  `probe_base.gd`, one folder per probe) and the `sweep/` that loads
+  every file under `src/`. Excluded from exports.
 - `.claude/rules/` - Path-scoped Claude Code rules: the GDScript style
-  guide and the ledger convention.
+  guide, the ledger convention and how to write tests.
 
 ## Boot Flow
 

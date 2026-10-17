@@ -1,8 +1,9 @@
 # LD60
 
 Our Ludum Dare 60 jam game, built with Godot 4.7 (2D, single-player,
-web + Windows builds). Right now this repo holds pre-jam starter
-scaffolding; the actual game arrives once the theme is announced.
+web + Windows builds). The theme is "old tech": broken gadgets arrive
+at a repair shop, each tool is a small microgame, and each repair earns
+1 to 3 stars. The design is in `docs/design/` (start at `overview.md`).
 
 ## Getting set up (first time)
 
