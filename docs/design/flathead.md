@@ -50,7 +50,7 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
 - **Install mode:** `install_twists` (2), turning the other way.
 
 Making the screw start over instead (Levi's first idea) is a one-line
-change: reset the twist count on unseat. It is open in LX6.
+change: reset the twist count on unseat. LX6 kept the default.
 
 ## Feedback
 

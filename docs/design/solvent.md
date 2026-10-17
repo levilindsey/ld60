@@ -64,7 +64,8 @@ How the player knows:
   stops loses very little.
 - **Optional:** after the first offense of the game, show a soft red
   outline on sensitive surfaces whenever the rag is held (with
-  `sprite_outline.gdshader`). Open in LX6.
+  `sprite_outline.gdshader`). LX6 kept the default, no warning before
+  the first wipe, so this stays optional.
 - **Later:** the booklet warns about them ("Do not clean the label").
 
 Wiping a GREASED part also adds a dry pivot to the item (a new required

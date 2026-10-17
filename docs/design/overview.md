@@ -84,8 +84,8 @@ from -640 to 640 and y from -360 to 360.
   pliers, canned air, rag, oil can, glue), so the rack may need a
   second row or a pegboard on the wall above the desk.
 - **Outbox, left.** The finished item leaves to the left.
-- **Parts bin, bottom.** See [parts_bin.md](parts_bin.md). Its place
-  is still open (LX6).
+- **Parts bin, bottom.** A drawer; see [parts_bin.md](parts_bin.md)
+  (LX6).
 - **Solvent bottle.** A fixed prop near the rack.
 - **Set-aside spot.** Where removed layers wait, beside the mat.
 - Move any of these to fit the art. The code reads positions from
@@ -141,12 +141,12 @@ Not scheduled (LX34):
 - **Stories inside items:** a photo, a letter, a tape with someone's
   voice, and the customer's reaction at pickup.
 
-## Open decisions (LX6)
+## Decisions (LX6)
 
-Each has a proposed default. Build on the default unless Levi changes
-it.
+Levi confirmed these defaults on 2026-10-17. The alternatives stay
+listed in case one is revisited.
 
-| Decision | Proposed default | Alternatives |
+| Decision | Chosen | Alternatives |
 |---|---|---|
 | Shop theme | "The cloud went down": every smart device died overnight, so everyone digs out their old gadgets, and ours is the only shop that knows how they work. As word spreads the customers get stranger, until people from an atomic-age future bring in ray guns and jetpacks. | Grandparent's shop; time-traveling shop; right-to-repair rebels; alien museum |
 | Jam item cut | Pet egg, rotary phone, Walkman, CRT TV, ray gun, cut from the end ([items.md](items.md)) | Three items |

@@ -7,17 +7,6 @@ reused.
 
 ## Waiting on Levi
 
-- **LX6** · Confirm the defaults in `docs/design/overview.md` "Open
-  decisions": shop theme, jam item cut, parts bin placement, flathead
-  unseat rule, sensitive-surface warning.
-- **LX37** · 2b3fa3a committed Krita and PNG backups (`*.kra~`,
-  `radio.png~`) and a 69 MB `.kra` (GitHub warns over 50 MB and
-  rejects over 100 MB): untrack the backups, ignore `*.png~`, and
-  decide whether big sources belong in git (`assets/images/`).
-- **LX39** · The receipt card eats every press until it closes (a click
-  or 3 s), so the next item can't be touched meanwhile. Keep that, or
-  let presses outside the card through? (`src/ui/receipt/receipt.gd`)
-
 ## In progress
 
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
@@ -122,6 +111,9 @@ next, brief, env (claude-config rules/ledger.md). -->
 - **LX27** · Source art is huge (3508x2480 PNGs, 0.6 to 2.2 MB each, drawn
   at about 0.2 scale): downscale it or cap the import size before the
   web build (`assets/images/`).
+- **LX37** · 2b3fa3a committed Krita and PNG backups (`*.kra~`,
+  `radio.png~`) and a 69 MB `.kra` (GitHub warns over 50 MB and
+  rejects over 100 MB). Levi: leave them for now (2026-10-17).
 - **LX36** · Decals have no cap per part, so repeated unseats pile up,
   and a part that draws nothing (a plain `Node2D`) shows its decals
   unclipped, with no warning (`src/decals/decal_spawner.gd`).
@@ -151,5 +143,9 @@ next, brief, env (claude-config rules/ledger.md). -->
 
 ## Done
 
+- **LX6** · Levi confirmed the defaults in `overview.md` "Decisions",
+  and the design docs say so now (2026-10-17).
+- **LX39** · Levi: the receipt card keeps eating presses until it closes
+  (2026-10-17).
 - **LX13** · Decal spawner and sets (`src/decals/`); `clip_children`
   works in the web export and on desktop. Done in 0cc0332 (2026-10-17).

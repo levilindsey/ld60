@@ -16,7 +16,7 @@ invented names in the game.
 - **Teaches:** the new thing this item introduces.
 - **Payoff:** what happens when it works again. Every item needs one.
 
-## The jam cut (proposed, LX6)
+## The jam cut (LX6)
 
 Build in this order and cut from the end.
 
