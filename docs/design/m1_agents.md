@@ -161,6 +161,27 @@ LX1 to LX5 in `LEDGER.md` fold into LX7.
   - the cursor shape and mouse mode in each state;
   - the cursor while paused.
 
+**Handoff (m1-core, 2026-10-17).** Works, on branch `m1-core`:
+- The hand (presses, the held thing, the cursor), the tool fixes (LX1
+  to LX5, the follow offset, the nope shake), points, layers (lift-off,
+  the set-aside spot, the ready glow, putting back in install mode),
+  surfaces on layer 6, the item's signals and rule 7. The probe in
+  `.claude/probes/m1-core/` plays the loop (72 checks) and the booklet
+  (5 checks), and all pass.
+- Screws only turn, never scale (Levi): the stand-in turns a screw half
+  a turn counter-clockwise to take it out, and clockwise back home to
+  drive it in. A loose screw keeps its size and sits turned back
+  (`Screw.LOOSE_TURN_RAD`). The pulse hint still scales the point.
+
+Left:
+- LX10 and LX11 replace the stand-in `engage()`. The text above and
+  screws.md, repairables.md and flathead.md still say a screw rises,
+  lifts or grows. Those lines need to say it turns.
+- LX9 fills in `Hand.drag_item()` and the item queue.
+- An installed screw can't come out again. A rack press while a tool is
+  IN_USE does nothing.
+- For Levi: a real mouse and touch, the sounds, and the cursor shapes.
+
 ## m1-quality (LX12)
 
 Read `quality.md`. Build `RepairQuality`, the receipt card and the
