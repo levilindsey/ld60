@@ -6,6 +6,11 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 
 ## Waiting on Levi
 
+- **LX47** · Confirm m1-screws' flathead calls in play: 2 install twists
+  of 101.25 degrees undo the 4 out; the ratchet only between twists; an
+  overcorrection can unseat, even in the pause; the driver turns 360
+  degrees with the screw (`docs/design/m1_agents.md`).
+
 ## In progress
 
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
@@ -41,7 +46,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   angle, the set-aside spot at (360,100). From m1-flow: the drag and
   its tilt, the drag cursor shown while an item is held, the ticket's
   look, the outbox at the left edge, the thud, ding and hmm sounds.
-  More from m1-screws.
+  From m1-screws: correcting the tip with a mouse and with a finger, the
+  size of touch drags on the Pixel, the sounds, and the look of the head
+  frames, rust, skid and sparks.
 - **LX14** · Canned air: spray cone, dust clumps, fans
   (`docs/design/canned_air.md`).
 - **LX15** · Parts bin and part swap: hotspots, sockets, wiggle-out
@@ -52,7 +59,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 - **LX17** · Phillips pressure gauge (`docs/design/phillips.md`).
 - **LX18** · Hammer: wind-up ring, strength bands, jog, realign, reseat
   (`docs/design/hammer.md`).
-- **LX19** · Pliers for stripped screws (`docs/design/pliers.md`).
+- **LX19** · Pliers for stripped screws (`docs/design/pliers.md`). They
+  replace m1-screws' stand-in pry: a pried screw comes back as new, and
+  one that strips going in is pried home with `Screw.install()`.
 - **LX20** · Rag and solvent, sensitive surfaces
   (`docs/design/solvent.md`). Smears pass their surface as
   `RepairQuality.add_defect()`'s `source`, so a ruined smear replaces
@@ -66,12 +75,16 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   (`docs/design/decals.md` "The art list"). Placeholders to replace:
   the skid texture (`src/decals/skid_decal_set.tres`), the receipt's
   code-drawn star (`src/ui/receipt/star_icon.gd`), the hand's
-  `%NopeIcon` (`src/level/level.tscn`) and the layers' ready glow
-  (`src/repairables/repair_layer.gd`). The finished item's outline
-  needs `Sprite2D` art with transparent margins; `ColorRect`
-  placeholders only get the glow.
+  `%NopeIcon` (`src/level/level.tscn`), the layers' ready glow
+  (`src/repairables/repair_layer.gd`), and the screw's tinted head frames
+  and polygon rust (`src/interaction_points/screw.gd`). The finished
+  item's outline needs `Sprite2D` art with transparent margins;
+  `ColorRect` placeholders only get the glow. Taryn's five new images in
+  `assets/images/` (screw and driver art, by their names) are unused.
 - **LX25** · Sounds: collect each design doc's "Feedback" list and add
-  the streams to `src/core/audio_main.tscn`.
+  the streams to `src/core/audio_main.tscn`. Levi's cleaned foley is in
+  `assets/audio/foley_cleaned/`; the flathead's scrape wants a rising
+  pitch.
 - **LX26** · Web export and itch.io upload (`scripts/export_web.ps1`).
   Check decal clipping in Firefox, Safari and the Pixel's Chrome; only
   Chrome and Edge are verified (`docs/design/decals.md` "Clipping").
@@ -96,6 +109,12 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   with the pushed events. A probe-side input blocker then caught 0
   events and the reruns passed (`.claude/probes/m1-core/` in the
   m1-core worktree).
+- **LX48** · Flathead stand-ins: the seized and stripped judder is
+  `tool.nope()`, and the tip follows screen positions, not
+  `event.relative` (`src/interaction_points/flat_head_screw.gd`).
+- **LX49** · Every run that loads the level logs "Camera2D overridden to
+  physics process mode due to use of physics interpolation". Untested
+  fix: `process_callback = 0` on the Camera2D in `src/level/level.tscn`.
 
 ## Ideas (not scheduled)
 
@@ -121,6 +140,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   "Later").
 - **LX46** · Outbox extras: a flick to send, FRAGILE items, trash
   basketball, a pneumatic tube (`docs/design/outbox.md`).
+- **LX50** · Screw extras: a handle lean, a grippier flathead, a screw
+  dish, security screws (`docs/design/m1_agents.md`, the m1-screws
+  handoff).
 
 ## Done
 

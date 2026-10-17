@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bcseeh22lokss"
+path="res://.godot/imported/knock wood light 2.wav-ba5ba83535b5c0142206a8814637e2e8.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/knock wood light 2.wav"
+dest_files=["res://.godot/imported/knock wood light 2.wav-ba5ba83535b5c0142206a8814637e2e8.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

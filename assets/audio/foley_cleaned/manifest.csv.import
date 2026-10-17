@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cssqcxm8xhxl"
+
+[deps]
+
+files=["res://assets/audio/foley_cleaned/manifest.output.translation", "res://assets/audio/foley_cleaned/manifest.source.translation", "res://assets/audio/foley_cleaned/manifest.output.translation", "res://assets/audio/foley_cleaned/manifest.peak.translation", "res://assets/audio/foley_cleaned/manifest.peak.translation", "res://assets/audio/foley_cleaned/manifest.rms.translation", "res://assets/audio/foley_cleaned/manifest.gain.translation", "res://assets/audio/foley_cleaned/manifest.gain.translation", "res://assets/audio/foley_cleaned/manifest.threshold.translation"]
+
+source_file="res://assets/audio/foley_cleaned/manifest.csv"
+dest_files=["res://assets/audio/foley_cleaned/manifest.output.translation", "res://assets/audio/foley_cleaned/manifest.source.translation", "res://assets/audio/foley_cleaned/manifest.output.translation", "res://assets/audio/foley_cleaned/manifest.peak.translation", "res://assets/audio/foley_cleaned/manifest.peak.translation", "res://assets/audio/foley_cleaned/manifest.rms.translation", "res://assets/audio/foley_cleaned/manifest.gain.translation", "res://assets/audio/foley_cleaned/manifest.gain.translation", "res://assets/audio/foley_cleaned/manifest.threshold.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

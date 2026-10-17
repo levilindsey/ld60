@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dewqrl2tqkcck"
+path="res://.godot/imported/screw pickup 3.wav-ac9d202d760dcdc7782c0bca32f17346.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/screw pickup 3.wav"
+dest_files=["res://.godot/imported/screw pickup 3.wav-ac9d202d760dcdc7782c0bca32f17346.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

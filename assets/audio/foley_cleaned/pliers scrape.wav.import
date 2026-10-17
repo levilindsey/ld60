@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dxra0c1lh1kw3"
+path="res://.godot/imported/pliers scrape.wav-cfd9cf836115912a11252c7691696431.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/pliers scrape.wav"
+dest_files=["res://.godot/imported/pliers scrape.wav-cfd9cf836115912a11252c7691696431.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

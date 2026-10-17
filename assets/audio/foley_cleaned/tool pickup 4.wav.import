@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://b8m2vvk3qr6od"
+path="res://.godot/imported/tool pickup 4.wav-a7b2bcfdff095ea7e1a7624acb9aa258.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/tool pickup 4.wav"
+dest_files=["res://.godot/imported/tool pickup 4.wav-a7b2bcfdff095ea7e1a7624acb9aa258.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

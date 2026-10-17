@@ -513,3 +513,92 @@ still passes (73 checks, 6 with `-Booklet`).
   in the probe changes with it.
 - Later (outbox.md): flick, FRAGILE items, trash basketball, pneumatic
   tube, a day summary.
+
+### Handoff (m1-screws, 2026-10-17)
+
+LX10 and LX11 are built and checked on branch `m1-screws`, rebased onto
+main `0ba61be`, unpushed (code commit `5f3b9f4`). The probe is
+`.claude/probes/m1-screws/run_probe.ps1` (untracked). It passes 64
+checks headless. `.claude/probes/m1-screws/run_all.ps1` runs every final
+check in turn: a clean boot, m1-flow (72 passed), m1-core (73) and
+m1-core `-Booklet` (6), all with 0 failed.
+
+**What works**
+
+- `Screw` (LX10): `max_health` (3), `health`, `take_damage()`, the
+  signals `damaged(health)`, `stripped`, `removed` and `installed`, and
+  `get_head_frame()` over `HeadFrame` (CLEAN, SCRATCHED, CHEWED,
+  STRIPPED). Each damage point adds `SCREW_DAMAGE`, and the strip adds
+  `SCREW_STRIPPED`. The frames are tints and the rust is placeholder
+  polygons (`# Placeholder until LX24.`).
+- Stripped: a press grinds and nopes, and the next press pries the screw
+  out after the grind (0.3 s, `# Stand-in until LX19.`). A pried screw
+  comes back as new. One that strips on the way in is driven home.
+- Seized: `is_seized` shows the rust. The first stalled press grinds as
+  a warning, and each later one also takes 1 damage. `unseize()` is
+  there for the oil can (LX21).
+- Removal pops, then the head hops up 14 px and fades out over 0.25 s.
+  It rotates and never scales (the probe checks the scale every frame).
+- `FlatHeadScrew` (LX11): the twist cycle as flathead.md says, with the
+  "Flathead" settings group (twist 1 s and 90 degrees, pause 0.35 s,
+  telegraph 0.15 s, slip 0.2 to 0.6) and the exports `seat_tolerance_px`
+  (12), `slip_bias` (0.9), `twists_needed` (4) and `install_twists` (2).
+  The creak and the driver's `tense()` telegraph each twist, the drift
+  eases in with it, and the ratchet plays between twists.
+- Correcting: while engaged, the screw takes the hand's input owner hook
+  and reads pointer motion in screen pixels, so a camera shake is not
+  motion. A new press resets the baseline, so a finger can lift and come
+  back. Past 70% of the tolerance the tip scrapes and shakes.
+- Unseat: the skid, a skid decal on the layer's art, sparks, the driver
+  hops back to HELD, and 1 damage. The twists done are kept.
+- `FlatHeadScrewDriver`: `set_twist_rotation()`, `tense()`, and it eases
+  back to its held angle the short way.
+
+**Checks.** The m1-screws probe runs the drift code over 100,000 screws
+per `slip_bias` row against flathead.md's table (at 0.9, a player who
+never corrects unseats at a median of twist 3: 10.4% on twist 2, 76.6%
+within 4, none on twist 1). It corrects 4 twists out (largest offset
+0.13 px) and 2 back in, never corrects until an unseat, yanks the tip
+out until a screw strips (health 2, 1, 0; points 2, 4, 16), pries it,
+and stalls a seized screw (a free warning, then 1 damage and 2 points a
+try). It counts sounds by giving the players silent streams.
+
+**Probe changes** (waits and stand-in steps only)
+
+- m1-core: `_TIMEOUT_SEC` goes from 45 to 120, and `run_probe.ps1` waits
+  150 s. New `_tap_at()` (a press with no motion first) and `_drive()`
+  (keeps the tip centered while the twists run). In
+  `_check_take_cover_off`, the rack press while in use and the press
+  back on the screw are taps, `_drive(0.8)` comes before the
+  counter-clockwise check, `_drive(10)` replaces the 0.5 s waits, a
+  0.3 s wait covers the hop, and the angle check expects
+  `-twists_needed * flathead_twist_angle_deg`. `_check_drive_screws_in`
+  gets the same drives. m1-flow's `_wait_for_landing()` is merged in.
+  At merge, copy `.claude/probes/m1-core/` from this worktree: the old
+  copy drives the stand-in and fails with the real twists.
+- m1-flow: no change. A Screw's first `finish()` still means out and
+  the second in, so `_finish_item` still works.
+
+**Left**
+
+- Levi, with a real mouse, touch screen and ears: correcting by mouse
+  and by finger, how big touch drags are on the Pixel, the sounds, and
+  the look of the frames, rust, skid and sparks.
+- Decisions for Levi: install twists are 101.25 degrees each, so 2 undo
+  the 4 out; the ratchet plays only between twists; overcorrecting can
+  unseat the tip, in the pause too; the driver turns a full 360 degrees
+  with the screw on the way out.
+- Stand-ins: the pry (LX19), the tints and rust polygons (LX24), the
+  seized and stripped judder is `tool.nope()`, and the scrape has no
+  rising pitch yet (LX25). Motion comes from pointer screen positions,
+  not `event.relative`.
+- CLAUDE.md wasn't in this stage's files. At merge, Core APIs could gain
+  a line for screws: `Screw.take_damage()`, `unseize()`, the signals and
+  the "Flathead" group.
+- Every probe log that loads the level has one engine warning, and it
+  comes from main (m1-flow's own logs have it): "Camera2D overridden to
+  physics process mode due to use of physics interpolation."
+  `process_callback = 0` on `level.tscn`'s Camera2D should silence it
+  (untested).
+- Later: the handle lean, a grippier flathead, a screw dish, security
+  screws.

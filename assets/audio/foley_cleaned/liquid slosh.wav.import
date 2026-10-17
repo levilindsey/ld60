@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://drtuvk7pu2vxs"
+path="res://.godot/imported/liquid slosh.wav-401900cbc3a09cfe3a157e1f01a46347.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/liquid slosh.wav"
+dest_files=["res://.godot/imported/liquid slosh.wav-401900cbc3a09cfe3a157e1f01a46347.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

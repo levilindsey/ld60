@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cgs6pgkn6k3cf"
+path="res://.godot/imported/glug small 2_a.wav-53cd0c1d15b3e4d39e5cf52ce3ebc649.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/glug small 2_a.wav"
+dest_files=["res://.godot/imported/glug small 2_a.wav-53cd0c1d15b3e4d39e5cf52ce3ebc649.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

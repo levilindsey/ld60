@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cofxsoi0h2ir5"
+path="res://.godot/imported/metal tap slide.wav-6b16287aaef27829aecf96e0f0de1af5.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/metal tap slide.wav"
+dest_files=["res://.godot/imported/metal tap slide.wav-6b16287aaef27829aecf96e0f0de1af5.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
