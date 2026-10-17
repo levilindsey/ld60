@@ -103,6 +103,10 @@ func spawn_repairable(type: Repairable.Type) -> void:
 	item.tween_rotation(target_rotation, Tween.EASE_IN)
 	item.tween_position(target_position, Tween.EASE_IN)
 
+	await get_tree().create_timer(Repairable.POSITION_DURATION_SEC).timeout
+
+	%CameraShaker.shake_camera(7.0, 0.15)
+
 
 func get_tool_holder_position(type: Tool.Type) -> Vector2:
 	match type:

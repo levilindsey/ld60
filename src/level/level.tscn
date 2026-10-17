@@ -15,6 +15,7 @@ script = ExtResource("1_la7um")
 unique_name_in_owner = true
 
 [node name="CameraShaker" type="Node" parent="." unique_id=641136694 node_paths=PackedStringArray("camera")]
+unique_name_in_owner = true
 script = ExtResource("2_xv147")
 camera = NodePath("../Camera2D")
 metadata/_custom_type_script = "uid://3xax4i6teywv"
