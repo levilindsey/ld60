@@ -97,7 +97,7 @@ func _physics_process(delta: float) -> void:
 func _set_rotation(p_rotation: float) -> void:
 	if is_instance_valid(rotation_tween):
 		rotation_tween.kill()
-	rotation_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	rotation_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	rotation_tween.tween_property(self, "rotation", p_rotation, ROTATE_DURATION_SEC)
 
 

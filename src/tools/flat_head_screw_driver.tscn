@@ -10,46 +10,48 @@ radius = 200.0
 
 [node name="FlatHeadScrewDriver" type="Node2D" unique_id=1486551663 node_paths=PackedStringArray("cursor_position", "grab_area", "interaction_area", "holder_area")]
 script = ExtResource("1_85718")
-cursor_position = NodePath("CursorPosition")
-grab_area = NodePath("GrabArea")
-interaction_area = NodePath("InteractionArea")
-holder_area = NodePath("HolderArea")
+cursor_position = NodePath("Node2D2/CursorPosition")
+grab_area = NodePath("Node2D2/GrabArea")
+interaction_area = NodePath("Node2D2/InteractionArea")
+holder_area = NodePath("Node2D2/HolderArea")
 held_rotation_deg = 40.0
 
-[node name="CursorPosition" type="Marker2D" parent="." unique_id=1842626005]
+[node name="Node2D2" type="Node2D" parent="." unique_id=1471896538]
+scale = Vector2(0.2, 0.2)
 
-[node name="GrabArea" type="Area2D" parent="." unique_id=311969663]
+[node name="CursorPosition" type="Marker2D" parent="Node2D2" unique_id=1842626005]
+
+[node name="GrabArea" type="Area2D" parent="Node2D2" unique_id=311969663]
 unique_name_in_owner = true
 collision_mask = 0
 monitoring = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="GrabArea" unique_id=287821059]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Node2D2/GrabArea" unique_id=287821059]
 polygon = PackedVector2Array(-19, 0, 21, 0, 23, -638, 65, -638, 64, -1075, -63, -1075, -64, -639, -20, -638)
 
-[node name="InteractionArea" type="Area2D" parent="." unique_id=1602574643]
+[node name="InteractionArea" type="Area2D" parent="Node2D2" unique_id=1602574643]
 unique_name_in_owner = true
 collision_layer = 0
 collision_mask = 4
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea" unique_id=1167529110]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D2/InteractionArea" unique_id=1167529110]
 shape = SubResource("CircleShape2D_85718")
 
-[node name="HolderArea" type="Area2D" parent="." unique_id=186351695]
+[node name="HolderArea" type="Area2D" parent="Node2D2" unique_id=186351695]
 unique_name_in_owner = true
 collision_layer = 0
 collision_mask = 16
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="HolderArea" unique_id=554709299]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D2/HolderArea" unique_id=554709299]
 position = Vector2(0, -600)
 shape = SubResource("CircleShape2D_giktf")
 
-[node name="Node2D" type="Node2D" parent="." unique_id=1950302434]
+[node name="Node2D" type="Node2D" parent="Node2D2" unique_id=1950302434]
 rotation = -1.5707964
-scale = Vector2(0.2, 0.2)
 
-[node name="ColorRect" type="ColorRect" parent="Node2D" unique_id=704991216]
+[node name="ColorRect" type="ColorRect" parent="Node2D2/Node2D" unique_id=704991216]
 offset_top = -19.0
 offset_right = 674.0
 offset_bottom = 21.0
@@ -57,7 +59,7 @@ mouse_filter = 2
 color = Color(0.2967, 0.2967, 0.43, 1)
 metadata/_edit_use_anchors_ = true
 
-[node name="ColorRect3" type="ColorRect" parent="Node2D" unique_id=717703338]
+[node name="ColorRect3" type="ColorRect" parent="Node2D2/Node2D" unique_id=717703338]
 offset_top = -19.0
 offset_right = 47.0
 offset_bottom = 21.0
@@ -65,7 +67,7 @@ mouse_filter = 2
 color = Color(0.41250002, 0.41250002, 0.55, 1)
 metadata/_edit_use_anchors_ = true
 
-[node name="ColorRect2" type="ColorRect" parent="Node2D" unique_id=1772328036]
+[node name="ColorRect2" type="ColorRect" parent="Node2D2/Node2D" unique_id=1772328036]
 offset_left = 638.0
 offset_top = -63.0
 offset_right = 1074.0
