@@ -230,6 +230,51 @@ their edges and over them, at several part scales and rotations. It
 asserts each decal's parent, position and size. Add the screenshots from
 step 1.
 
+### Handoff (2026-10-17, m1-decals)
+
+**Works,** on branch `m1-decals`:
+- `src/decals/decal_spawner.tscn` is the node to instance in the level
+  as `%Decals`. `spawn(kind, part, global_position, size, direction)`
+  returns the new `Sprite2D`, or null (with a logged error) on bad
+  input. `part` is a Control or a Node2D. `size` is the decal's longer
+  side in world pixels, whatever the part's scale, rotation or wrapper.
+  The spawner turns on the part's clipping itself.
+- One kind, `DecalSpawner.Kind.SKID`, from `skid_decal_set.tres`. Its
+  texture is a `GradientTexture2D` placeholder, so LX24's
+  `screwdriver_skid.png` goes into that `.tres`. A `DecalSet` also holds
+  the scale range, whether it aligns to `direction`, flips, a tint and an
+  optional multiply `blend_material`.
+- A new kind is one `Kind` entry (say `DENT`), one export named after it
+  (`dent_set`) and one `DecalSet` `.tres` assigned in
+  `decal_spawner.tscn`. `_ready` stops the game if a kind has no set.
+- Checked: the clipping probe (decals.md "Clipping"), then a spawner
+  probe on `ColorRect` and `Sprite2D`-with-hole parts at several scales,
+  rotations and wrappers, at edges, corners, holes and over them: 69
+  checks headless and windowed, and 44 pixel checks in the windowed run
+  (7 more were too close to an edge to call). Evidence is in the
+  untracked `.claude/probes/m1-decals/` (`spawner_desktop.png`,
+  `clip_*.png`, logs, the probe scripts).
+
+**At the merge:**
+- Instance `decal_spawner.tscn` in `level.tscn` and give it a unique
+  name, `%Decals`. Nothing else in `src/level/` has to change. A `%`
+  name only resolves inside its own scene, so tools reach it through a
+  `Level` pass-through such as `spawn_decal(...)`, like the camera shake.
+- Pass the node that draws the art as `part` (m1-core's layer `art`, or
+  a `ColorRect` or `Sprite2D`). A plain `Node2D` wrapper clips nothing,
+  so its decals would hang over the edge, with no error.
+
+**Left:**
+- No cap on decals per part, so many unseats on one layer pile up.
+- Draw order follows the tree: a decal draws right after its part and
+  above the part's other children, but below the part's later siblings,
+  such as screw points that are siblings of the art.
+- The clip applies to all of the part's children, so anything else under
+  the part that sticks out past the art is cut off too.
+- Firefox, Safari and a phone's browser are unchecked for clipping.
+- The multiply `blend_material` works in the clip probe, but no set uses
+  it yet.
+
 ## m1-screws (LX10, LX11), stage 2
 
 Written at the stage 1 merge.
