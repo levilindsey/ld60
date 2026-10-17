@@ -7,10 +7,7 @@ const _GAME_OVER_RESTART_DELAY_SEC := 1.5
 const _PLAYER_CAMERA_OFFSET := Vector2.ZERO
 
 
-var player: Node2D
-
 var has_started := false
-var has_finished := false
 var has_won := false
 
 ## Linearly-decaying random-offset camera shake. New shake calls
@@ -37,28 +34,17 @@ func _ready() -> void:
 	# the player render at the top-left of the screen given our
 	# follow logic in _physics_process.
 	%Camera2D.anchor_mode = Camera2D.ANCHOR_MODE_DRAG_CENTER
-	start_game()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	pass
 
 
 func start_game() -> void:
 	G.print("Starting level", ScaffolderLog.CATEGORY_GAME_STATE)
 
 	has_started = true
-	has_finished = false
 	has_won = false
-
-	spawn_player()
-
-
-## Call when the player loses. Waits a beat, then reloads the level.
-func game_over() -> void:
-	if has_finished:
-		return
-	G.print("Game over", ScaffolderLog.CATEGORY_GAME_STATE)
-	has_finished = true
-	await get_tree().create_timer(_GAME_OVER_RESTART_DELAY_SEC).timeout
-	if is_instance_valid(G.game_panel):
-		G.game_panel.restart_level()
 
 
 ## Call when the player wins. Shows the credits overlay; pressing
@@ -68,19 +54,10 @@ func win() -> void:
 		return
 	G.print("Game won", ScaffolderLog.CATEGORY_GAME_STATE)
 	has_won = true
-	has_finished = true
 	G.state.transition(StateMain.State.CREDITS)
 
 
 func _physics_process(delta: float) -> void:
-	if is_instance_valid(player):
-		%Camera2D.global_position = (
-			player.global_position + _PLAYER_CAMERA_OFFSET
-		)
-	else:
-		%Camera2D.global_position = (
-			%PlayerSpawnPoint.global_position + _PLAYER_CAMERA_OFFSET
-		)
 	_tick_camera_shake(delta)
 
 
@@ -112,15 +89,3 @@ func _tick_camera_shake(delta: float) -> void:
 	%Camera2D.offset = Vector2(
 			randf_range(-amp, amp),
 			randf_range(-amp, amp))
-
-
-func spawn_player() -> void:
-	if G.settings.player_scene == null:
-		# No player scene is wired up yet. The camera parks on
-		# %PlayerSpawnPoint until one is assigned in settings.tres.
-		return
-	player = G.settings.player_scene.instantiate()
-	%Players.add_child(player)
-	var spawn_position: Vector2 = %PlayerSpawnPoint.global_position
-	player.global_position = spawn_position
-	player.call_deferred("set_global_position", spawn_position)

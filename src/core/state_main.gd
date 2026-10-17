@@ -56,12 +56,12 @@ func transition(to_state: State) -> void:
 
 	match to_state:
 		State.TITLE:
-			if not G.session.is_game_ended:
+			if not G.session.is_game_over:
 				G.game_panel.end_game()
 			get_tree().paused = true
 			G.audio.fade_to_menu_theme()
 		State.GAME:
-			if G.session.is_game_ended:
+			if G.session.is_game_over:
 				G.game_panel.start_game()
 			get_tree().paused = false
 			G.audio.fade_to_main_theme()
@@ -69,7 +69,7 @@ func transition(to_state: State) -> void:
 			get_tree().paused = true
 			G.audio.fade_to_menu_theme()
 		State.CREDITS:
-			if not G.session.is_game_ended:
+			if not G.session.is_game_over:
 				G.game_panel.end_game()
 			get_tree().paused = true
 			G.audio.fade_to_end_theme()

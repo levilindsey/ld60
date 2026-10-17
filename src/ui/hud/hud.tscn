@@ -1,11 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://bt1la6s52krxe"]
+[gd_scene format=3 uid="uid://bt1la6s52krxe"]
 
-[ext_resource type="Script" path="res://src/ui/hud/hud.gd" id="1_hud"]
+[ext_resource type="Script" uid="uid://cvmchc2851mho" path="res://src/ui/hud/hud.gd" id="1_hud"]
 [ext_resource type="Theme" uid="uid://cl3pkwueh4mag" path="res://src/core/main_theme.tres" id="2_theme"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hud"]
 
-[node name="Hud" type="PanelContainer"]
+[node name="Hud" type="PanelContainer" unique_id=1450996408]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -16,12 +16,12 @@ theme = ExtResource("2_theme")
 theme_override_styles/panel = SubResource("StyleBoxEmpty_hud")
 script = ExtResource("1_hud")
 
-[node name="TitleOverlay" type="Control" parent="."]
+[node name="TitleOverlay" type="Control" parent="." unique_id=1970263969]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 
-[node name="CenterContainer" type="CenterContainer" parent="TitleOverlay"]
+[node name="CenterContainer" type="CenterContainer" parent="TitleOverlay" unique_id=1896209611]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -30,29 +30,30 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="TitleOverlay/CenterContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="TitleOverlay/CenterContainer" unique_id=370128075]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 16
 
-[node name="TitleLabel" type="Label" parent="TitleOverlay/CenterContainer/VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="TitleOverlay/CenterContainer/VBoxContainer" unique_id=1095801211]
 layout_mode = 2
 theme_override_font_sizes/font_size = 64
 text = "LD60"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="TitleOverlay/CenterContainer/VBoxContainer"]
+[node name="SubtitleLabel" type="Label" parent="TitleOverlay/CenterContainer/VBoxContainer" unique_id=1975574626]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Press Z or Space to start."
+text = "Click to start."
 horizontal_alignment = 1
 
-[node name="PauseOverlay" type="Control" parent="."]
+[node name="PauseOverlay" type="Control" parent="." unique_id=1052023326]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Dim" type="ColorRect" parent="PauseOverlay"]
+[node name="Dim" type="ColorRect" parent="PauseOverlay" unique_id=12268476]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -62,7 +63,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0.5)
 
-[node name="CenterContainer" type="CenterContainer" parent="PauseOverlay"]
+[node name="CenterContainer" type="CenterContainer" parent="PauseOverlay" unique_id=883803150]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -71,29 +72,30 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PauseOverlay/CenterContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PauseOverlay/CenterContainer" unique_id=1544548413]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 16
 
-[node name="PausedLabel" type="Label" parent="PauseOverlay/CenterContainer/VBoxContainer"]
+[node name="PausedLabel" type="Label" parent="PauseOverlay/CenterContainer/VBoxContainer" unique_id=1953424809]
 layout_mode = 2
 theme_override_font_sizes/font_size = 48
 text = "Paused"
 horizontal_alignment = 1
 
-[node name="HintLabel" type="Label" parent="PauseOverlay/CenterContainer/VBoxContainer"]
+[node name="HintLabel" type="Label" parent="PauseOverlay/CenterContainer/VBoxContainer" unique_id=1993052951]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Press Escape to resume."
 horizontal_alignment = 1
 
-[node name="CreditsOverlay" type="Control" parent="."]
+[node name="CreditsOverlay" type="Control" parent="." unique_id=865031995]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Dim" type="ColorRect" parent="CreditsOverlay"]
+[node name="Dim" type="ColorRect" parent="CreditsOverlay" unique_id=487409296]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -103,7 +105,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0.6)
 
-[node name="CenterContainer" type="CenterContainer" parent="CreditsOverlay"]
+[node name="CenterContainer" type="CenterContainer" parent="CreditsOverlay" unique_id=1139292543]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -112,25 +114,25 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CreditsOverlay/CenterContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CreditsOverlay/CenterContainer" unique_id=1827011308]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 16
 
-[node name="ThanksLabel" type="Label" parent="CreditsOverlay/CenterContainer/VBoxContainer"]
+[node name="ThanksLabel" type="Label" parent="CreditsOverlay/CenterContainer/VBoxContainer" unique_id=1192912500]
 layout_mode = 2
 theme_override_font_sizes/font_size = 48
 text = "Thanks for playing!"
 horizontal_alignment = 1
 
-[node name="CreditsLabel" type="Label" parent="CreditsOverlay/CenterContainer/VBoxContainer"]
+[node name="CreditsLabel" type="Label" parent="CreditsOverlay/CenterContainer/VBoxContainer" unique_id=754007448]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Made for Ludum Dare 60.
 (Add your credits here.)"
 horizontal_alignment = 1
 
-[node name="ReplayLabel" type="Label" parent="CreditsOverlay/CenterContainer/VBoxContainer"]
+[node name="ReplayLabel" type="Label" parent="CreditsOverlay/CenterContainer/VBoxContainer" unique_id=1492551707]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Press Z to play again."

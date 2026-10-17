@@ -12,7 +12,7 @@ func _enter_tree() -> void:
 
 func start_game() -> void:
 	G.session.reset()
-	G.session.is_game_ended = false
+	G.session.is_game_over = false
 
 	if is_instance_valid(level):
 		# Replay after a finished run: reload the level so all
@@ -23,7 +23,7 @@ func start_game() -> void:
 
 
 func end_game() -> void:
-	G.session.is_game_ended = true
+	G.session.is_game_over = true
 
 
 func start_level() -> void:
