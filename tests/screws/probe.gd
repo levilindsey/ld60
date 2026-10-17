@@ -56,8 +56,8 @@ var _scale_samples := 0
 var _drive_max_offset_px := 0.0
 var _drive_correction_px := 0.0
 var _drive_min_art_scale := 1.0
-var _drive_rotation_error := 0.0
-var _drive_rotation_samples := 0
+var _drive_twist_samples := 0
+var _drive_untwisted_frames := 0
 
 var _level: Level
 var _tool: FlatHeadScrewDriver
@@ -307,9 +307,13 @@ func _check_correcting() -> void:
 		+ " of drift corrected)",
 	)
 	_expect(
-		_drive_rotation_samples > 100 and _drive_rotation_error < 0.001,
-		"the driver turns with the head (error %.5f rad in %d frames)"
-		% [_drive_rotation_error, _drive_rotation_samples],
+		_drive_twist_samples > 100 and _drive_untwisted_frames == 0,
+		"LX51: the driver plays twisting while in use (%d of %d frames did not)"
+		% [_drive_untwisted_frames, _drive_twist_samples],
+	)
+	_expect(
+		_tool.mode == Tool.Mode.HELD and _is_driver_resting(),
+		"LX51: the driver shows default once it is back in the hand",
 	)
 	_expect(
 		_drive_min_art_scale < 0.95
@@ -762,16 +766,38 @@ func _get_decals() -> Array[Sprite2D]:
 	return decals
 
 
+func _get_driver_sprite() -> AnimatedSprite2D:
+	return _tool.get_node_or_null("%AnimatedSprite2D") as AnimatedSprite2D
+
+
+## True while the driver's sprite is playing `twisting`, which the driver
+## does for as long as it is IN_USE (LX51).
+func _is_driver_twisting() -> bool:
+	var sprite := _get_driver_sprite()
+	return (
+		is_instance_valid(sprite)
+		and sprite.is_playing()
+		and sprite.animation == &"twisting"
+	)
+
+
+## True while the driver's sprite shows `default`, which it does once the
+## driver leaves IN_USE (LX51).
+func _is_driver_resting() -> bool:
+	var sprite := _get_driver_sprite()
+	return is_instance_valid(sprite) and sprite.animation == &"default"
+
+
 ## Plays the flathead microgame well. Every physics frame it moves the
 ## pointer along the slot to put the tip back in the middle, and samples
-## the tip, the driver's angle and the handle. Returns once the screw is
-## no longer ACTIVE, or after `max_sec`.
+## the tip, the driver's animation and the handle. Returns once the screw
+## is no longer ACTIVE, or after `max_sec`.
 func _drive(screw: FlatHeadScrew, max_sec: float) -> void:
 	_drive_max_offset_px = 0.0
 	_drive_correction_px = 0.0
 	_drive_min_art_scale = 1.0
-	_drive_rotation_error = 0.0
-	_drive_rotation_samples = 0
+	_drive_twist_samples = 0
+	_drive_untwisted_frames = 0
 	var frames := roundi(max_sec * Engine.physics_ticks_per_second)
 	for frame in frames:
 		if screw.mode != InteractionPoint.Mode.ACTIVE:
@@ -780,17 +806,9 @@ func _drive(screw: FlatHeadScrew, max_sec: float) -> void:
 		_drive_max_offset_px = maxf(_drive_max_offset_px, absf(offset))
 		_drive_correction_px += absf(offset)
 		_drive_min_art_scale = minf(_drive_min_art_scale, _tool.art.scale.x)
-		if screw._is_turning_tool:
-			var want_rotation := (
-				deg_to_rad(_tool.in_use_angle_deg)
-				+ screw.head.rotation
-				- screw._engage_head_rotation
-			)
-			_drive_rotation_error = maxf(
-				_drive_rotation_error,
-				absf(_tool.rotation - want_rotation),
-			)
-			_drive_rotation_samples += 1
+		_drive_twist_samples += 1
+		if not _is_driver_twisting():
+			_drive_untwisted_frames += 1
 		var motion := InputEventMouseMotion.new()
 		_push_mouse(
 			motion,
