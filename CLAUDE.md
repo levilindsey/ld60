@@ -89,6 +89,13 @@ in the same commit that satisfies them.
    `settings.player_scene` is null, the spawn is skipped** and the
    camera parks on `%PlayerSpawnPoint`.
 
+**Running a level directly** (F6 / "Run Current Scene"): `Level`
+sees no `G.main`, skips its own setup, and calls
+`G.boot_from_level()`. That records the level's path in
+`G.level_scene_override_path` and swaps to `main.tscn`, which boots
+normally but skips TITLE and loads that level instead of
+`settings.default_level_scene`. No `settings.tres` edits needed.
+
 State machine (`StateMain.State`): `TITLE`, `GAME`, `PAUSE`,
 `CREDITS`. Non-GAME states pause the SceneTree. `StateMain` runs
 with `process_mode = ALWAYS` and handles the `pause` action plus

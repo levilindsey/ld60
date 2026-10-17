@@ -44,7 +44,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func start_game() -> void:
-	var to_state := State.GAME if G.settings.start_in_game else State.TITLE
+	var is_starting_in_game := (
+		G.settings.start_in_game
+		or not G.level_scene_override_path.is_empty()
+	)
+	var to_state := State.GAME if is_starting_in_game else State.TITLE
 	transition(to_state)
 
 

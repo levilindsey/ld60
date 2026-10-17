@@ -15,6 +15,10 @@ var active_repairable: Repairable
 
 
 func _enter_tree() -> void:
+	if not is_instance_valid(G.main):
+		# This level scene was run directly. Boot the full game into it.
+		G.boot_from_level(self)
+		return
 	G.level = self
 
 
@@ -24,6 +28,9 @@ func _exit_tree() -> void:
 
 
 func _ready() -> void:
+	if not is_instance_valid(G.main):
+		return
+
 	# Center the camera's anchor on its position. In Godot 4.5+ the
 	# Camera2D default changed to FIXED_TOP_LEFT, which would make
 	# the player render at the top-left of the screen given our
