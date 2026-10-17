@@ -5,8 +5,14 @@
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 20.22375
 
-[node name="Screw" type="Node2D" unique_id=1179123840]
+[node name="FlatHeadScrew" type="Area2D" unique_id=268084832]
+collision_layer = 4
+collision_mask = 0
+monitoring = false
 script = ExtResource("1_8uvch")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=156215341]
+shape = SubResource("CircleShape2D_giktf")
 
 [node name="Node2D" type="Node2D" parent="." unique_id=1688050116]
 
@@ -25,8 +31,3 @@ offset_right = 5.0
 offset_bottom = 20.0
 color = Color(0.1, 0.1, 0.1, 1)
 metadata/_edit_use_anchors_ = true
-
-[node name="Area2D" type="Area2D" parent="." unique_id=1756660192]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=156215341]
-shape = SubResource("CircleShape2D_giktf")

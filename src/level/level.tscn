@@ -2,6 +2,10 @@
 
 [ext_resource type="Script" uid="uid://bqj50lqds4nhs" path="res://src/level/level.gd" id="1_la7um"]
 [ext_resource type="Script" uid="uid://3xax4i6teywv" path="res://src/level/camera_shaker.gd" id="2_xv147"]
+[ext_resource type="Script" uid="uid://bfo0vmq35oagd" path="res://src/level/tool_holder.gd" id="3_af42n"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
+radius = 34.058773
 
 [node name="Level" type="Node2D" unique_id=894130576]
 script = ExtResource("1_la7um")
@@ -13,3 +17,31 @@ unique_name_in_owner = true
 script = ExtResource("2_xv147")
 camera = NodePath("../Camera2D")
 metadata/_custom_type_script = "uid://3xax4i6teywv"
+
+[node name="DeskPlaceholder" type="ColorRect" parent="." unique_id=1889668480]
+offset_left = -460.0
+offset_top = -92.0
+offset_right = 461.0
+offset_bottom = 236.0
+color = Color(0.61, 0.4448934, 0.25620002, 1)
+
+[node name="ActiveItemPosition" type="Marker2D" parent="." unique_id=802295010]
+unique_name_in_owner = true
+position = Vector2(0, 62)
+
+[node name="ItemSpawnPosition" type="Marker2D" parent="." unique_id=527054541]
+unique_name_in_owner = true
+position = Vector2(0, -549)
+
+[node name="ToolHolders" type="Node" parent="." unique_id=433542721]
+
+[node name="FlatHeadScrewDriverHolder" type="Area2D" parent="ToolHolders" unique_id=417891166]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("3_af42n")
+metadata/_custom_type_script = "uid://bfo0vmq35oagd"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/FlatHeadScrewDriverHolder" unique_id=1805593427]
+position = Vector2(488, 173)
+shape = SubResource("CircleShape2D_giktf")

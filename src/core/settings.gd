@@ -2,6 +2,15 @@ class_name Settings
 extends Resource
 
 
+enum PhysicsLayer {
+	NONE = 0,
+	TOOLS = 1 << 0,
+	REPAIRABLES = 1 << 1,
+	INTERACTION_POINTS = 1 << 2,
+	TABLE = 1 << 3,
+	TOOL_HOLDERS = 1 << 4,
+}
+
 # --- General configuration ---
 
 @export var dev_mode := true
@@ -43,3 +52,29 @@ extends Resource
 @export var include_category_in_logs := true
 @export var verbosity := ScaffolderLog.Verbosity.NORMAL
 @export_group("")
+
+@export_group("Repairables")
+@export var flat_head_screw_repairable_scene: PackedScene
+@export_group("")
+
+@export_group("Tools")
+@export var flat_head_screw_driver_scene: PackedScene
+@export_group("")
+
+
+func get_repairable_scene_from_type(type: Repairable.Type) -> PackedScene:
+	match type:
+		Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE:
+			return flat_head_screw_repairable_scene
+		_:
+			G.fatal()
+			return null
+
+
+func get_tool_scene_from_type(type: Tool.Type) -> PackedScene:
+	match type:
+		Tool.Type.FLAT_HEAD_SCREW_DRIVER:
+			return flat_head_screw_driver_scene
+		_:
+			G.fatal()
+			return null

@@ -1,8 +1,10 @@
 [gd_scene format=3 uid="uid://oljisvtq3csc"]
 
-[ext_resource type="PackedScene" uid="uid://cg17ymgfrol22" path="res://src/interaction_points/flat_head_screw.tscn" id="1_hagw5"]
+[ext_resource type="Script" uid="uid://dikerfeo68jor" path="res://src/repairables/test_flat_head_screw_repairable.gd" id="1_0ufjt"]
+[ext_resource type="PackedScene" uid="uid://cg17ymgfrol22" path="res://src/interaction_points/flat_head_screw.tscn" id="2_208r4"]
 
 [node name="TestScrewRepairable" type="Node2D" unique_id=1685354276]
+script = ExtResource("1_0ufjt")
 
 [node name="Node2D" type="Node2D" parent="." unique_id=36167144]
 
@@ -13,4 +15,4 @@ offset_right = 154.0
 offset_bottom = 158.0
 color = Color(0.43137255, 0.8666667, 0.44313726, 1)
 
-[node name="Screw" parent="Node2D" unique_id=1179123840 instance=ExtResource("1_hagw5")]
+[node name="Screw" parent="Node2D" unique_id=1179123840 instance=ExtResource("2_208r4")]

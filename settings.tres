@@ -2,9 +2,25 @@
 
 [ext_resource type="Script" uid="uid://cqomr88ncj2d3" path="res://src/core/settings.gd" id="1_krfic"]
 [ext_resource type="PackedScene" uid="uid://bukfeupi41tif" path="res://src/level/level.tscn" id="1_w7hap"]
+[ext_resource type="PackedScene" uid="uid://m8ven6g4aiv4" path="res://src/tools/flat_head_screw_driver.tscn" id="2_xmm7k"]
+[ext_resource type="PackedScene" uid="uid://oljisvtq3csc" path="res://src/repairables/test_flat_head_screw_repairable.tscn" id="3_yixrw"]
 
 [resource]
 script = ExtResource("1_krfic")
+dev_mode = null
+show_debug_console = null
 start_in_game = false
+full_screen = null
+move_preview_windows_to_other_display = null
+mute_music = null
 pauses_on_focus_out = false
+is_screenshot_hotkey_enabled = null
+show_hud = null
+default_gravity_acceleration = null
 default_level_scene = ExtResource("1_w7hap")
+excluded_log_categories = null
+force_include_log_warnings = null
+include_category_in_logs = null
+verbosity = null
+flat_head_screw_repairable = ExtResource("3_yixrw")
+flat_head_screw_driver = ExtResource("2_xmm7k")

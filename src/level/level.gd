@@ -10,6 +10,9 @@ const _PLAYER_CAMERA_OFFSET := Vector2.ZERO
 var has_started := false
 var has_won := false
 
+var tools_by_type: Dictionary[Tool.Type, Tool] = {}
+var active_repairable: Repairable
+
 
 func _enter_tree() -> void:
 	G.level = self
@@ -47,3 +50,38 @@ func win() -> void:
 	G.print("Game won", ScaffolderLog.CATEGORY_GAME_STATE)
 	has_won = true
 	G.state.transition(StateMain.State.CREDITS)
+
+
+func spawn_tool(type: Tool.Type) -> void:
+	G.check(not tools_by_type.has(type))
+
+	var tool_scene := G.settings.get_tool_scene_from_type(type)
+	G.check(is_instance_valid(tool_scene))
+	var tool := tool_scene.instantiate()
+	tool.global_position = %ActiveItemPosition.global_position
+	tools_by_type[type] = tool
+
+	var holder_position := _get_tool_holder_position(type)
+	# TODO(levilindsey): Tween tool position to the holder position. Also tween rotation from an off-angle start.
+
+
+func spawn_repairable(type: Repairable.Type) -> void:
+	G.check(not is_instance_valid(active_repairable))
+
+	var item_scene := G.settings.get_repairable_scene_from_type(type)
+	G.check(is_instance_valid(item_scene))
+	var item := item_scene.instantiate()
+	item.global_position = %ItemSpawnPosition.global_position
+	active_repairable = item
+
+	var target_position: Vector2 = %ActiveItemPosition.global_position
+	# TODO(levilindsey): Tween repairable position to the target position. Also tween rotation from an off-angle start.
+
+
+func _get_tool_holder_position(type: Tool.Type) -> Vector2:
+	match type:
+		Tool.Type.FLAT_HEAD_SCREW_DRIVER:
+			return %FlatHeadScrewDriverHolder.global_position
+		_:
+			G.error()
+			return Vector2.INF
