@@ -16,6 +16,58 @@ reused.
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (claude-config rules/ledger.md). -->
 
+- **LX7** · The hand owns the held thing and cursor; touch-first press
+  routing, wrong-tool nope, holders by `Tool.Type`; folds in LX1 to LX5
+  and a real-mouse test of 929db18 (`docs/design/tools.md`).
+  - owner: claude agent `m1-core` (Opus) of session 194d3b69 (Levi),
+    since 2026-10-17
+  - branch: `m1-core`, in an agent worktree under `.claude/worktrees/`;
+    last commit: none yet (base: the M1 claim on `main`)
+  - evidence: `.claude/probes/m1-core/` in that worktree
+  - next: build and check per the brief
+  - brief: `docs/design/m1_agents.md` "m1-core"
+- **LX8** · Repair layers: `RepairLayer`, point roles, lift-off,
+  reassembly, `Surface`, finishing (`docs/design/repairables.md`).
+  - owner, branch, evidence, next, brief: as LX7 (agent `m1-core`)
+- **LX12** · Quality score, stars and receipt (`docs/design/quality.md`).
+  - owner: claude agent `m1-quality` (Sonnet) of session 194d3b69
+    (Levi), since 2026-10-17
+  - branch: `m1-quality`, in an agent worktree under
+    `.claude/worktrees/`; last commit: none yet
+  - evidence: `.claude/probes/m1-quality/` in that worktree
+  - next: build and check per the brief
+  - brief: `docs/design/m1_agents.md` "m1-quality"
+- **LX13** · Decal spawner; first check `clip_children` in a web export
+  (`docs/design/decals.md`).
+  - owner: claude agent `m1-decals` (Sonnet) of session 194d3b69
+    (Levi), since 2026-10-17
+  - branch: `m1-decals`, in an agent worktree under
+    `.claude/worktrees/`; last commit: none yet
+  - evidence: `.claude/probes/m1-decals/` in that worktree
+  - next: the web clipping check, then the spawner
+  - brief: `docs/design/m1_agents.md` "m1-decals"
+- **LX9** · Item flow: arrival tween, finished-only drag, outbox area,
+  item queue (`docs/design/outbox.md`).
+  - owner: claude session 194d3b69 (Levi), queued for stage 2 (agent
+    `m1-flow`)
+  - branch: none yet; last commit: none
+  - evidence: none yet
+  - next: launch `m1-flow` once stage 1 is on `main`
+  - brief: `docs/design/m1_agents.md` "m1-flow" (written at that merge)
+- **LX10** · Screw health: damage frames, stripped, seized, install mode
+  (`docs/design/screws.md`).
+  - owner: claude session 194d3b69 (Levi), queued for stage 2 (agent
+    `m1-screws`, with LX11)
+  - branch: none yet; last commit: none
+  - evidence: none yet
+  - next: launch `m1-screws` once stage 1 is on `main`
+  - brief: `docs/design/m1_agents.md` "m1-screws" (written at that
+    merge)
+- **LX11** · Flathead rework: 1 s eased twists, eased drift (at most 0.6
+  of the tolerance per twist), correction along the slot, unseat
+  (`docs/design/flathead.md`).
+  - owner, branch, evidence, next, brief: as LX10 (agent `m1-screws`)
+
 ## Next
 
 - **LX1** · Tool collision shapes aren't scaled to the 0.2 visual (grab
@@ -24,21 +76,6 @@ next, brief, env (claude-config rules/ledger.md). -->
 - **LX5** · Pick-up teleports the tool under the cursor: ease a follow
   offset to zero, also after IN_USE exits and hammer recoil (TODO in
   `src/tools/tool.gd`; `docs/design/tools.md` "Follow offset").
-- **LX7** · The hand owns the held thing and cursor; touch-first press
-  routing, wrong-tool nope, holders by `Tool.Type`; folds in LX1 to LX5
-  and a real-mouse test of 929db18 (`docs/design/tools.md`).
-- **LX8** · Repair layers: `RepairLayer`, point roles, lift-off,
-  reassembly, `Surface`, finishing (`docs/design/repairables.md`).
-- **LX9** · Item flow: arrival tween, finished-only drag, outbox area,
-  item queue (`docs/design/outbox.md`).
-- **LX10** · Screw health: damage frames, stripped, seized, install mode
-  (`docs/design/screws.md`).
-- **LX11** · Flathead rework: 1 s eased twists, eased drift (at most 0.6
-  of the tolerance per twist), correction along the slot, unseat
-  (`docs/design/flathead.md`).
-- **LX12** · Quality score, stars and receipt (`docs/design/quality.md`).
-- **LX13** · Decal spawner; first check `clip_children` in a web export
-  (`docs/design/decals.md`).
 - **LX14** · Canned air: spray cone, dust clumps, fans
   (`docs/design/canned_air.md`).
 - **LX15** · Parts bin and part swap: hotspots, sockets, wiggle-out

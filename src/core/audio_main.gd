@@ -14,6 +14,18 @@ extends Node2D
 	"main_theme" = %MainTheme,
 	"end_theme" = %EndTheme,
 	"click" = %Click,
+	"clunk" = %Clunk,
+	"thud" = %Thud,
+	"ding" = %Ding,
+	"hmm" = %Hmm,
+	"creak" = %Creak,
+	"ratchet" = %Ratchet,
+	"scrape" = %Scrape,
+	"skid" = %Skid,
+	"pop" = %Pop,
+	"grind" = %Grind,
+	"whoosh" = %Whoosh,
+	"snap" = %Snap,
 }
 
 var initial_volumes := {}
