@@ -11,7 +11,10 @@ var has_started := false
 var has_won := false
 
 var tools_by_type: Dictionary[Tool.Type, Tool] = {}
+## The item on the bench, or null while the next one is on its way.
 var active_repairable: Repairable
+## How many items of `Settings.item_queue` have been spawned.
+var next_item_index := 0
 
 ## The player's hand: what is held, the cursor and press routing.
 var hand: Hand:
@@ -42,9 +45,15 @@ func _ready() -> void:
 	# follow logic in _physics_process.
 	%Camera2D.anchor_mode = Camera2D.ANCHOR_MODE_DRAG_CENTER
 
+	%Receipt.closed.connect(_on_receipt_closed)
+
 	# TODO: Add some level and spawn configs to control when what things spawn.
 	spawn_tool(Tool.Type.FLAT_HEAD_SCREW_DRIVER)
-	spawn_repairable(Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE)
+	if G.ensure(
+		not G.settings.item_queue.is_empty(),
+		"The item queue is empty.",
+	):
+		_spawn_next_item()
 
 
 func start_game() -> void:
@@ -78,7 +87,9 @@ func spawn_tool(type: Tool.Type) -> void:
 	tool.put_away()
 
 
-func spawn_repairable(type: Repairable.Type) -> void:
+## Drops an item of a type onto the bench and returns it. The camera
+## shakes and the ticket appears when it lands.
+func spawn_repairable(type: Repairable.Type) -> Repairable:
 	G.check(not is_instance_valid(active_repairable))
 
 	var item_scene := G.settings.get_repairable_scene_from_type(type)
@@ -86,25 +97,35 @@ func spawn_repairable(type: Repairable.Type) -> void:
 	var item: Repairable = item_scene.instantiate()
 	%Repairables.add_child(item)
 	item.global_position = %ItemSpawnPosition.global_position
+	item.reset_physics_interpolation()
 	active_repairable = item
 
-	var initial_rotation := randf() * TAU
-	item.rotation = initial_rotation
+	item.quality.defect_added.connect(_on_defect_added)
+	item.landed.connect(_on_item_landed.bind(item))
+	item.arrive(%ActiveItemPosition.global_position)
+	return item
 
-	# Give repairables a slight rotation offset.
-	var target_rotation := randf_range(
-		-Repairable.ROTATION_OFFSET_MAX,
-		Repairable.ROTATION_OFFSET_MAX,
-	)
 
-	var target_position: Vector2 = %ActiveItemPosition.global_position
+## Shakes the camera. See `CameraShaker`.
+func shake_camera(amplitude_px: float, duration_sec: float) -> void:
+	%CameraShaker.shake_camera(amplitude_px, duration_sec)
 
-	item.tween_rotation(target_rotation, Tween.EASE_IN)
-	item.tween_position(target_position, Tween.EASE_IN)
 
-	await get_tree().create_timer(Repairable.POSITION_DURATION_SEC).timeout
+## The hand let go of an item. A finished item over the outbox goes into
+## it. Any other drop eases the item back to the bench.
+func drop_item(item: Repairable) -> void:
+	if not is_instance_valid(item):
+		return
+	if item.has_finished and %Outbox.overlaps_area(item.drop_area):
+		_send_to_outbox(item)
+	else:
+		return_item(item)
 
-	%CameraShaker.shake_camera(7.0, 0.15)
+
+## Eases an item back to where the bench keeps the item being repaired.
+func return_item(item: Repairable) -> void:
+	if is_instance_valid(item):
+		item.return_to(%ActiveItemPosition.global_position)
 
 
 ## The holder in the rack for a tool type, or null.
@@ -155,3 +176,62 @@ func spawn_decal(
 		size,
 		direction,
 	)
+
+
+## True once every item of the day's order has been spawned.
+func _is_queue_finished() -> bool:
+	return next_item_index >= G.settings.item_queue.size()
+
+
+func _spawn_next_item() -> void:
+	if _is_queue_finished():
+		return
+	var type: Repairable.Type = G.settings.item_queue[next_item_index]
+	next_item_index += 1
+	spawn_repairable(type)
+
+
+## The item leaves through the outbox. The bench is empty from here until
+## the next item arrives.
+func _send_to_outbox(item: Repairable) -> void:
+	active_repairable = null
+	%TicketCard.hide_card()
+	item.departed.connect(_on_item_departed.bind(item), CONNECT_ONE_SHOT)
+	item.leave(
+		%Outbox.global_position,
+		%OutboxExitPosition.global_position,
+	)
+
+
+func _on_item_landed(item: Repairable) -> void:
+	shake_camera(
+		G.settings.item_landing_shake_px,
+		G.settings.item_landing_shake_sec,
+	)
+	%TicketCard.show_item(item.item_name, item.ticket)
+
+
+## The item slid off the screen: its receipt opens and, unless that was
+## the last item, the next one arrives a moment later. The game is won
+## when the last receipt closes.
+func _on_item_departed(item: Repairable) -> void:
+	%Receipt.open(item.item_name, item.quality)
+	if _is_queue_finished():
+		return
+	var tween := create_tween()
+	tween.tween_interval(G.settings.next_item_delay_sec)
+	tween.tween_callback(_spawn_next_item)
+
+
+func _on_defect_added(
+	_defect: RepairQuality.Defect,
+	points: int,
+	world_position: Vector2,
+) -> void:
+	DefectPopup.spawn(self, points, world_position)
+
+
+func _on_receipt_closed() -> void:
+	# Only the last item's receipt ends the game.
+	if _is_queue_finished() and not is_instance_valid(active_repairable):
+		win()

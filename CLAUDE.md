@@ -92,9 +92,9 @@ that finishes it.
 5. `StateMain.transition(GAME)` (or `TITLE` when
    `settings.start_in_game` is false) -> `GamePanel.start_game()`
    -> instantiates `settings.default_level_scene`.
-6. `Level._ready` centers the camera anchor, then spawns the
-   flathead driver and the test repairable (hard-coded until LX9's
-   item queue).
+6. `Level._ready` centers the camera anchor, spawns the flathead
+   driver, then the items of `settings.item_queue` one at a time
+   (arrive, ticket, repair, outbox, receipt: `docs/design/outbox.md`).
 
 **Running a level directly** (F6 / "Run Current Scene"): `Level`
 sees no `G.main`, skips its own setup, and calls
@@ -131,14 +131,15 @@ restarts); `G.game_panel.restart_level()` -> a fresh Level instance.
   `audio_main.tscn` ship **without streams**; assign `.wav`s there
   and extend `STREAM_PLAYERS_BY_NAME` as audio lands. Buses:
   `Master`, `Music`, `SFX`.
-- **Camera:** `shake_camera(amplitude_px, duration_sec)` on the
-  level's `CameraShaker` node (LX9 adds a `G.level` pass-through).
+- **Camera and decals:** `G.level.shake_camera(amplitude_px, duration_sec)`
+  shakes the camera. `G.level.spawn_decal(...)` stamps a decal on a
+  part, and `Repairable.quality` scores the repair for the receipt.
 - **Hand** (`G.level.hand`, `docs/design/tools.md` "The hand"): one
   `_unhandled_input` routes every left press, holds one thing and
   owns the cursor. A microgame calls `set_input_owner(self)` to get
   the presses. A point's `engage(tool)` places the tool until
-  `finish()`. The item emits `layer_removed`, `layer_installed`,
-  `point_finished` and `finished`.
+  `finish()`. The item emits `landed`, `layer_removed`,
+  `layer_installed`, `point_finished`, `finished` and `departed`.
 - **Dev hotkeys** (`settings.dev_mode`): `P` screenshot (to
   `user://screenshots/`), `O` toggle HUD, `Esc` pause.
 
@@ -147,9 +148,9 @@ restarts); `G.game_panel.restart_level()` -> a fresh Level instance.
 - `settings.tres` - Runtime settings resource (`Settings` script).
   Key fields: `default_level_scene`, `start_in_game`, `dev_mode`,
   `show_debug_console`, `mute_music`, `full_screen`,
-  `pauses_on_focus_out`, the "Hand" and "Layers" timing groups, plus
-  one scene per tool and item in the "Tools" and "Repairables" groups
-  (`get_tool_scene_from_type`, `get_repairable_scene_from_type`).
+  `pauses_on_focus_out`, `item_queue` (the day's items), the timing
+  groups ("Hand", "Layers", "Item flow"), and one scene per tool and
+  item (`get_tool_scene_from_type`, `get_repairable_scene_from_type`).
 - `default_bus_layout.tres` - Audio buses (Master/Music/SFX).
 - `project.godot` - Input actions, physics layers, rendering.
 - Renderer: `gl_compatibility`; linear texture filtering (Godot

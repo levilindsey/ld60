@@ -58,6 +58,38 @@ enum PhysicsLayer {
 @export var point_pulse_sec := 0.4
 @export_group("")
 
+@export_group("Item flow")
+## Seconds an item takes to drop in from above and land.
+@export var item_arrival_sec := 0.6
+## The most an arriving item is turned, in degrees. It straightens as it
+## lands.
+@export var item_arrival_angle_max_deg := 8.0
+## The camera shake when an item lands.
+@export var item_landing_shake_px := 7.0
+@export var item_landing_shake_sec := 0.15
+## Seconds an item takes to ease back when it is dropped away from the
+## outbox.
+@export var item_return_sec := 0.3
+## Seconds an item takes to drop into the tray, and then to slide off the
+## left edge of the screen.
+@export var item_tray_drop_sec := 0.15
+@export var item_leave_sec := 0.4
+## Seconds after an item goes into the outbox before the next one arrives.
+@export var next_item_delay_sec := 0.5
+## The most a dragged item tilts, in degrees, and the sideways drag speed
+## in pixels per second that tilts it that far.
+@export var drag_tilt_max_deg := 8.0
+@export var drag_tilt_full_speed := 900.0
+## How fast a dragged item's tilt catches up with its target. Higher is
+## quicker.
+@export var drag_tilt_follow_rate := 12.0
+## The outline that glows around a finished item's top layer. Only
+## Sprite2D art shows it. Placeholder art gets the glow pulse alone.
+@export var finished_outline_material: ShaderMaterial
+## The burst of sparkles when an item is finished.
+@export var finish_sparkle_scene: PackedScene
+@export_group("")
+
 
 @export_group("Logs")
 ## Logs with these categories won't be shown.
@@ -78,6 +110,9 @@ enum PhysicsLayer {
 
 @export_group("Repairables")
 @export var flat_head_screw_repairable_scene: PackedScene
+## The day's order: the items that arrive, one after another. The game is
+## won after the last one goes into the outbox.
+@export var item_queue: Array[Repairable.Type] = []
 @export_group("")
 
 @export_group("Tools")

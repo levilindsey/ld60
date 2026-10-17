@@ -62,6 +62,20 @@ When the item reports `finished`: a ding, a sparkle, an outline glow
 The arrival tween, dragging only finished items, the outbox area, the
 hand-off to the receipt, and the queue.
 
+## As built (m1-flow, 2026-10-17)
+
+- An item scene needs a `%DropArea` (`Area2D`) as `Repairable.drop_area`.
+  `Level.drop_item()` sends a finished item whose drop area overlaps
+  `%Outbox`; any other drop calls `return_item()`.
+- A finished item is grabbed anywhere, over its fasteners too: the hand
+  checks `has_finished` before its poke rule.
+- The hand shows `CURSOR_DRAG` while it holds an item, and a pause puts
+  the held item back on the bench.
+- The last receipt closing calls `win()`, not the last departure.
+- Timings and the tilt limits are the "Item flow" group in `settings.gd`.
+- `ColorRect` placeholder art gets the modulate glow only. The outline
+  shader needs `Sprite2D` art with transparent margins.
+
 ## Later
 
 - **Flick:** the item keeps the drag's release speed and slides into

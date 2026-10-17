@@ -6,6 +6,8 @@
 [ext_resource type="Texture2D" uid="uid://wk5xvr0y7ksb" path="res://assets/images/props/background.png" id="4_background"]
 [ext_resource type="Script" path="res://src/level/hand.gd" id="5_hand"]
 [ext_resource type="PackedScene" path="res://src/decals/decal_spawner.tscn" id="6_decals"]
+[ext_resource type="PackedScene" path="res://src/ui/ticket/ticket_card.tscn" id="7_ticket"]
+[ext_resource type="PackedScene" path="res://src/ui/receipt/receipt.tscn" id="8_receipt"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 34.058773
@@ -36,6 +38,35 @@ position = Vector2(0, 62)
 [node name="ItemSpawnPosition" type="Marker2D" parent="." unique_id=527054541]
 unique_name_in_owner = true
 position = Vector2(0, -549)
+
+[node name="Outbox" type="Area2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-587, 105)
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+
+[node name="Shape" type="CollisionPolygon2D" parent="Outbox"]
+polygon = PackedVector2Array(-53, -110, 102, -110, 4, 110, -53, 110)
+
+[node name="Placeholder" type="Polygon2D" parent="Outbox"]
+color = Color(0.2, 0.15, 0.1, 0.4)
+polygon = PackedVector2Array(-53, -110, 102, -110, 4, 110, -53, 110)
+
+[node name="Label" type="Label" parent="Outbox"]
+offset_left = -50.0
+offset_top = -18.0
+offset_right = 40.0
+offset_bottom = 18.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 32
+text = "OUT"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="OutboxExitPosition" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-880, 105)
 
 [node name="ToolHolders" type="Node" parent="." unique_id=433542721]
 unique_name_in_owner = true
@@ -80,3 +111,12 @@ default_color = Color(0.9, 0.15, 0.1, 1)
 points = PackedVector2Array(-8, 8, 8, -8)
 width = 4.0
 default_color = Color(0.9, 0.15, 0.1, 1)
+
+[node name="FlowOverlays" type="CanvasLayer" parent="."]
+layer = 100
+
+[node name="TicketCard" parent="FlowOverlays" instance=ExtResource("7_ticket")]
+unique_name_in_owner = true
+
+[node name="Receipt" parent="FlowOverlays" instance=ExtResource("8_receipt")]
+unique_name_in_owner = true

@@ -43,6 +43,12 @@ var pointer_position: Vector2:
 
 var _is_press_used := false
 var _nope_tween: Tween
+## Where a dragged item's origin sits relative to the pointer, so the item
+## doesn't jump when it is grabbed.
+var _drag_offset := Vector2.ZERO
+## The turn of the dragged item, in radians. It follows the drag speed.
+var _drag_tilt := 0.0
+var _drag_previous_pointer := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -59,13 +65,20 @@ func _exit_tree() -> void:
 func _notification(what: int) -> void:
 	match what:
 		NOTIFICATION_PAUSED:
+			# The release may come while the tree is paused, and nothing
+			# would see it. A dragged item goes back to the bench.
+			if held is Repairable:
+				var item := held as Repairable
+				release()
+				G.level.return_item(item)
 			# The pause and credits overlays need a cursor.
 			_apply_cursor(Input.MOUSE_MODE_VISIBLE, Input.CURSOR_ARROW)
 		NOTIFICATION_UNPAUSED:
 			_update_cursor()
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	_drag_held_item(delta)
 	_update_cursor()
 
 
@@ -157,10 +170,17 @@ func clear_input_owner(microgame: Object) -> void:
 		input_owner = null
 
 
-## Called by a finished item when the empty hand presses it.
-func drag_item(_item: Repairable) -> void:
-	# LX9 fills this in with dragging the item to the outbox.
-	pass
+## Called by a finished item when the empty hand presses it. The hand
+## holds the item where it was grabbed, tilts it with the drag speed and
+## drops it on release (`Level.drop_item()`).
+func drag_item(item: Repairable) -> void:
+	if not is_instance_valid(item) or not is_empty():
+		return
+	grab(item)
+	item.on_grabbed()
+	_drag_offset = item.global_position - pointer_position
+	_drag_tilt = item.rotation
+	_drag_previous_pointer = pointer_position
 
 
 ## Shows the small "nope" icon next to a world position.
@@ -268,11 +288,15 @@ func _press_with_tool(global_point: Vector2) -> bool:
 func _press_with_empty_hand(global_point: Vector2) -> bool:
 	if is_instance_valid(held):
 		return false
+	var item := _find_item(global_point)
+	# A finished item is picked up anywhere, over its fasteners too.
+	if is_instance_valid(item) and item.has_finished:
+		item.on_pressed()
+		return true
 	var point := find_point(global_point)
 	if is_instance_valid(point):
 		point.on_poked()
 		return true
-	var item := _find_item(global_point)
 	if is_instance_valid(item):
 		item.on_pressed()
 		return true
@@ -284,7 +308,34 @@ func _handle_release(global_point: Vector2) -> bool:
 		if input_owner.has_method("on_pointer_released"):
 			input_owner.on_pointer_released(global_point)
 		return true
+	if held is Repairable:
+		var item := held as Repairable
+		release()
+		G.level.drop_item(item)
+		return true
 	return false
+
+
+## Moves the dragged item with the pointer and tilts it with the sideways
+## speed: right leans clockwise, left counterclockwise.
+func _drag_held_item(delta: float) -> void:
+	var item := held as Repairable
+	if not is_instance_valid(item):
+		return
+	var pointer := pointer_position
+	var velocity_x := (pointer.x - _drag_previous_pointer.x) / delta
+	_drag_previous_pointer = pointer
+	var target_tilt := (
+		clampf(velocity_x / G.settings.drag_tilt_full_speed, -1.0, 1.0)
+		* deg_to_rad(G.settings.drag_tilt_max_deg)
+	)
+	_drag_tilt = lerpf(
+		_drag_tilt,
+		target_tilt,
+		1.0 - exp(-G.settings.drag_tilt_follow_rate * delta),
+	)
+	item.global_position = pointer + _drag_offset
+	item.rotation = _drag_tilt
 
 
 func _track_pointer(event: InputEventMouse) -> void:
@@ -293,12 +344,15 @@ func _track_pointer(event: InputEventMouse) -> void:
 
 
 ## Arrow when empty, a grab hand when empty and over something it can
-## take, hidden while anything is held.
+## take, a drag hand while an item is held, hidden while a tool is held.
 func _update_cursor() -> void:
 	if not is_inside_tree() or not _is_level_running():
 		return
 	if not can_process():
 		_apply_cursor(Input.MOUSE_MODE_VISIBLE, Input.CURSOR_ARROW)
+	elif held is Repairable:
+		# The item is drawn at the pointer, so keep the pointer visible.
+		_apply_cursor(Input.MOUSE_MODE_VISIBLE, Input.CURSOR_DRAG)
 	elif is_instance_valid(held):
 		_apply_cursor(Input.MOUSE_MODE_HIDDEN, Input.CURSOR_ARROW)
 	elif _can_take(pointer_position):
@@ -388,7 +442,11 @@ func _find_ready_layer(global_point: Vector2) -> RepairLayer:
 
 func _find_item(global_point: Vector2) -> Repairable:
 	var item := G.level.active_repairable
-	if is_instance_valid(item) and item.has_point(global_point):
+	if (
+		is_instance_valid(item)
+		and item.mode == Repairable.Mode.UNDER_REPAIR
+		and item.has_point(global_point)
+	):
 		return item
 	return null
 

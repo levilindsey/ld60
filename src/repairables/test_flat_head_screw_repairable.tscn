@@ -8,10 +8,22 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_case"]
 size = Vector2(96, 96)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_drop"]
+size = Vector2(100, 100)
+
 [node name="TestScrewRepairable" type="Node2D" unique_id=1685354276]
 script = ExtResource("1_0ufjt")
 item_name = "Test box"
 ticket = "It rattles. Open it up and close it again."
+
+[node name="DropArea" type="Area2D" parent="."]
+unique_name_in_owner = true
+collision_layer = 2
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea"]
+shape = SubResource("RectangleShape2D_drop")
 
 [node name="Layers" type="Node2D" parent="." unique_id=36167144]
 unique_name_in_owner = true

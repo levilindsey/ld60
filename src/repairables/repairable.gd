@@ -5,12 +5,22 @@ extends Node2D
 ##
 ## The item is finished when every layer is back on, every required
 ## point is FINISHED and every fastener is in.
+##
+## It also plays its own trip through the shop (docs/design/outbox.md):
+## `arrive()` drops it onto the bench, a finished item glows and can be
+## dragged (`on_grabbed()`, `return_to()`), and `leave()` sends it off
+## through the outbox. Every item scene needs a `%DropArea` on the
+## REPAIRABLES physics layer for the outbox to detect.
 
 
 signal layer_removed(layer: RepairLayer)
 signal layer_installed(layer: RepairLayer)
 signal point_finished(point: InteractionPoint)
+## The arrival is over. The item sits on the bench and its clock runs.
+signal landed
 signal finished
+## The item has slid off the screen into the outbox.
+signal departed
 
 enum Type {
 	TEST_FLAT_HEAD_SCREW_REPAIRABLE,
@@ -22,13 +32,11 @@ enum Mode {
 	UNDER_REPAIR,
 }
 
-const ROTATE_DURATION_SEC := 0.3
-const POSITION_DURATION_SEC := 0.3
-
-const ROTATION_OFFSET_MAX := PI * 0.1
-
 ## How many times the item jerks when an unfinished item is pressed.
 const _SHAKE_STEPS := 4
+## The color a finished item pulses to, and the seconds of half a pulse.
+const _GLOW_COLOR := Color(1.3, 1.25, 0.85)
+const _GLOW_HALF_PULSE_SEC := 0.6
 
 @export var item_name := ""
 ## The customer's complaint, shown on the ticket.
@@ -40,13 +48,20 @@ var mode := Mode.ENTERING
 var layers: Array[RepairLayer] = []
 ## True while the item is finished.
 var has_finished := false
-## This repair's score: its defects and its time (`quality.md`).
+## This repair's score: its defects and its time (`quality.md`). The
+## repair time counts unpaused seconds from landing to `finished`.
 var quality := RepairQuality.new()
 
-var position_tween: Tween
-var rotation_tween: Tween
+## What the outbox tests for overlap.
+var drop_area: Area2D:
+	get:
+		return %DropArea
 
 var _shake_tween: Tween
+var _motion_tween: Tween
+var _glow_tween: Tween
+var _outlined_art: CanvasItem
+var _art_material_before_outline: Material
 
 
 func _ready() -> void:
@@ -56,6 +71,13 @@ func _ready() -> void:
 			layer.item = self
 			layers.append(layer)
 	G.check(not layers.is_empty())
+	# The repair clock only runs from landing to finished.
+	set_physics_process(false)
+
+
+# The paused tree skips this, so the clock only counts unpaused time.
+func _physics_process(delta: float) -> void:
+	quality.repair_time_sec += delta
 
 
 ## The outermost layer still on, or null.
@@ -168,6 +190,65 @@ func shake() -> void:
 	_shake_tween.tween_property(%Layers, "position", Vector2.ZERO, step_sec)
 
 
+## Drops the item in from where it is and lands it on a world position.
+## It starts turned a little, overshoots and straightens as it lands.
+## `landed` fires at the end, and then the item is UNDER_REPAIR.
+func arrive(target_global_position: Vector2) -> void:
+	mode = Mode.ENTERING
+	var angle_max := deg_to_rad(G.settings.item_arrival_angle_max_deg)
+	rotation = randf_range(-angle_max, angle_max)
+	_start_motion(
+		target_global_position,
+		0.0,
+		G.settings.item_arrival_sec,
+		Tween.TRANS_BACK,
+		Tween.EASE_OUT,
+	)
+	_motion_tween.tween_callback(_land)
+
+
+## The hand picked the item up. Whatever move was running stops.
+func on_grabbed() -> void:
+	_kill_motion_tween()
+
+
+## Eases the item, straightened, to a world position. The hand calls it
+## when a dragged item is dropped away from the outbox.
+func return_to(target_global_position: Vector2) -> void:
+	_start_motion(
+		target_global_position,
+		0.0,
+		G.settings.item_return_sec,
+		Tween.TRANS_QUAD,
+		Tween.EASE_OUT,
+	)
+
+
+## Sends the item into the outbox: it drops into the tray, then slides to
+## the exit. `departed` fires at the end and the item frees itself.
+func leave(
+	tray_global_position: Vector2,
+	exit_global_position: Vector2,
+) -> void:
+	mode = Mode.LEAVING
+	set_physics_process(false)
+	_start_motion(
+		tray_global_position,
+		0.0,
+		G.settings.item_tray_drop_sec,
+		Tween.TRANS_QUAD,
+		Tween.EASE_IN,
+	)
+	_motion_tween.tween_callback(G.audio.play_sound.bind("thud"))
+	_motion_tween.tween_property(
+		self,
+		"global_position",
+		exit_global_position,
+		G.settings.item_leave_sec,
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_motion_tween.tween_callback(_depart)
+
+
 ## Called by a point when it finishes.
 func on_point_finished(point: InteractionPoint) -> void:
 	point_finished.emit(point)
@@ -196,31 +277,50 @@ func on_layer_installed(layer: RepairLayer) -> void:
 	_update_state()
 
 
-func tween_rotation(p_rotation: float, ease := Tween.EASE_IN_OUT) -> void:
-	if is_instance_valid(rotation_tween):
-		rotation_tween.kill()
-	rotation_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(ease)
-	rotation_tween.tween_property(
-		self,
-		"rotation",
-		p_rotation,
-		ROTATE_DURATION_SEC,
-	)
-
-
-func tween_position(
-	p_global_position: Vector2,
-	ease := Tween.EASE_IN_OUT,
+## Starts a move to a position and a rotation that replaces any move in
+## progress. The tween runs in physics time, as physics interpolation
+## wants, and leaves its tail open for the caller to add steps.
+func _start_motion(
+	target_global_position: Vector2,
+	target_rotation: float,
+	duration_sec: float,
+	transition: Tween.TransitionType,
+	easing: Tween.EaseType,
 ) -> void:
-	if is_instance_valid(position_tween):
-		position_tween.kill()
-	position_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(ease)
-	position_tween.tween_property(
+	_kill_motion_tween()
+	_motion_tween = create_tween()
+	_motion_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_motion_tween.set_trans(transition).set_ease(easing)
+	_motion_tween.tween_property(
 		self,
 		"global_position",
-		p_global_position,
-		POSITION_DURATION_SEC,
+		target_global_position,
+		duration_sec,
 	)
+	_motion_tween.parallel().tween_property(
+		self,
+		"rotation",
+		target_rotation,
+		duration_sec,
+	)
+
+
+func _kill_motion_tween() -> void:
+	if is_instance_valid(_motion_tween):
+		_motion_tween.kill()
+
+
+func _land() -> void:
+	mode = Mode.UNDER_REPAIR
+	quality.par_time_sec = par_time_sec
+	set_physics_process(true)
+	G.audio.play_sound("thud")
+	landed.emit()
+
+
+func _depart() -> void:
+	departed.emit()
+	queue_free()
 
 
 func _update_state() -> void:
@@ -235,4 +335,62 @@ func _update_state() -> void:
 			"Item finished: %s" % item_name,
 			ScaffolderLog.CATEGORY_GAME_STATE,
 		)
+		_play_finish_payoff()
 		finished.emit()
+	else:
+		_stop_glow()
+		# Undoing the work starts the clock again.
+		set_physics_process(mode == Mode.UNDER_REPAIR)
+
+
+## A ding, a burst of sparkles and a glow that lasts until the item goes.
+## The clock stops.
+func _play_finish_payoff() -> void:
+	set_physics_process(false)
+	G.audio.play_sound("ding")
+	if is_instance_valid(G.settings.finish_sparkle_scene):
+		var sparkle: CPUParticles2D = (
+			G.settings.finish_sparkle_scene.instantiate()
+		)
+		add_child(sparkle)
+		sparkle.finished.connect(sparkle.queue_free)
+	_start_glow()
+
+
+## The finished item pulses, and its top layer gets the outline when its
+## art can show it.
+func _start_glow() -> void:
+	_stop_glow()
+	var outline_material := G.settings.finished_outline_material
+	var layer := get_exposed_layer()
+	if (
+		is_instance_valid(outline_material)
+		and is_instance_valid(layer)
+		and layer.art is Sprite2D
+	):
+		_outlined_art = layer.art
+		_art_material_before_outline = _outlined_art.material
+		_outlined_art.material = outline_material
+	_glow_tween = create_tween().set_loops()
+	_glow_tween.tween_property(
+		self,
+		"modulate",
+		_GLOW_COLOR,
+		_GLOW_HALF_PULSE_SEC,
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_glow_tween.tween_property(
+		self,
+		"modulate",
+		Color.WHITE,
+		_GLOW_HALF_PULSE_SEC,
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _stop_glow() -> void:
+	if is_instance_valid(_glow_tween):
+		_glow_tween.kill()
+	modulate = Color.WHITE
+	if is_instance_valid(_outlined_art):
+		_outlined_art.material = _art_material_before_outline
+	_outlined_art = null
+	_art_material_before_outline = null
