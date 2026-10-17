@@ -132,9 +132,9 @@ restarts); `G.level.game_over()` -> short delay ->
   `pauses_on_focus_out`.
 - `default_bus_layout.tres` - Audio buses (Master/Music/SFX).
 - `project.godot` - Input actions, physics layers, rendering.
-- Renderer: `gl_compatibility`; nearest-neighbor texture filtering
-  (pixel art); `canvas_items` stretch at 1280x720; physics
-  interpolation on.
+- Renderer: `gl_compatibility`; linear texture filtering (Godot
+  default; the art is hand-drawn, not pixel art); `canvas_items`
+  stretch at 1280x720; physics interpolation on.
 
 ### Input Actions
 
