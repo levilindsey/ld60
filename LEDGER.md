@@ -7,6 +7,10 @@ reused.
 
 ## Waiting on Levi
 
+- **LX6** · Pick from the 2026-10-17 tool/item brainstorm: shop theme,
+  tool cut, first items, Phillips control scheme. Offered to save it
+  under `docs/design/` for the teammate (it is only in chat so far).
+
 ## In progress
 
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
