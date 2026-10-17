@@ -14,10 +14,11 @@ extends Control
 signal closed
 
 const _SPARKLE_COUNT := 6
-const _SPARKLE_SIZE_PX := 18.0
+const _SPARKLE_SIZE_PX := 24.0
+const _SPARKLE_OUTLINE_PX := 2.0
 const _SPARKLE_RADIUS_PX := 56.0
 const _SPARKLE_SEC := 0.6
-const _SPARKLE_COLOR := Color(1.0, 0.97, 0.75)
+const _SPARKLE_COLOR := Color(1.0, 0.92, 0.4)
 ## The scale a star pops in from.
 const _STAR_POP_SCALE := 0.2
 const _STAR_POP_SEC := 0.3
@@ -207,7 +208,7 @@ func _sparkle(star: StarIcon) -> void:
 		sparkle.inner_ratio = 0.2
 		sparkle.is_lit = true
 		sparkle.lit_color = _SPARKLE_COLOR
-		sparkle.outline_width = 0.0
+		sparkle.outline_width = _SPARKLE_OUTLINE_PX
 		sparkle.size = Vector2.ONE * _SPARKLE_SIZE_PX
 		sparkle.position = center
 		sparkle.scale = Vector2.ZERO
