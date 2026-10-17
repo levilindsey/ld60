@@ -14,6 +14,9 @@ reused.
   `radio.png~`) and a 69 MB `.kra` (GitHub warns over 50 MB and
   rejects over 100 MB): untrack the backups, ignore `*.png~`, and
   decide whether big sources belong in git (`assets/images/`).
+- **LX39** · The receipt card eats every press until it closes (a click
+  or 3 s), so the next item can't be touched meanwhile. Keep that, or
+  let presses outside the card through? (`src/ui/receipt/receipt.gd`)
 
 ## In progress
 
@@ -34,13 +37,13 @@ next, brief, env (claude-config rules/ledger.md). -->
   reassembly, `Surface`, finishing (`docs/design/repairables.md`).
   - owner, branch, evidence, next, brief: as LX7 (agent `m1-core`)
 - **LX12** · Quality score, stars and receipt (`docs/design/quality.md`).
-  - owner: claude agent `m1-quality` (Sonnet) of session 194d3b69
-    (Levi), since 2026-10-17
-  - branch: `m1-quality`, in an agent worktree under
-    `.claude/worktrees/`; last commit: none yet
-  - evidence: `.claude/probes/m1-quality/` in that worktree
-  - next: build and check per the brief
-  - brief: `docs/design/m1_agents.md` "m1-quality"
+  - owner: claude session 194d3b69 (Levi); agent `m1-quality` built
+    the pieces (done 12:41), and `m1-flow` wires them into the level
+  - branch: mainline; last commit: 3831dc7
+  - evidence: `.claude/probes/m1-quality/` (`run.ps1`) in the
+    `m1-quality` worktree
+  - next: `m1-flow` wires the receipt and popups in stage 2 (LX9)
+  - brief: `docs/design/m1_agents.md` "m1-quality" and its handoff
 - **LX9** · Item flow: arrival tween, finished-only drag, outbox area,
   item queue (`docs/design/outbox.md`).
   - owner: claude session 194d3b69 (Levi), queued for stage 2 (agent
@@ -73,6 +76,9 @@ next, brief, env (claude-config rules/ledger.md). -->
 - **LX5** · Pick-up teleports the tool under the cursor: ease a follow
   offset to zero, also after IN_USE exits and hammer recoil (TODO in
   `src/tools/tool.gd`; `docs/design/tools.md` "Follow offset").
+- **LX41** · Play M1 by hand, with a mouse and on a touch screen: the
+  receipt's click-to-close and 3 s auto-close, and the card and "-N"
+  placement (LX12); more from the stage 2 reports.
 - **LX14** · Canned air: spray cone, dust clumps, fans
   (`docs/design/canned_air.md`).
 - **LX15** · Parts bin and part swap: hotspots, sockets, wiggle-out
@@ -84,15 +90,18 @@ next, brief, env (claude-config rules/ledger.md). -->
   (`docs/design/hammer.md`).
 - **LX19** · Pliers for stripped screws (`docs/design/pliers.md`).
 - **LX20** · Rag and solvent, sensitive surfaces
-  (`docs/design/solvent.md`).
+  (`docs/design/solvent.md`). Smears pass their surface as
+  `RepairQuality.add_defect()`'s `source`, so a ruined smear replaces
+  the minor one.
 - **LX21** · Oil can: drops, pivots, squeaks, misuse
   (`docs/design/oil_can.md`).
 - **LX22** · Glue along cracks and clips (`docs/design/glue.md`).
 - **LX23** · Items 2 to 5: rotary phone, Walkman, CRT TV, ray gun
   (`docs/design/items.md` "The jam cut").
 - **LX24** · Art: screw states, decals, part states, effects, UI
-  (`docs/design/decals.md` "The art list"). The skid's placeholder
-  texture is in `src/decals/skid_decal_set.tres`.
+  (`docs/design/decals.md` "The art list"). Placeholders to replace:
+  the skid texture (`src/decals/skid_decal_set.tres`) and the
+  receipt's code-drawn star (`src/ui/receipt/star_icon.gd`).
 - **LX25** · Sounds: collect each design doc's "Feedback" list and add
   the streams to `src/core/audio_main.tscn`.
 - **LX26** · Web export and itch.io upload (`scripts/export_web.ps1`).
@@ -136,6 +145,9 @@ next, brief, env (claude-config rules/ledger.md). -->
 - **LX38** · Keep the web clipping probe as a tracked check to rerun
   after Godot upgrades. It lives only in the `m1-decals` worktree, in
   `.claude/probes/m1-decals/` (`clip_web/`, `cdp_shot.mjs`).
+- **LX40** · Quality extras: a day summary, a corkboard of customer
+  reviews, bonuses for perfect work up to 100 (`docs/design/quality.md`
+  "Later").
 
 ## Done
 
