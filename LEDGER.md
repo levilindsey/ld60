@@ -44,6 +44,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   From m1-screws: correcting the tip with a mouse and with a finger, the
   size of touch drags on the Pixel, the sounds, and the look of the head
   frames, rust, skid and sparks.
+- **LX51** · Levi's uncommitted driver edit drops the turn with the screw
+  for Taryn's "rotating" frames. When it lands, change the m1-screws check
+  "the driver turns with the head" (`probe.gd:315`, in `tests/` after LX42).
 - **LX14** · Canned air: spray cone, dust clumps, fans
   (`docs/design/canned_air.md`).
 - **LX15** · Parts bin and part swap: hotspots, sockets, wiggle-out
@@ -74,8 +77,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   (`src/repairables/repair_layer.gd`), and the screw's tinted head frames
   and polygon rust (`src/interaction_points/screw.gd`). The finished
   item's outline needs `Sprite2D` art with transparent margins;
-  `ColorRect` placeholders only get the glow. Taryn's six new screw and
-  driver PNGs in `assets/images/` (one in `gui/`) are not used yet.
+  `ColorRect` placeholders only get the glow. Of Taryn's six new screw and
+  driver PNGs, `rrrrrrrrrrrrrevird wercs.png` is the driver's second frame
+  (cb47839); the other five (one in `gui/`) are not used yet.
 - **LX25** · Sounds: collect each design doc's "Feedback" list and add
   the streams to `src/core/audio_main.tscn`. Levi's cleaned foley is in
   `assets/audio/foley_cleaned/`; the flathead's scrape wants a rising
