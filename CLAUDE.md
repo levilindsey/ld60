@@ -73,8 +73,10 @@ that finishes it.
   `images/` (tool art, `props/` background + Krita source, `gui/`
   buttons, `placeholders/`), `shaders/sprite_outline.gdshader`.
 - `docs/design/` - One design doc per piece of work.
-- `scripts/` - `export_web.ps1`, `serve_web.py`. `build/` holds
-  export outputs (gitignored).
+- `scripts/` - `check.ps1`, `export_web.ps1`, `serve_web.py`. `build/`
+  holds export outputs (gitignored).
+- `.claude/rules/` - Path-scoped Claude Code rules: the GDScript style
+  guide and the ledger convention.
 
 ## Boot Flow
 
@@ -234,169 +236,75 @@ section about it first.
 
 ## Code Style
 
-Follow the
-[Godot GDScript style guide](https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_styleguide.html)
-with the project-specific additions below.
+The GDScript style rules (formatting, naming, type annotations, file
+structure, scene templates over scripts) live in
+`.claude/rules/gdscript-style.md`. Claude Code loads that file by itself
+when it reads, edits or writes a `.gd`, `.tscn` or `.tres` file, so it
+is not repeated here. Anyone writing code by hand should read it first.
 
-### Formatting
+## Working with Claude Code
 
-- **Indentation:** Tabs (4-space width).
-- **Line length:** 80 characters maximum.
-- **Blank lines:** Two blank lines between functions/methods.
-- **Line wrapping:** Prefer parentheses over backslashes for
-  line continuation. Conversely, unwrap lines onto a single
-  line when they fit within the 80-character limit.
-- **Operator placement:** When wrapping expressions across
-  multiple lines, place operators at the start of the next
-  line, not the end of the previous line.
-- **Trailing commas:** Include trailing commas in multi-line
-  function calls, arrays, and dictionaries.
+Levi and Zaven both build this game with Claude Code on Windows. The repo
+carries what Claude needs to check its own work.
 
-```gdscript
-# Correct: parens for wrapping, operator at start of line.
-var is_valid := (
-	is_instance_valid(node)
-	and node.is_inside_tree()
-	and not node.is_queued_for_deletion()
-)
-
-# Correct: trailing comma in multi-line call.
-some_function(
-	first_arg,
-	second_arg,
-)
-
-# Wrong: backslash continuation.
-var is_valid := is_instance_valid(node) \
-	and node.is_inside_tree()
-
-# Wrong: operator at end of line.
-var is_valid := (
-	is_instance_valid(node) and
-	node.is_inside_tree()
-)
-```
-
-### Naming Conventions
-
-- **Classes/enums:** `PascalCase`
-- **Functions/variables:** `snake_case`
-- **Constants:** `UPPER_SNAKE_CASE`
-- **Private members:** Prefix with underscore (`_my_var`,
-  `_my_method`)
-- **Signals:** Past tense (`player_died`, `match_started`)
-- **Booleans:** Prefix with `is_`, `can_`, `has_`
-- **No prefixes:** Avoid prefixes in variable names (e.g., use
-  `speed` not `player_speed` when already inside a player
-  class). The underscore prefix for private members is the
-  exception.
-- **No abbreviations:** Use full words in identifiers (e.g.,
-  `diagnostic` not `diag`, `configuration` not `config`,
-  `information` not `info`). Standard domain abbreviations
-  (`fps`, `rpc`, `usec`, `id`) are acceptable.
-
-### Type Annotations
-
-- Use `:=` for inferred types on variable declarations.
-- Always specify return types on functions.
-- Use explicit type hints for `@export` vars and function
-  parameters.
-
-```gdscript
-var speed := 10.0
-const _MAX_SPEED := 200.0
-@export var jump_height: float = 64.0
-
-func get_speed() -> float:
-	return speed
-```
-
-### Negation
-
-- Prefer `not` over `!` for boolean negation.
-- Do use `!=` for inequality comparisons.
-
-### Comments and Prose
-
-- End all comments with a period.
-- Use `##` for doc comments (Godot documentation comments),
-  `#` for regular comments.
-- Never use em dashes, en dashes, or hyphens as grammatical
-  em dashes. Use a period and start a new sentence instead.
-- Wrap comments at 80 characters, matching the code line
-  limit.
-
-### File Structure
-
-Follow the Godot-recommended ordering within each script:
-
-1. `@tool`
-2. `class_name`
-3. `extends`
-4. Doc comment (`##`)
-5. `signal` declarations
-6. `enum` declarations
-7. `const` declarations
-8. `@export` variables
-9. Public variables
-10. Private variables (`_`-prefixed)
-11. `@onready` variables
-12. `_init()`, `_enter_tree()`, `_exit_tree()`, `_ready()`
-13. `_process()`, `_physics_process()`
-14. Other virtual/callback methods
-15. Public methods
-16. Private methods
-
-### Constants Over Inline Values
-
-Use file-level `const` declarations instead of hard-coding
-static values inline in functions. Private constants use
-underscore prefix.
-
-### Scene Templates Over Scripts
-
-Prefer configuring state in `.tscn` scene files rather than
-in scripts:
-
-- **Animations:** Configure `AnimatedSprite2D.sprite_frames`
-  animations in the scene editor, not in code.
-- **Resource references:** Use `@export` vars and assign
-  resources in the scene inspector. NEVER use `preload()` or
-  `load()` for resource references in scripts.
-- **Node references:** Use `%NodeName` unique-name syntax in
-  scenes when referencing sibling/child nodes.
-
-**Editing `.tscn` files directly (without the Godot editor):**
-Scene files can be edited as text. The key fields are:
-- `load_steps=N` in the header. Increment N for each new
-  `[ext_resource]` entry added.
-- `[ext_resource type="PackedScene" path="res://..." id="X"]`
-  declares a scene dependency. Use a unique `id` string.
-  `uid=` is optional; omit it if the scene has no UID yet.
-- `[node name="Foo" parent="." instance=ExtResource("X")]`
-  instantiates the scene as a child node.
-- Export vars on an instanced node are set directly on the
-  node entry. Enum values are integers matching declaration
-  order.
-
-### Direct Access Over Local Copies
-
-Do not assign local or class-level variable copies of
-autoload properties (`G`) or unique-name nodes (`%`). Access
-them directly where needed.
-
-### Performance
-
-- Prefer `distance_squared_to()` over `distance_to()` when
-  feasible, to avoid unnecessary `sqrt` calculations.
+- **Run `scripts/check.ps1` after every change**, before you commit or
+  push. It finds Godot (see "CLI Tool Availability"), imports the
+  project, boots it headless for 1200 frames and reads Godot's log. A
+  `SCRIPT ERROR` or `ERROR:` line fails it (exit 1); each is printed with
+  the `at:` line after it (a file and line). For a parse error in a
+  `class_name` script, Godot names the file ("Could not parse global
+  class") but not the faulty line, so open that file. The script ignores
+  Godot's exit code, which is non-zero on some good runs. `-SkipImport`
+  skips the import, `-Frames <n>` changes the boot length and
+  `-Godot <exe>` picks the Godot. The logs are in `build/check/`
+  (git-ignored). It sees only what the import and the boot load, so a
+  script nothing references yet shows no errors until something uses it.
+- **A fresh clone or worktree has no `.godot/` cache.** Import before
+  anything else (`check.ps1` does), and again after adding or renaming a
+  `class_name`; until then Godot reports the new class as unknown.
+- **World `Control` nodes eat clicks.** A `ColorRect` placeholder in the
+  world takes mouse presses before `_unhandled_input` and physics
+  picking see them. Set `mouse_filter` to Ignore on every world Control,
+  or use a `Polygon2D` instead.
+- **Headless can't render.** For a visual check, run windowed with
+  `--quit-after <frames>` and save
+  `get_viewport().get_texture().get_image()` to a file. Keep those runs
+  few and short: they open a window on the developer's screen.
+- **A scripted input test drives the game, not the mouse.** Instantiate
+  `res://src/core/main.tscn`, call
+  `G.state.transition(StateMain.State.GAME)`, then send events with
+  `get_viewport().push_input()`. A mouse event's `position` is in
+  viewport pixels, and world (0, 0) is (640, 360). Keep the real mouse
+  still during a windowed run: it is suspected of breaking one (LX44).
+- **Say what you could not check.** Anything that needs a real mouse, a
+  touch screen or ears (feel, sound, a drag on a phone) is left to a
+  person. List it in your report instead of calling it verified.
+- **Shared files.** `src/core/settings.gd` and `settings.tres` change in
+  almost every feature. Put new exports in your own `@export_group` and
+  add only your own lines to `settings.tres`, so branches merge cleanly.
+- **The ledger.** `LEDGER.md` is the list of open work and who is on it.
+  Claim an item in "In progress" before starting it, and move it to
+  "Done" in the commit that finishes it. The convention is in
+  `.claude/rules/ledger.md`, which Claude Code loads when it reads
+  `LEDGER.md`.
+- **`.claude/` is invisible to Godot.** The editor scan skips folders
+  that start with a dot, so `.claude/` (these rules, plus the git-ignored
+  `.claude/probes/` and `.claude/worktrees/`) never shows in the editor
+  or an export.
 
 ## CLI Tool Availability
 
-`godot` and other Godot tooling are only in the PowerShell
-PATH, not the bash PATH. **Never run `godot` directly from
-bash.** Always use `powershell -ExecutionPolicy Bypass -File
-<script>` or `powershell -Command "<command>"` when invoking
-it.
+Scripts find Godot through the `GODOT` environment variable (the path to
+a Godot 4.7 `.exe`), or else through `godot` on the PATH. Set it once
+with `setx GODOT "C:\path\to\Godot_v4.7.2-stable_win64_console.exe"` and
+open a new terminal. `scripts/check.ps1 -Godot <exe>` overrides both. If
+Godot is not found, the script says how to set it and exits 2.
+
+Run Godot and the scripts from **PowerShell**. `godot` is not reliably
+on the bash PATH, so **never run `godot` directly from bash.** From Git
+Bash (Claude Code's Bash tool on Windows), call a script as
+`powershell -ExecutionPolicy Bypass -File <script>`, or run a command
+with `powershell -Command "<command>"`.
 
 **Never kill Godot processes by name or wildcard** (e.g.
 `Stop-Process -Name godot*`). The developer usually has the editor

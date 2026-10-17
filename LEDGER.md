@@ -2,41 +2,25 @@
 
 Open work for ld60 (the Ludum Dare 60 game): follow-ups, known
 residuals, decisions waiting on Levi, and ideas. Convention:
-claude-config `rules/ledger.md`. IDs (`LX<n>`) are stable and never
-reused.
+`.claude/rules/ledger.md`. IDs (`LX<n>`) are stable and never reused.
 
 ## Waiting on Levi
 
 ## In progress
 
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
-next, brief, env (claude-config rules/ledger.md). -->
+next, brief, env (`.claude/rules/ledger.md`). -->
 
-- **LX42** · Share the AI workflow for Zaven (Claude Code on Windows): a
-  check script, a ledger rule, the gotchas in CLAUDE.md (stage A), then
-  tracked probes in `tests/` (stage B, after m1-screws merges; a probe
-  waits for the item to land before pressing it).
-  - owner: claude agent `lx42-workflow` (Sonnet) of session 194d3b69
-    (Levi), since 2026-10-17 14:05
-  - branch: `lx42-workflow`, worktree
-    `.claude/worktrees/agent-a8f63ffe7ef1a65fc`; last commit: none yet
-    (base: eae6a1f)
-  - evidence: the brief's "Done when" checks
-  - next: stage A per the brief
-  - brief: `docs/design/ai_workflow.md`
-- **LX45** · CLAUDE.md is 411 lines (budget about 400): move Code Style
-  to a path-scoped `.claude/rules/gdscript-style.md`.
-  - owner, branch, evidence, next, brief: as LX42 (stage A, step 3)
 - **LX10** · Screw health: damage frames, stripped, seized, install mode
   (`docs/design/screws.md`).
   - owner: claude agent `m1-screws` (Opus) of session 194d3b69 (Levi),
-    since 2026-10-17 13:30
+    since 2026-10-17 13:30 (resumed 14:27 after a reboot)
   - branch: `m1-screws`, worktree
-    `.claude/worktrees/agent-aad34b3179ae3d1e5`; last commit: `d9e931e`
-    (unpushed; base: 5312311)
+    `.claude/worktrees/agent-aad34b3179ae3d1e5`; last commit: `5f3b9f4`
+    (rebased onto 0ba61be; unpushed)
   - evidence: `.claude/probes/m1-screws/` in that worktree
-  - next: finish per the brief, then rebase onto main (m1-flow is in)
-    and keep the m1-core, m1-flow and m1-screws probes passing
+  - next: final checks on the rebased branch (boot, the m1-core,
+    m1-flow and m1-screws probes), then the handoff
   - brief: `docs/design/m1_agents.md` "m1-screws"
 - **LX11** · Flathead rework: 1 s eased twists, eased drift (at most 0.6
   of the tolerance per twist), correction along the slot, unseat
@@ -45,6 +29,10 @@ next, brief, env (claude-config rules/ledger.md). -->
 
 ## Next
 
+- **LX42** · AI workflow stage B, once m1-screws merges: tracked probes
+  in `tests/` with `check.ps1 -Tests`, and a sweep that loads every
+  script and scene (`docs/design/ai_workflow.md` "Stage B"). Stage A
+  (the check script and the rules) is in 8410091.
 - **LX41** · Play M1 by hand, with a mouse and on a touch screen: the
   receipt's click-to-close and 3 s auto-close, and the card and "-N"
   placement (LX12). From m1-core: the pick-up ease, the auto put-away
@@ -136,6 +124,8 @@ next, brief, env (claude-config rules/ledger.md). -->
 
 ## Done
 
+- **LX45** · Code Style moved to `.claude/rules/gdscript-style.md`;
+  CLAUDE.md went from 411 to 317 lines. Done in 8410091 (2026-10-17).
 - **LX9** · Item flow: arrival, ticket card, finish payoff, drag to the
   outbox, item queue. Done in 01b980d (2026-10-17).
 - **LX12** · Quality score, stars, receipt and "-N" popups, wired into

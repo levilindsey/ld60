@@ -104,6 +104,52 @@ probes move into the repo once both have merged:
 - The export presets exclude `tests/*`. Probe scripts have no
   `class_name`.
 - CLAUDE.md: how to write and run a probe.
+- A sweep that loads every `.gd` and `.tscn` under `src/`, since import
+  and boot miss errors in scripts nothing loads yet (the stage A
+  handoff's "Coverage gap").
+- Items tween in, so a probe waits for the item to land (m1-core's
+  `_wait_for_landing`) before it presses on it.
 
 LX38's web clipping probe stays separate: it needs a web export and
 Chrome.
+
+## Stage A handoff (lx42-workflow, 2026-10-17)
+
+Stage A is done on branch `lx42-workflow` (worktree
+`.claude/worktrees/agent-a8f63ffe7ef1a65fc`, never pushed). It adds
+`scripts/check.ps1`, `.claude/rules/ledger.md` (39 lines) and
+`.claude/rules/gdscript-style.md` (164 lines, CLAUDE.md's Code Style moved
+unchanged), a "Working with Claude Code" section and a rewritten "CLI Tool
+Availability" in CLAUDE.md (317 lines, was 411), and a README "Check your
+change" section.
+
+Proof with the final script: clean from no `.godot/` (`check: OK`, exit 0,
+about 16 s) from Windows PowerShell and from Git Bash; a planted parse error
+in `src/core/session.gd` exits 1 by default (import log) and with
+`-SkipImport` (boot log); a planted error in `src/core/main.gd` exits 1 from
+Git Bash; all reverted. A bad `-Godot`, a bad `$env:GODOT`, `-Frames 0` and
+no Godot at all exit 2, a hung run is killed by PID, and a quoted or padded
+path works.
+
+- **Allowed in the scan:** nothing (`$AllowedErrorPatterns` is empty). A
+  clean import and a clean boot have no `ERROR:` lines and 0 warnings.
+- **Coverage gap:** the import and the boot parse only the autoloads, the
+  main scene and what they reference, so an error in a script nothing loads
+  yet passes. Godot reports a parse error in a `class_name` script as
+  "Could not parse global class" with no line number.
+- **Timeouts** kill the PID tree (`taskkill /PID <pid> /T /F`): the
+  `_console.exe` Godot is a wrapper that starts the real Godot as a child.
+- **For Stage B**, `-Tests` fits after the boot step, before the warning
+  count. Reuse `Invoke-Godot` (name, arguments, timeout; returns
+  `StartError`, `TimedOut`, `ExitCode`, `Seconds`, `ProcessId`,
+  `StdoutPath`, `StderrPath`), `Read-Lines`, `Get-ErrorIndexes`,
+  `Show-Errors` and `Fail`. A windowed probe is a separate `Invoke-Godot`
+  call without `--headless`.
+- **Not mine, left for the coordinator:** `LEDGER.md` still says its
+  convention is in claude-config; it is now `.claude/rules/ledger.md`.
+  CLAUDE.md's Project Structure `scripts/` line does not list `check.ps1`
+  or `.claude/rules/`.
+- **Harness note:** in a worktree-isolated agent the Bash tool refused every
+  `powershell ...` command, so Git Bash was run as `bash.exe -c '...'` from
+  the PowerShell tool. Someone should run the Git Bash line once from a
+  normal session.

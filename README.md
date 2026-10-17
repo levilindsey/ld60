@@ -28,6 +28,33 @@ scaffolding; the actual game arrives once the theme is announced.
   people editing the same `.tscn` file at once causes painful merge
   conflicts. One person per file at a time.
 
+## Check your change
+
+Before you commit and push, run the check script. It opens the project
+without a window, runs it for a few seconds, and fails if Godot logged
+any script errors. Open PowerShell (or Command Prompt) in the project
+folder and run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/check.ps1
+```
+
+It takes about 15 seconds (longer the first time, while Godot imports
+the art) and ends with `check: OK` when all is well. Otherwise it lists
+the error lines, each followed by the file and line it points at. If the
+first error says `Could not parse global class`, open the file it names:
+that script has a mistake in it.
+
+If it says it can't find Godot, tell it where your Godot `.exe` is, once,
+and then open a new PowerShell window:
+
+```powershell
+setx GODOT "C:\path\to\Godot_v4.7.2-stable_win64_console.exe"
+```
+
+To try a different Godot for a single run, add `-Godot "C:\path\to\Godot.exe"`
+to the command above instead.
+
 ## Project layout
 
 - `src/core/` - App spine: `G` autoload, main scene, game state
@@ -37,7 +64,8 @@ scaffolding; the actual game arrives once the theme is announced.
 - `src/level/` - `Level` base class + the default level scene.
 - `src/ui/` - HUD overlays (title/pause/credits) + debug console.
 - `assets/` - Fonts, images, audio.
-- `scripts/` - Web export + local web-serve tooling.
+- `scripts/` - `check.ps1` (check your change), web export + local
+  web-serve tooling.
 
 ## Web build
 
