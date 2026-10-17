@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://m8ven6g4aiv4" path="res://src/tools/flat_head_screw_driver.tscn" id="2_xmm7k"]
 [ext_resource type="PackedScene" uid="uid://oljisvtq3csc" path="res://src/repairables/test_flat_head_screw_repairable.tscn" id="3_yixrw"]
 [ext_resource type="PackedScene" path="res://src/ui/defect_popup/defect_popup.tscn" id="4_popup"]
-[ext_resource type="Shader" path="res://assets/shaders/sprite_outline.gdshader" id="5_outline"]
+[ext_resource type="Shader" uid="uid://bwlltrspkpdrj" path="res://assets/shaders/sprite_outline.gdshader" id="5_outline"]
 [ext_resource type="PackedScene" path="res://src/repairables/finish_sparkle.tscn" id="6_sparkle"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
@@ -27,12 +27,12 @@ is_screenshot_hotkey_enabled = null
 show_hud = null
 default_gravity_acceleration = null
 default_level_scene = ExtResource("1_w7hap")
+finished_outline_material = SubResource("ShaderMaterial_outline")
+finish_sparkle_scene = ExtResource("6_sparkle")
 excluded_log_categories = null
 force_include_log_warnings = null
 include_category_in_logs = null
 verbosity = null
-finished_outline_material = SubResource("ShaderMaterial_outline")
-finish_sparkle_scene = ExtResource("6_sparkle")
 flat_head_screw_repairable_scene = ExtResource("3_yixrw")
 item_queue = Array[int]([0, 0, 0])
 flat_head_screw_driver_scene = ExtResource("2_xmm7k")

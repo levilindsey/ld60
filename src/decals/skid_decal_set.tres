@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="DecalSet" format=3]
+[gd_resource type="Resource" script_class="DecalSet" format=3 uid="uid://br5fweynhqfnr"]
 
-[ext_resource type="Script" path="res://src/decals/decal_set.gd" id="1_decal_set"]
+[ext_resource type="Script" uid="uid://dc7g3y14j3ldu" path="res://src/decals/decal_set.gd" id="1_decal_set"]
 
 [sub_resource type="Gradient" id="Gradient_skid"]
 offsets = PackedFloat32Array(0, 0.55, 1)
@@ -17,8 +17,4 @@ fill_to = Vector2(1, 0.5)
 [resource]
 script = ExtResource("1_decal_set")
 textures = Array[Texture2D]([SubResource("GradientTexture2D_skid")])
-scale_range = Vector2(0.85, 1.15)
 is_aligned_to_direction = true
-can_flip_horizontally = false
-can_flip_vertically = true
-tint = Color(1, 1, 1, 1)
