@@ -38,6 +38,11 @@ tinted freely.
   - Not checked: Firefox, Safari and a phone's browser.
   - The clip applies to every child of the part, not only decals. Decals
     go on the node that draws the art (a `ColorRect` or `Sprite2D`).
+  - A part that draws nothing, such as a plain `Node2D` wrapper, clips
+    nothing and hides nothing: its decals show in full, even over empty
+    space. Checked on desktop only, with the clip set by the spawner and
+    set before the spawn. A wrong part therefore shows unclipped decals
+    and no error.
 - **Blending:** try multiply (a `CanvasItemMaterial` with
   `BLEND_MODE_MUL`) for dust, grime and rust, so they darken what is
   under them. Otherwise use normal blending with semi-transparent art.

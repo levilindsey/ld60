@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/decals/decal_spawner.gd" id="1_spawner"]
+[ext_resource type="Resource" path="res://src/decals/skid_decal_set.tres" id="2_skid"]
+
+[node name="DecalSpawner" type="Node"]
+script = ExtResource("1_spawner")
+skid_set = ExtResource("2_skid")
