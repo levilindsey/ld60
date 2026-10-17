@@ -6,6 +6,8 @@ enum Type {
 	FLAT_HEAD_SCREW_DRIVER,
 }
 
+@export var type := Type.FLAT_HEAD_SCREW_DRIVER
+
 
 func _ready() -> void:
 	G.check(monitorable)

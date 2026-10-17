@@ -18,6 +18,7 @@ const POSITION_DURATION_SEC := 0.3
 
 @export var type := Type.FLAT_HEAD_SCREW_DRIVER
 
+## The point on the tool that stays under the mouse cursor while held.
 @export var cursor_position: Marker2D
 
 ## The clickable area for grabbing the tool.
@@ -27,12 +28,16 @@ const POSITION_DURATION_SEC := 0.3
 ## The area that will align with the corresponding tool holder.
 @export var holder_area: Area2D
 
-@export var stored_rotation := 0.0
-@export var held_rotation := 0.0
+@export var stored_rotation_deg := 0.0
+@export var held_rotation_deg := 0.0
 
 var mode := Mode.ENTERING:
 	set(value):
+		mode = value
 		_set_mode(value)
+		_update_cursor()
+
+var _is_hovered := false
 
 @onready var position_tween: Tween
 @onready var rotation_tween: Tween
@@ -42,13 +47,16 @@ func _set_mode(to_mode: Mode) -> void:
 	match to_mode:
 		Mode.ENTERING, \
 		Mode.STORED:
-			_set_rotation(stored_rotation)
+			_set_rotation(deg_to_rad(stored_rotation_deg))
 
 			var holder_area_offset := holder_area.global_position - global_position
 			var holder_position := G.level.get_tool_holder_position(type)
 			_tween_position(holder_position - holder_area_offset)
 		Mode.HELD:
-			_set_rotation(stored_rotation)
+			# The follow logic in _physics_process takes over the position.
+			if is_instance_valid(position_tween):
+				position_tween.kill()
+			_set_rotation(deg_to_rad(held_rotation_deg))
 		Mode.IN_USE:
 			pass
 		_:
@@ -56,6 +64,8 @@ func _set_mode(to_mode: Mode) -> void:
 
 
 func _ready() -> void:
+	G.check(is_instance_valid(cursor_position))
+
 	G.check(is_instance_valid(grab_area))
 	G.check(grab_area.monitorable)
 	G.check(grab_area.input_pickable)
@@ -81,7 +91,7 @@ func _physics_process(delta: float) -> void:
 	if mode == Mode.HELD:
 		# Have the tool follow the cursor when held.
 		var cursor_position_offset := cursor_position.global_position - global_position
-		global_position = get_global_mouse_position() + cursor_position_offset
+		global_position = get_global_mouse_position() - cursor_position_offset
 
 
 func _set_rotation(p_rotation: float) -> void:
@@ -109,20 +119,32 @@ func _on_clicked() -> void:
 
 
 func _on_mouse_entered() -> void:
-	if mode == Mode.ENTERING or mode == Mode.STORED:
-		# TODO: Add a grab-hand cursor.
-		# TODO: Don't do this if another tool is grabbed.
-		DisplayServer.cursor_set_shape(DisplayServer.CURSOR_POINTING_HAND)
+	_is_hovered = true
+	_update_cursor()
 
 
 func _on_mouse_exited() -> void:
-	pass
+	_is_hovered = false
+	_update_cursor()
+
+
+func _update_cursor() -> void:
+	# TODO: Add a grab-hand cursor.
 	# TODO: Don't do this if another tool is grabbed.
-	#DisplayServer.cursor_set_shape(DisplayServer.CURSOR_ARROW)
+	var can_grab := (
+		_is_hovered
+		and (mode == Mode.ENTERING or mode == Mode.STORED)
+	)
+	var shape := Input.CURSOR_ARROW
+	if can_grab:
+		shape = Input.CURSOR_POINTING_HAND
+	# The default shape persists across mouse motion. A one-shot
+	# DisplayServer.cursor_set_shape() is reset by the next motion event.
+	Input.set_default_cursor_shape(shape)
 
 
 func pick_up_tool() -> void:
-	_set_mode(Mode.HELD)
+	mode = Mode.HELD
 	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
 	# TODO(levilindsey): Tween the position (we'll need to add a pick-up offset, apply the offset in physics_process, and tween that offset).
 	# TODO(levilindsey): Show a grab hand cursor when hovering over tools and nothing is held.
@@ -152,6 +174,6 @@ func _on_holder_area_exited(holder: Area2D) -> void:
 
 
 func put_away() -> void:
-	_set_mode(Mode.STORED)
+	mode = Mode.STORED
 
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
