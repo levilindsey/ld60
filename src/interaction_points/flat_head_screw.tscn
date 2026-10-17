@@ -3,31 +3,26 @@
 [ext_resource type="Script" uid="uid://dnhtim17pwlns" path="res://src/interaction_points/flat_head_screw.gd" id="1_8uvch"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
-radius = 20.22375
+radius = 12.0
 
-[node name="FlatHeadScrew" type="Area2D" unique_id=268084832]
+[node name="FlatHeadScrew" type="Area2D" unique_id=268084832 node_paths=PackedStringArray("head")]
 collision_layer = 4
 collision_mask = 0
 monitoring = false
 script = ExtResource("1_8uvch")
+role = 0
+accepted_tools = Array[int]([0])
+head = NodePath("Head")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=156215341]
 shape = SubResource("CircleShape2D_giktf")
 
-[node name="Node2D" type="Node2D" parent="." unique_id=1688050116]
+[node name="Head" type="Node2D" parent="." unique_id=1688050116]
 
-[node name="ColorRect" type="ColorRect" parent="Node2D" unique_id=1048211532]
-offset_left = -19.0
-offset_top = -20.0
-offset_right = 21.0
-offset_bottom = 20.0
+[node name="Disc" type="Polygon2D" parent="Head"]
 color = Color(0.52, 0.52, 0.52, 1)
-metadata/_edit_use_anchors_ = true
+polygon = PackedVector2Array(12, 0, 11.087, 4.592, 8.485, 8.485, 4.592, 11.087, 0, 12, -4.592, 11.087, -8.485, 8.485, -11.087, 4.592, -12, 0, -11.087, -4.592, -8.485, -8.485, -4.592, -11.087, 0, -12, 4.592, -11.087, 8.485, -8.485, 11.087, -4.592)
 
-[node name="ColorRect2" type="ColorRect" parent="Node2D" unique_id=667416153]
-offset_left = -4.0
-offset_top = -20.0
-offset_right = 5.0
-offset_bottom = 20.0
+[node name="Slot" type="Polygon2D" parent="Head"]
 color = Color(0.1, 0.1, 0.1, 1)
-metadata/_edit_use_anchors_ = true
+polygon = PackedVector2Array(-2, -11, 2, -11, 2, 11, -2, 11)

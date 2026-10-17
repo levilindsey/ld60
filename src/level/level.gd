@@ -12,9 +12,11 @@ var has_won := false
 
 var tools_by_type: Dictionary[Tool.Type, Tool] = {}
 var active_repairable: Repairable
-var active_tool: Tool
-var hovered_interaction_point: InteractionPoint
-var active_interaction_point: InteractionPoint
+
+## The player's hand: what is held, the cursor and press routing.
+var hand: Hand:
+	get:
+		return %Hand
 
 
 func _enter_tree() -> void:
@@ -43,12 +45,6 @@ func _ready() -> void:
 	# TODO: Add some level and spawn configs to control when what things spawn.
 	spawn_tool(Tool.Type.FLAT_HEAD_SCREW_DRIVER)
 	spawn_repairable(Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE)
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.is_pressed():
-		if is_instance_valid(G.level.hovered_interaction_point) and is_instance_valid(active_tool):
-			active_tool.trigger(G.level.hovered_interaction_point)
 
 
 func start_game() -> void:
@@ -96,18 +92,66 @@ func spawn_repairable(type: Repairable.Type) -> void:
 	item.rotation = initial_rotation
 
 	# Give repairables a slight rotation offset.
-	var target_rotation := randf() * Repairable.ROTATION_OFFSET_MAX * 2.0 - Repairable.ROTATION_OFFSET_MAX
+	var target_rotation := randf_range(
+		-Repairable.ROTATION_OFFSET_MAX,
+		Repairable.ROTATION_OFFSET_MAX,
+	)
 
 	var target_position: Vector2 = %ActiveItemPosition.global_position
 
 	item.tween_rotation(target_rotation, Tween.EASE_IN)
 	item.tween_position(target_position, Tween.EASE_IN)
 
+	await get_tree().create_timer(Repairable.POSITION_DURATION_SEC).timeout
 
+	%CameraShaker.shake_camera(7.0, 0.15)
+
+
+## The holder in the rack for a tool type, or null.
+func get_tool_holder(type: Tool.Type) -> ToolHolder:
+	for child in %ToolHolders.get_children():
+		if child is ToolHolder and (child as ToolHolder).type == type:
+			return child as ToolHolder
+	return null
+
+
+## Where a stored tool's holder shape sits: the center of the shape of
+## the holder for its type.
 func get_tool_holder_position(type: Tool.Type) -> Vector2:
-	match type:
-		Tool.Type.FLAT_HEAD_SCREW_DRIVER:
-			return %FlatHeadScrewDriverHolder.global_position
-		_:
-			G.error()
-			return Vector2.INF
+	var holder := get_tool_holder(type)
+	if not is_instance_valid(holder):
+		G.error("No tool holder for %s" % Tool.Type.keys()[type])
+		return Vector2.INF
+	return holder.get_shape_position()
+
+
+## Where layers wait while they are off the item.
+func get_set_aside_spot() -> Node2D:
+	return %SetAsideSpot
+
+
+## The layers at the set-aside spot, bottom of the stack first.
+func get_set_aside_layers() -> Array[RepairLayer]:
+	var layers: Array[RepairLayer] = []
+	for child in %SetAsideSpot.get_children():
+		if child is RepairLayer:
+			layers.append(child as RepairLayer)
+	return layers
+
+
+## Adds a decal of `kind` to `part` and returns it, or null if it can't.
+## The arguments are those of `DecalSpawner.spawn()`.
+func spawn_decal(
+	kind: DecalSpawner.Kind,
+	part: CanvasItem,
+	world_position: Vector2,
+	size: float,
+	direction := Vector2.RIGHT,
+) -> Sprite2D:
+	return (%Decals as DecalSpawner).spawn(
+		kind,
+		part,
+		world_position,
+		size,
+		direction,
+	)

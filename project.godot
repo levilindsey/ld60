@@ -105,6 +105,7 @@ pause={
 2d_physics/layer_3="interaction_points"
 2d_physics/layer_4="table"
 2d_physics/layer_5="tool_holders"
+2d_physics/layer_6="surfaces"
 
 [physics]
 

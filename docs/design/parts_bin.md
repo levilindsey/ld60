@@ -9,9 +9,9 @@ belts (LX31) and part orientation (LX32).
 Wiggle the broken part loose and toss it. Open the parts bin, pick
 out a replacement and drop it into the empty spot.
 
-## Where the bin lives (open: LX6)
+## Where the bin lives (LX6)
 
-- **Proposed: a drawer.** A shallow drawer peeks up from the bottom
+- **Chosen: a drawer.** A shallow drawer peeks up from the bottom
   edge of the screen, under the desk front. Pressing it slides it up
   (one tween), drawn above the item. Taking a part closes it again, so
   the item is in view when the part goes in. Nothing else moves.

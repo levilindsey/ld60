@@ -4,6 +4,8 @@
 [ext_resource type="Script" uid="uid://3xax4i6teywv" path="res://src/level/camera_shaker.gd" id="2_xv147"]
 [ext_resource type="Script" uid="uid://bfo0vmq35oagd" path="res://src/level/tool_holder.gd" id="3_af42n"]
 [ext_resource type="Texture2D" uid="uid://wk5xvr0y7ksb" path="res://assets/images/props/background.png" id="4_background"]
+[ext_resource type="Script" path="res://src/level/hand.gd" id="5_hand"]
+[ext_resource type="PackedScene" path="res://src/decals/decal_spawner.tscn" id="6_decals"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 34.058773
@@ -15,9 +17,13 @@ script = ExtResource("1_la7um")
 unique_name_in_owner = true
 
 [node name="CameraShaker" type="Node" parent="." unique_id=641136694 node_paths=PackedStringArray("camera")]
+unique_name_in_owner = true
 script = ExtResource("2_xv147")
 camera = NodePath("../Camera2D")
 metadata/_custom_type_script = "uid://3xax4i6teywv"
+
+[node name="Decals" parent="." instance=ExtResource("6_decals")]
+unique_name_in_owner = true
 
 [node name="Background" type="Sprite2D" parent="." unique_id=242847735]
 scale = Vector2(0.6666667, 0.6666667)
@@ -50,5 +56,27 @@ metadata/_edit_lock_ = true
 [node name="Repairables" type="Node" parent="." unique_id=75239543]
 unique_name_in_owner = true
 
+[node name="SetAsideSpot" type="Node2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(360, 100)
+
 [node name="Tools" type="Node" parent="." unique_id=1614121728]
 unique_name_in_owner = true
+
+[node name="Hand" type="Node2D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("5_hand")
+
+[node name="NopeIcon" type="Node2D" parent="Hand"]
+unique_name_in_owner = true
+z_index = 100
+
+[node name="StrokeA" type="Line2D" parent="Hand/NopeIcon"]
+points = PackedVector2Array(-8, -8, 8, 8)
+width = 4.0
+default_color = Color(0.9, 0.15, 0.1, 1)
+
+[node name="StrokeB" type="Line2D" parent="Hand/NopeIcon"]
+points = PackedVector2Array(-8, 8, 8, -8)
+width = 4.0
+default_color = Color(0.9, 0.15, 0.1, 1)

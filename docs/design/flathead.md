@@ -50,7 +50,7 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
 - **Install mode:** `install_twists` (2), turning the other way.
 
 Making the screw start over instead (Levi's first idea) is a one-line
-change: reset the twist count on unseat. It is open in LX6.
+change: reset the twist count on unseat. LX6 kept the default.
 
 ## Feedback
 
@@ -59,8 +59,9 @@ change: reset the twist count on unseat. It is open in LX6.
   reaction.
 - **Danger:** as `abs(offset)` nears the tolerance, a scraping sound
   rises in pitch and the tip shakes a little.
-- **Turning:** a ratchet tick per twist; the screw rises a little each
-  time.
+- **Turning:** a ratchet tick per twist, and the screw turns with the
+  tool. It rotates and never scales ([screws.md](screws.md)
+  "Removal").
 - **Unseat:** a skid sound, sparks at the tip, and the tool hops.
 - **Done:** a pop as the screw comes out.
 

@@ -14,8 +14,8 @@ to `main` and pauses the work at 98% weekly usage.
 | 2 | `m1-screws` | Opus | LX10, LX11 | `src/interaction_points/`, `src/tools/flat_head_screw_driver.*` |
 | 2 | `m1-flow` | Sonnet | LX9, and wiring LX12 into the level | `src/level/`, `src/repairables/repairable.gd`, `CLAUDE.md` |
 
-Stage 2 starts once stage 1 is on `main`. Its sections get written at
-that merge.
+Stage 2 starts once stage 1 is on `main` and the coordinator has added
+`%Decals`, `Level.spawn_decal()` and `Repairable.quality` to it.
 
 ## Rules for every agent
 
@@ -127,9 +127,9 @@ LX1 to LX5 in `LEDGER.md` fold into LX7.
   the remove and install states the layers need.
 
   The flathead's `engage()` is a stand-in: the tool goes IN_USE, and the
-  screw rises and pops out after a short tween. In install mode it goes
-  in the same way. Mark it `# Stand-in until LX11.` LX10 and LX11
-  replace it in stage 2.
+  screw turns and pops out after a short tween. In install mode it turns
+  back in. Mark it `# Stand-in until LX11.` LX10 and LX11 replace it in
+  stage 2.
 - **The test item** gets two layers:
   - `Inside`, the innermost;
   - `Cover`, with two flathead screws and a PLASTIC surface.
@@ -161,6 +161,26 @@ LX1 to LX5 in `LEDGER.md` fold into LX7.
   - the cursor shape and mouse mode in each state;
   - the cursor while paused.
 
+**Handoff (m1-core, 2026-10-17).** Works, on branch `m1-core`:
+- The hand (presses, the held thing, the cursor), the tool fixes (LX1
+  to LX5, the follow offset, the nope shake), points, layers (lift-off,
+  the set-aside spot, the ready glow, putting back in install mode),
+  surfaces on layer 6, the item's signals and rule 7. The probe in
+  `.claude/probes/m1-core/` plays the loop (72 checks) and the booklet
+  (5 checks), and all pass.
+- Screws only turn, never scale (Levi): the stand-in turns a screw half
+  a turn counter-clockwise to take it out, and clockwise back home to
+  drive it in. A loose screw keeps its size and sits turned back
+  (`Screw.LOOSE_TURN_RAD`). The pulse hint still scales the point.
+
+Left:
+- LX10 and LX11 replace the stand-in `engage()`. `install()` expects
+  the microgame to have turned the head home first.
+- LX9 fills in `Hand.drag_item()` and the item queue.
+- An installed screw can't come out again. A rack press while a tool is
+  IN_USE does nothing.
+- For Levi: a real mouse and touch, the sounds, and the cursor shapes.
+
 ## m1-quality (LX12)
 
 Read `quality.md`. Build `RepairQuality`, the receipt card and the
@@ -191,6 +211,58 @@ stage 2. Don't touch `src/level/` or `repairable.gd`.
   - It opens the receipt and waits for `closed`, both after a click and
     after the timeout.
   - A windowed screenshot of the receipt.
+
+### Handoff (m1-quality, 2026-10-17)
+
+LX12 is built and checked as standalone pieces. Nothing is wired into the
+level yet; that is m1-flow's job in stage 2. The work is on branch
+`m1-quality`, unpushed. The probe is `.claude/probes/m1-quality/run.ps1`
+(untracked). It passes 144 checks headless, and `-Shots` saves screenshots
+of the receipt and the popups.
+
+**What works**
+
+- `RepairQuality` (`src/repairables/repair_quality.gd`):
+  `add_defect(defect, global_position, source = null) -> int` returns the
+  points it cost and emits `defect_added(defect, points, global_position)`.
+  `repair_time_sec` and `par_time_sec` are plain vars. Read it with
+  `get_score()`, `get_stars()`, `get_time_penalty()`, `get_summary()` and
+  `get_defect_points_total()`. The points come from the "Quality" group in
+  `settings.gd` (`get_defect_points()`).
+- The receipt (`src/ui/receipt/receipt.tscn`): `open(item_name, quality)`,
+  `close()` and `signal closed`. It slides in from the right, lists the
+  defects, the time and the total, pops the stars in one at a time (a
+  sparkle at 3) and closes on a click or after 3 s. Its timings are
+  exports on the scene root.
+- The popup (`src/ui/defect_popup/`):
+  `DefectPopup.spawn(parent, points, world_position)`. The scene is
+  `Settings.defect_popup_scene`.
+
+**Wiring for m1-flow**
+
+1. Put `receipt.tscn` in a CanvasLayer in `level.tscn`. Layer 100 sits
+   under the Hud (200).
+2. Connect `quality.defect_added` to a one-liner:
+   `DefectPopup.spawn(G.level, points, global_position)`.
+3. When the item is finished, set `quality.repair_time_sec` (paused time
+   excluded) and `quality.par_time_sec`, then call
+   `receipt.open(name, quality)`. quality.md lets the next item drop in
+   behind the card, so wait for `closed` only if something must.
+4. Pass the damaged surface or screw as the third argument of
+   `add_defect()` for smears. A ruined smear then replaces its minor one,
+   and a minor smear on a ruined surface costs nothing.
+5. An open card stops every mouse press, so nothing under it (the Hand,
+   tools, points) sees a click until the card is dismissed. The first
+   click only closes it.
+
+**Left**
+
+- Levi, with a real mouse, touch screen and ears: the feel of
+  click-to-close, the whoosh and ding (silent until LX25), and the look
+  and placement of the card and the popups.
+- The star and sparkle art is code-drawn (LX24 can replace it).
+- The edits to `settings.gd` and `settings.tres` only append, but they
+  can still need a trivial merge with m1-core's.
 
 ## m1-decals (LX13)
 
@@ -230,10 +302,158 @@ their edges and over them, at several part scales and rotations. It
 asserts each decal's parent, position and size. Add the screenshots from
 step 1.
 
+### Handoff (2026-10-17, m1-decals)
+
+**Works,** on branch `m1-decals`:
+- `src/decals/decal_spawner.tscn` is the node to instance in the level
+  as `%Decals`. `spawn(kind, part, global_position, size, direction)`
+  returns the new `Sprite2D`, or null (with a logged error) on bad
+  input. `part` is a Control or a Node2D. `size` is the decal's longer
+  side in world pixels, whatever the part's scale, rotation or wrapper.
+  The spawner turns on the part's clipping itself.
+- One kind, `DecalSpawner.Kind.SKID`, from `skid_decal_set.tres`. Its
+  texture is a `GradientTexture2D` placeholder, so LX24's
+  `screwdriver_skid.png` goes into that `.tres`. A `DecalSet` also holds
+  the scale range, whether it aligns to `direction`, flips, a tint and an
+  optional multiply `blend_material`.
+- A new kind is one `Kind` entry (say `DENT`), one export named after it
+  (`dent_set`) and one `DecalSet` `.tres` assigned in
+  `decal_spawner.tscn`. `_ready` stops the game if a kind has no set.
+- Checked: the clipping probe (decals.md "Clipping"), then a spawner
+  probe on `ColorRect` and `Sprite2D`-with-hole parts at several scales,
+  rotations and wrappers, at edges, corners, holes and over them: 69
+  checks headless and windowed, and 44 pixel checks in the windowed run
+  (7 more were too close to an edge to call). Evidence is in the
+  untracked `.claude/probes/m1-decals/` (`spawner_desktop.png`,
+  `clip_*.png`, logs, the probe scripts).
+
+**At the merge:**
+- Instance `decal_spawner.tscn` in `level.tscn` and give it a unique
+  name, `%Decals`. Nothing else in `src/level/` has to change. A `%`
+  name only resolves inside its own scene, so tools reach it through a
+  `Level` pass-through such as `spawn_decal(...)`, like the camera shake.
+- Pass the node that draws the art as `part` (m1-core's layer `art`, or
+  a `ColorRect` or `Sprite2D`). A plain `Node2D` wrapper clips nothing,
+  so its decals would hang over the edge, with no error.
+
+**Left:**
+- No cap on decals per part, so many unseats on one layer pile up.
+- Draw order follows the tree: a decal draws right after its part and
+  above the part's other children, but below the part's later siblings,
+  such as screw points that are siblings of the art.
+- The clip applies to all of the part's children, so anything else under
+  the part that sticks out past the art is cut off too.
+- Firefox, Safari and a phone's browser are unchecked for clipping.
+- The multiply `blend_material` works in the clip probe, but no set uses
+  it yet.
+
 ## m1-screws (LX10, LX11), stage 2
 
-Written at the stage 1 merge.
+Read these first:
+- `screws.md` and `flathead.md`;
+- `quality.md` "Defects";
+- the m1-core handoff above, for the hand, the points and the `Screw`
+  and `FlatHeadScrew` split as built.
+
+Your settings group is "Flathead", at the end of `settings.gd`. Don't
+edit `src/level/` or the item scenes. They are m1-flow's.
+
+- **Screw health (LX10),** in `Screw`, as screws.md "Building it" says:
+  - `max_health`, `health`, `take_damage()`, the signals and the four
+    head frames. The damage art is LX24's, so make the frames differ
+    with what exists (a tint per frame is fine) and mark it
+    `# Placeholder until LX24.`
+  - Each damage point adds `SCREW_DAMAGE` to the item's quality, and the
+    strip adds `SCREW_STRIPPED` on top:
+    `quality.add_defect(defect, global_position, self)`.
+  - **Stripped:** the driver no longer bites, so a press grinds and
+    nopes. The pliers come in M2 (LX19), and until then a stripped screw
+    would block the item, so the next press pries it out after the
+    grind. Mark it `# Stand-in until LX19.`
+  - **Seized:** `is_seized`, a placeholder rust overlay, the warning
+    grind, then 1 damage per stalled try. The oil can (LX21) will call
+    an `unseize()` method. Nothing calls it yet.
+  - **Removal and install mode,** replacing m1-core's stand-in tween. A
+    turning screw rotates and never scales (Levi).
+- **The flathead (LX11),** in `FlatHeadScrew`, replacing the
+  `# Stand-in until LX11.` engage: the twist cycle, the eased drift,
+  correcting along the slot, the unseat and the feedback, as flathead.md
+  says. Its "Tuning" table says which values are settings and which are
+  per-screw exports.
+  - **Unseat** follows LX6's default. The twists done are kept, the
+    screw takes 1 damage, and a skid decal goes down where the tip left:
+    `G.level.spawn_decal(DecalSpawner.Kind.SKID, part, position, size,
+    direction)`, where `part` is the layer's `art`.
+  - **Pointer motion:** use the hand's hook if m1-core built one.
+    Otherwise read `InputEventMouseMotion` in the screw's own input
+    callback while it is engaged, and don't mark it handled.
+  - Sparks can be a `CPUParticles2D`. The scrape's rising pitch waits
+    for streams (LX25), so just play it.
+- **Check** with probes:
+  - Correcting along the slot keeps the tip seated: 4 twists take the
+    screw out, and 2 put it back in install mode.
+  - Never correcting unseats it: 1 damage, the `SCREW_DAMAGE` defect, a
+    skid decal on the layer's art, the tool back in HELD, the twists
+    kept.
+  - The drift code, run directly over many screws, matches the
+    `slip_bias` table in flathead.md.
+  - Three slips strip it: the frames, the points (2 per damage and 10
+    for the strip), the grind and nope, then the pry.
+  - A seized screw grinds once, then takes damage per stalled try.
+  - m1-core's full-loop probe still passes, driving the real twists.
+
+Leave to Levi: correcting by mouse and by finger, including how big
+touch drags' `relative` values are on the Pixel.
 
 ## m1-flow (LX9), stage 2
 
-Written at the stage 1 merge.
+Read these first:
+- `outbox.md`, and `quality.md` "Receipt";
+- the m1-quality handoff above, "Wiring for m1-flow";
+- the m1-core handoff above, for the hand's empty drag method and the
+  item's signals.
+
+Your settings: `item_queue` goes in the "Repairables" group, and any new
+group ("Item flow") right after m1-core's "Layers" group. Don't edit
+`src/interaction_points/` or `src/tools/`. They are m1-screws'.
+
+- **Arrival,** as outbox.md says, filling the TODO in
+  `spawn_repairable()`. Add `Level.shake_camera()` and use it. Keep
+  Levi's landing shake (7 px for 0.15 s) over the doc's 3 px. The item
+  counts its repair time from landing to `finished`, unpaused time only.
+- **Ticket:** a paper tag or a HUD card with the item's name and its
+  complaint, from m1-core's `Repairable` exports `item_name` and
+  `ticket`. A placeholder look is fine.
+- **Finishing:** the ding, a sparkle, and the outline glow with
+  `assets/shaders/sprite_outline.gdshader`, through an export rather
+  than a `preload`. Then the item can be dragged.
+- **Dragging:** fill m1-core's empty hand method. Only a finished item
+  drags, only with an empty hand. The hand holds it at the grab offset,
+  and it tilts with the drag speed, up to 8 degrees.
+- **Outbox:** `%Outbox`, an `Area2D` on the left desk segment with its
+  mask on REPAIRABLES and a `Polygon2D` placeholder. The release rules
+  are outbox.md's.
+- **Queue:** `item_queue: Array[Repairable.Type]` in `settings.gd` and
+  `settings.tres`. `Level` keeps the index and calls `win()` after the
+  last item. This replaces the hard-coded test item in `Level._ready`.
+- **Quality wiring:** steps 1 to 3 of the m1-quality handoff, with
+  `Repairable.quality` and m1-core's `par_time_sec` export (90 by
+  default). Keep the card's press blocking; Levi chose it (LX39).
+- **CLAUDE.md:** Boot Flow step 6, Core APIs (`shake_camera`,
+  `spawn_decal` and `Repairable.quality`) and Configuration
+  (`item_queue`).
+- **Check** with a probe that sets a two-item queue:
+  1. The item lands at `%ActiveItemPosition`, straight, in
+     UNDER_REPAIR, and the camera shakes.
+  2. Pressing it while unfinished doesn't drag it.
+  3. Finish it, by pushed presses or by finishing its points directly.
+  4. Dropped elsewhere, it eases back.
+  5. Dragged into the outbox by pushed presses, it leaves, the receipt
+     opens with the item's score, and the next item lands 0.5 s later.
+  6. A defect spawns a popup.
+  7. After the second item, the game reaches CREDITS.
+
+  m1-core's full-loop probe still passes.
+
+Leave to Levi: the drag and tilt feel, the ticket's look and where the
+outbox sits.
