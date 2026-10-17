@@ -5,10 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 LD60 is a single-player 2D game for the Ludum Dare 60 game jam,
-built with **Godot 4.7.2-stable**. The genre (platformer, top-down,
-etc.) is decided when the theme drops; this repo starts as a
-general-purpose skeleton with **no GDExtensions, no networking, and
-no player implementation** (see "Deliberately omitted" below).
+built with **Godot 4.7.2-stable**. The theme is "old tech": a repair
+shop where broken gadgets arrive on the bench, each tool is a small
+microgame, and each repair earns 1 to 3 stars. The design is in
+`docs/design/` (start at `overview.md`). **No GDExtensions and no
+networking** (see "Deliberately omitted" below).
 
 The skeleton was extracted 2026-10-05 from the `ld59` repo (core
 autoloads, scaffolder utilities, HUD/debug-console shells, web
@@ -29,12 +30,11 @@ context belongs in this file so it stays in sync via git.
 
 ## Status
 
-Pre-jam scaffolding (the jam has not started yet). When the jam
-starts, reintroduce a `PLAN.md` and the "implementation plan"
-conventions that worked during LD59: `pull --rebase` before
-starting, push small/focused commits, serialize edits on shared
-files (especially `.tscn` scenes), and mark checklist items complete
-in the same commit that satisfies them.
+The jam is on. `PLAN.md` has the build order (M1 to M4) and the
+team's working rules. `LEDGER.md` has the open work and who is on
+it; each item points at its design doc. Claim an item in "In
+progress" before starting it, and move it to "Done" in the commit
+that finishes it.
 
 ## Commit Policy
 
@@ -46,6 +46,8 @@ in the same commit that satisfies them.
 - Commit and push to `main` at natural stopping points without
   asking, once work is verified.
 - Force-push still needs explicit confirmation.
+- Teammates often have uncommitted work in the tree. Commit only
+  your files, by pathspec; never stash, reset or check out theirs.
 
 ## Project Structure
 
@@ -56,17 +58,22 @@ in the same commit that satisfies them.
 - `src/scaffolder/` - Reusable framework: `scaffolder.gd` (boot
   validation), `scaffolder_log.gd`, `geometry.gd`, `draw_utils.gd`,
   `utils.gd`, `time/` (ScaffolderTime + tween/timer primitives).
-- `src/level/` - `level.gd` (Level base: spawn, camera follow +
-  shake, win/game-over flow), `default_level.tscn`,
-  `default_tile_set.tres`, `parallax_background`,
-  `editor_placeholder_sprite.gd`.
+- `src/level/` - `level.gd`/`level.tscn` (the bench: spawns tools
+  and items, tool holders, win flow), `tool_holder.gd`,
+  `camera_shaker.gd`, `zaven_demo/` (the booklet demo level).
+- `src/tools/` - `tool.gd` (Tool base), plus a script and scene per tool.
+- `src/repairables/` - `repairable.gd`, plus a script and scene per item.
+- `src/interaction_points/` - `interaction_point.gd`, plus the
+  points tools act on (`flat_head_screw.gd` declares `Screw`).
+- `src/manual/` - Zaven's page-turning `InstructionManual`.
 - `src/ui/hud/` - `hud.gd`/`hud.tscn`: title/pause/credits overlays.
 - `src/ui/super_hud/` - Top-level HUD host with `debug_console`.
 - `assets/` - `fonts/pxlzr/` (Levi's own SIL-OFL pixel font),
-  `images/gui/` (button art), `images/placeholders/` (parallax +
-  tile atlas), `shaders/sprite_outline.gdshader`.
-- `scripts/` - `export_web.ps1`, `serve_web.py`.
-- `build/` - Export outputs (gitignored).
+  `images/` (tool art, `props/` background + Krita source, `gui/`
+  buttons, `placeholders/`), `shaders/sprite_outline.gdshader`.
+- `docs/design/` - One design doc per piece of work.
+- `scripts/` - `export_web.ps1`, `serve_web.py`. `build/` holds
+  export outputs (gitignored).
 
 ## Boot Flow
 
@@ -84,10 +91,9 @@ in the same commit that satisfies them.
 5. `StateMain.transition(GAME)` (or `TITLE` when
    `settings.start_in_game` is false) -> `GamePanel.start_game()`
    -> instantiates `settings.default_level_scene`.
-6. `Level._ready` centers the camera anchor and calls
-   `start_game()` -> `spawn_player()`. **While
-   `settings.player_scene` is null, the spawn is skipped** and the
-   camera parks on `%PlayerSpawnPoint`.
+6. `Level._ready` centers the camera anchor, then spawns the
+   flathead driver and the test repairable (hard-coded until LX9's
+   item queue).
 
 **Running a level directly** (F6 / "Run Current Scene"): `Level`
 sees no `G.main`, skips its own setup, and calls
@@ -103,8 +109,7 @@ jump/ability on the TITLE/CREDITS screens. `transition()` branches
 are deliberately idempotent; there is no same-state early return.
 
 Game flow helpers: `G.level.win()` -> CREDITS overlay (jump/ability
-restarts); `G.level.game_over()` -> short delay ->
-`GamePanel.restart_level()` (fresh Level instance).
+restarts); `G.game_panel.restart_level()` -> a fresh Level instance.
 
 ## Core APIs Worth Knowing
 
@@ -125,18 +130,19 @@ restarts); `G.level.game_over()` -> short delay ->
   `audio_main.tscn` ship **without streams**; assign `.wav`s there
   and extend `STREAM_PLAYERS_BY_NAME` as audio lands. Buses:
   `Master`, `Music`, `SFX`.
-- **Camera:** `G.level.shake_camera(amplitude_px, duration_sec)`;
-  follow logic lives in `Level._physics_process`.
+- **Camera:** `shake_camera(amplitude_px, duration_sec)` on the
+  level's `CameraShaker` node (LX9 adds a `G.level` pass-through).
 - **Dev hotkeys** (`settings.dev_mode`): `P` screenshot (to
   `user://screenshots/`), `O` toggle HUD, `Esc` pause.
 
 ## Configuration
 
 - `settings.tres` - Runtime settings resource (`Settings` script).
-  Key fields: `player_scene` (**null until the jam's player
-  exists**), `default_level_scene`, `start_in_game`, `dev_mode`,
+  Key fields: `default_level_scene`, `start_in_game`, `dev_mode`,
   `show_debug_console`, `mute_music`, `full_screen`,
-  `pauses_on_focus_out`.
+  `pauses_on_focus_out`, plus one scene per tool and item in the
+  "Tools" and "Repairables" groups (`get_tool_scene_from_type`,
+  `get_repairable_scene_from_type`).
 - `default_bus_layout.tres` - Audio buses (Master/Music/SFX).
 - `project.godot` - Input actions, physics layers, rendering.
 - Renderer: `gl_compatibility`; linear texture filtering (Godot
@@ -153,13 +159,14 @@ missing. Add new actions there too.
 
 ### Physics Layers
 
-1. `normal_surfaces`
-2. `fall_through_floors`
-3. `walk_through_walls`
-4. `player`
-5. `enemy`
-6. `player_projectile`
-7. `enemy_projectile`
+1. `tools`
+2. `repairables`
+3. `interaction_points`
+4. `table`
+5. `tool_holders`
+
+`Settings.PhysicsLayer` mirrors these as bit flags; keep the two in
+sync.
 
 ## UI
 
@@ -205,12 +212,10 @@ enforces it.
 
 | Need | Source |
 |---|---|
-| Platformer character framework (surface-aware movement, 17 action handlers) | `ld59:src/scaffolder/character/` + `ld59:src/player/player_movement_settings.tres`. Its `G.settings.default_gravity_acceleration` hook already exists here. |
 | GUT tests + CI workflow | `ld59:addons/gut/` + `ld59:.github/workflows/test.yml` (bump its Godot version) |
 | Persisted user settings (ConfigFile in `user://`) | `hopnbop:src/core/local_settings.gd` (strip the Netcode logging) |
 | Screen-transition shader wipes | `hopnbop:src/ui/screen_transition.gd` + `hopnbop:assets/shaders/` (strip the `Netcode.is_server` guard) |
 | Pixel-perfect integer-scale viewport | `hopnbop:addons/snoringcat_platform_client/util/pixel_viewport_manager.gd` (pre-decoupled) |
-| Standalone camera shaker node | `hopnbop:src/core/camera_shaker.gd` (Level has built-in shake already) |
 | Toast / confirm-dialog overlays | `hopnbop:addons/snoringcat_platform_client/ui/overlays/` and `hopnbop:src/ui/confirm_overlay/` |
 | i18n CSV pipeline | `hopnbop:translations/` + its `project.godot` locale block |
 | Procedural level generation | `ld59:src/level/procgen/` (tied to ld59's tile pipeline; adapt) |
