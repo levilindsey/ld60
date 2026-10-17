@@ -59,12 +59,13 @@ that finishes it.
   validation), `scaffolder_log.gd`, `geometry.gd`, `draw_utils.gd`,
   `utils.gd`, `time/` (ScaffolderTime + tween/timer primitives).
 - `src/level/` - `level.gd`/`level.tscn` (the bench: spawns tools
-  and items, tool holders, win flow), `tool_holder.gd`,
-  `camera_shaker.gd`, `zaven_demo/` (the booklet demo level).
+  and items, tool holders, set-aside spot, win flow), `hand.gd`,
+  `tool_holder.gd`, `camera_shaker.gd`, `zaven_demo/` (booklet demo).
 - `src/tools/` - `tool.gd` (Tool base), plus a script and scene per tool.
-- `src/repairables/` - `repairable.gd`, plus a script and scene per item.
-- `src/interaction_points/` - `interaction_point.gd`, plus the
-  points tools act on (`flat_head_screw.gd` declares `Screw`).
+- `src/repairables/` - `repairable.gd`, `repair_layer.gd`,
+  `surface.gd`, plus a script and scene per item.
+- `src/interaction_points/` - `interaction_point.gd`, `screw.gd`
+  (`Screw`), plus a script and scene per point.
 - `src/manual/` - Zaven's page-turning `InstructionManual`.
 - `src/ui/hud/` - `hud.gd`/`hud.tscn`: title/pause/credits overlays.
 - `src/ui/super_hud/` - Top-level HUD host with `debug_console`.
@@ -132,6 +133,12 @@ restarts); `G.game_panel.restart_level()` -> a fresh Level instance.
   `Master`, `Music`, `SFX`.
 - **Camera:** `shake_camera(amplitude_px, duration_sec)` on the
   level's `CameraShaker` node (LX9 adds a `G.level` pass-through).
+- **Hand** (`G.level.hand`, `docs/design/tools.md` "The hand"): one
+  `_unhandled_input` routes every left press, holds one thing and
+  owns the cursor. A microgame calls `set_input_owner(self)` to get
+  the presses. A point's `engage(tool)` places the tool until
+  `finish()`. The item emits `layer_removed`, `layer_installed`,
+  `point_finished` and `finished`.
 - **Dev hotkeys** (`settings.dev_mode`): `P` screenshot (to
   `user://screenshots/`), `O` toggle HUD, `Esc` pause.
 
@@ -140,9 +147,9 @@ restarts); `G.game_panel.restart_level()` -> a fresh Level instance.
 - `settings.tres` - Runtime settings resource (`Settings` script).
   Key fields: `default_level_scene`, `start_in_game`, `dev_mode`,
   `show_debug_console`, `mute_music`, `full_screen`,
-  `pauses_on_focus_out`, plus one scene per tool and item in the
-  "Tools" and "Repairables" groups (`get_tool_scene_from_type`,
-  `get_repairable_scene_from_type`).
+  `pauses_on_focus_out`, the "Hand" and "Layers" timing groups, plus
+  one scene per tool and item in the "Tools" and "Repairables" groups
+  (`get_tool_scene_from_type`, `get_repairable_scene_from_type`).
 - `default_bus_layout.tres` - Audio buses (Master/Music/SFX).
 - `project.godot` - Input actions, physics layers, rendering.
 - Renderer: `gl_compatibility`; linear texture filtering (Godot
@@ -164,6 +171,7 @@ missing. Add new actions there too.
 3. `interaction_points`
 4. `table`
 5. `tool_holders`
+6. `surfaces`
 
 `Settings.PhysicsLayer` mirrors these as bit flags; keep the two in
 sync.

@@ -9,6 +9,7 @@ enum PhysicsLayer {
 	INTERACTION_POINTS = 1 << 2,
 	TABLE = 1 << 3,
 	TOOL_HOLDERS = 1 << 4,
+	SURFACES = 1 << 5,
 }
 
 # --- General configuration ---
@@ -30,6 +31,32 @@ enum PhysicsLayer {
 @export var default_gravity_acceleration := 1400.0
 
 @export var default_level_scene: PackedScene
+
+@export_group("Hand")
+## Seconds for a held tool to ease into the pointer instead of jumping.
+@export var tool_follow_ease_sec := 0.2
+## Seconds a tool shakes when a point doesn't accept it.
+@export var nope_shake_sec := 0.2
+@export var nope_shake_px := 5.0
+## Seconds the "nope" icon stays up.
+@export var nope_icon_sec := 0.6
+@export_group("")
+
+@export_group("Layers")
+## Seconds a loose layer waits before it lifts off.
+@export var layer_lift_delay_sec := 0.3
+## Seconds a layer takes to move to or from the set-aside spot.
+@export var layer_move_sec := 0.4
+## Scale of a set-aside layer, relative to its scale on the item.
+@export var set_aside_scale := 0.8
+## Offset between set-aside layers stacked on the spot.
+@export var set_aside_stack_offset := Vector2(10.0, -10.0)
+## Seconds and pixels of the shake when an unfinished item is pressed.
+@export var item_shake_sec := 0.3
+@export var item_shake_px := 4.0
+## Seconds of one pulse on a point that still needs work.
+@export var point_pulse_sec := 0.4
+@export_group("")
 
 
 @export_group("Logs")
