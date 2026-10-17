@@ -1,12 +1,28 @@
 [gd_scene format=3 uid="uid://m8ven6g4aiv4"]
 
 [ext_resource type="Script" uid="uid://co3owsfq8o6x5" path="res://src/tools/flat_head_screw_driver.gd" id="1_85718"]
+[ext_resource type="Texture2D" uid="uid://cwwmjwv0iwo2d" path="res://assets/images/screwdriverrrrrrrrrrrrrrr.png" id="2_rocp8"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_85718"]
 radius = 20.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 200.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5cnk8"]
+atlas = ExtResource("2_rocp8")
+region = Rect2(0, 0, 3508, 2480)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_60exv"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5cnk8")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
 
 [node name="FlatHeadScrewDriver" type="Node2D" unique_id=1486551663 node_paths=PackedStringArray("cursor_position", "grab_area", "interaction_area", "holder_area")]
 script = ExtResource("1_85718")
@@ -27,7 +43,7 @@ collision_mask = 0
 monitoring = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Node2D2/GrabArea" unique_id=287821059]
-polygon = PackedVector2Array(-19, 0, 21, 0, 23, -638, 65, -638, 64, -1075, -63, -1075, -64, -639, -20, -638)
+polygon = PackedVector2Array(-19, 0, 21, 0, 44.999996, -479.99994, 94.99999, -509.99994, 114.99999, -834.99994, 79.99999, -1114.9999, -44.999996, -1124.9999, -59.999992, -529.99994, -19.999998, -489.99994)
 
 [node name="InteractionArea" type="Area2D" parent="Node2D2" unique_id=1602574643]
 unique_name_in_owner = true
@@ -51,27 +67,8 @@ shape = SubResource("CircleShape2D_giktf")
 [node name="Node2D" type="Node2D" parent="Node2D2" unique_id=1950302434]
 rotation = -1.5707964
 
-[node name="ColorRect" type="ColorRect" parent="Node2D2/Node2D" unique_id=704991216]
-offset_top = -19.0
-offset_right = 674.0
-offset_bottom = 21.0
-mouse_filter = 2
-color = Color(0.2967, 0.2967, 0.43, 1)
-metadata/_edit_use_anchors_ = true
-
-[node name="ColorRect3" type="ColorRect" parent="Node2D2/Node2D" unique_id=717703338]
-offset_top = -19.0
-offset_right = 47.0
-offset_bottom = 21.0
-mouse_filter = 2
-color = Color(0.41250002, 0.41250002, 0.55, 1)
-metadata/_edit_use_anchors_ = true
-
-[node name="ColorRect2" type="ColorRect" parent="Node2D2/Node2D" unique_id=1772328036]
-offset_left = 638.0
-offset_top = -63.0
-offset_right = 1074.0
-offset_bottom = 64.0
-mouse_filter = 2
-color = Color(0.1725, 0.22545834, 0.25, 1)
-metadata/_edit_use_anchors_ = true
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Node2D2/Node2D" unique_id=169628297]
+position = Vector2(534.99994, 80.00002)
+rotation = -1.9172411
+scale = Vector2(0.6, 0.6)
+sprite_frames = SubResource("SpriteFrames_60exv")
