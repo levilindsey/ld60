@@ -6,31 +6,18 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 
 ## Waiting on Levi
 
-- **LX47** · Confirm m1-screws' flathead calls in play: 2 install twists
-  of 101.25 degrees undo the 4 out; the ratchet only between twists; an
-  overcorrection can unseat, even in the pause; the driver turns 360
-  degrees with the screw (`docs/design/m1_agents.md`).
+- **LX47** · Confirm m1-screws' flathead calls in play: a screw goes back
+  in with 2 twists of 101.25 degrees (it comes back 202.5 degrees off
+  home, which the slot shows as 22.5; out is 4 twists of 90); the ratchet
+  plays only between twists; an overcorrection can unseat, even in the
+  pause; the driver turns 360 degrees with the screw on the way out
+  (`docs/design/m1_agents.md`, the m1-screws handoff).
 
 ## In progress
 
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
 
-- **LX10** · Screw health: damage frames, stripped, seized, install mode
-  (`docs/design/screws.md`).
-  - owner: claude agent `m1-screws` (Opus) of session 194d3b69 (Levi),
-    since 2026-10-17 13:30 (resumed 14:27 after a reboot)
-  - branch: `m1-screws`, worktree
-    `.claude/worktrees/agent-aad34b3179ae3d1e5`; last commit: `5f3b9f4`
-    (rebased onto 0ba61be; unpushed)
-  - evidence: `.claude/probes/m1-screws/` in that worktree
-  - next: final checks on the rebased branch (boot, the m1-core,
-    m1-flow and m1-screws probes), then the handoff
-  - brief: `docs/design/m1_agents.md` "m1-screws"
-- **LX11** · Flathead rework: 1 s eased twists, eased drift (at most 0.6
-  of the tolerance per twist), correction along the slot, unseat
-  (`docs/design/flathead.md`).
-  - owner, branch, evidence, next, brief: as LX10 (agent `m1-screws`)
 
 ## Next
 
@@ -79,8 +66,8 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   (`src/repairables/repair_layer.gd`), and the screw's tinted head frames
   and polygon rust (`src/interaction_points/screw.gd`). The finished
   item's outline needs `Sprite2D` art with transparent margins;
-  `ColorRect` placeholders only get the glow. Taryn's five new images in
-  `assets/images/` (screw and driver art, by their names) are unused.
+  `ColorRect` placeholders only get the glow. Taryn's six new screw and
+  driver PNGs in `assets/images/` (one in `gui/`) are not used yet.
 - **LX25** · Sounds: collect each design doc's "Feedback" list and add
   the streams to `src/core/audio_main.tscn`. Levi's cleaned foley is in
   `assets/audio/foley_cleaned/`; the flathead's scrape wants a rising
@@ -146,6 +133,10 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX10** · Screw health: damage frames, stripped, seized, install mode.
+  Done in 8c8e354 (2026-10-17).
+- **LX11** · Flathead rework: eased twists and drift, correcting along the
+  slot, the unseat. Done in 8c8e354 (2026-10-17).
 - **LX45** · Code Style moved to `.claude/rules/gdscript-style.md`;
   CLAUDE.md went from 411 to 317 lines. Done in 8410091 (2026-10-17).
 - **LX9** · Item flow: arrival, ticket card, finish payoff, drag to the

@@ -94,21 +94,61 @@ Done when `check.ps1` passes clean and fails on the planted error from
 both shells, CLAUDE.md has the new section and the pointer, and the two
 rule files exist. Commit by pathspec. Append a handoff to this doc.
 
-## Stage B: tracked probes (after `m1-screws` merges)
+## Stage B: tracked probes
 
-Both stage 2 agents change m1-core's probe in their worktrees, so the
-probes move into the repo once both have merged:
-- `tests/` with the m1-core probe (merged with both agents' edits) and
-  the m1-flow and m1-screws probes, `tests/run.ps1`, and
-  `check.ps1 -Tests`.
-- The export presets exclude `tests/*`. Probe scripts have no
-  `class_name`.
-- CLAUDE.md: how to write and run a probe.
-- A sweep that loads every `.gd` and `.tscn` under `src/`, since import
-  and boot miss errors in scripts nothing loads yet (the stage A
-  handoff's "Coverage gap").
-- Items tween in, so a probe waits for the item to land (m1-core's
-  `_wait_for_landing`) before it presses on it.
+Agent `lx42-tests` (Sonnet), after `m1-screws` merged (8c8e354). Owns
+`tests/` (new), `scripts/check.ps1`, `export_presets.cfg`,
+`.claude/rules/tests.md` (new), `README.md`, and in `CLAUDE.md` only
+"Working with Claude Code". Don't touch `src/`, scenes, `settings.tres`
+or `LEDGER.md`.
+
+The probes are untracked, in the main checkout's `.claude/probes/`:
+`m1-core` (the full loop), `m1-flow` (the item flow) and `m1-screws`.
+Each is a `probe.gd` and `probe.tscn` with a `run_probe.ps1`, and
+`m1-screws/run_all.ps1` runs them all. Headless, they pass 73 (and 6
+with m1-core's `-Booklet`), 72 and 64 checks today.
+
+1. **`tests/`**: one folder per probe, named for what it covers rather
+   than the agent that wrote it (`tests/full_loop/`, say). Move the
+   checks over unchanged except for paths. Probe scripts have no
+   `class_name`. Shared helpers (the check and summary functions,
+   `_wait_for_landing()`, `_tap_at()`) may move to one base script that
+   the probes extend by path. Logs and screenshots go to `build/tests/`
+   (git-ignored), never under `tests/`.
+2. **`tests/run.ps1`** runs every probe headless (the `-Booklet` run
+   too), or one with `-Name`. A probe passes when its `PROBE SUMMARY`
+   line shows 0 failed and its log has no `SCRIPT ERROR` or `ERROR:`
+   line. One result line per probe, exit 1 on any failure. The rules of
+   `check.ps1` hold: Windows PowerShell 5.1, a timeout per run, and kill
+   only the PID tree it started. Windowed options (screenshots) stay
+   opt-in.
+3. **The sweep**: a scene that loads every `.gd`, `.tscn` and `.tres`
+   under `res://src/` and reports any that fail, since the import and
+   the boot miss errors in scripts nothing loads yet (the stage A
+   handoff's "Coverage gap"). `check.ps1` runs it every time, after the
+   boot. Report its run time; if it is over 10 s, make it a flag.
+4. **`check.ps1 -Tests`** runs `tests/run.ps1` after the sweep. Reuse
+   `Invoke-Godot`, `Read-Lines`, `Get-ErrorIndexes`, `Show-Errors` and
+   `Fail` (stage A handoff).
+5. **Export presets** exclude `tests/*` in both presets'
+   `exclude_filter`. Prove it with `--export-pack` into `build/` and a
+   search of the pack for `tests/`.
+6. **Docs.** CLAUDE.md "Working with Claude Code" gains at most 6
+   lines: run `scripts/check.ps1 -Tests` before pushing a gameplay
+   change, and add a probe for new behavior. The details go in a new
+   `.claude/rules/tests.md` scoped to `tests/**`: how a probe drives the
+   game (instantiate `main.tscn`, go to GAME, wait for the item to land
+   since items tween in, then `push_input()` in viewport pixels), the
+   summary line, no `class_name`, headless by default, and LX44 (keep
+   the real mouse still over a windowed run). README "Check your
+   change" gets one line on `-Tests`.
+
+Done when `check.ps1` is clean; it fails on a parse error planted in a
+new script that nothing loads; `-Tests` runs all three probes green, and
+exits 1 on a planted failing check (revert both plants); the exported
+pack holds no `tests/` file; CLAUDE.md stays under 400 lines. Run the
+final `check.ps1 -Tests` once from Git Bash too. Commit by pathspec on
+branch `lx42-tests` and never push. Append a handoff to this doc.
 
 LX38's web clipping probe stays separate: it needs a web export and
 Chrome.
