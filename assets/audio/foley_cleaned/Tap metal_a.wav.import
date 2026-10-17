@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cym7o3w6ymjs5"
+path="res://.godot/imported/Tap metal_a.wav-3eb56cdee12b85a42e08d0547078eaaf.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/Tap metal_a.wav"
+dest_files=["res://.godot/imported/Tap metal_a.wav-3eb56cdee12b85a42e08d0547078eaaf.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dlp54vv5fe75e"
+path="res://.godot/imported/rattle snap on_a.wav-3f6fa347f2d7d8cbe84bd53d6965d9bf.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/rattle snap on_a.wav"
+dest_files=["res://.godot/imported/rattle snap on_a.wav-3f6fa347f2d7d8cbe84bd53d6965d9bf.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

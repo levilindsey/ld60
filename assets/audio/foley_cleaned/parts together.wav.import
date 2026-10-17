@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dddrc04h0lbv6"
+path="res://.godot/imported/parts together.wav-d050b34d64a6d948114256395e51e460.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/parts together.wav"
+dest_files=["res://.godot/imported/parts together.wav-d050b34d64a6d948114256395e51e460.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -142,6 +142,11 @@ restarts); `G.game_panel.restart_level()` -> a fresh Level instance.
   the presses. A point's `engage(tool)` places the tool until
   `finish()`. The item emits `landed`, `layer_removed`,
   `layer_installed`, `point_finished`, `finished` and `departed`.
+- **Screws** (`Screw`, `docs/design/screws.md`): `take_damage()`,
+  `unseize()`, `remove()`, `install()`, and the signals `damaged`,
+  `stripped`, `removed` and `installed`. `FlatHeadScrew` runs the
+  twist cycle (`docs/design/flathead.md`), timed by the "Flathead"
+  group in `settings.gd`.
 - **Dev hotkeys** (`settings.dev_mode`): `P` screenshot (to
   `user://screenshots/`), `O` toggle HUD, `Esc` pause.
 
