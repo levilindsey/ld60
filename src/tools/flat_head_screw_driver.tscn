@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://m8ven6g4aiv4"]
+
+[ext_resource type="Script" uid="uid://co3owsfq8o6x5" path="res://src/tools/flat_head_screw_driver.gd" id="1_85718"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
+radius = 18.110771
+
+[node name="ScrewDriver" type="Node2D" unique_id=1486551663]
+script = ExtResource("1_85718")
+
+[node name="Node2D" type="Node2D" parent="." unique_id=1950302434]
+rotation = -0.87266463
+
+[node name="ColorRect" type="ColorRect" parent="Node2D" unique_id=704991216]
+offset_top = -19.0
+offset_right = 674.0
+offset_bottom = 21.0
+color = Color(0.2967, 0.2967, 0.43, 1)
+metadata/_edit_use_anchors_ = true
+
+[node name="ColorRect3" type="ColorRect" parent="Node2D" unique_id=717703338]
+offset_top = -19.0
+offset_right = 47.0
+offset_bottom = 21.0
+color = Color(0.41250002, 0.41250002, 0.55, 1)
+metadata/_edit_use_anchors_ = true
+
+[node name="ColorRect2" type="ColorRect" parent="Node2D" unique_id=1772328036]
+offset_left = 638.0
+offset_top = -63.0
+offset_right = 1074.0
+offset_bottom = 64.0
+color = Color(0.1725, 0.22545834, 0.25, 1)
+metadata/_edit_use_anchors_ = true
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1602574643]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1167529110]
+shape = SubResource("CircleShape2D_giktf")

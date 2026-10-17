@@ -1,9 +1,15 @@
 [gd_scene format=3 uid="uid://bukfeupi41tif"]
 
 [ext_resource type="Script" uid="uid://bqj50lqds4nhs" path="res://src/level/level.gd" id="1_la7um"]
+[ext_resource type="Script" uid="uid://3xax4i6teywv" path="res://src/level/camera_shaker.gd" id="2_xv147"]
 
 [node name="Level" type="Node2D" unique_id=894130576]
 script = ExtResource("1_la7um")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1488511100]
 unique_name_in_owner = true
+
+[node name="CameraShaker" type="Node" parent="." unique_id=641136694 node_paths=PackedStringArray("camera")]
+script = ExtResource("2_xv147")
+camera = NodePath("../Camera2D")
+metadata/_custom_type_script = "uid://3xax4i6teywv"
