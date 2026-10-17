@@ -28,9 +28,16 @@ func _ready() -> void:
 ## Turns the driver with the screw: its in-use angle plus how far the
 ## screw has turned since the driver engaged.
 func set_twist_rotation(twist_rad: float) -> void:
-	if is_instance_valid(rotation_tween):
-		rotation_tween.kill()
-	rotation = deg_to_rad(in_use_angle_deg) + twist_rad
+	# We don't want to rotate the screwdriver; we want to play the twist animation.
+	pass
+
+
+func _start_twist_animation() -> void:
+	%AnimatedSprite2D.play("twisting")
+
+
+func _stop_twist_animation() -> void:
+	%AnimatedSprite2D.play("default")
 
 
 ## The handle tenses before a twist: a small squash, then it relaxes.
@@ -55,14 +62,16 @@ func tense(duration_sec: float) -> void:
 
 
 func _set_mode(to_mode: Mode, from_mode: Mode) -> void:
-	if from_mode == Mode.IN_USE and to_mode != Mode.IN_USE:
-		# The twists may have turned the driver by whole turns. Start from
-		# the same angle nearest the next one, so it takes the short way.
-		var to_rotation := deg_to_rad(
-			held_rotation_deg if to_mode == Mode.HELD else stored_rotation_deg
-		)
-		rotation = to_rotation + angle_difference(to_rotation, rotation)
+	if to_mode == from_mode:
+		return
+
+	if from_mode == Mode.IN_USE:
+		_stop_twist_animation()
+	elif to_mode == Mode.IN_USE:
+		_start_twist_animation()
+
 	super._set_mode(to_mode, from_mode)
+
 	match to_mode:
 		Mode.IN_USE:
 			tween_rotation(deg_to_rad(in_use_angle_deg), Tween.EASE_IN_OUT)

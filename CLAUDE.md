@@ -73,10 +73,14 @@ that finishes it.
   `images/` (tool art, `props/` background + Krita source, `gui/`
   buttons, `placeholders/`), `shaders/sprite_outline.gdshader`.
 - `docs/design/` - One design doc per piece of work.
-- `scripts/` - `check.ps1`, `export_web.ps1`, `serve_web.py`. `build/`
-  holds export outputs (gitignored).
+- `scripts/` - `check.ps1` (run after every change), `godot_helpers.ps1`
+  (shared by `check.ps1` and `tests/run.ps1`), `export_web.ps1`,
+  `serve_web.py`. `build/` holds export and check outputs (gitignored).
+- `tests/` - Headless probes that play the game (`run.ps1`,
+  `probe_base.gd`, one folder per probe) and the `sweep/` that loads
+  every file under `src/`. Excluded from exports.
 - `.claude/rules/` - Path-scoped Claude Code rules: the GDScript style
-  guide and the ledger convention.
+  guide, the ledger convention and how to write tests.
 
 ## Boot Flow
 
@@ -262,8 +266,12 @@ carries what Claude needs to check its own work.
   Godot's exit code, which is non-zero on some good runs. `-SkipImport`
   skips the import, `-Frames <n>` changes the boot length and
   `-Godot <exe>` picks the Godot. The logs are in `build/check/`
-  (git-ignored). It sees only what the import and the boot load, so a
-  script nothing references yet shows no errors until something uses it.
+  (git-ignored). A sweep then loads every `.gd`, `.tscn` and `.tres` under
+  `src/`, so a parse error in a script nothing loads yet fails it too.
+- **Before pushing a gameplay change, run `scripts/check.ps1 -Tests`.**
+  It adds the probes in `tests/` (about 90 s): each plays the game
+  headless with pushed input and fails on a broken check. Add a probe for
+  new behavior; `.claude/rules/tests.md` says how (it loads on `tests/`).
 - **A fresh clone or worktree has no `.godot/` cache.** Import before
   anything else (`check.ps1` does), and again after adding or renaming a
   `class_name`; until then Godot reports the new class as unknown.

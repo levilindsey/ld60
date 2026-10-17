@@ -1,7 +1,8 @@
-# Checks that the project imports and boots without script errors.
+# Checks that the project imports, boots and loads without script errors.
 # Run it after every change, before you commit or push.
 #
 #   powershell -ExecutionPolicy Bypass -File scripts/check.ps1
+#   powershell -ExecutionPolicy Bypass -File scripts/check.ps1 -Tests
 #
 # The same line works from Git Bash (Claude Code's Bash tool on Windows).
 # It runs under Windows PowerShell 5.1, so it keeps to that syntax: no
@@ -14,7 +15,10 @@
 #      a pull that adds a class_name, and after new assets. Skip it with
 #      -SkipImport when none of those happened.
 #   3. Boots the project (headless) for -Frames frames.
-#   4. Reads the logs in build/check/. A "SCRIPT ERROR" or an "ERROR:" line
+#   4. Sweeps: runs tests/sweep/sweep.tscn (headless), which loads every
+#      .gd, .tscn and .tres under src/ and reports each one that fails.
+#   5. With -Tests, runs the probes in tests/ (tests/run.ps1, about 90 s).
+#   6. Reads the logs in build/check/. A "SCRIPT ERROR" or an "ERROR:" line
 #      fails the check: each is printed with the "at:" line after it, which
 #      names a file and line. For a parse error in a class_name script,
 #      Godot names the file ("Could not parse global class") but not the
@@ -23,9 +27,10 @@
 # It judges by the logs, not by Godot's exit code, because Godot exits
 # non-zero on some successful runs (ObjectDB-leak warnings).
 #
-# Coverage: it sees only what the import and the boot load (the autoloads,
-# the main scene and what they reference). A script that nothing loads yet
-# is not parsed, so an error in it passes until something uses it.
+# Coverage: the import and the boot parse only what the main scene reaches
+# (the autoloads and what they reference), so the sweep loads the rest of
+# src/. A script outside src/ is not swept. A planted parse error in a new
+# script that nothing loads still fails the check, in the sweep.
 #
 # Finding Godot, in order: -Godot <exe>, then $env:GODOT, then "godot" on
 # PATH. To set it for this PowerShell window:
@@ -35,238 +40,32 @@
 #   -Godot <exe>   Use this Godot executable.
 #   -SkipImport    Skip the import step.
 #   -Frames <n>    Frames to boot for (default 1200).
+#   -Tests         Also run the probes in tests/ after the sweep.
 #
 # Exit codes: 0 = OK, 1 = the check failed, 2 = Godot was not found, could
 # not be started, or the options are wrong.
 #
 # A Godot run that hangs is stopped after a timeout (import 300 s, boot
-# 120 s). Only the process this script started is stopped, never Godot by
-# name, because the Godot editor is usually open.
+# 120 s, sweep 60 s). Only the process this script started is stopped,
+# never Godot by name, because the Godot editor is usually open.
 
 param(
     [string]$Godot = "",
     [switch]$SkipImport,
-    [int]$Frames = 1200
+    [int]$Frames = 1200,
+    [switch]$Tests
 )
 
 $RepoRoot = (Split-Path -Parent $PSScriptRoot).TrimEnd('\')
-$CheckDirectory = Join-Path $RepoRoot "build\check"
+$LogDirectory = Join-Path $RepoRoot "build\check"
+$LogPrefix = "check"
 $ImportTimeoutSeconds = 300
 $BootTimeoutSeconds = 120
+$SweepTimeoutSeconds = 60
 $WantedVersion = "4.7"
 
-# Log lines that fail the check. Case-sensitive. This covers Godot's
-# "ERROR:", "SCRIPT ERROR:", "SHADER ERROR:" and "USER ERROR:" lines.
-$ErrorPattern = "ERROR:"
-$WarningPattern = "WARNING:"
-
-# Error lines that are known to be harmless. Keep this list short and
-# narrow, with a reason for each entry. A line that matches one of these
-# is not counted as an error.
-$AllowedErrorPatterns = @()
-
-# How many failing lines to print before summarizing the rest.
-$MaxPrintedErrors = 15
-
-
-function Write-Check([string]$Text) {
-    Write-Host "check: $Text"
-}
-
-
-function Write-Plain([string]$Text) {
-    # Godot logs can hold characters a console may not show. Keep ASCII.
-    Write-Host ($Text -replace '[^\x20-\x7E\t]', '?')
-}
-
-
-function Exit-Setup([string]$Text) {
-    Write-Check "$Text"
-    exit 2
-}
-
-
-function Format-Argument([string]$Text) {
-    # Windows PowerShell 5.1 joins Start-Process arguments with spaces and
-    # adds no quotes, so quote anything that holds a space.
-    if ($Text -match '[\s"]') {
-        return '"' + ($Text -replace '"', '\"') + '"'
-    }
-    return $Text
-}
-
-
-function Stop-ProcessTree([int]$ProcessId) {
-    # Ends this one PID and the processes it started. Godot's console
-    # launcher (Godot_*_console.exe) starts the real Godot as a child. This
-    # is never by name.
-    try {
-        & taskkill.exe /PID $ProcessId /T /F 2>&1 | Out-Null
-    } catch {
-        # The process may already be gone.
-    }
-}
-
-
-function Find-Godot([string]$Requested) {
-    # Returns the path to the Godot executable, or exits with code 2.
-    # Trim spaces and quotes: people paste "C:\path\Godot.exe" with quotes.
-    $candidate = "$Requested".Trim().Trim('"')
-    $origin = "-Godot"
-    if (-not $candidate) {
-        $candidate = "$env:GODOT".Trim().Trim('"')
-        $origin = "`$env:GODOT"
-    }
-    if ($candidate) {
-        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
-            return (Resolve-Path -LiteralPath $candidate).Path
-        }
-        $command = Get-Command $candidate -CommandType Application `
-            -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($command) {
-            return $command.Source
-        }
-        Exit-Setup "$origin is '$candidate', but there is no such file."
-    }
-
-    $command = Get-Command godot -CommandType Application `
-        -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($command) {
-        return $command.Source
-    }
-
-    Write-Check "Godot was not found (no -Godot, no `$env:GODOT, and no 'godot' on PATH)."
-    Write-Check "Tell check.ps1 where Godot 4.7 is, in one of these ways:"
-    Write-Host '  for this run:        -Godot "C:\path\to\Godot_v4.7.2-stable_win64_console.exe"'
-    Write-Host '  for this window:     $env:GODOT = "C:\path\to\Godot_v4.7.2-stable_win64_console.exe"'
-    Write-Host '  for every window:    setx GODOT "C:\path\to\Godot_v4.7.2-stable_win64_console.exe"'
-    exit 2
-}
-
-
-function Invoke-Godot {
-    # Runs Godot, waits up to TimeoutSeconds, and returns what happened.
-    # Output goes to build/check/<Name>.stdout.txt and <Name>.stderr.txt.
-    param(
-        [string]$Executable,
-        [string[]]$Arguments,
-        [string]$Name,
-        [int]$TimeoutSeconds
-    )
-
-    $stdoutPath = Join-Path $CheckDirectory "$Name.stdout.txt"
-    $stderrPath = Join-Path $CheckDirectory "$Name.stderr.txt"
-    $argumentLine = ($Arguments | ForEach-Object { Format-Argument $_ }) -join ' '
-
-    $result = New-Object psobject -Property @{
-        StartError = ""
-        TimedOut = $false
-        ExitCode = $null
-        Seconds = 0.0
-        ProcessId = 0
-        StdoutPath = $stdoutPath
-        StderrPath = $stderrPath
-    }
-
-    $stopwatch = [Diagnostics.Stopwatch]::StartNew()
-    try {
-        $process = Start-Process -FilePath $Executable `
-            -ArgumentList $argumentLine `
-            -WorkingDirectory $RepoRoot `
-            -PassThru -NoNewWindow `
-            -RedirectStandardOutput $stdoutPath `
-            -RedirectStandardError $stderrPath `
-            -ErrorAction Stop
-    } catch {
-        $result.StartError = $_.Exception.Message
-        return $result
-    }
-
-    # Reading Handle keeps ExitCode readable after the process exits
-    # (a Windows PowerShell quirk).
-    $null = $process.Handle
-    $result.ProcessId = $process.Id
-    if ($process.WaitForExit($TimeoutSeconds * 1000)) {
-        $process.WaitForExit()
-        $result.ExitCode = $process.ExitCode
-    } else {
-        $result.TimedOut = $true
-        Stop-ProcessTree $process.Id
-        $null = $process.WaitForExit(10000)
-    }
-    $result.Seconds = [math]::Round($stopwatch.Elapsed.TotalSeconds, 1)
-    return $result
-}
-
-
-function Read-Lines([string]$Path) {
-    # The lines of a log, or an empty array if it is missing or locked.
-    try {
-        if (Test-Path -LiteralPath $Path -PathType Leaf) {
-            return [string[]][IO.File]::ReadAllLines($Path)
-        }
-    } catch {
-        # Fall through.
-    }
-    return [string[]]@()
-}
-
-
-function Test-Allowed([string]$Line) {
-    foreach ($pattern in $AllowedErrorPatterns) {
-        if ($Line -cmatch $pattern) {
-            return $true
-        }
-    }
-    return $false
-}
-
-
-function Get-ErrorIndexes([string[]]$Lines) {
-    $found = @()
-    for ($i = 0; $i -lt $Lines.Count; $i++) {
-        if (($Lines[$i] -cmatch $ErrorPattern) -and -not (Test-Allowed $Lines[$i])) {
-            $found += $i
-        }
-    }
-    return $found
-}
-
-
-function Show-Errors([string]$Label, [string[]]$Lines, $Indexes) {
-    Write-Check "$($Indexes.Count) error line(s) in the $Label log:"
-    $printed = 0
-    foreach ($index in $Indexes) {
-        if ($printed -ge $MaxPrintedErrors) {
-            break
-        }
-        Write-Plain $Lines[$index]
-        # The line after an error names the file and line.
-        if ($index + 1 -lt $Lines.Count -and $Lines[$index + 1] -cnotmatch $ErrorPattern) {
-            Write-Plain $Lines[$index + 1]
-        }
-        $printed++
-    }
-    if ($Indexes.Count -gt $printed) {
-        Write-Check "... and $($Indexes.Count - $printed) more."
-    }
-}
-
-
-function Fail([string]$Text, [string]$LogPath) {
-    Write-Check "FAIL: $Text"
-    if ($LogPath) {
-        Write-Check "The full log is $LogPath"
-    }
-    exit 1
-}
-
-
-function Remove-IfPresent([string]$Path) {
-    if (Test-Path -LiteralPath $Path) {
-        Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
-    }
-}
+# Find-Godot, Invoke-Godot, the log readers, Fail and the error settings.
+. (Join-Path $PSScriptRoot "godot_helpers.ps1")
 
 
 # Check the options.
@@ -277,11 +76,11 @@ if ($Frames -lt 1) {
 $GodotPath = Find-Godot $Godot
 
 # Start from clean logs so an old log can never pass for this run.
-New-Item -ItemType Directory -Force -Path $CheckDirectory | Out-Null
-foreach ($name in @("version", "import", "boot")) {
-    Remove-IfPresent (Join-Path $CheckDirectory "$name.stdout.txt")
-    Remove-IfPresent (Join-Path $CheckDirectory "$name.stderr.txt")
-    Remove-IfPresent (Join-Path $CheckDirectory "$name.log")
+New-Item -ItemType Directory -Force -Path $LogDirectory | Out-Null
+foreach ($name in @("version", "import", "boot", "sweep")) {
+    Remove-IfPresent (Join-Path $LogDirectory "$name.stdout.txt")
+    Remove-IfPresent (Join-Path $LogDirectory "$name.stderr.txt")
+    Remove-IfPresent (Join-Path $LogDirectory "$name.log")
 }
 
 # Godot version.
@@ -317,7 +116,7 @@ if (-not $versionText) {
 if ($SkipImport) {
     Write-Check "import skipped (-SkipImport)"
 } else {
-    $importLog = Join-Path $CheckDirectory "import.log"
+    $importLog = Join-Path $LogDirectory "import.log"
     Write-Check "importing the project (up to $ImportTimeoutSeconds s)..."
     $import = Invoke-Godot -Executable $GodotPath -Name "import" `
         -TimeoutSeconds $ImportTimeoutSeconds `
@@ -339,7 +138,7 @@ if ($SkipImport) {
 }
 
 # Boot.
-$bootLog = Join-Path $CheckDirectory "boot.log"
+$bootLog = Join-Path $LogDirectory "boot.log"
 Write-Check "booting for $Frames frames (up to $BootTimeoutSeconds s)..."
 $boot = Invoke-Godot -Executable $GodotPath -Name "boot" `
     -TimeoutSeconds $BootTimeoutSeconds `
@@ -361,6 +160,58 @@ $bootErrors = @(Get-ErrorIndexes $bootLines)
 if ($bootErrors.Count -gt 0) {
     Show-Errors "boot" $bootLines $bootErrors
     Fail "the boot logged errors." $bootLog
+}
+
+# Sweep: load every script and scene under src/. The import and the boot
+# parse only what the main scene reaches, so an error in any other script
+# shows up here. The scene prints one "SWEEP FAIL:" line per file that does
+# not load, and a "SWEEP SUMMARY:" line.
+$sweepLog = Join-Path $LogDirectory "sweep.log"
+Write-Check "sweeping src/ (up to $SweepTimeoutSeconds s)..."
+$sweep = Invoke-Godot -Executable $GodotPath -Name "sweep" `
+    -TimeoutSeconds $SweepTimeoutSeconds `
+    -Arguments @("--headless", "--path", $RepoRoot, "res://tests/sweep/sweep.tscn", "--log-file", $sweepLog)
+if ($sweep.StartError) {
+    Write-Check "Could not start Godot: $($sweep.StartError)"
+    exit 2
+}
+if ($sweep.TimedOut) {
+    Fail "the sweep did not finish in $SweepTimeoutSeconds s (stopped PID $($sweep.ProcessId))." $sweepLog
+}
+
+$sweepLines = @(Read-Lines $sweepLog)
+if ($sweepLines.Count -eq 0) {
+    Fail "Godot wrote no sweep log (exit code $($sweep.ExitCode))." $sweepLog
+}
+$sweepErrors = @(Get-ErrorIndexes $sweepLines)
+$sweepFailures = @($sweepLines | Where-Object { $_ -cmatch '^SWEEP FAIL: ' })
+if ($sweepErrors.Count -gt 0) {
+    Show-Errors "sweep" $sweepLines $sweepErrors
+}
+foreach ($line in $sweepFailures) {
+    Write-Plain $line
+}
+if ($sweepErrors.Count -gt 0 -or $sweepFailures.Count -gt 0) {
+    Fail "the sweep found a script or scene that does not load." $sweepLog
+}
+$sweepSummary = @($sweepLines | Where-Object { $_ -cmatch '^SWEEP SUMMARY: \d+ loaded, 0 failed' })
+if ($sweepSummary.Count -eq 0) {
+    Fail "the sweep printed no summary, so it may not have finished (exit code $($sweep.ExitCode))." $sweepLog
+}
+Write-Check "sweep finished in $($sweep.Seconds) s ($($sweepSummary[0] -replace '^SWEEP SUMMARY: ', ''))"
+
+# Probes, on request.
+if ($Tests) {
+    Write-Check "running the probes (tests/run.ps1)..."
+    $global:LASTEXITCODE = 1
+    & (Join-Path $RepoRoot "tests\run.ps1") -Godot $GodotPath
+    $testsExit = $global:LASTEXITCODE
+    if ($testsExit -eq 2) {
+        exit 2
+    }
+    if ($testsExit -ne 0) {
+        Fail "the probes failed (see above)." ""
+    }
 }
 
 $warningCount = 0

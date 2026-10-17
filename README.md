@@ -1,8 +1,9 @@
 # LD60
 
 Our Ludum Dare 60 jam game, built with Godot 4.7 (2D, single-player,
-web + Windows builds). Right now this repo holds pre-jam starter
-scaffolding; the actual game arrives once the theme is announced.
+web + Windows builds). The theme is "old tech": broken gadgets arrive
+at a repair shop, each tool is a small microgame, and each repair earns
+1 to 3 stars. The design is in `docs/design/` (start at `overview.md`).
 
 ## Getting set up (first time)
 
@@ -45,6 +46,9 @@ the error lines, each followed by the file and line it points at. If the
 first error says `Could not parse global class`, open the file it names:
 that script has a mistake in it.
 
+For a gameplay change, add `-Tests` to the command to also play the game
+with the probes in `tests/` (about 90 seconds more).
+
 If it says it can't find Godot, tell it where your Godot `.exe` is, once,
 and then open a new PowerShell window:
 
@@ -66,6 +70,8 @@ to the command above instead.
 - `assets/` - Fonts, images, audio.
 - `scripts/` - `check.ps1` (check your change), web export + local
   web-serve tooling.
+- `tests/` - Probes that play the game without a window
+  (`check.ps1 -Tests`), and the sweep that loads every script in `src/`.
 
 ## Web build
 

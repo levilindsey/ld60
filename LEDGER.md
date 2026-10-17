@@ -6,38 +6,32 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 
 ## Waiting on Levi
 
-- **LX47** · Confirm m1-screws' flathead calls in play: 2 install twists
-  of 101.25 degrees undo the 4 out; the ratchet only between twists; an
-  overcorrection can unseat, even in the pause; the driver turns 360
-  degrees with the screw (`docs/design/m1_agents.md`).
+- **LX47** · Flathead calls from the m1-screws handoff
+  (`docs/design/m1_agents.md`), my picks in brackets: 2 install twists of
+  101.25 degrees from a 22.5 degree tilt [keep]; the ratchet only between
+  twists [keep]; overcorrecting unseats, in the pause too [stop the push
+  at the slot's end, so only a drift skids]; the 12 px seat tolerance is
+  about 1 mm of finger travel, inferred [a touch gain, as a setting].
 
 ## In progress
 
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
 
-- **LX10** · Screw health: damage frames, stripped, seized, install mode
-  (`docs/design/screws.md`).
-  - owner: claude agent `m1-screws` (Opus) of session 194d3b69 (Levi),
-    since 2026-10-17 13:30 (resumed 14:27 after a reboot)
-  - branch: `m1-screws`, worktree
-    `.claude/worktrees/agent-aad34b3179ae3d1e5`; last commit: `5f3b9f4`
-    (rebased onto 0ba61be; unpushed)
-  - evidence: `.claude/probes/m1-screws/` in that worktree
-  - next: final checks on the rebased branch (boot, the m1-core,
-    m1-flow and m1-screws probes), then the handoff
-  - brief: `docs/design/m1_agents.md` "m1-screws"
-- **LX11** · Flathead rework: 1 s eased twists, eased drift (at most 0.6
-  of the tolerance per twist), correction along the slot, unseat
-  (`docs/design/flathead.md`).
-  - owner, branch, evidence, next, brief: as LX10 (agent `m1-screws`)
+- **LX53** · Screws slide up the screen as they turn out and back down as
+  they turn in, eased with each twist (Levi, 2026-10-17). In the base
+  `Screw` as a 0-to-1 fraction, the distance a setting (6 px).
+  - owner: claude agent `screw-slide` (Sonnet) of session 194d3b69
+    (Levi), since 2026-10-17, launched after 2bfe51e
+  - branch: `screw-slide`, worktree
+    `.claude/worktrees/agent-a87c69930ac49f448`; last commit: none yet
+  - evidence: new checks in `tests/screws/probe.gd` on that branch
+  - next: the agent builds and tests it, then the coordinator merges it
+  - brief: this entry; no scaling, nothing slides in the pause, an
+    unseat keeps the height
 
 ## Next
 
-- **LX42** · AI workflow stage B, once m1-screws merges: tracked probes
-  in `tests/` with `check.ps1 -Tests`, and a sweep that loads every
-  script and scene (`docs/design/ai_workflow.md` "Stage B"). Stage A
-  (the check script and the rules) is in 8410091.
 - **LX41** · Play M1 by hand, with a mouse and on a touch screen: the
   receipt's click-to-close and 3 s auto-close, and the card and "-N"
   placement (LX12). From m1-core: the pick-up ease, the auto put-away
@@ -45,10 +39,10 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   paused), the booklet, the screw's turn and its 22.5 degree loose
   angle, the set-aside spot at (360,100). From m1-flow: the drag and
   its tilt, the drag cursor shown while an item is held, the ticket's
-  look, the outbox at the left edge, the thud, ding and hmm sounds.
-  From m1-screws: correcting the tip with a mouse and with a finger, the
-  size of touch drags on the Pixel, the sounds, and the look of the head
-  frames, rust, skid and sparks.
+  look, the outbox at the left edge. From m1-screws: correcting the tip
+  with a mouse and with a finger, and the touch drags on the Pixel
+  (LX47). The sounds wait for LX25 (no streams yet), the screw art for
+  LX24.
 - **LX14** · Canned air: spray cone, dust clumps, fans
   (`docs/design/canned_air.md`).
 - **LX15** · Parts bin and part swap: hotspots, sockets, wiggle-out
@@ -79,8 +73,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   (`src/repairables/repair_layer.gd`), and the screw's tinted head frames
   and polygon rust (`src/interaction_points/screw.gd`). The finished
   item's outline needs `Sprite2D` art with transparent margins;
-  `ColorRect` placeholders only get the glow. Taryn's five new images in
-  `assets/images/` (screw and driver art, by their names) are unused.
+  `ColorRect` placeholders only get the glow. Of Taryn's six new screw and
+  driver PNGs, `rrrrrrrrrrrrrevird wercs.png` is the driver's second frame
+  (cb47839); the other five (one in `gui/`) are not used yet.
 - **LX25** · Sounds: collect each design doc's "Feedback" list and add
   the streams to `src/core/audio_main.tscn`. Levi's cleaned foley is in
   `assets/audio/foley_cleaned/`; the flathead's scrape wants a rising
@@ -96,7 +91,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   web build (`assets/images/`).
 - **LX37** · 2b3fa3a committed Krita and PNG backups (`*.kra~`,
   `radio.png~`) and a 69 MB `.kra` (GitHub warns over 50 MB and
-  rejects over 100 MB). Levi: leave them for now (2026-10-17).
+  rejects over 100 MB). Levi: leave them for now (2026-10-17). cb47839
+  added a 20 MB `window.kra-autosave.kra`; ignoring `*~` and
+  `*autosave*` in `.gitignore` would stop new ones.
 - **LX36** · Decals have no cap per part, so repeated unseats pile up,
   and a part that draws nothing (a plain `Node2D`) shows its decals
   unclipped, with no warning (`src/decals/decal_spawner.gd`).
@@ -107,14 +104,19 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   the cursor pointed over the empty desk, and a press on the item left
   the driver in hand. Suspected, not confirmed: real mouse input mixed
   with the pushed events. A probe-side input blocker then caught 0
-  events and the reruns passed (`.claude/probes/m1-core/` in the
-  m1-core worktree).
+  events and the reruns passed. The blocker is now in
+  `tests/probe_base.gd`, and a windowed `item_flow` run blocked 70 real
+  motions and passed (LX42 stage B).
 - **LX48** · Flathead stand-ins: the seized and stripped judder is
   `tool.nope()`, and the tip follows screen positions, not
   `event.relative` (`src/interaction_points/flat_head_screw.gd`).
 - **LX49** · Every run that loads the level logs "Camera2D overridden to
   physics process mode due to use of physics interpolation". Untested
   fix: `process_callback = 0` on the Camera2D in `src/level/level.tscn`.
+- **LX52** · LX42 stage B left untried: the windowed `full_loop` and
+  `screws` runs (`tests/run.ps1 -Name <run> -Screenshots`), Godot found
+  on PATH alone, and a real export without `tests/` (only
+  `--export-pack` was searched; LX26).
 
 ## Ideas (not scheduled)
 
@@ -146,6 +148,15 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX51** · The screws test checks the driver's "twisting" frames instead
+  of its turn (d0f4255). Done in 31153a3 (2026-10-17).
+- **LX42** · AI workflow stage B: `tests/` and `tests/run.ps1`, the `src/`
+  sweep in every `check.ps1`, `check.ps1 -Tests`, and exports without
+  `tests/`. Done in f209751 to 7a2155b (2026-10-17).
+- **LX10** · Screw health: damage frames, stripped, seized, install mode.
+  Done in 8c8e354 (2026-10-17).
+- **LX11** · Flathead rework: eased twists and drift, correcting along the
+  slot, the unseat. Done in 8c8e354 (2026-10-17).
 - **LX45** · Code Style moved to `.claude/rules/gdscript-style.md`;
   CLAUDE.md went from 411 to 317 lines. Done in 8410091 (2026-10-17).
 - **LX9** · Item flow: arrival, ticket card, finish payoff, drag to the

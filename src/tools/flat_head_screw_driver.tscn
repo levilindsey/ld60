@@ -23,12 +23,20 @@ animations = [{
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_5cnk8")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5cnk8")
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_mp5ld")
 }],
 "loop": 1,
-"name": &"default",
+"name": &"twisting",
 "speed": 5.0
 }]
 
@@ -77,9 +85,11 @@ shape = SubResource("CircleShape2D_giktf")
 rotation = -1.5707964
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Node2D2/Node2D" unique_id=169628297]
+unique_name_in_owner = true
 position = Vector2(525, 90.00003)
 rotation = -1.9172411
 scale = Vector2(0.6, 0.6)
 sprite_frames = SubResource("SpriteFrames_60exv")
+animation = &"twisting"
 autoplay = "default"
-frame_progress = 0.12552395
+frame_progress = 0.2890306

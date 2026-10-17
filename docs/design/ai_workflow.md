@@ -94,21 +94,61 @@ Done when `check.ps1` passes clean and fails on the planted error from
 both shells, CLAUDE.md has the new section and the pointer, and the two
 rule files exist. Commit by pathspec. Append a handoff to this doc.
 
-## Stage B: tracked probes (after `m1-screws` merges)
+## Stage B: tracked probes
 
-Both stage 2 agents change m1-core's probe in their worktrees, so the
-probes move into the repo once both have merged:
-- `tests/` with the m1-core probe (merged with both agents' edits) and
-  the m1-flow and m1-screws probes, `tests/run.ps1`, and
-  `check.ps1 -Tests`.
-- The export presets exclude `tests/*`. Probe scripts have no
-  `class_name`.
-- CLAUDE.md: how to write and run a probe.
-- A sweep that loads every `.gd` and `.tscn` under `src/`, since import
-  and boot miss errors in scripts nothing loads yet (the stage A
-  handoff's "Coverage gap").
-- Items tween in, so a probe waits for the item to land (m1-core's
-  `_wait_for_landing`) before it presses on it.
+Agent `lx42-tests` (Sonnet), after `m1-screws` merged (8c8e354). Owns
+`tests/` (new), `scripts/check.ps1`, `export_presets.cfg`,
+`.claude/rules/tests.md` (new), `README.md`, and in `CLAUDE.md` only
+"Working with Claude Code". Don't touch `src/`, scenes, `settings.tres`
+or `LEDGER.md`.
+
+The probes are untracked, in the main checkout's `.claude/probes/`:
+`m1-core` (the full loop), `m1-flow` (the item flow) and `m1-screws`.
+Each is a `probe.gd` and `probe.tscn` with a `run_probe.ps1`, and
+`m1-screws/run_all.ps1` runs them all. Headless, they pass 73 (and 6
+with m1-core's `-Booklet`), 72 and 64 checks today.
+
+1. **`tests/`**: one folder per probe, named for what it covers rather
+   than the agent that wrote it (`tests/full_loop/`, say). Move the
+   checks over unchanged except for paths. Probe scripts have no
+   `class_name`. Shared helpers (the check and summary functions,
+   `_wait_for_landing()`, `_tap_at()`) may move to one base script that
+   the probes extend by path. Logs and screenshots go to `build/tests/`
+   (git-ignored), never under `tests/`.
+2. **`tests/run.ps1`** runs every probe headless (the `-Booklet` run
+   too), or one with `-Name`. A probe passes when its `PROBE SUMMARY`
+   line shows 0 failed and its log has no `SCRIPT ERROR` or `ERROR:`
+   line. One result line per probe, exit 1 on any failure. The rules of
+   `check.ps1` hold: Windows PowerShell 5.1, a timeout per run, and kill
+   only the PID tree it started. Windowed options (screenshots) stay
+   opt-in.
+3. **The sweep**: a scene that loads every `.gd`, `.tscn` and `.tres`
+   under `res://src/` and reports any that fail, since the import and
+   the boot miss errors in scripts nothing loads yet (the stage A
+   handoff's "Coverage gap"). `check.ps1` runs it every time, after the
+   boot. Report its run time; if it is over 10 s, make it a flag.
+4. **`check.ps1 -Tests`** runs `tests/run.ps1` after the sweep. Reuse
+   `Invoke-Godot`, `Read-Lines`, `Get-ErrorIndexes`, `Show-Errors` and
+   `Fail` (stage A handoff).
+5. **Export presets** exclude `tests/*` in both presets'
+   `exclude_filter`. Prove it with `--export-pack` into `build/` and a
+   search of the pack for `tests/`.
+6. **Docs.** CLAUDE.md "Working with Claude Code" gains at most 6
+   lines: run `scripts/check.ps1 -Tests` before pushing a gameplay
+   change, and add a probe for new behavior. The details go in a new
+   `.claude/rules/tests.md` scoped to `tests/**`: how a probe drives the
+   game (instantiate `main.tscn`, go to GAME, wait for the item to land
+   since items tween in, then `push_input()` in viewport pixels), the
+   summary line, no `class_name`, headless by default, and LX44 (keep
+   the real mouse still over a windowed run). README "Check your
+   change" gets one line on `-Tests`.
+
+Done when `check.ps1` is clean; it fails on a parse error planted in a
+new script that nothing loads; `-Tests` runs all three probes green, and
+exits 1 on a planted failing check (revert both plants); the exported
+pack holds no `tests/` file; CLAUDE.md stays under 400 lines. Run the
+final `check.ps1 -Tests` once from Git Bash too. Commit by pathspec on
+branch `lx42-tests` and never push. Append a handoff to this doc.
 
 LX38's web clipping probe stays separate: it needs a web export and
 Chrome.
@@ -153,3 +193,112 @@ path works.
   `powershell ...` command, so Git Bash was run as `bash.exe -c '...'` from
   the PowerShell tool. Someone should run the Git Bash line once from a
   normal session.
+
+## Stage B handoff (lx42-tests, 2026-10-17)
+
+Stage B is done on branch `lx42-tests` (worktree
+`.claude/worktrees/agent-a7be10a80ffc743e1`, never pushed), on top of main's
+9bfa18f, which holds Levi's d0f4255 (the driver's twist mode). Five commits,
+oldest first: `97ec84e` moves the probes into `tests/` with a shared base,
+`38719d7` adds the sweep, `tests/run.ps1` and `check.ps1 -Tests`, `416c15e`
+edits the export filters, `117a5d0` writes the docs, and `3f7fed4` is LX51.
+
+- **`tests/`:** `probe_base.gd` (the check, summary, input and screenshot
+  helpers) and one folder per probe with a `probe.gd` and `probe.tscn`:
+  `full_loop/` (73 checks, plus 6 with `--booklet`), `item_flow/` (72) and
+  `screws/` (65). No `class_name`; a probe starts with
+  `extends "res://tests/probe_base.gd"`. The checks moved unchanged except
+  for paths, and the one LX51 replaced. The `.gd.uid` files are committed.
+- **`tests/run.ps1`:** four runs (`full_loop`, `full_loop_booklet`,
+  `item_flow`, `screws`), all headless, one `PASS` or `FAIL` line each, then
+  `tests: OK (4 run(s), 85.2 s)`. A run passes on a `PROBE SUMMARY` with 0
+  failed, no `SCRIPT ERROR` or `ERROR:` line and no `PROBE TIMEOUT`. It runs
+  every row even after a failure, exits 1 on a failure and 2 on a setup
+  problem, and stops with 2 when a folder has a `probe.tscn` and no row.
+  `-Name <run>` runs one, and with `-Screenshots` runs it windowed and saves
+  PNGs to `build/tests/<folder>/`.
+- **`scripts/godot_helpers.ps1` (new):** the helpers that were in
+  `check.ps1` (`Invoke-Godot`, `Read-Lines`, `Get-ErrorIndexes`,
+  `Show-Errors`, `Fail`, `Find-Godot`, ...). `check.ps1` and `tests/run.ps1`
+  dot-source it after they set `$RepoRoot`, `$LogDirectory` and `$LogPrefix`.
+- **The sweep:** `tests/sweep/sweep.tscn` loads every `.gd`, `.tscn` and
+  `.tres` under `res://src/` (67 files) and prints `SWEEP FAIL: <path>:
+  <reason>` and `SWEEP SUMMARY: <n> loaded, <m> failed`. `check.ps1` runs it
+  after the boot every time. **It takes 0.9 s**, so it is not a flag.
+- **`check.ps1 -Tests`** runs `tests/run.ps1` after the sweep, and a failed
+  run makes `check.ps1` exit 1.
+- **Export:** `tests/*` is in both presets' `exclude_filter`.
+- **Docs:** CLAUDE.md "Working with Claude Code" (6 lines added, 2 removed;
+  the file is 329 lines, main's was 325), `.claude/rules/tests.md`
+  (`paths: ["tests/**"]`), and README (the `-Tests` paragraph, plus a
+  `tests/` bullet in the layout list, which the brief did not ask for).
+
+Proof, from the worktree (Windows PowerShell 5.1 unless noted):
+
+- `scripts/check.ps1 -Tests`: import 3.5 s, boot 9.9 s, sweep 0.9 s (67
+  loaded, 0 failed), full_loop 73, booklet 6, item_flow 72 and screws 64
+  checks PASS (before LX51), 85.2 s, 0 warnings, `check: OK`, exit 0. The
+  final run, after LX51, was from Git Bash (`bash.exe -c 'powershell
+  -ExecutionPolicy Bypass -File scripts/check.ps1 -Tests'`, started from the
+  PowerShell tool as in stage A): 73, 6, 72 and 65 checks, `check: OK`,
+  exit 0.
+- A parse error planted in a new script that nothing loads
+  (`src/core/zz_plant.gd`): the import and the boot passed, the sweep printed
+  `SCRIPT ERROR: Parse Error: Expected grouping expression.`
+  (`zz_plant.gd:5`) and `SWEEP FAIL: res://src/core/zz_plant.gd: does not
+  compile`, and `check.ps1` exited 1. Deleted.
+- A failing check planted in `tests/item_flow/probe.gd` (`_expect(false,
+  "PLANTED failing check")`): `tests: FAIL item_flow: 1 of 73 check(s)
+  failed`, `PROBE FAILED: PLANTED failing check`, the other three runs PASS,
+  `check: FAIL: the probes failed (see above).`, exit 1. Reverted.
+- The packs: `godot --headless --export-pack <preset> build/pack/<x>.pck`
+  (no export templates needed, about 5 s each), then a search of the bytes.
+  With the old filters (the control): 517 `res://` entries, 14 of them under
+  `res://tests/`, 28 raw `tests/` hits, in both the Web and the Windows
+  Desktop pack. With `tests/*` excluded: 499 entries, 0 under `res://tests/`,
+  0 raw hits, in both. The packs are deleted.
+- LX51 (the coordinator's note, after the rebase onto d0f4255): the screws
+  check "the driver turns with the head" and its `_drive_rotation_*`
+  sampling are replaced by two checks. On every sampled frame while the
+  driver is engaged its `%AnimatedSprite2D` plays `twisting` (`0 of 321
+  frames did not`), and once it is back in the hand it shows `default`. Every
+  other check passes unchanged, "the driver eases back to the hand the short
+  way" among them. With a wrong animation name the first check fails on all
+  321 frames (`PROBE FAILED: LX51: the driver plays twisting while in use
+  (321 of 321 frames did not)`, run exit 1). Reverted.
+- One windowed run, `tests/run.ps1 -Name item_flow -Screenshots`: a window
+  was open for 20.8 s, the PNGs landed in `build/tests/item_flow/` (deleted
+  after), and it printed `PROBE REAL INPUT: blocked 70 motions and 0 buttons
+  []`. Real mouse motion arrived and `_RealInputBlocker` dropped it (LX44).
+
+Not done:
+
+- `-Screenshots` ran for `item_flow` only. The windowed `full_loop` run (with
+  `--debug-collisions`) and the windowed `screws` run are untried.
+- Only `--export-pack` ran, never a full web or Windows export (the export
+  templates are per machine), and nothing ran on a machine without
+  `$env:GODOT` (`Find-Godot` is the stage A code).
+- Feel, sound, a real mouse and a touch screen are still for a person.
+- The Git Bash run was `bash.exe -c` from the PowerShell tool again, so the
+  stage A request stands: run `check.ps1 -Tests` once from the Bash tool of
+  a normal session.
+- LX38's web clipping probe stays separate (it needs a web export and
+  Chrome).
+
+At merge, for the coordinator (all of it outside my files):
+
+1. When this was written the branch was main's 9bfa18f plus six commits (the
+   five above and this handoff), so it fast-forwards. If main moved, rebase
+   it: only CLAUDE.md's "Working with Claude Code" could conflict.
+2. LEDGER.md: close LX42 (stage B) and LX51 with the merge commit. LX44's
+   pointer `.claude/probes/m1-core/` becomes `tests/full_loop/`; the
+   real-input blocker is in `tests/probe_base.gd`.
+3. Retire the untracked `m1-core`, `m1-flow` and `m1-screws` folders in the
+   main checkout's `.claude/probes/`, with their `run_probe.ps1` and
+   `run_all.ps1`. They are copies now, and the `m1-screws` one still holds
+   the retired "driver turns" check. `.claude/probes/` stays git-ignored for
+   other probes; the paths to it in `docs/design/m1_agents.md` are history.
+4. CLAUDE.md "Project Structure": add a `tests/` line and put `check.ps1`
+   and `godot_helpers.ps1` on the `scripts/` line (stage A flagged the
+   `scripts/` line too).
+5. Run `scripts/check.ps1 -Tests` on main after the merge.
