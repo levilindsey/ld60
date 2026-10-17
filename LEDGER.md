@@ -32,7 +32,7 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 - **LX42** · AI workflow stage B, once m1-screws merges: tracked probes
   in `tests/` with `check.ps1 -Tests`, and a sweep that loads every
   script and scene (`docs/design/ai_workflow.md` "Stage B"). Stage A
-  (the check script and the rules) is in 2b8f51c.
+  (the check script and the rules) is in e41e349.
 - **LX41** · Play M1 by hand, with a mouse and on a touch screen: the
   receipt's click-to-close and 3 s auto-close, and the card and "-N"
   placement (LX12). From m1-core: the pick-up ease, the auto put-away
@@ -125,7 +125,7 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 ## Done
 
 - **LX45** · Code Style moved to `.claude/rules/gdscript-style.md`;
-  CLAUDE.md went from 411 to 317 lines. Done in 2b8f51c (2026-10-17).
+  CLAUDE.md went from 411 to 317 lines. Done in e41e349 (2026-10-17).
 - **LX9** · Item flow: arrival, ticket card, finish payoff, drag to the
   outbox, item queue. Done in 01b980d (2026-10-17).
 - **LX12** · Quality score, stars, receipt and "-N" popups, wired into

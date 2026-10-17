@@ -104,6 +104,11 @@ probes move into the repo once both have merged:
 - The export presets exclude `tests/*`. Probe scripts have no
   `class_name`.
 - CLAUDE.md: how to write and run a probe.
+- A sweep that loads every `.gd` and `.tscn` under `src/`, since import
+  and boot miss errors in scripts nothing loads yet (the stage A
+  handoff's "Coverage gap").
+- Items tween in, so a probe waits for the item to land (m1-core's
+  `_wait_for_landing`) before it presses on it.
 
 LX38's web clipping probe stays separate: it needs a web export and
 Chrome.

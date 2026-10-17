@@ -73,8 +73,10 @@ that finishes it.
   `images/` (tool art, `props/` background + Krita source, `gui/`
   buttons, `placeholders/`), `shaders/sprite_outline.gdshader`.
 - `docs/design/` - One design doc per piece of work.
-- `scripts/` - `export_web.ps1`, `serve_web.py`. `build/` holds
-  export outputs (gitignored).
+- `scripts/` - `check.ps1`, `export_web.ps1`, `serve_web.py`. `build/`
+  holds export outputs (gitignored).
+- `.claude/rules/` - Path-scoped Claude Code rules: the GDScript style
+  guide and the ledger convention.
 
 ## Boot Flow
 
