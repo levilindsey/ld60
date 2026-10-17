@@ -48,6 +48,9 @@ var _phase_sec := 0.0
 ## The head's angle when the current twist started, and where it ends.
 var _twist_from_rotation := 0.0
 var _twist_to_rotation := 0.0
+## The screw's slide when the current twist started, and where it ends.
+var _twist_from_slide := 0.0
+var _twist_to_slide := 0.0
 ## The drift the current twist adds by its end, and how much of it the tip
 ## has taken so far.
 var _twist_drift_px := 0.0
@@ -207,6 +210,8 @@ func _start_twist() -> void:
 	_is_turning_tool = true
 	_twist_from_rotation = head.rotation
 	_twist_to_rotation = _get_twist_target_rotation(_twists_done + 1)
+	_twist_from_slide = slide
+	_twist_to_slide = _get_twist_target_slide(_twists_done + 1)
 	_twist_drift_px = pick_drift_px(
 		_random,
 		_drift_sign,
@@ -218,11 +223,13 @@ func _start_twist() -> void:
 	_twist_drift_applied_px = 0.0
 
 
-## Eases the head toward the twist's end, and the tip by the same share of
-## the twist's drift, so the drift is never sudden.
+## Eases the head toward the twist's end, and the screw's slide by the same
+## share, so the screw slides only while it turns. The tip takes the same
+## share of the twist's drift, so the drift is never sudden.
 func _turn_and_drift() -> void:
 	var eased := smoothstep(0.0, 1.0, _get_twist_progress())
 	head.rotation = lerpf(_twist_from_rotation, _twist_to_rotation, eased)
+	slide = lerpf(_twist_from_slide, _twist_to_slide, eased)
 	var drift_px := _twist_drift_px * eased
 	tip_offset_px += drift_px - _twist_drift_applied_px
 	_twist_drift_applied_px = drift_px
@@ -231,6 +238,7 @@ func _turn_and_drift() -> void:
 func _finish_twist() -> void:
 	_twists_done += 1
 	head.rotation = _twist_to_rotation
+	slide = _twist_to_slide
 	if _twists_done < _get_twist_count():
 		G.audio.play_sound("ratchet", true)
 		_phase = Phase.PAUSE
@@ -339,3 +347,12 @@ func _get_twist_target_rotation(twist: int) -> float:
 		_home_head_rotation
 		- deg_to_rad(G.settings.flathead_twist_angle_deg) * twist
 	)
+
+
+## The screw's slide at the end of twist number `twist`, counting from 1.
+## Taking the screw out slides it up an even share per twist, so the last
+## twist ends all the way out. Driving it in slides it back down the same
+## way, so the last twist ends at home.
+func _get_twist_target_slide(twist: int) -> float:
+	var share := float(twist) / _get_twist_count()
+	return 1.0 - share if is_install_mode else share

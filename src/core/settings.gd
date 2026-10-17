@@ -160,6 +160,13 @@ enum PhysicsLayer {
 @export var flathead_slip_max := 0.6
 @export_group("")
 
+@export_group("Screw slide")
+## How far a screw slides up the screen, in world pixels, while it turns
+## all the way out. It slides back down as it turns in
+## (docs/design/screws.md "Removal").
+@export var screw_slide_px := 6.0
+@export_group("")
+
 
 ## How many points a defect costs.
 func get_defect_points(defect: RepairQuality.Defect) -> int:

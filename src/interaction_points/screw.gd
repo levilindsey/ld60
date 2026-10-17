@@ -6,11 +6,11 @@ extends InteractionPoint
 ## A screw has health. Every slip of its driver costs 1, and at 0 it is
 ## stripped: the driver no longer bites. A seized screw won't turn until
 ## the oil can frees it. A screw shows how far in it is by turning its
-## head. It never scales.
+## head and sliding up out of its hole (`slide`). It never scales.
 ##
 ## Each screw type runs its own microgame. It overrides
-## `_start_microgame()` and calls `remove()` or `install()` once the head
-## has turned all the way.
+## `_start_microgame()`, feeds `slide` as it turns the head, and calls
+## `remove()` or `install()` once the head has turned all the way.
 
 
 signal damaged(health: int)
@@ -66,10 +66,21 @@ const _PRY_DELAY_SEC := 0.3
 ## turned back, and driving it in uses the same microgame.
 var is_install_mode := false
 var health := 0
+## How far out of its hole the screw has slid: 0 is home and 1 is all the
+## way out. The whole screw, with its head, rust and hit shape, sits
+## `G.settings.screw_slide_px` times this far up from home in its parent's
+## frame, so the screw node's own rotation doesn't tilt the slide. Set it
+## once the screw is ready.
+var slide := 0.0:
+	set(value):
+		slide = clampf(value, 0.0, 1.0)
+		_update_slide_position()
 
 ## The head's angle when the screw is all the way in.
 var _home_head_rotation := 0.0
 var _home_head_position := Vector2.ZERO
+## Where the screw sits in its parent's frame when `slide` is 0.
+var _home_position := Vector2.ZERO
 ## True once a press on the stripped screw has ground and noped.
 var _is_strip_warned := false
 ## True once the first try on the seized screw has ground as a warning.
@@ -89,6 +100,7 @@ func _ready() -> void:
 	G.check(max_health > 0)
 	_home_head_rotation = head.rotation
 	_home_head_position = head.position
+	_home_position = position
 	health = max_health
 	_update_head_frame()
 	_update_rust()
@@ -147,13 +159,15 @@ func engage(tool: Tool) -> void:
 		_start_microgame()
 
 
-## Brings the screw back loose and turned back, ready to be driven in.
+## Brings the screw back loose, turned back and slid out, ready to be
+## driven in.
 func set_install_mode() -> void:
 	super.set_install_mode()
 	is_install_mode = true
 	_stop_hop()
 	visible = true
 	head.rotation = _home_head_rotation - LOOSE_TURN_RAD
+	_snap_slide(1.0)
 	if is_stripped():
 		# Stand-in until LX19. A pried screw is scrap, and a new one comes
 		# from the parts bin. Until then the old one comes back as new.
@@ -162,19 +176,22 @@ func set_install_mode() -> void:
 		_update_head_frame()
 
 
-## Takes the screw out: a pop, and it hops off and disappears. Its layer
-## and item hear about it from finish().
+## Takes the screw out: a pop, and it hops off and disappears. It is all
+## the way out by then. Its layer and item hear about it from finish().
 func remove() -> void:
 	G.audio.play_sound("pop")
+	slide = 1.0
 	finish()
 	_hop_off()
 	removed.emit()
 
 
 ## Drives the screw home after its layer was put back. The microgame turns
-## the head home before it calls this.
+## the head home before it calls this, and the screw ends up all the way
+## in.
 func install() -> void:
 	G.audio.play_sound("click")
+	slide = 0.0
 	finish()
 	installed.emit()
 
@@ -246,6 +263,20 @@ func _update_rust() -> void:
 		rust_overlay.visible = is_seized
 	if is_instance_valid(rust_streak):
 		rust_streak.visible = is_seized
+
+
+## Moves the whole screw to where `slide` says. Home is exact at 0.
+func _update_slide_position() -> void:
+	if not is_node_ready():
+		return
+	position = _home_position + Vector2.UP * G.settings.screw_slide_px * slide
+
+
+## Sets `slide` with no easing from where the screw was, like a screw that
+## has just reappeared.
+func _snap_slide(fraction: float) -> void:
+	slide = fraction
+	reset_physics_interpolation()
 
 
 ## The head hops up and fades, then the screw hides. It never scales.
