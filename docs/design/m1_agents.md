@@ -457,3 +457,59 @@ group ("Item flow") right after m1-core's "Layers" group. Don't edit
 
 Leave to Levi: the drag and tilt feel, the ticket's look and where the
 outbox sits.
+
+### Handoff (m1-flow, 2026-10-17)
+
+LX9 is built and checked, with LX12's receipt and defect popups wired
+into the level. The work is on branch `m1-flow`, unpushed. The probe is
+`.claude/probes/m1-flow/run_probe.ps1` (untracked; `-Screenshots` runs
+windowed and saves PNGs). It passes 72 checks headless. m1-core's probe
+still passes (73 checks, 6 with `-Booklet`).
+
+**What works**
+
+- Arrival: `Level.spawn_repairable(type) -> Repairable` puts the item at
+  `%ItemSpawnPosition` and calls `Repairable.arrive()`. It tweens to
+  `%ActiveItemPosition` (0.6 s, overshoot, straightens). On `landed`:
+  the thud, `Level.shake_camera(7, 0.15)`, mode UNDER_REPAIR, the repair
+  clock starts and `%TicketCard` slides in with `item_name` and `ticket`.
+- Finishing: `finished` plays the ding, a sparkle (`finish_sparkle.tscn`)
+  and the outline glow, and stops the repair clock. Pressing an
+  unfinished item shakes it, plays `hmm` and pulses its remaining points.
+- Dragging: `Hand.drag_item(item)`. Only a finished item, only with an
+  empty hand, and anywhere on it, over its fasteners too. It keeps the
+  grab offset and tilts with the pointer's x speed (up to 8 degrees).
+  The hand shows `CURSOR_DRAG` while it holds an item, and a pause puts
+  the item back on the bench.
+- Outbox: `%Outbox` (Area2D, mask REPAIRABLES) at the left edge, with
+  `%OutboxExitPosition`. `Level.drop_item()` sends a finished item whose
+  `%DropArea` overlaps it (drop 0.15 s, slide off 0.4 s, `departed`).
+  Any other drop calls `return_item()` (0.3 s).
+- Receipt: `departed` opens `%Receipt` with `item.quality`, and the next
+  item drops in 0.5 s later. The last receipt closing calls `win()`.
+- Queue: `item_queue: Array[Repairable.Type]` in "Repairables" (three
+  test items by default). `Level.next_item_index` counts them.
+- Defects: `quality.defect_added` spawns a `DefectPopup` on the level, so
+  it outlives the item.
+- Settings: the "Item flow" group holds the timings, the tilt limits, the
+  outline material and the sparkle scene.
+- The probe runs the whole loop: arrival, a refused press, finishing,
+  drag and ease back, pause while dragging, outbox, receipt, next item, a
+  defect popup, CREDITS and restart.
+
+**Left**
+
+- Levi, with a real mouse, touch screen and ears: the drag and tilt
+  feel, the ticket's look, where the outbox sits, the receipt timing and
+  the thud, ding and hmm.
+- `ColorRect` placeholder art gets the modulate glow only. Real
+  `Sprite2D` art with transparent margins gets the outline too.
+- `item_queue` is three test items until real items exist.
+- A probe that presses an item must wait for UNDER_REPAIR (the landing)
+  first. m1-core's probe does now (`_wait_for_landing`).
+- The m1-flow probe finishes the test item with `point.finish()` twice
+  and a press on the set-aside cover between them (a Screw's first
+  `finish()` means out). If m1-screws changes that cycle, `_finish_item`
+  in the probe changes with it.
+- Later (outbox.md): flick, FRAGILE items, trash basketball, pneumatic
+  tube, a day summary.
