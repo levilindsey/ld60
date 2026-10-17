@@ -29,7 +29,11 @@ func end_game() -> void:
 func start_level() -> void:
 	if is_instance_valid(level):
 		return
-	level = G.settings.default_level_scene.instantiate()
+	var level_scene := G.settings.default_level_scene
+	if not G.level_scene_override_path.is_empty():
+		# The path is only known at runtime, so it can't be an export.
+		level_scene = load(G.level_scene_override_path)
+	level = level_scene.instantiate()
 	add_child(level)
 
 

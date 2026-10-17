@@ -19,6 +19,10 @@ var game_panel: GamePanel
 var session: Session
 var level: Level
 
+## Set when a level scene is run directly. GamePanel loads this level
+## instead of `settings.default_level_scene`.
+var level_scene_override_path := ""
+
 # Convenience proxy for `log.is_verbose`. Declared here with the
 # other autoload variables to keep the variable/function ordering
 # clean for linters.
@@ -42,6 +46,16 @@ func _enter_tree() -> void:
 
 	geometry.name = "Geometry"
 	add_child(geometry)
+
+
+## Lets a level scene run on its own (e.g. "Run Current Scene" in the
+## editor). Swaps the bare level for the main scene, which then boots
+## straight into that level.
+func boot_from_level(level_node: Level) -> void:
+	level_scene_override_path = level_node.scene_file_path
+	get_tree().change_scene_to_file.call_deferred(
+		ProjectSettings.get_setting("application/run/main_scene")
+	)
 
 
 # --- Include some convenient access to logging/error utilities ---------------

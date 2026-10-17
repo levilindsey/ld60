@@ -12,9 +12,16 @@ var has_won := false
 
 var tools_by_type: Dictionary[Tool.Type, Tool] = {}
 var active_repairable: Repairable
+var active_tool: Tool
+var hovered_interaction_point: InteractionPoint
+var active_interaction_point: InteractionPoint
 
 
 func _enter_tree() -> void:
+	if not is_instance_valid(G.main):
+		# This level scene was run directly. Boot the full game into it.
+		G.boot_from_level(self)
+		return
 	G.level = self
 
 
@@ -24,6 +31,9 @@ func _exit_tree() -> void:
 
 
 func _ready() -> void:
+	if not is_instance_valid(G.main):
+		return
+
 	# Center the camera's anchor on its position. In Godot 4.5+ the
 	# Camera2D default changed to FIXED_TOP_LEFT, which would make
 	# the player render at the top-left of the screen given our
@@ -36,7 +46,9 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	pass
+	if event is InputEventMouseButton and event.is_pressed():
+		if is_instance_valid(G.level.hovered_interaction_point) and is_instance_valid(active_tool):
+			active_tool.trigger(G.level.hovered_interaction_point)
 
 
 func start_game() -> void:
@@ -62,8 +74,8 @@ func spawn_tool(type: Tool.Type) -> void:
 	var tool_scene := G.settings.get_tool_scene_from_type(type)
 	G.check(is_instance_valid(tool_scene))
 	var tool: Tool = tool_scene.instantiate()
-	add_child(tool)
-	tool.global_position = %ActiveItemPosition.global_position
+	%Tools.add_child(tool)
+	tool.global_position = %ItemSpawnPosition.global_position
 	tools_by_type[type] = tool
 
 	# TODO: Start from an off-angle.
@@ -76,12 +88,20 @@ func spawn_repairable(type: Repairable.Type) -> void:
 	var item_scene := G.settings.get_repairable_scene_from_type(type)
 	G.check(is_instance_valid(item_scene))
 	var item: Repairable = item_scene.instantiate()
-	add_child(item)
+	%Repairables.add_child(item)
 	item.global_position = %ItemSpawnPosition.global_position
 	active_repairable = item
 
+	var initial_rotation := randf() * TAU
+	item.rotation = initial_rotation
+
+	# Give repairables a slight rotation offset.
+	var target_rotation := randf() * Repairable.ROTATION_OFFSET_MAX * 2.0 - Repairable.ROTATION_OFFSET_MAX
+
 	var target_position: Vector2 = %ActiveItemPosition.global_position
-	# TODO(levilindsey): Tween repairable position to the target position. Also tween rotation from an off-angle start.
+
+	item.tween_rotation(target_rotation, Tween.EASE_IN)
+	item.tween_position(target_position, Tween.EASE_IN)
 
 
 func get_tool_holder_position(type: Tool.Type) -> Vector2:

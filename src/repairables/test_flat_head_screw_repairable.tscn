@@ -7,6 +7,7 @@
 script = ExtResource("1_0ufjt")
 
 [node name="Node2D" type="Node2D" parent="." unique_id=36167144]
+scale = Vector2(0.3, 0.3)
 
 [node name="ColorRect" type="ColorRect" parent="Node2D" unique_id=1907478175]
 offset_left = -147.0

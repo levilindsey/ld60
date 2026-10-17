@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://bqj50lqds4nhs" path="res://src/level/level.gd" id="1_la7um"]
 [ext_resource type="Script" uid="uid://3xax4i6teywv" path="res://src/level/camera_shaker.gd" id="2_xv147"]
 [ext_resource type="Script" uid="uid://bfo0vmq35oagd" path="res://src/level/tool_holder.gd" id="3_af42n"]
+[ext_resource type="Texture2D" uid="uid://wk5xvr0y7ksb" path="res://assets/images/props/background.png" id="4_background"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 34.058773
@@ -18,13 +19,9 @@ script = ExtResource("2_xv147")
 camera = NodePath("../Camera2D")
 metadata/_custom_type_script = "uid://3xax4i6teywv"
 
-[node name="DeskPlaceholder" type="ColorRect" parent="." unique_id=1889668480]
-offset_left = -460.0
-offset_top = -92.0
-offset_right = 461.0
-offset_bottom = 236.0
-mouse_filter = 2
-color = Color(0.61, 0.4448934, 0.25620002, 1)
+[node name="Background" type="Sprite2D" parent="." unique_id=242847735]
+scale = Vector2(0.6666667, 0.6666667)
+texture = ExtResource("4_background")
 
 [node name="ActiveItemPosition" type="Marker2D" parent="." unique_id=802295010]
 unique_name_in_owner = true
@@ -35,6 +32,7 @@ unique_name_in_owner = true
 position = Vector2(0, -549)
 
 [node name="ToolHolders" type="Node" parent="." unique_id=433542721]
+unique_name_in_owner = true
 
 [node name="FlatHeadScrewDriverHolder" type="Area2D" parent="ToolHolders" unique_id=417891166]
 unique_name_in_owner = true
@@ -48,3 +46,9 @@ metadata/_custom_type_script = "uid://bfo0vmq35oagd"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/FlatHeadScrewDriverHolder" unique_id=1805593427]
 shape = SubResource("CircleShape2D_giktf")
 metadata/_edit_lock_ = true
+
+[node name="Repairables" type="Node" parent="." unique_id=75239543]
+unique_name_in_owner = true
+
+[node name="Tools" type="Node" parent="." unique_id=1614121728]
+unique_name_in_owner = true

@@ -45,13 +45,5 @@ height = 200
 
 [node name="ZavenDemoLevel" instance=ExtResource("1_level")]
 
-[node name="Background" type="ColorRect" parent="." index="0"]
-offset_left = -640.0
-offset_top = -360.0
-offset_right = 640.0
-offset_bottom = 360.0
-mouse_filter = 2
-color = Color(0.25, 0.2, 0.17, 1)
-
 [node name="InstructionManual" parent="." instance=ExtResource("2_manual")]
 page_contents = Array[Texture2D]([SubResource("GradientTexture2D_red"), SubResource("GradientTexture2D_orange"), SubResource("GradientTexture2D_green"), SubResource("GradientTexture2D_blue"), SubResource("GradientTexture2D_purple")])
