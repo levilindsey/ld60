@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://co3owsfq8o6x5" path="res://src/tools/flat_head_screw_driver.gd" id="1_85718"]
 [ext_resource type="Texture2D" uid="uid://cwwmjwv0iwo2d" path="res://assets/images/screwdriverrrrrrrrrrrrrrr.png" id="2_rocp8"]
+[ext_resource type="Texture2D" uid="uid://bibqfxkdfodhw" path="res://assets/images/rrrrrrrrrrrrrevird wercs.png" id="3_5cnk8"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_85718"]
 radius = 20.0
@@ -13,11 +14,18 @@ radius = 200.0
 atlas = ExtResource("2_rocp8")
 region = Rect2(0, 0, 3508, 2480)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_mp5ld"]
+atlas = ExtResource("3_5cnk8")
+region = Rect2(0, 0, 3508, 2480)
+
 [sub_resource type="SpriteFrames" id="SpriteFrames_60exv"]
 animations = [{
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_5cnk8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mp5ld")
 }],
 "loop": 1,
 "name": &"default",
@@ -68,7 +76,9 @@ shape = SubResource("CircleShape2D_giktf")
 rotation = -1.5707964
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Node2D2/Node2D" unique_id=169628297]
-position = Vector2(534.99994, 80.00002)
+position = Vector2(525, 90.00003)
 rotation = -1.9172411
 scale = Vector2(0.6, 0.6)
 sprite_frames = SubResource("SpriteFrames_60exv")
+autoplay = "default"
+frame_progress = 0.12552395
