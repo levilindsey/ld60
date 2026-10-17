@@ -19,12 +19,25 @@ tinted freely.
   and disappear at 0.
 - **Variety:** each spawn picks a random texture from its set, a random
   rotation, a scale from a range, a random flip and an optional tint.
-- **Clipping:** set the part sprite's `clip_children` to
-  `CLIP_CHILDREN_AND_DRAW` so that decals only draw where the part is
-  opaque. **Check this first in a web export** (the Compatibility
-  renderer). If it doesn't work there, read the part texture's alpha at
-  the spawn point before spawning (`Texture2D.get_image()`, cached,
-  then `get_pixelv()`), and move or skip the decal.
+- **Clipping:** the part's `clip_children` is `CLIP_CHILDREN_AND_DRAW`
+  (the spawner sets it the first time a part gets a decal), so decals
+  only draw where the part is opaque. **Checked 2026-10-17: it works in
+  the web export and on desktop, so there is no alpha-read fallback.**
+  - The probe put decals over the edges, corners and transparent holes
+    of a `ColorRect` and of a `Sprite2D` with a hole. The parts sat under
+    a rotated and scaled `Node2D`, or had their own rotation and
+    non-uniform scale. A decal on an unclipped part was a positive
+    control: it did hang over the edge.
+  - All 26 pixel checks passed in a Web export (Compatibility renderer,
+    WebGL 2, the thread-less template) in headless Chrome 155, Edge 155
+    and Chrome on SwiftShader, and in a windowed desktop run (OpenGL
+    3.3, Radeon RX 6800 XT).
+  - `BLEND_MODE_MUL` works there too (4 of 4 checks): inside the clip
+    group it darkens the part and stays inside it, while an unclipped
+    one also darkens the background.
+  - Not checked: Firefox, Safari and a phone's browser.
+  - The clip applies to every child of the part, not only decals. Decals
+    go on the node that draws the art (a `ColorRect` or `Sprite2D`).
 - **Blending:** try multiply (a `CanvasItemMaterial` with
   `BLEND_MODE_MUL`) for dust, grime and rust, so they darken what is
   under them. Otherwise use normal blending with semi-transparent art.
