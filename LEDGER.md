@@ -14,45 +14,29 @@ next, brief, env (claude-config rules/ledger.md). -->
 
 - **LX42** · Share the AI workflow for Zaven (Claude Code on Windows): a
   check script, a ledger rule, the gotchas in CLAUDE.md (stage A), then
-  tracked probes in `tests/` (stage B, after m1-screws merges).
+  tracked probes in `tests/` (stage B, after m1-screws merges; a probe
+  waits for the item to land before pressing it).
   - owner: claude agent `lx42-workflow` (Sonnet) of session 194d3b69
     (Levi), since 2026-10-17 14:05
-  - branch: `lx42-workflow`, in an agent worktree; last commit: none yet
-    (base: the commit that added the brief)
+  - branch: `lx42-workflow`, worktree
+    `.claude/worktrees/agent-a8f63ffe7ef1a65fc`; last commit: none yet
+    (base: eae6a1f)
   - evidence: the brief's "Done when" checks
   - next: stage A per the brief
   - brief: `docs/design/ai_workflow.md`
 - **LX45** · CLAUDE.md is 411 lines (budget about 400): move Code Style
   to a path-scoped `.claude/rules/gdscript-style.md`.
   - owner, branch, evidence, next, brief: as LX42 (stage A, step 3)
-
-- **LX12** · Quality score, stars and receipt (`docs/design/quality.md`).
-  - owner: claude session 194d3b69 (Levi); agent `m1-quality` built
-    the pieces (done 12:41), and `m1-flow` wires them into the level
-  - branch: mainline; last commit: 3831dc7
-  - evidence: `.claude/probes/m1-quality/` (`run.ps1`) in the
-    `m1-quality` worktree
-  - next: `m1-flow` wires the receipt and popups in stage 2 (LX9)
-  - brief: `docs/design/m1_agents.md` "m1-quality" and its handoff
-- **LX9** · Item flow: arrival tween, finished-only drag, outbox area,
-  item queue (`docs/design/outbox.md`).
-  - owner: claude agent `m1-flow` (Sonnet) of session 194d3b69 (Levi),
-    since 2026-10-17 13:30
-  - branch: `m1-flow`, worktree
-    `.claude/worktrees/agent-a540a5b6d42f0267e`; last commit: `cd678fb`
-    (WIP: arrival, ticket, payoff, drag, outbox, queue; unpushed)
-  - evidence: `.claude/probes/m1-flow/` in that worktree
-  - next: wire the receipt and popups (LX12), then probes and handoff
-  - brief: `docs/design/m1_agents.md` "m1-flow"
 - **LX10** · Screw health: damage frames, stripped, seized, install mode
   (`docs/design/screws.md`).
   - owner: claude agent `m1-screws` (Opus) of session 194d3b69 (Levi),
     since 2026-10-17 13:30
   - branch: `m1-screws`, worktree
-    `.claude/worktrees/agent-aad34b3179ae3d1e5`; last commit: none yet
-    (base: 5312311)
+    `.claude/worktrees/agent-aad34b3179ae3d1e5`; last commit: `d9e931e`
+    (unpushed; base: 5312311)
   - evidence: `.claude/probes/m1-screws/` in that worktree
-  - next: build and check per the brief
+  - next: finish per the brief, then rebase onto main (m1-flow is in)
+    and keep the m1-core, m1-flow and m1-screws probes passing
   - brief: `docs/design/m1_agents.md` "m1-screws"
 - **LX11** · Flathead rework: 1 s eased twists, eased drift (at most 0.6
   of the tolerance per twist), correction along the slot, unseat
@@ -66,14 +50,17 @@ next, brief, env (claude-config rules/ledger.md). -->
   placement (LX12). From m1-core: the pick-up ease, the auto put-away
   near the rack (too eager?), the cursor and mouse visibility (also
   paused), the booklet, the screw's turn and its 22.5 degree loose
-  angle, the set-aside spot at (360,100). More from the stage 2
-  reports.
+  angle, the set-aside spot at (360,100). From m1-flow: the drag and
+  its tilt, the drag cursor shown while an item is held, the ticket's
+  look, the outbox at the left edge, the thud, ding and hmm sounds.
+  More from m1-screws.
 - **LX14** · Canned air: spray cone, dust clumps, fans
   (`docs/design/canned_air.md`).
 - **LX15** · Parts bin and part swap: hotspots, sockets, wiggle-out
   (`docs/design/parts_bin.md`).
 - **LX16** · First item end to end: the virtual pet egg
-  (`docs/design/items.md`).
+  (`docs/design/items.md`). It replaces the three test items in
+  `settings.tres` `item_queue`.
 - **LX17** · Phillips pressure gauge (`docs/design/phillips.md`).
 - **LX18** · Hammer: wind-up ring, strength bands, jog, realign, reseat
   (`docs/design/hammer.md`).
@@ -92,7 +79,9 @@ next, brief, env (claude-config rules/ledger.md). -->
   the skid texture (`src/decals/skid_decal_set.tres`), the receipt's
   code-drawn star (`src/ui/receipt/star_icon.gd`), the hand's
   `%NopeIcon` (`src/level/level.tscn`) and the layers' ready glow
-  (`src/repairables/repair_layer.gd`).
+  (`src/repairables/repair_layer.gd`). The finished item's outline
+  needs `Sprite2D` art with transparent margins; `ColorRect`
+  placeholders only get the glow.
 - **LX25** · Sounds: collect each design doc's "Feedback" list and add
   the streams to `src/core/audio_main.tscn`.
 - **LX26** · Web export and itch.io upload (`scripts/export_web.ps1`).
@@ -142,9 +131,15 @@ next, brief, env (claude-config rules/ledger.md). -->
 - **LX40** · Quality extras: a day summary, a corkboard of customer
   reviews, bonuses for perfect work up to 100 (`docs/design/quality.md`
   "Later").
+- **LX46** · Outbox extras: a flick to send, FRAGILE items, trash
+  basketball, a pneumatic tube (`docs/design/outbox.md`).
 
 ## Done
 
+- **LX9** · Item flow: arrival, ticket card, finish payoff, drag to the
+  outbox, item queue. Done in 01b980d (2026-10-17).
+- **LX12** · Quality score, stars, receipt and "-N" popups, wired into
+  the level. Done in 3831dc7 and 01b980d (2026-10-17).
 - **LX7** · The hand: the held thing, the cursor, touch-first press
   routing, the wrong-tool nope, holders by `Tool.Type`. Done in c9923cf
   (2026-10-17).
