@@ -39,6 +39,17 @@ Ledger: **LX10** (M1). Depends on [repairables.md](repairables.md)
 
 - A turning screw rotates with its driver. It never scales: not as it
   comes loose, and not when it sits loose (Levi, 2026-10-17).
+- **It slides as it turns.** The screw also slides up the screen out of
+  its hole as it turns out, and back down as it turns in (Levi,
+  2026-10-17). `Screw.slide` is the fraction, 0 at home and 1 all the
+  way out, and the whole screw (head, slot, damage frames, rust and hit
+  shape) sits `screw_slide_px` (6, "Screw slide" in settings) times that
+  far up from home. It is always up the screen, even if a screw node is
+  turned in its scene. A screw type feeds `slide` from its own turn:
+  the flathead raises it by an even share per twist, eased like the
+  head's turn, so it is fully out at the end of its last twist and never
+  moves in the pause between twists. An unseat leaves it where it is,
+  with its twists. The Phillips screw feeds it the same way.
 - When a screw finishes, it backs out: it turns loose, then hops off
   and disappears (MVP) or flies into a screw dish (Later).
 - The hole stays, as part of the layer art or as a hole decal.
@@ -46,7 +57,9 @@ Ledger: **LX10** (M1). Depends on [repairables.md](repairables.md)
 ## Install mode (putting it back)
 
 - When a layer goes back on, its screws reappear loose in their holes,
-  in INSTALL mode.
+  in INSTALL mode, turned back and slid all the way out (`slide` 1).
+  Driving one in slides it back down, to exactly home on its last
+  twist.
 - The same microgame, shorter: the flathead needs `install_twists` (2),
   and the Phillips meter starts at 0.6. Damage can still happen.
 - A screw that was pulled with pliers is scrap. Its hole shows empty;
