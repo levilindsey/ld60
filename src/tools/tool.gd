@@ -32,9 +32,10 @@ const POSITION_DURATION_SEC := 0.3
 @export var held_rotation_deg := 0.0
 
 var mode := Mode.ENTERING:
-	set(value):
-		mode = value
-		_set_mode(value)
+	set(to_mode):
+		var from_mode := mode
+		mode = to_mode
+		_set_mode(to_mode, from_mode)
 		_update_cursor()
 
 var _is_hovered := false
@@ -43,22 +44,27 @@ var _is_hovered := false
 @onready var rotation_tween: Tween
 
 
-func _set_mode(to_mode: Mode) -> void:
+func _set_mode(to_mode: Mode, from_mode: Mode) -> void:
 	match to_mode:
 		Mode.ENTERING, \
 		Mode.STORED:
-			_set_rotation(deg_to_rad(stored_rotation_deg))
+			if from_mode == Mode.HELD:
+				Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+			tween_rotation(deg_to_rad(stored_rotation_deg), Tween.EASE_IN_OUT)
 
 			var holder_area_offset := holder_area.global_position - global_position
 			var holder_position := G.level.get_tool_holder_position(type)
-			_tween_position(holder_position - holder_area_offset)
+			tween_position(holder_position - holder_area_offset, Tween.EASE_IN_OUT)
 		Mode.HELD:
+			Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+
 			# The follow logic in _physics_process takes over the position.
 			if is_instance_valid(position_tween):
 				position_tween.kill()
-			_set_rotation(deg_to_rad(held_rotation_deg))
+			tween_rotation(deg_to_rad(held_rotation_deg), Tween.EASE_IN_OUT)
 		Mode.IN_USE:
-			pass
+			Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
 		_:
 			G.error()
 
@@ -94,17 +100,17 @@ func _physics_process(delta: float) -> void:
 		global_position = get_global_mouse_position() - cursor_position_offset
 
 
-func _set_rotation(p_rotation: float) -> void:
+func tween_rotation(p_rotation: float, ease := Tween.EASE_IN_OUT) -> void:
 	if is_instance_valid(rotation_tween):
 		rotation_tween.kill()
-	rotation_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	rotation_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(ease)
 	rotation_tween.tween_property(self, "rotation", p_rotation, ROTATE_DURATION_SEC)
 
 
-func _tween_position(p_global_position: Vector2) -> void:
+func tween_position(p_global_position: Vector2, ease := Tween.EASE_IN_OUT) -> void:
 	if is_instance_valid(position_tween):
 		position_tween.kill()
-	position_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	position_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(ease)
 	position_tween.tween_property(self, "global_position", p_global_position, POSITION_DURATION_SEC)
 
 
@@ -145,18 +151,21 @@ func _update_cursor() -> void:
 
 func pick_up_tool() -> void:
 	mode = Mode.HELD
-	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+	G.level.active_tool = self
 	# TODO(levilindsey): Tween the position (we'll need to add a pick-up offset, apply the offset in physics_process, and tween that offset).
 	# TODO(levilindsey): Show a grab hand cursor when hovering over tools and nothing is held.
 
 
 func _on_interaction_point_entered(interaction_point: Area2D) -> void:
 	G.check(interaction_point is InteractionPoint)
+	G.level.hovered_interaction_point = interaction_point as InteractionPoint
 	interaction_point.on_tool_entered(self)
 
 
 func _on_interaction_point_exited(interaction_point: Area2D) -> void:
 	G.check(interaction_point is InteractionPoint)
+	if G.level.hovered_interaction_point == self:
+		G.level.hovered_interaction_point = null
 	interaction_point.on_tool_exited(self)
 
 
@@ -174,6 +183,14 @@ func _on_holder_area_exited(holder: Area2D) -> void:
 
 
 func put_away() -> void:
+	if G.level.active_tool == self:
+		G.level.active_tool = null
 	mode = Mode.STORED
 
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+func trigger(interaction_point: InteractionPoint) -> void:
+	if not is_instance_valid(interaction_point):
+		# TODO(levilindsey): Play an error sound and abortive animation.
+		return
+
+	# TODO(levilindsey): Play the tool-use mechanic.
