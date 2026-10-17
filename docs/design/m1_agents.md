@@ -192,6 +192,58 @@ stage 2. Don't touch `src/level/` or `repairable.gd`.
     after the timeout.
   - A windowed screenshot of the receipt.
 
+### Handoff (m1-quality, 2026-10-17)
+
+LX12 is built and checked as standalone pieces. Nothing is wired into the
+level yet; that is m1-flow's job in stage 2. The work is on branch
+`m1-quality`, unpushed. The probe is `.claude/probes/m1-quality/run.ps1`
+(untracked). It passes 144 checks headless, and `-Shots` saves screenshots
+of the receipt and the popups.
+
+**What works**
+
+- `RepairQuality` (`src/repairables/repair_quality.gd`):
+  `add_defect(defect, global_position, source = null) -> int` returns the
+  points it cost and emits `defect_added(defect, points, global_position)`.
+  `repair_time_sec` and `par_time_sec` are plain vars. Read it with
+  `get_score()`, `get_stars()`, `get_time_penalty()`, `get_summary()` and
+  `get_defect_points_total()`. The points come from the "Quality" group in
+  `settings.gd` (`get_defect_points()`).
+- The receipt (`src/ui/receipt/receipt.tscn`): `open(item_name, quality)`,
+  `close()` and `signal closed`. It slides in from the right, lists the
+  defects, the time and the total, pops the stars in one at a time (a
+  sparkle at 3) and closes on a click or after 3 s. Its timings are
+  exports on the scene root.
+- The popup (`src/ui/defect_popup/`):
+  `DefectPopup.spawn(parent, points, world_position)`. The scene is
+  `Settings.defect_popup_scene`.
+
+**Wiring for m1-flow**
+
+1. Put `receipt.tscn` in a CanvasLayer in `level.tscn`. Layer 100 sits
+   under the Hud (200).
+2. Connect `quality.defect_added` to a one-liner:
+   `DefectPopup.spawn(G.level, points, global_position)`.
+3. When the item is finished, set `quality.repair_time_sec` (paused time
+   excluded) and `quality.par_time_sec`, then call
+   `receipt.open(name, quality)`. quality.md lets the next item drop in
+   behind the card, so wait for `closed` only if something must.
+4. Pass the damaged surface or screw as the third argument of
+   `add_defect()` for smears. A ruined smear then replaces its minor one,
+   and a minor smear on a ruined surface costs nothing.
+5. An open card stops every mouse press, so nothing under it (the Hand,
+   tools, points) sees a click until the card is dismissed. The first
+   click only closes it.
+
+**Left**
+
+- Levi, with a real mouse, touch screen and ears: the feel of
+  click-to-close, the whoosh and ding (silent until LX25), and the look
+  and placement of the card and the popups.
+- The star and sparkle art is code-drawn (LX24 can replace it).
+- The edits to `settings.gd` and `settings.tres` only append, but they
+  can still need a trivial merge with m1-core's.
+
 ## m1-decals (LX13)
 
 Read `decals.md`.
