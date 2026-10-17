@@ -6,11 +6,12 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 
 ## Waiting on Levi
 
-- **LX47** · Confirm m1-screws' flathead calls in play: a screw goes back
-  in with 2 twists of 101.25 degrees (it comes back 202.5 degrees off
-  home, which the slot shows as 22.5; out is 4 twists of 90); the ratchet
-  plays only between twists; an overcorrection can unseat, even in the
-  pause (`docs/design/m1_agents.md`, the m1-screws handoff).
+- **LX47** · Flathead calls from the m1-screws handoff
+  (`docs/design/m1_agents.md`), my picks in brackets: 2 install twists of
+  101.25 degrees from a 22.5 degree tilt [keep]; the ratchet only between
+  twists [keep]; overcorrecting unseats, in the pause too [stop the push
+  at the slot's end, so only a drift skids]; the 12 px seat tolerance is
+  about 1 mm of finger travel, inferred [a touch gain, as a setting].
 
 ## In progress
 
@@ -23,20 +24,20 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   - owner: claude agent `lx42-tests` (Sonnet) of session 194d3b69
     (Levi), since 2026-10-17 15:12
   - branch: `lx42-tests`, worktree
-    `.claude/worktrees/agent-a7be10a80ffc743e1`; last commit: `3f5c937`
-    (unpushed)
+    `.claude/worktrees/agent-a7be10a80ffc743e1`; last commit: `3f7fed4`
+    (unpushed, on 9bfa18f)
   - evidence: the probes it moves, untracked, in the main checkout's
     `.claude/probes/`
-  - next: finish stage B, rebased onto d0f4255 with LX51; then the
+  - next: its last proofs (a planted failure, the pack search); then the
     coordinator merges it and closes LX42 and LX51
   - brief: `docs/design/ai_workflow.md` "Stage B"
 - **LX51** · Levi's d0f4255 drops the driver's turn with the screw for its
   "twisting" frames, so the m1-screws check "the driver turns with the
   head" (`probe.gd:315`) becomes "plays twisting while in use".
   - owner: claude agent `lx42-tests`, with LX42 (asked 2026-10-17 15:31)
-  - branch: `lx42-tests` (see LX42); last commit: none yet
+  - branch: `lx42-tests` (see LX42); last commit: `3f7fed4`
   - evidence: the screws test in `tests/` on that branch
-  - next: rebase onto main, change the check, run `check.ps1 -Tests`
+  - next: prove a wrong animation name fails it, then merge with LX42
   - brief: this entry
 
 ## Next
@@ -48,10 +49,10 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   paused), the booklet, the screw's turn and its 22.5 degree loose
   angle, the set-aside spot at (360,100). From m1-flow: the drag and
   its tilt, the drag cursor shown while an item is held, the ticket's
-  look, the outbox at the left edge, the thud, ding and hmm sounds.
-  From m1-screws: correcting the tip with a mouse and with a finger, the
-  size of touch drags on the Pixel, the sounds, and the look of the head
-  frames, rust, skid and sparks.
+  look, the outbox at the left edge. From m1-screws: correcting the tip
+  with a mouse and with a finger, and the touch drags on the Pixel
+  (LX47). The sounds wait for LX25 (no streams yet), the screw art for
+  LX24.
 - **LX14** · Canned air: spray cone, dust clumps, fans
   (`docs/design/canned_air.md`).
 - **LX15** · Parts bin and part swap: hotspots, sockets, wiggle-out
