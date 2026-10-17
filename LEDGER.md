@@ -18,28 +18,6 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
 
-- **LX42** · AI workflow stage B: tracked probes in `tests/` with
-  `check.ps1 -Tests`, and a sweep that loads every script and scene.
-  Stage A (the check script and the rules) is in 8410091.
-  - owner: claude agent `lx42-tests` (Sonnet) of session 194d3b69
-    (Levi), since 2026-10-17 15:12
-  - branch: `lx42-tests`, worktree
-    `.claude/worktrees/agent-a7be10a80ffc743e1`; last commit: `3f7fed4`
-    (unpushed, on 9bfa18f)
-  - evidence: the probes it moves, untracked, in the main checkout's
-    `.claude/probes/`
-  - next: its last proofs (a planted failure, the pack search); then the
-    coordinator merges it and closes LX42 and LX51
-  - brief: `docs/design/ai_workflow.md` "Stage B"
-- **LX51** · Levi's d0f4255 drops the driver's turn with the screw for its
-  "twisting" frames, so the m1-screws check "the driver turns with the
-  head" (`probe.gd:315`) becomes "plays twisting while in use".
-  - owner: claude agent `lx42-tests`, with LX42 (asked 2026-10-17 15:31)
-  - branch: `lx42-tests` (see LX42); last commit: `3f7fed4`
-  - evidence: the screws test in `tests/` on that branch
-  - next: prove a wrong animation name fails it, then merge with LX42
-  - brief: this entry
-
 ## Next
 
 - **LX41** · Play M1 by hand, with a mouse and on a touch screen: the
@@ -114,14 +92,19 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   the cursor pointed over the empty desk, and a press on the item left
   the driver in hand. Suspected, not confirmed: real mouse input mixed
   with the pushed events. A probe-side input blocker then caught 0
-  events and the reruns passed (`.claude/probes/m1-core/` in the
-  m1-core worktree).
+  events and the reruns passed. The blocker is now in
+  `tests/probe_base.gd`, and a windowed `item_flow` run blocked 70 real
+  motions and passed (LX42 stage B).
 - **LX48** · Flathead stand-ins: the seized and stripped judder is
   `tool.nope()`, and the tip follows screen positions, not
   `event.relative` (`src/interaction_points/flat_head_screw.gd`).
 - **LX49** · Every run that loads the level logs "Camera2D overridden to
   physics process mode due to use of physics interpolation". Untested
   fix: `process_callback = 0` on the Camera2D in `src/level/level.tscn`.
+- **LX52** · LX42 stage B left untried: the windowed `full_loop` and
+  `screws` runs (`tests/run.ps1 -Name <run> -Screenshots`), Godot found
+  on PATH alone, and a real export without `tests/` (only
+  `--export-pack` was searched; LX26).
 
 ## Ideas (not scheduled)
 
@@ -153,6 +136,11 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX51** · The screws test checks the driver's "twisting" frames instead
+  of its turn (d0f4255). Done in 31153a3 (2026-10-17).
+- **LX42** · AI workflow stage B: `tests/` and `tests/run.ps1`, the `src/`
+  sweep in every `check.ps1`, `check.ps1 -Tests`, and exports without
+  `tests/`. Done in f209751 to 7a2155b (2026-10-17).
 - **LX10** · Screw health: damage frames, stripped, seized, install mode.
   Done in 8c8e354 (2026-10-17).
 - **LX11** · Flathead rework: eased twists and drift, correcting along the
