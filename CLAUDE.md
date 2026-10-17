@@ -156,8 +156,11 @@ missing. Add new actions there too.
 
 ## UI
 
-Interactive UI must be navigable with gamepad and keyboard, not
-only mouse/touch. Shared button art lives in `assets/images/gui/`
+The game is designed for **mouse and touch screen** input first.
+Interactions are click/tap driven; keyboard and gamepad support is
+not a requirement. Touch arrives as emulated mouse events, so handle
+`InputEventMouseButton` (left button) for clicks and taps. Shared
+button art lives in `assets/images/gui/`
 and is wired into `src/core/main_theme.tres` (pxlzr font + textured
 buttons). `src/ui/super_hud/` hosts the `debug_console` overlay on
 a CanvasLayer above the in-game HUD.
@@ -373,6 +376,11 @@ PATH, not the bash PATH. **Never run `godot` directly from
 bash.** Always use `powershell -ExecutionPolicy Bypass -File
 <script>` or `powershell -Command "<command>"` when invoking
 it.
+
+**Never kill Godot processes by name or wildcard** (e.g.
+`Stop-Process -Name godot*`). The developer usually has the editor
+open, and killing it loses unsaved work. To stop a hung headless run,
+kill only the specific PID you launched.
 
 ## Engine Version
 
