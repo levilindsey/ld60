@@ -7,15 +7,24 @@ reused.
 
 ## Waiting on Levi
 
-- **LX42** · Share the AI workflow in the repo for Zaven: a check
-  script, tracked probes with a runner (absorbs LX38), a short ledger
-  convention, the briefs' gotchas in CLAUDE.md, an `AGENTS.md`. Needs
-  Levi's go, plus Zaven's OS and AI tool.
-
 ## In progress
 
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (claude-config rules/ledger.md). -->
+
+- **LX42** · Share the AI workflow for Zaven (Claude Code on Windows): a
+  check script, a ledger rule, the gotchas in CLAUDE.md (stage A), then
+  tracked probes in `tests/` (stage B, after m1-screws merges).
+  - owner: claude agent `lx42-workflow` (Sonnet) of session 194d3b69
+    (Levi), since 2026-10-17 14:05
+  - branch: `lx42-workflow`, in an agent worktree; last commit: none yet
+    (base: the commit that added the brief)
+  - evidence: the brief's "Done when" checks
+  - next: stage A per the brief
+  - brief: `docs/design/ai_workflow.md`
+- **LX45** · CLAUDE.md is 411 lines (budget about 400): move Code Style
+  to a path-scoped `.claude/rules/gdscript-style.md`.
+  - owner, branch, evidence, next, brief: as LX42 (stage A, step 3)
 
 - **LX12** · Quality score, stars and receipt (`docs/design/quality.md`).
   - owner: claude session 194d3b69 (Levi); agent `m1-quality` built
@@ -29,17 +38,19 @@ next, brief, env (claude-config rules/ledger.md). -->
   item queue (`docs/design/outbox.md`).
   - owner: claude agent `m1-flow` (Sonnet) of session 194d3b69 (Levi),
     since 2026-10-17 13:30
-  - branch: `m1-flow`, in an agent worktree under `.claude/worktrees/`;
-    last commit: none yet (base: 4d48526, the stage 2 wiring)
+  - branch: `m1-flow`, worktree
+    `.claude/worktrees/agent-a540a5b6d42f0267e`; last commit: `cd678fb`
+    (WIP: arrival, ticket, payoff, drag, outbox, queue; unpushed)
   - evidence: `.claude/probes/m1-flow/` in that worktree
-  - next: build and check per the brief
+  - next: wire the receipt and popups (LX12), then probes and handoff
   - brief: `docs/design/m1_agents.md` "m1-flow"
 - **LX10** · Screw health: damage frames, stripped, seized, install mode
   (`docs/design/screws.md`).
   - owner: claude agent `m1-screws` (Opus) of session 194d3b69 (Levi),
     since 2026-10-17 13:30
-  - branch: `m1-screws`, in an agent worktree under
-    `.claude/worktrees/`; last commit: none yet (base: 4d48526)
+  - branch: `m1-screws`, worktree
+    `.claude/worktrees/agent-aad34b3179ae3d1e5`; last commit: none yet
+    (base: 5312311)
   - evidence: `.claude/probes/m1-screws/` in that worktree
   - next: build and check per the brief
   - brief: `docs/design/m1_agents.md` "m1-screws"
@@ -131,9 +142,6 @@ next, brief, env (claude-config rules/ledger.md). -->
 - **LX40** · Quality extras: a day summary, a corkboard of customer
   reviews, bonuses for perfect work up to 100 (`docs/design/quality.md`
   "Later").
-- **LX45** · CLAUDE.md is 411 lines (budget about 400): move Code Style
-  (about 157 lines) to a path-scoped `.claude/rules/gdscript-style.md`.
-  Only Claude Code reads that, so weigh it with LX42.
 
 ## Done
 
