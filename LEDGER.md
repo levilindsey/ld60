@@ -18,6 +18,18 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
 
+- **LX53** · Screws slide up the screen as they turn out and back down as
+  they turn in, eased with each twist (Levi, 2026-10-17). In the base
+  `Screw` as a 0-to-1 fraction, the distance a setting (6 px).
+  - owner: claude agent `screw-slide` (Sonnet) of session 194d3b69
+    (Levi), since 2026-10-17, launched after 2bfe51e
+  - branch: `screw-slide`, worktree
+    `.claude/worktrees/agent-a87c69930ac49f448`; last commit: none yet
+  - evidence: new checks in `tests/screws/probe.gd` on that branch
+  - next: the agent builds and tests it, then the coordinator merges it
+  - brief: this entry; no scaling, nothing slides in the pause, an
+    unseat keeps the height
+
 ## Next
 
 - **LX41** · Play M1 by hand, with a mouse and on a touch screen: the
