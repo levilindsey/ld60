@@ -24,8 +24,9 @@ animations = [{
 "speed": 5.0
 }]
 
-[node name="FlatHeadScrewDriver" type="Node2D" unique_id=1486551663 node_paths=PackedStringArray("cursor_position", "grab_area", "interaction_area", "holder_area")]
+[node name="FlatHeadScrewDriver" type="Node2D" unique_id=1486551663 node_paths=PackedStringArray("art", "cursor_position", "grab_area", "interaction_area", "holder_area")]
 script = ExtResource("1_85718")
+art = NodePath("Node2D2/Node2D")
 cursor_position = NodePath("Node2D2/CursorPosition")
 grab_area = NodePath("Node2D2/GrabArea")
 interaction_area = NodePath("Node2D2/InteractionArea")

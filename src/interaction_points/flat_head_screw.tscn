@@ -5,7 +5,7 @@
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 12.0
 
-[node name="FlatHeadScrew" type="Area2D" unique_id=268084832 node_paths=PackedStringArray("head")]
+[node name="FlatHeadScrew" type="Area2D" unique_id=268084832 node_paths=PackedStringArray("head", "rust_overlay", "rust_streak", "sparks")]
 collision_layer = 4
 collision_mask = 0
 monitoring = false
@@ -13,9 +13,17 @@ script = ExtResource("1_8uvch")
 role = 0
 accepted_tools = Array[int]([0])
 head = NodePath("Head")
+rust_overlay = NodePath("Head/RustOverlay")
+rust_streak = NodePath("RustStreak")
+sparks = NodePath("Sparks")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=156215341]
 shape = SubResource("CircleShape2D_giktf")
+
+[node name="RustStreak" type="Polygon2D" parent="."]
+visible = false
+color = Color(0.55, 0.27, 0.1, 0.7)
+polygon = PackedVector2Array(-5, 6, 5, 6, 3, 20, 2, 32, -1, 32, -3, 20)
 
 [node name="Head" type="Node2D" parent="." unique_id=1688050116]
 
@@ -26,3 +34,24 @@ polygon = PackedVector2Array(12, 0, 11.087, 4.592, 8.485, 8.485, 4.592, 11.087, 
 [node name="Slot" type="Polygon2D" parent="Head"]
 color = Color(0.1, 0.1, 0.1, 1)
 polygon = PackedVector2Array(-2, -11, 2, -11, 2, 11, -2, 11)
+
+[node name="RustOverlay" type="Polygon2D" parent="Head"]
+visible = false
+color = Color(0.6, 0.3, 0.12, 0.6)
+polygon = PackedVector2Array(-10, -4, -4, -10, 6, -9, 11, -2, 8, 7, 0, 11, -8, 8)
+
+[node name="Sparks" type="CPUParticles2D" parent="."]
+emitting = false
+amount = 12
+lifetime = 0.35
+one_shot = true
+explosiveness = 1.0
+local_coords = false
+direction = Vector2(0, -1)
+spread = 180.0
+gravity = Vector2(0, 400)
+initial_velocity_min = 60.0
+initial_velocity_max = 140.0
+scale_amount_min = 1.5
+scale_amount_max = 2.5
+color = Color(1, 0.8, 0.3, 1)

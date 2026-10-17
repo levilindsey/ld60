@@ -144,6 +144,22 @@ enum PhysicsLayer {
 @export var defect_popup_scene: PackedScene
 @export_group("")
 
+@export_group("Flathead")
+## Seconds one twist takes to turn the screw (docs/design/flathead.md).
+@export var flathead_twist_duration_sec := 1.0
+## Degrees one twist turns the screw and the driver while it comes out.
+@export var flathead_twist_angle_deg := 90.0
+## Seconds between twists, with no drift. The window to recenter.
+@export var flathead_pause_sec := 0.35
+## Seconds before a twist that the creak and the handle squash warn of it.
+@export var flathead_telegraph_sec := 0.15
+## Each twist drifts the tip by a random fraction of the screw's seat
+## tolerance in this range. Keep the most under 1, so one twist can never
+## unseat the tip.
+@export var flathead_slip_min := 0.2
+@export var flathead_slip_max := 0.6
+@export_group("")
+
 
 ## How many points a defect costs.
 func get_defect_points(defect: RepairQuality.Defect) -> int:
