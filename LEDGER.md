@@ -18,13 +18,21 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
 
+- **LX42** · AI workflow stage B: tracked probes in `tests/` with
+  `check.ps1 -Tests`, and a sweep that loads every script and scene.
+  Stage A (the check script and the rules) is in 8410091.
+  - owner: claude agent `lx42-tests` (Sonnet) of session 194d3b69
+    (Levi), since 2026-10-17 15:12
+  - branch: `lx42-tests`, worktree
+    `.claude/worktrees/agent-a7be10a80ffc743e1`; last commit: none yet
+    (based on c738ff6)
+  - evidence: the probes it moves, untracked, in the main checkout's
+    `.claude/probes/`
+  - next: build stage B; then the coordinator merges it and closes LX42
+  - brief: `docs/design/ai_workflow.md` "Stage B"
 
 ## Next
 
-- **LX42** · AI workflow stage B, once m1-screws merges: tracked probes
-  in `tests/` with `check.ps1 -Tests`, and a sweep that loads every
-  script and scene (`docs/design/ai_workflow.md` "Stage B"). Stage A
-  (the check script and the rules) is in 8410091.
 - **LX41** · Play M1 by hand, with a mouse and on a touch screen: the
   receipt's click-to-close and 3 s auto-close, and the card and "-N"
   placement (LX12). From m1-core: the pick-up ease, the auto put-away
@@ -83,7 +91,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   web build (`assets/images/`).
 - **LX37** · 2b3fa3a committed Krita and PNG backups (`*.kra~`,
   `radio.png~`) and a 69 MB `.kra` (GitHub warns over 50 MB and
-  rejects over 100 MB). Levi: leave them for now (2026-10-17).
+  rejects over 100 MB). Levi: leave them for now (2026-10-17). cb47839
+  added a 20 MB `window.kra-autosave.kra`; ignoring `*~` and
+  `*autosave*` in `.gitignore` would stop new ones.
 - **LX36** · Decals have no cap per part, so repeated unseats pile up,
   and a part that draws nothing (a plain `Node2D`) shows its decals
   unclipped, with no warning (`src/decals/decal_spawner.gd`).
