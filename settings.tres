@@ -16,23 +16,11 @@ shader_parameter/outline_enabled = true
 
 [resource]
 script = ExtResource("1_krfic")
-dev_mode = null
-show_debug_console = null
 start_in_game = false
-full_screen = null
-move_preview_windows_to_other_display = null
-mute_music = null
 pauses_on_focus_out = false
-is_screenshot_hotkey_enabled = null
-show_hud = null
-default_gravity_acceleration = null
 default_level_scene = ExtResource("1_w7hap")
 finished_outline_material = SubResource("ShaderMaterial_outline")
 finish_sparkle_scene = ExtResource("6_sparkle")
-excluded_log_categories = null
-force_include_log_warnings = null
-include_category_in_logs = null
-verbosity = null
 flat_head_screw_repairable_scene = ExtResource("3_yixrw")
 item_queue = Array[int]([0, 0, 0])
 flat_head_screw_driver_scene = ExtResource("2_xmm7k")
