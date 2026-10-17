@@ -10,6 +10,10 @@ reused.
 - **LX6** · Confirm the defaults in `docs/design/overview.md` "Open
   decisions": shop theme, jam item cut, parts bin placement, flathead
   unseat rule, sensitive-surface warning.
+- **LX37** · 2b3fa3a committed Krita and PNG backups (`*.kra~`,
+  `radio.png~`) and a 69 MB `.kra` (GitHub warns over 50 MB and
+  rejects over 100 MB): untrack the backups, ignore `*.png~`, and
+  decide whether big sources belong in git (`assets/images/`).
 
 ## In progress
 
@@ -37,22 +41,15 @@ next, brief, env (claude-config rules/ledger.md). -->
   - evidence: `.claude/probes/m1-quality/` in that worktree
   - next: build and check per the brief
   - brief: `docs/design/m1_agents.md` "m1-quality"
-- **LX13** · Decal spawner; first check `clip_children` in a web export
-  (`docs/design/decals.md`).
-  - owner: claude agent `m1-decals` (Sonnet) of session 194d3b69
-    (Levi), since 2026-10-17
-  - branch: `m1-decals`, in an agent worktree under
-    `.claude/worktrees/`; last commit: none yet
-  - evidence: `.claude/probes/m1-decals/` in that worktree
-  - next: the web clipping check, then the spawner
-  - brief: `docs/design/m1_agents.md` "m1-decals"
 - **LX9** · Item flow: arrival tween, finished-only drag, outbox area,
   item queue (`docs/design/outbox.md`).
   - owner: claude session 194d3b69 (Levi), queued for stage 2 (agent
     `m1-flow`)
   - branch: none yet; last commit: none
   - evidence: none yet
-  - next: launch `m1-flow` once stage 1 is on `main`
+  - next: once m1-core is on `main`, wire `%Decals` into the level
+    with a `Level` pass-through (the m1-decals handoff in the brief),
+    write the stage-2 briefs, then launch `m1-flow`
   - brief: `docs/design/m1_agents.md` "m1-flow" (written at that merge)
 - **LX10** · Screw health: damage frames, stripped, seized, install mode
   (`docs/design/screws.md`).
@@ -94,10 +91,13 @@ next, brief, env (claude-config rules/ledger.md). -->
 - **LX23** · Items 2 to 5: rotary phone, Walkman, CRT TV, ray gun
   (`docs/design/items.md` "The jam cut").
 - **LX24** · Art: screw states, decals, part states, effects, UI
-  (`docs/design/decals.md` "The art list").
+  (`docs/design/decals.md` "The art list"). The skid's placeholder
+  texture is in `src/decals/skid_decal_set.tres`.
 - **LX25** · Sounds: collect each design doc's "Feedback" list and add
   the streams to `src/core/audio_main.tscn`.
 - **LX26** · Web export and itch.io upload (`scripts/export_web.ps1`).
+  Check decal clipping in Firefox, Safari and the Pixel's Chrome; only
+  Chrome and Edge are verified (`docs/design/decals.md` "Clipping").
 
 ## Residuals (known, not fixed)
 
@@ -113,6 +113,9 @@ next, brief, env (claude-config rules/ledger.md). -->
 - **LX27** · Source art is huge (3508x2480 PNGs, 0.6 to 2.2 MB each, drawn
   at about 0.2 scale): downscale it or cap the import size before the
   web build (`assets/images/`).
+- **LX36** · Decals have no cap per part, so repeated unseats pile up,
+  and a part that draws nothing (a plain `Node2D`) shows its decals
+  unclipped, with no warning (`src/decals/decal_spawner.gd`).
 
 ## Ideas (not scheduled)
 
@@ -130,5 +133,11 @@ next, brief, env (claude-config rules/ledger.md). -->
   (`docs/design/overview.md` "Depth").
 - **LX35** · Items beyond the jam cut, up to atompunk and a finale
   (`docs/design/items.md` "More items").
+- **LX38** · Keep the web clipping probe as a tracked check to rerun
+  after Godot upgrades. It lives only in the `m1-decals` worktree, in
+  `.claude/probes/m1-decals/` (`clip_web/`, `cdp_shot.mjs`).
 
 ## Done
+
+- **LX13** · Decal spawner and sets (`src/decals/`); `clip_children`
+  works in the web export and on desktop. Done in 0cc0332 (2026-10-17).
