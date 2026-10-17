@@ -7,6 +7,11 @@ reused.
 
 ## Waiting on Levi
 
+- **LX42** · Share the AI workflow in the repo for Zaven: a check
+  script, tracked probes with a runner (absorbs LX38), a short ledger
+  convention, the briefs' gotchas in CLAUDE.md, an `AGENTS.md`. Needs
+  Levi's go, plus Zaven's OS and AI tool.
+
 ## In progress
 
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
