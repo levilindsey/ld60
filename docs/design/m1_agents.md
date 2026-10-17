@@ -127,9 +127,9 @@ LX1 to LX5 in `LEDGER.md` fold into LX7.
   the remove and install states the layers need.
 
   The flathead's `engage()` is a stand-in: the tool goes IN_USE, and the
-  screw rises and pops out after a short tween. In install mode it goes
-  in the same way. Mark it `# Stand-in until LX11.` LX10 and LX11
-  replace it in stage 2.
+  screw turns and pops out after a short tween. In install mode it turns
+  back in. Mark it `# Stand-in until LX11.` LX10 and LX11 replace it in
+  stage 2.
 - **The test item** gets two layers:
   - `Inside`, the innermost;
   - `Cover`, with two flathead screws and a PLASTIC surface.
@@ -174,9 +174,8 @@ LX1 to LX5 in `LEDGER.md` fold into LX7.
   (`Screw.LOOSE_TURN_RAD`). The pulse hint still scales the point.
 
 Left:
-- LX10 and LX11 replace the stand-in `engage()`. The text above and
-  screws.md, repairables.md and flathead.md still say a screw rises,
-  lifts or grows. Those lines need to say it turns.
+- LX10 and LX11 replace the stand-in `engage()`. `install()` expects
+  the microgame to have turned the head home first.
 - LX9 fills in `Hand.drag_item()` and the item queue.
 - An installed screw can't come out again. A rack press while a tool is
   IN_USE does nothing.
@@ -423,8 +422,8 @@ group ("Item flow") right after m1-core's "Layers" group. Don't edit
   Levi's landing shake (7 px for 0.15 s) over the doc's 3 px. The item
   counts its repair time from landing to `finished`, unpaused time only.
 - **Ticket:** a paper tag or a HUD card with the item's name and its
-  complaint, from `Repairable` exports (`display_name` and
-  `ticket_text`; add them if missing). A placeholder look is fine.
+  complaint, from m1-core's `Repairable` exports `item_name` and
+  `ticket`. A placeholder look is fine.
 - **Finishing:** the ding, a sparkle, and the outline glow with
   `assets/shaders/sprite_outline.gdshader`, through an export rather
   than a `preload`. Then the item can be dragged.
@@ -437,9 +436,9 @@ group ("Item flow") right after m1-core's "Layers" group. Don't edit
 - **Queue:** `item_queue: Array[Repairable.Type]` in `settings.gd` and
   `settings.tres`. `Level` keeps the index and calls `win()` after the
   last item. This replaces the hard-coded test item in `Level._ready`.
-- **Quality wiring:** steps 1 to 3 of the m1-quality handoff. Give
-  `Repairable` a `par_time_sec` export, 90 by default. Keep the card's
-  press blocking as it is; LX39 asks Levi about it.
+- **Quality wiring:** steps 1 to 3 of the m1-quality handoff, with
+  `Repairable.quality` and m1-core's `par_time_sec` export (90 by
+  default). Keep the card's press blocking; Levi chose it (LX39).
 - **CLAUDE.md:** Boot Flow step 6, Core APIs (`shake_camera`,
   `spawn_decal` and `Repairable.quality`) and Configuration
   (`item_queue`).

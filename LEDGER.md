@@ -17,19 +17,6 @@ reused.
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (claude-config rules/ledger.md). -->
 
-- **LX7** · The hand owns the held thing and cursor; touch-first press
-  routing, wrong-tool nope, holders by `Tool.Type`; folds in LX1 to LX5
-  and a real-mouse test of 929db18 (`docs/design/tools.md`).
-  - owner: claude agent `m1-core` (Opus) of session 194d3b69 (Levi),
-    since 2026-10-17
-  - branch: `m1-core`, in an agent worktree under `.claude/worktrees/`;
-    last commit: none yet (base: the M1 claim on `main`)
-  - evidence: `.claude/probes/m1-core/` in that worktree
-  - next: build and check per the brief
-  - brief: `docs/design/m1_agents.md` "m1-core"
-- **LX8** · Repair layers: `RepairLayer`, point roles, lift-off,
-  reassembly, `Surface`, finishing (`docs/design/repairables.md`).
-  - owner, branch, evidence, next, brief: as LX7 (agent `m1-core`)
 - **LX12** · Quality score, stars and receipt (`docs/design/quality.md`).
   - owner: claude session 194d3b69 (Levi); agent `m1-quality` built
     the pieces (done 12:41), and `m1-flow` wires them into the level
@@ -40,23 +27,22 @@ next, brief, env (claude-config rules/ledger.md). -->
   - brief: `docs/design/m1_agents.md` "m1-quality" and its handoff
 - **LX9** · Item flow: arrival tween, finished-only drag, outbox area,
   item queue (`docs/design/outbox.md`).
-  - owner: claude session 194d3b69 (Levi), queued for stage 2 (agent
-    `m1-flow`)
-  - branch: none yet; last commit: none
-  - evidence: none yet
-  - next: once m1-core is on `main`, wire `%Decals` into the level
-    with a `Level` pass-through (the m1-decals handoff in the brief),
-    write the stage-2 briefs, then launch `m1-flow`
-  - brief: `docs/design/m1_agents.md` "m1-flow" (written at that merge)
+  - owner: claude agent `m1-flow` (Sonnet) of session 194d3b69 (Levi),
+    since 2026-10-17 13:30
+  - branch: `m1-flow`, in an agent worktree under `.claude/worktrees/`;
+    last commit: none yet (base: 4d48526, the stage 2 wiring)
+  - evidence: `.claude/probes/m1-flow/` in that worktree
+  - next: build and check per the brief
+  - brief: `docs/design/m1_agents.md` "m1-flow"
 - **LX10** · Screw health: damage frames, stripped, seized, install mode
   (`docs/design/screws.md`).
-  - owner: claude session 194d3b69 (Levi), queued for stage 2 (agent
-    `m1-screws`, with LX11)
-  - branch: none yet; last commit: none
-  - evidence: none yet
-  - next: launch `m1-screws` once stage 1 is on `main`
-  - brief: `docs/design/m1_agents.md` "m1-screws" (written at that
-    merge)
+  - owner: claude agent `m1-screws` (Opus) of session 194d3b69 (Levi),
+    since 2026-10-17 13:30
+  - branch: `m1-screws`, in an agent worktree under
+    `.claude/worktrees/`; last commit: none yet (base: 4d48526)
+  - evidence: `.claude/probes/m1-screws/` in that worktree
+  - next: build and check per the brief
+  - brief: `docs/design/m1_agents.md` "m1-screws"
 - **LX11** · Flathead rework: 1 s eased twists, eased drift (at most 0.6
   of the tolerance per twist), correction along the slot, unseat
   (`docs/design/flathead.md`).
@@ -64,15 +50,13 @@ next, brief, env (claude-config rules/ledger.md). -->
 
 ## Next
 
-- **LX1** · Tool collision shapes aren't scaled to the 0.2 visual (grab
-  area 5x the tool, put-away drop off-screen); part of LX7
-  (`src/tools/flat_head_screw_driver.tscn`, `docs/ledger_notes.md`).
-- **LX5** · Pick-up teleports the tool under the cursor: ease a follow
-  offset to zero, also after IN_USE exits and hammer recoil (TODO in
-  `src/tools/tool.gd`; `docs/design/tools.md` "Follow offset").
 - **LX41** · Play M1 by hand, with a mouse and on a touch screen: the
   receipt's click-to-close and 3 s auto-close, and the card and "-N"
-  placement (LX12); more from the stage 2 reports.
+  placement (LX12). From m1-core: the pick-up ease, the auto put-away
+  near the rack (too eager?), the cursor and mouse visibility (also
+  paused), the booklet, the screw's turn and its 22.5 degree loose
+  angle, the set-aside spot at (360,100). More from the stage 2
+  reports.
 - **LX14** · Canned air: spray cone, dust clumps, fans
   (`docs/design/canned_air.md`).
 - **LX15** · Parts bin and part swap: hotspots, sockets, wiggle-out
@@ -94,8 +78,10 @@ next, brief, env (claude-config rules/ledger.md). -->
   (`docs/design/items.md` "The jam cut").
 - **LX24** · Art: screw states, decals, part states, effects, UI
   (`docs/design/decals.md` "The art list"). Placeholders to replace:
-  the skid texture (`src/decals/skid_decal_set.tres`) and the
-  receipt's code-drawn star (`src/ui/receipt/star_icon.gd`).
+  the skid texture (`src/decals/skid_decal_set.tres`), the receipt's
+  code-drawn star (`src/ui/receipt/star_icon.gd`), the hand's
+  `%NopeIcon` (`src/level/level.tscn`) and the layers' ready glow
+  (`src/repairables/repair_layer.gd`).
 - **LX25** · Sounds: collect each design doc's "Feedback" list and add
   the streams to `src/core/audio_main.tscn`.
 - **LX26** · Web export and itch.io upload (`scripts/export_web.ps1`).
@@ -104,15 +90,6 @@ next, brief, env (claude-config rules/ledger.md). -->
 
 ## Residuals (known, not fixed)
 
-- **LX2** · Cursor shape and mouse mode are global but set per tool, and
-  never reset when a held tool is freed; fix: the hand in LX7
-  (`src/tools/tool.gd` `_update_cursor`, `docs/ledger_notes.md`).
-- **LX3** · Any mouse button, including the wheel, picks a tool up:
-  `_on_grab_area_input_event` has no MOUSE_BUTTON_LEFT check. Pointer:
-  `src/tools/tool.gd`. Fix: LX7's press routing.
-- **LX4** · `Tool._set_mode` (STORED) takes `holder_area_offset` from the
-  HolderArea node (always zero), not its shape offset (0,-600), so the
-  tool origin lines up with the holder (`src/tools/tool.gd`). Part of LX7.
 - **LX27** · Source art is huge (3508x2480 PNGs, 0.6 to 2.2 MB each, drawn
   at about 0.2 scale): downscale it or cap the import size before the
   web build (`assets/images/`).
@@ -122,6 +99,15 @@ next, brief, env (claude-config rules/ledger.md). -->
 - **LX36** · Decals have no cap per part, so repeated unseats pile up,
   and a part that draws nothing (a plain `Node2D`) shows its decals
   unclipped, with no warning (`src/decals/decal_spawner.gd`).
+- **LX43** · An installed screw can't come out again, and a press on the
+  rack while a tool is IN_USE does nothing (`src/level/hand.gd`,
+  `src/interaction_points/screw.gd`; the m1-core handoff).
+- **LX44** · m1-core's first windowed probe run failed 34 of 68 checks:
+  the cursor pointed over the empty desk, and a press on the item left
+  the driver in hand. Suspected, not confirmed: real mouse input mixed
+  with the pushed events. A probe-side input blocker then caught 0
+  events and the reruns passed (`.claude/probes/m1-core/` in the
+  m1-core worktree).
 
 ## Ideas (not scheduled)
 
@@ -145,9 +131,27 @@ next, brief, env (claude-config rules/ledger.md). -->
 - **LX40** · Quality extras: a day summary, a corkboard of customer
   reviews, bonuses for perfect work up to 100 (`docs/design/quality.md`
   "Later").
+- **LX45** · CLAUDE.md is 411 lines (budget about 400): move Code Style
+  (about 157 lines) to a path-scoped `.claude/rules/gdscript-style.md`.
+  Only Claude Code reads that, so weigh it with LX42.
 
 ## Done
 
+- **LX7** · The hand: the held thing, the cursor, touch-first press
+  routing, the wrong-tool nope, holders by `Tool.Type`. Done in c9923cf
+  (2026-10-17).
+- **LX8** · Repair layers, point roles, surfaces, reassembly and
+  finishing. Done in c9923cf (2026-10-17).
+- **LX5** · Pick-up eases the follow offset instead of teleporting.
+  Done in c9923cf (2026-10-17).
+- **LX4** · A stored tool lines up with its holder's shape. Done in
+  c9923cf (2026-10-17).
+- **LX3** · Only the left button picks a tool up. Done in c9923cf
+  (2026-10-17).
+- **LX2** · The hand owns the cursor and resets it when the level exits.
+  Done in c9923cf (2026-10-17).
+- **LX1** · Tool shapes match the 0.2 visual. Done in d530e79, checked
+  by m1-core's collision screenshots (2026-10-17).
 - **LX6** · Levi confirmed the defaults in `overview.md` "Decisions",
   and the design docs say so now (2026-10-17).
 - **LX39** · Levi: the receipt card keeps eating presses until it closes

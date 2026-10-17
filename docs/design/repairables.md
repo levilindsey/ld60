@@ -70,8 +70,8 @@ RotaryPhone (Repairable)           item_name, ticket, par_time_sec
 
 - A set-aside layer glows once every required point on the layers under
   it is FINISHED. Press it to put it back; it tweens into place.
-- Its screws come back raised and loose in their holes, in INSTALL
-  mode. Driving them in uses the same microgame, shorter
+- Its screws come back loose in their holes, turned back a little, in
+  INSTALL mode. Driving them in uses the same microgame, shorter
   ([screws.md](screws.md)).
 - A screw that was pulled with pliers is scrap. Its hole stays empty
   until a new screw from the parts bin is dropped in.
@@ -96,9 +96,10 @@ and can be dragged to the outbox ([outbox.md](outbox.md)).
 
 ## Surfaces
 
-- `Surface` (an Area2D on a new SURFACES physics layer) marks a region
-  of a part with a material: PLASTIC, METAL, GLASS, CIRCUIT_BOARD,
-  CONTACTS, RUBBER, PAPER_LABEL, PAINTED, GREASED, FELT or STICKER.
+- `Surface` (an Area2D on the SURFACES physics layer) marks a region
+  of a part with a material, `Surface.Type` (Godot already has a
+  `Material` class): PLASTIC, METAL, GLASS, CIRCUIT_BOARD, CONTACTS,
+  RUBBER, PAPER_LABEL, PAINTED, GREASED, FELT or STICKER.
 - Tools ask what is under them. The hammer dents METAL and cracks
   PLASTIC and GLASS, the rag smears a PAPER_LABEL, and oil contaminates
   CONTACTS and RUBBER.
