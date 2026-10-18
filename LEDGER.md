@@ -48,15 +48,13 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   From LX14, LX18 and LX20: the rag drag feel and its reversal bonus,
   the bulb aim and squeeze, the hammer ring timing, band width and
   recoil, and the rack spots at (430, 80), (541, 120) and (460, 220).
+  From LX17: circling a Phillips screw with a mouse and a finger,
+  the band at 3 to 7 rad/s, the gauge at (100, -100) from the head,
+  and the Phillips holder at (460, 40).
   The sounds wait for LX25 (no streams yet), the screw art for LX24.
 - **LX16** · First item end to end: the virtual pet egg
   (`docs/design/items.md`). It replaces the three test items in
   `settings.tres` `item_queue`.
-- **LX17** · Phillips pressure gauge (`docs/design/phillips.md`). Feed
-  `Screw.slide` from its turn like the flathead, and give its scene the
-  pull-out nodes (`screw_pullout.md` "Reuse"). Generalize
-  `tests/screws/slide_recorder.gd` and `pull_out_recorder.gd` (typed to
-  `FlatHeadScrew`), and put new checks in their own script (LX55).
 - **LX19** · Pliers for stripped screws (`docs/design/pliers.md`). They
   replace m1-screws' stand-in pry: a pried screw comes back as new, and
   one that strips going in is pried home with `Screw.install()`. The
@@ -162,6 +160,10 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX17** · Phillips circular drag: circle speed in the band
+  turns the screw, an empty grip cams out (`docs/design/
+  phillips.md`). Done in a71ec36 (2026-10-17). Levi still to
+  play it (LX41).
 - **LX14** · Air blower bulb: tap puffs, dust clumps and fans
   (`docs/design/canned_air.md`). Done in b96ebaa (2026-10-17). Levi
   still to play it (LX41).
