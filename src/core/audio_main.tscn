@@ -1,6 +1,19 @@
-[gd_scene load_steps=2 format=3 uid="uid://diqnxd2kabxfk"]
+[gd_scene load_steps=15 format=3 uid="uid://diqnxd2kabxfk"]
 
 [ext_resource type="Script" uid="uid://b5hrwox1n2lt0" path="res://src/core/audio_main.gd" id="1_tdp82"]
+[ext_resource type="AudioStream" uid="uid://boxpn3wxfkxio" path="res://assets/audio/foley_cleaned/click.wav" id="2_click"]
+[ext_resource type="AudioStream" uid="uid://cgy2wr77bgnt2" path="res://assets/audio/foley_cleaned/wood tap_b.wav" id="3_clunk"]
+[ext_resource type="AudioStream" uid="uid://hu4gkjsbex18" path="res://assets/audio/foley_cleaned/part drop 4.wav" id="4_thud"]
+[ext_resource type="AudioStream" uid="uid://c1lbq31leivcb" path="res://assets/audio/foley_cleaned/Hammer light metal 2_a.wav" id="5_ding"]
+[ext_resource type="AudioStream" uid="uid://dm68jna87f1yn" path="res://assets/audio/foley_cleaned/loose screw_a.wav" id="6_hmm"]
+[ext_resource type="AudioStream" uid="uid://bp142r33ukg74" path="res://assets/audio/foley_cleaned/drawer openclose 3_b.wav" id="7_creak"]
+[ext_resource type="AudioStream" uid="uid://dlp54vv5fe75e" path="res://assets/audio/foley_cleaned/rattle snap on_a.wav" id="8_ratchet"]
+[ext_resource type="AudioStream" uid="uid://dxra0c1lh1kw3" path="res://assets/audio/foley_cleaned/pliers scrape.wav" id="9_scrape"]
+[ext_resource type="AudioStream" uid="uid://cofxsoi0h2ir5" path="res://assets/audio/foley_cleaned/metal tap slide.wav" id="10_skid"]
+[ext_resource type="AudioStream" uid="uid://dnpxyugakh2iw" path="res://assets/audio/foley_cleaned/lid pop off 2.wav" id="11_pop"]
+[ext_resource type="AudioStream" uid="uid://wm4lqvpkt0v3" path="res://assets/audio/foley_cleaned/unscrew 2.wav" id="12_grind"]
+[ext_resource type="AudioStream" uid="uid://bh4jnm0ryemsc" path="res://assets/audio/foley_cleaned/air puff.wav" id="13_whoosh"]
+[ext_resource type="AudioStream" uid="uid://bga4bllx1ealr" path="res://assets/audio/foley_cleaned/parts together 2_b.wav" id="14_snap"]
 
 [node name="AudioMain" type="Node2D"]
 process_mode = 3
@@ -20,52 +33,65 @@ bus = &"Music"
 
 [node name="Click" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("2_click")
 bus = &"SFX"
 
 [node name="Clunk" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("3_clunk")
 bus = &"SFX"
 
 [node name="Thud" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("4_thud")
 bus = &"SFX"
 
 [node name="Ding" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("5_ding")
 bus = &"SFX"
 
 [node name="Hmm" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("6_hmm")
 bus = &"SFX"
 
 [node name="Creak" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("7_creak")
 bus = &"SFX"
 
 [node name="Ratchet" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("8_ratchet")
 bus = &"SFX"
 
 [node name="Scrape" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("9_scrape")
 bus = &"SFX"
 
 [node name="Skid" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("10_skid")
 bus = &"SFX"
 
 [node name="Pop" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("11_pop")
 bus = &"SFX"
 
 [node name="Grind" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("12_grind")
 bus = &"SFX"
 
 [node name="Whoosh" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("13_whoosh")
 bus = &"SFX"
 
 [node name="Snap" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("14_snap")
 bus = &"SFX"

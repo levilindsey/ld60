@@ -57,7 +57,7 @@ tracks/3/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector2(-5.3191495, 512.766)]
+"values": [Vector2(-5.3191495, 587.2341)]
 }
 tracks/4/type = "value"
 tracks/4/imported = false
@@ -121,7 +121,7 @@ tracks/3/keys = {
 "times": PackedFloat32Array(0, 0.3),
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [Vector2(-5.3191495, 512.766), Vector2(-0.5, 421.89453)]
+"values": [Vector2(-5.3191495, 587.2341), Vector2(-0.5, 496.36262)]
 }
 tracks/4/type = "value"
 tracks/4/imported = false
@@ -142,13 +142,12 @@ _data = {
 &"RemoveScrew": SubResource("Animation_gmkry")
 }
 
-[node name="FlatHeadScrew" type="Area2D" unique_id=268084832 node_paths=PackedStringArray("head", "rust_overlay", "rust_streak", "animation_player", "slide_node", "clip_space", "bench_art", "hit_shape", "sparks")]
+[node name="FlatHeadScrew" type="Area2D" unique_id=268084832 node_paths=PackedStringArray("sparks", "head", "rust_overlay", "rust_streak", "animation_player", "slide_node", "clip_space", "bench_art", "hit_shape")]
 collision_layer = 4
 collision_mask = 0
 monitoring = false
 script = ExtResource("1_8uvch")
-role = 0
-accepted_tools = Array[int]([0])
+sparks = NodePath("Sparks")
 head = NodePath("ClippingSpace/PositioningWrapper/TopDownHead/Head")
 rust_overlay = NodePath("ClippingSpace/PositioningWrapper/TopDownHead/Head/RustOverlay")
 rust_streak = NodePath("RustStreak")
@@ -157,7 +156,8 @@ slide_node = NodePath("ClippingSpace/PositioningWrapper")
 clip_space = NodePath("ClippingSpace")
 bench_art = NodePath("UnclippedAnglePerspective")
 hit_shape = NodePath("CollisionShape2D")
-sparks = NodePath("Sparks")
+role = 0
+accepted_tools = Array[int]([0])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=156215341]
 shape = SubResource("CircleShape2D_giktf")
@@ -182,12 +182,12 @@ texture = ExtResource("3_vqoce")
 [node name="PositioningWrapper" type="Node2D" parent="ClippingSpace" unique_id=248263416]
 
 [node name="AnglePerspective" type="Sprite2D" parent="ClippingSpace/PositioningWrapper" unique_id=1238162573]
-position = Vector2(-5.3191495, 512.766)
+position = Vector2(-5.3191495, 587.2341)
 scale = Vector2(0.34042558, 0.75531924)
 texture = ExtResource("4_t7xyj")
 
 [node name="TopDownHead" type="Node2D" parent="ClippingSpace/PositioningWrapper" unique_id=940362607]
-position = Vector2(0, 353.19153)
+position = Vector2(0, 427.65962)
 scale = Vector2(0.26595747, 0.26595747)
 
 [node name="Head" type="Sprite2D" parent="ClippingSpace/PositioningWrapper/TopDownHead" unique_id=1688050116]
@@ -203,7 +203,7 @@ polygon = PackedVector2Array(-10, -4, -4, -10, 6, -9, 11, -2, 8, 7, 0, 11, -8, 8
 
 [node name="UnclippedAnglePerspective" type="Sprite2D" parent="." unique_id=1147643259]
 visible = false
-position = Vector2(0, -22.1)
+position = Vector2(0, -15.1)
 scale = Vector2(0.032, 0.032)
 texture = ExtResource("4_t7xyj")
 
@@ -213,7 +213,6 @@ amount = 12
 lifetime = 0.35
 one_shot = true
 explosiveness = 1.0
-local_coords = false
 direction = Vector2(0, -1)
 spread = 180.0
 gravity = Vector2(0, 400)
