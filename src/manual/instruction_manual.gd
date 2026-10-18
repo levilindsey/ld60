@@ -30,6 +30,11 @@ const _FULL_TURN_DURATION_SEC := 0.4
 const _MIN_TURN_DURATION_SEC := 0.02
 ## Duration of each fast page turn while closing.
 const _CLOSING_TURN_DURATION_SEC := 0.12
+const _CLOSE_BUTTON_POP_DURATION_SEC := 0.3
+## How far the close button overshoots its size as it pops in.
+const _CLOSE_BUTTON_OVERSHOOT := 1.7
+## How far the close button is spun while fully shrunk.
+const _CLOSE_BUTTON_SPIN_RADIANS := -PI
 ## Releases that moved less than this count as taps.
 const _TAP_MAX_DISTANCE_PX := 8.0
 ## Release speed in the turn direction that completes a turn early.
@@ -80,7 +85,8 @@ func open() -> void:
 	if state != State.CLOSED:
 		return
 	G.print("Opening instruction manual", ScaffolderLog.CATEGORY_INTERACTION)
-	_set_state(State.OPENING)
+	state = State.OPENING
+	_pop_in_close_button()
 	G.time.tween_property(
 		%Closed,
 		"scale:x",
@@ -99,7 +105,8 @@ func close() -> void:
 	if state != State.IDLE:
 		return
 	G.print("Closing instruction manual", ScaffolderLog.CATEGORY_INTERACTION)
-	_set_state(State.CLOSING)
+	state = State.CLOSING
+	_pop_out_close_button()
 	_turn_back_to_first_spread()
 
 
@@ -116,7 +123,7 @@ func _on_cover_flipped() -> void:
 func _on_left_page_unfolded() -> void:
 	%LeftPage.visible = true
 	_show_spread()
-	_set_state(State.IDLE)
+	state = State.IDLE
 	opened.emit()
 
 
@@ -149,7 +156,7 @@ func _start_drag(is_forward: bool, x: float) -> void:
 	_leaf_bend_direction = -1.0 if is_forward else 1.0
 	_prepare_leaf(spread_index if is_forward else spread_index - 1)
 	_set_leaf_progress(_drag_start_progress)
-	_set_state(State.DRAGGING)
+	state = State.DRAGGING
 
 
 func _release_drag(x: float) -> void:
@@ -169,7 +176,7 @@ func _release_drag(x: float) -> void:
 	var target_progress := _drag_start_progress
 	if is_completing:
 		target_progress = 1.0 if _is_turning_forward else 0.0
-	_set_state(State.SETTLING)
+	state = State.SETTLING
 	_tween_leaf_progress(
 		_leaf_progress,
 		target_progress,
@@ -181,7 +188,7 @@ func _on_leaf_settled(is_completing: bool) -> void:
 	if is_completing:
 		spread_index += 1 if _is_turning_forward else -1
 	_show_spread()
-	_set_state(State.IDLE)
+	state = State.IDLE
 	if is_completing:
 		page_flipped.emit(spread_index)
 
@@ -251,7 +258,7 @@ func _on_first_page_folded() -> void:
 
 
 func _on_cover_closed() -> void:
-	_set_state(State.CLOSED)
+	state = State.CLOSED
 	closed.emit()
 
 
@@ -306,9 +313,55 @@ func _prepare_leaf(lower_spread: int) -> void:
 	%Leaf.visible = true
 
 
-func _set_state(new_state: State) -> void:
-	state = new_state
-	%CloseButton.visible = new_state != State.CLOSED
+func _pop_in_close_button() -> void:
+	%CloseButton.visible = true
+	_set_close_button_appearance(0.0)
+	%CloseButtonSprite.reset_physics_interpolation()
+	_tween_close_button_appearance(
+		0.0,
+		1.0,
+		_set_close_button_appearance.bind(1.0),
+	)
+
+
+func _pop_out_close_button() -> void:
+	_tween_close_button_appearance(1.0, 0.0, _on_close_button_popped_out)
+
+
+func _on_close_button_popped_out() -> void:
+	%CloseButton.visible = false
+
+
+func _tween_close_button_appearance(
+	from_appearance: float,
+	to_appearance: float,
+	on_completed: Callable,
+) -> void:
+	G.time.tween_method(
+		self,
+		"_set_close_button_appearance",
+		from_appearance,
+		to_appearance,
+		_CLOSE_BUTTON_POP_DURATION_SEC,
+		"linear",
+		0.0,
+		TimeType.APP_PHYSICS,
+		on_completed,
+	)
+
+
+## 0 is fully shrunk and spun away; 1 is at rest. Scale follows a "back"
+## curve, so it overshoots slightly on the way in and winds up slightly
+## before shrinking on the way out.
+func _set_close_button_appearance(appearance: float) -> void:
+	var t := appearance - 1.0
+	var back_scale := (
+		1.0
+		+ (_CLOSE_BUTTON_OVERSHOOT + 1.0) * t * t * t
+		+ _CLOSE_BUTTON_OVERSHOOT * t * t
+	)
+	%CloseButtonSprite.scale = Vector2.ONE * maxf(back_scale, 0.0)
+	%CloseButtonSprite.rotation = _CLOSE_BUTTON_SPIN_RADIANS * t * t
 
 
 func _show_spread() -> void:

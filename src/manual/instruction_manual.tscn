@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://src/manual/instruction_manual.gd" id="1_manual"]
 [ext_resource type="PackedScene" path="res://src/manual/manual_page.tscn" id="2_page"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" path="res://assets/images/manual_outline_right.png" id="5_outline_right"]
 [ext_resource type="Texture2D" path="res://assets/images/manual_front.png" id="6_cover"]
 [ext_resource type="Texture2D" path="res://assets/images/manual_spine.png" id="7_spine"]
+[ext_resource type="Texture2D" path="res://assets/images/closebutton.png" id="8_close"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_spread"]
 size = Vector2(480, 320)
@@ -74,30 +75,9 @@ position = Vector2(266, -186)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CloseButton"]
 shape = SubResource("RectangleShape2D_close")
 
-[node name="Background" type="ColorRect" parent="CloseButton"]
-offset_left = -18.0
-offset_top = -18.0
-offset_right = 18.0
-offset_bottom = 18.0
-mouse_filter = 2
-color = Color(0.2, 0.2, 0.2, 1)
-
-[node name="Icon" type="Node2D" parent="CloseButton"]
-rotation = 0.7853982
-
-[node name="Horizontal" type="ColorRect" parent="CloseButton/Icon"]
-offset_left = -12.0
-offset_top = -2.0
-offset_right = 12.0
-offset_bottom = 2.0
-mouse_filter = 2
-
-[node name="Vertical" type="ColorRect" parent="CloseButton/Icon"]
-offset_left = -2.0
-offset_top = -12.0
-offset_right = 2.0
-offset_bottom = 12.0
-mouse_filter = 2
+[node name="CloseButtonSprite" type="Sprite2D" parent="CloseButton"]
+unique_name_in_owner = true
+texture = ExtResource("8_close")
 
 [node name="ClickArea" type="Area2D" parent="."]
 unique_name_in_owner = true
