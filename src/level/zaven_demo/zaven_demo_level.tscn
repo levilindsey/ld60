@@ -9,5 +9,12 @@
 
 [node name="ZavenDemoLevel" instance=ExtResource("1_level")]
 
-[node name="InstructionManual" parent="." instance=ExtResource("2_manual")]
+[node name="ManualDeskSpot" type="Marker2D" parent="."]
+position = Vector2(-480, 225)
+rotation = -0.06
+scale = Vector2(0.6, 0.32)
+skew = 0.35
+
+[node name="InstructionManual" parent="." node_paths=PackedStringArray("desk_spot") instance=ExtResource("2_manual")]
+desk_spot = NodePath("../ManualDeskSpot")
 page_contents = Array[Texture2D]([ExtResource("3_page0"), ExtResource("4_page1"), ExtResource("5_page2"), ExtResource("6_page3")])

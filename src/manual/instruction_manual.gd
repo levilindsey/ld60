@@ -15,16 +15,20 @@ signal page_flipped(spread_index: int)
 
 enum State {
 	CLOSED,
+	LIFTING,
 	OPENING,
 	IDLE,
 	DRAGGING,
 	SETTLING,
 	CLOSING,
+	LOWERING,
 }
 
 
 const _PAGE_WIDTH := 240.0
 const _COVER_FLIP_DURATION_SEC := 0.2
+## Duration of the move between the desk and the open pose.
+const _LIFT_DURATION_SEC := 0.3
 ## Duration of a full leaf turn. Partial turns take proportionally less.
 const _FULL_TURN_DURATION_SEC := 0.4
 const _MIN_TURN_DURATION_SEC := 0.02
@@ -47,6 +51,10 @@ const _FLING_SPEED_PX_PER_SEC := 600.0
 ## How far each page (and the cover) slides toward the spine, so the page
 ## outlines overlap there instead of leaving a gap.
 @export var spine_overlap := 4.0
+## Where the closed manual rests. Its position, rotation, scale and skew
+## lay the closed book flat on the desk. The manual lifts from here to its
+## own placement in the level to open. Without one, the manual stays put.
+@export var desk_spot: Node2D
 
 
 var state := State.CLOSED
@@ -59,6 +67,10 @@ var _leaf_bend_direction := 1.0
 var _drag_start_x := 0.0
 var _drag_start_progress := 0.0
 var _drag_velocity_x := 0.0
+var _open_position := Vector2.ZERO
+var _open_rotation := 0.0
+var _open_scale := Vector2.ONE
+var _open_skew := 0.0
 
 
 func _ready() -> void:
@@ -69,6 +81,13 @@ func _ready() -> void:
 	_show_spread()
 	%ClickArea.input_event.connect(_on_click_area_input_event)
 	%CloseButton.input_event.connect(_on_close_button_input_event)
+	_open_position = global_position
+	_open_rotation = global_rotation
+	_open_scale = global_scale
+	_open_skew = global_skew
+	if is_instance_valid(desk_spot):
+		_set_lift(0.0)
+		reset_physics_interpolation()
 
 
 func _input(event: InputEvent) -> void:
@@ -85,6 +104,21 @@ func open() -> void:
 	if state != State.CLOSED:
 		return
 	G.print("Opening instruction manual", ScaffolderLog.CATEGORY_INTERACTION)
+	state = State.LIFTING
+	_tween_lift(0.0, 1.0, _on_lifted)
+
+
+## Quickly turns every page back to the start, then closes the cover.
+func close() -> void:
+	if state != State.IDLE:
+		return
+	G.print("Closing instruction manual", ScaffolderLog.CATEGORY_INTERACTION)
+	state = State.CLOSING
+	_pop_out_close_button()
+	_turn_back_to_first_spread()
+
+
+func _on_lifted() -> void:
 	state = State.OPENING
 	_pop_in_close_button()
 	G.time.tween_property(
@@ -98,16 +132,6 @@ func open() -> void:
 		TimeType.APP_PHYSICS,
 		_on_cover_flipped,
 	)
-
-
-## Quickly turns every page back to the start, then closes the cover.
-func close() -> void:
-	if state != State.IDLE:
-		return
-	G.print("Closing instruction manual", ScaffolderLog.CATEGORY_INTERACTION)
-	state = State.CLOSING
-	_pop_out_close_button()
-	_turn_back_to_first_spread()
 
 
 func _on_cover_flipped() -> void:
@@ -258,8 +282,47 @@ func _on_first_page_folded() -> void:
 
 
 func _on_cover_closed() -> void:
+	state = State.LOWERING
+	_tween_lift(1.0, 0.0, _on_lowered)
+
+
+func _on_lowered() -> void:
 	state = State.CLOSED
 	closed.emit()
+
+
+func _tween_lift(
+	from_lift: float,
+	to_lift: float,
+	on_completed: Callable,
+) -> void:
+	if not is_instance_valid(desk_spot):
+		on_completed.call()
+		return
+	G.time.tween_method(
+		self,
+		"_set_lift",
+		from_lift,
+		to_lift,
+		_LIFT_DURATION_SEC,
+		"ease_in_out",
+		0.0,
+		TimeType.APP_PHYSICS,
+		on_completed,
+	)
+
+
+## 0 rests at `desk_spot`; 1 is the open pose where the level placed the
+## manual.
+func _set_lift(lift: float) -> void:
+	global_position = desk_spot.global_position.lerp(_open_position, lift)
+	global_rotation = lerp_angle(
+		desk_spot.global_rotation,
+		_open_rotation,
+		lift,
+	)
+	global_scale = desk_spot.global_scale.lerp(_open_scale, lift)
+	global_skew = lerpf(desk_spot.global_skew, _open_skew, lift)
 
 
 func _get_drag_progress(x: float) -> float:
