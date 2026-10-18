@@ -9,7 +9,9 @@ extends Node2D
 ## `Polygon2D`. This node draws the same rim instead, as concentric
 ## outlines that fade from the shape's edge outwards, pulsing at the
 ## shader's rhythm. Colors and width come from the shared material in
-## `Settings.outline_hint_material`, so both halves match.
+## `Settings.outline_hint_material`, so both halves match. The width
+## is in world pixels: the rim compensates for this node's global
+## scale, so it is the same size whatever scale the art sits at.
 
 
 const _RING_COUNT := 6
@@ -101,7 +103,7 @@ func _draw() -> void:
 	)
 	var width := _get_float_parameter(
 		material,
-		&"outline_width",
+		&"outline_width_px",
 		_DEFAULT_WIDTH,
 	)
 	var gradient_power := _get_float_parameter(
@@ -123,8 +125,21 @@ func _draw() -> void:
 				Time.get_ticks_msec() / 1000.0 * TAU * pulse_speed,
 			)
 		)
-		strength = lerpf(0.65, 1.0, wave)
-	var line_width := maxf(width / _RING_COUNT + 1.0, 1.5)
+		strength = lerpf(0.75, 1.0, wave)
+	# Expand in pre-rotation world units (the shape scaled by this
+	# node's global scale), then convert back, so `width` is world
+	# pixels at any scale.
+	var world_scale := _get_world_scale()
+	var average_scale := maxf(
+		(world_scale.x + world_scale.y) * 0.5,
+		0.0001,
+	)
+	var line_width := (
+		maxf(width / _RING_COUNT + 1.0, 1.5) / average_scale
+	)
+	var scaled_polygon := PackedVector2Array()
+	for point in polygon:
+		scaled_polygon.append(point * world_scale)
 	for ring in range(_RING_COUNT, 0, -1):
 		var depth := float(ring) / _RING_COUNT
 		var color := color_inner.lerp(
@@ -134,24 +149,43 @@ func _draw() -> void:
 		color.a *= strength
 		if color.a <= 0.001:
 			continue
-		var points := _expanded_polygon(depth * width)
+		var scaled_points := _expanded_polygon(
+			scaled_polygon,
+			depth * width,
+		)
+		var points := PackedVector2Array()
+		for point in scaled_points:
+			points.append(point / world_scale)
 		points.append(points[0])
 		draw_polyline(points, color, line_width, true)
 
 
-## `polygon` pushed outwards by `distance`, for convex shapes. Each
+## World pixels per local unit on each axis, from the global scale.
+## Rotation does not change these lengths.
+func _get_world_scale() -> Vector2:
+	var basis := get_global_transform()
+	return Vector2(
+		maxf(basis.basis_xform(Vector2(1.0, 0.0)).length(), 0.0001),
+		maxf(basis.basis_xform(Vector2(0.0, 1.0)).length(), 0.0001),
+	)
+
+
+## `points` pushed outwards by `distance`, for convex shapes. Each
 ## vertex moves along the average of its two edge normals.
-func _expanded_polygon(distance: float) -> PackedVector2Array:
+func _expanded_polygon(
+	points: PackedVector2Array,
+	distance: float,
+) -> PackedVector2Array:
 	var expanded := PackedVector2Array()
 	var centroid := Vector2.ZERO
-	for point in polygon:
+	for point in points:
 		centroid += point
-	centroid /= polygon.size()
-	for index in polygon.size():
-		var count := polygon.size()
-		var previous := polygon[(index - 1 + count) % count]
-		var current := polygon[index]
-		var next := polygon[(index + 1) % count]
+	centroid /= points.size()
+	for index in points.size():
+		var count := points.size()
+		var previous := points[(index - 1 + count) % count]
+		var current := points[index]
+		var next := points[(index + 1) % count]
 		var normal_previous := _get_outward_normal(
 			previous,
 			current,

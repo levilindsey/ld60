@@ -95,15 +95,17 @@ func _check_configuration() -> void:
 		var color_outer: Color = outline_material.get_shader_parameter(
 			"outline_color_outer",
 		)
-		var outline_width: float = outline_material.get_shader_parameter(
-			"outline_width",
+		var outline_width_px: float = (
+			outline_material.get_shader_parameter("outline_width_px")
 		)
 		_expect(
 			outline_material.shader.resource_path
 			== "res://assets/shaders/sprite_outline_gradient.gdshader"
 			and color_inner.a > color_outer.a
-			and outline_width > 1.0,
-			"the outline is the gradient one, fading across its depth",
+			and outline_width_px > 1.0,
+			"the outline is the gradient one, fading across its depth"
+			+ " (%.1f world px wide at any sprite scale)"
+			% outline_width_px,
 		)
 	_expect(
 		is_instance_valid(G.settings.finish_sparkle_scene),

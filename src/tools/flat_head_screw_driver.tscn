@@ -1,28 +1,42 @@
 [gd_scene format=3 uid="uid://m8ven6g4aiv4"]
 
 [ext_resource type="Script" uid="uid://co3owsfq8o6x5" path="res://src/tools/flat_head_screw_driver.gd" id="1_85718"]
-[ext_resource type="Texture2D" uid="uid://cwwmjwv0iwo2d" path="res://assets/images/screwdriverrrrrrrrrrrrrrr.png" id="2_rocp8"]
-[ext_resource type="Texture2D" uid="uid://bibqfxkdfodhw" path="res://assets/images/rrrrrrrrrrrrrevird wercs.png" id="3_5cnk8"]
+[ext_resource type="Texture2D" uid="uid://y2d4xpq8kryi" path="res://assets/images/frame0000.png" id="6_60bvt"]
+[ext_resource type="Texture2D" uid="uid://1rd5fw5ndrty" path="res://assets/images/frame0001.png" id="7_4tha1"]
+[ext_resource type="Texture2D" uid="uid://dgcgnndc0tdya" path="res://assets/images/frame0002.png" id="8_thf8m"]
+[ext_resource type="Texture2D" uid="uid://dh82ikeqsxlhw" path="res://assets/images/frame0003.png" id="9_75fi4"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_85718"]
-radius = 20.0
+radius = 19.999998
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 200.0
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_5cnk8"]
-atlas = ExtResource("2_rocp8")
+[sub_resource type="AtlasTexture" id="AtlasTexture_60bvt"]
+atlas = ExtResource("6_60bvt")
 region = Rect2(0, 0, 3508, 2480)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_mp5ld"]
-atlas = ExtResource("3_5cnk8")
+[sub_resource type="AtlasTexture" id="AtlasTexture_4tha1"]
+atlas = ExtResource("6_60bvt")
+region = Rect2(0, 0, 3508, 2480)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_thf8m"]
+atlas = ExtResource("7_4tha1")
+region = Rect2(0, 0, 3508, 2480)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_75fi4"]
+atlas = ExtResource("8_thf8m")
+region = Rect2(0, 0, 3508, 2480)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5uyaj"]
+atlas = ExtResource("9_75fi4")
 region = Rect2(0, 0, 3508, 2480)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_60exv"]
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_5cnk8")
+"texture": SubResource("AtlasTexture_60bvt")
 }],
 "loop": 1,
 "name": &"default",
@@ -30,10 +44,16 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_5cnk8")
+"texture": SubResource("AtlasTexture_4tha1")
 }, {
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_mp5ld")
+"texture": SubResource("AtlasTexture_thf8m")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_75fi4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5uyaj")
 }],
 "loop": 1,
 "name": &"twisting",
@@ -42,54 +62,53 @@ animations = [{
 
 [node name="FlatHeadScrewDriver" type="Node2D" unique_id=1486551663 node_paths=PackedStringArray("art", "cursor_position", "grab_area", "interaction_area", "holder_area")]
 script = ExtResource("1_85718")
-art = NodePath("Node2D2/Node2D")
-cursor_position = NodePath("Node2D2/CursorPosition")
-grab_area = NodePath("Node2D2/GrabArea")
-interaction_area = NodePath("Node2D2/InteractionArea")
-holder_area = NodePath("Node2D2/HolderArea")
+art = NodePath("Node2D/Node2D")
+cursor_position = NodePath("Node2D/CursorPosition")
+grab_area = NodePath("Node2D/GrabArea")
+interaction_area = NodePath("Node2D/InteractionArea")
+holder_area = NodePath("Node2D/HolderArea")
 held_rotation_deg = 40.0
 
-[node name="Node2D2" type="Node2D" parent="." unique_id=1471896538]
+[node name="Node2D" type="Node2D" parent="." unique_id=1471896538]
 scale = Vector2(0.2, 0.2)
 
-[node name="CursorPosition" type="Marker2D" parent="Node2D2" unique_id=1842626005]
+[node name="CursorPosition" type="Marker2D" parent="Node2D" unique_id=1842626005]
 
-[node name="GrabArea" type="Area2D" parent="Node2D2" unique_id=311969663]
+[node name="GrabArea" type="Area2D" parent="Node2D" unique_id=311969663]
 unique_name_in_owner = true
 collision_mask = 0
 monitoring = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Node2D2/GrabArea" unique_id=287821059]
-polygon = PackedVector2Array(-19, 0, 21, 0, 44.999996, -479.99994, 94.99999, -509.99994, 114.99999, -834.99994, 79.99999, -1114.9999, -44.999996, -1124.9999, -59.999992, -529.99994, -19.999998, -489.99994)
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Node2D/GrabArea" unique_id=287821059]
+polygon = PackedVector2Array(-14.999998, 4.9999995, 14.999998, 4.9999995, 19.999998, -504.99994, 74.99999, -534.99994, 54.999996, -614.99994, 84.99999, -834.99994, 69.99999, -1034.9999, 39.999996, -1119.9999, -34.999996, -1134.9999, -84.99999, -1039.9999, -104.99999, -824.99994, -54.999996, -614.99994, -74.99999, -529.99994, -19.999998, -504.99994)
 
-[node name="InteractionArea" type="Area2D" parent="Node2D2" unique_id=1602574643]
+[node name="InteractionArea" type="Area2D" parent="Node2D" unique_id=1602574643]
 unique_name_in_owner = true
 collision_layer = 0
 collision_mask = 4
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D2/InteractionArea" unique_id=1167529110]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D/InteractionArea" unique_id=1167529110]
 shape = SubResource("CircleShape2D_85718")
 
-[node name="HolderArea" type="Area2D" parent="Node2D2" unique_id=186351695]
+[node name="HolderArea" type="Area2D" parent="Node2D" unique_id=186351695]
 unique_name_in_owner = true
 collision_layer = 0
 collision_mask = 16
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D2/HolderArea" unique_id=554709299]
-position = Vector2(0, -600)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D/HolderArea" unique_id=554709299]
+position = Vector2(4.9999995, -505)
 shape = SubResource("CircleShape2D_giktf")
 
-[node name="Node2D" type="Node2D" parent="Node2D2" unique_id=1950302434]
+[node name="Node2D" type="Node2D" parent="Node2D" unique_id=288809666]
 rotation = -1.5707964
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Node2D2/Node2D" unique_id=169628297]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Node2D/Node2D" unique_id=1131045735]
 unique_name_in_owner = true
-position = Vector2(525, 90.00003)
-rotation = -1.9172411
+position = Vector2(595, 55)
+rotation = -1.5707964
 scale = Vector2(0.6, 0.6)
 sprite_frames = SubResource("SpriteFrames_60exv")
-animation = &"twisting"
 autoplay = "default"
-frame_progress = 0.2890306
+frame_progress = 0.45587105
