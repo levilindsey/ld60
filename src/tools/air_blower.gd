@@ -108,4 +108,4 @@ func _build_cone() -> void:
 	cone_visual.polygon = PackedVector2Array(
 		[Vector2.ZERO, end + side, end - side]
 	)
-	cone_visual.position = cursor_position.position
+	cone_visual.position = to_local(interaction_area.global_position)
