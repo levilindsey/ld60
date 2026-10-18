@@ -115,7 +115,7 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Residuals (known, not fixed)
 
-- **LX62** · `level.tscn` loads `res://src/level/drawer.tscn`, but the
+- **LX63** · `level.tscn` loads `res://src/level/drawer.tscn`, but the
   file is `Drawer.tscn` (ef836b1). Windows hides it; a case-sensitive
   export (web) may fail to load it. Rename one to match.
 - **LX59** · `full_loop`, `full_loop_booklet`, `item_flow`, `screws`

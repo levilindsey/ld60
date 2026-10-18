@@ -228,6 +228,18 @@ func put_away() -> void:
 	mode = Mode.STORED
 
 
+## Puts the tool straight into its holder, with no glide.
+func snap_to_holder() -> void:
+	put_away()
+	if is_instance_valid(rotation_tween):
+		rotation_tween.kill()
+	if is_instance_valid(position_tween):
+		position_tween.kill()
+	rotation = deg_to_rad(stored_rotation_deg)
+	global_position = _get_stored_position()
+	reset_physics_interpolation()
+
+
 ## Called by a point when it engages this tool. The point places the
 ## tool until it calls stop_use().
 func start_use(point: InteractionPoint) -> void:

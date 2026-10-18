@@ -136,13 +136,11 @@ func spawn_tool(type: Tool.Type) -> void:
 	%Tools.add_child(tool)
 	tool.global_position = %ItemSpawnPosition.global_position
 	tools_by_type[type] = tool
-
-	# TODO: Start from an off-angle.
-	tool.put_away()
+	tool.snap_to_holder()
 
 
 ## Drops an item of a type onto the bench and returns it. The camera
-## shakes and the ticket appears when it lands.
+## shakes on each bounce, and the ticket appears when it lands.
 func spawn_repairable(type: Repairable.Type) -> Repairable:
 	G.check(not is_instance_valid(active_repairable))
 
@@ -155,6 +153,7 @@ func spawn_repairable(type: Repairable.Type) -> Repairable:
 	active_repairable = item
 
 	item.quality.defect_added.connect(_on_defect_added)
+	item.impacted.connect(_on_item_impacted)
 	item.landed.connect(_on_item_landed.bind(item))
 	item.arrive(%ActiveItemPosition.global_position)
 	return item
@@ -586,12 +585,15 @@ func _send_to_outbox(item: Repairable) -> void:
 	)
 
 
-func _on_item_landed(item: Repairable) -> void:
-	restock_parts(item)
+func _on_item_impacted(strength: float) -> void:
 	shake_camera(
-		G.settings.item_landing_shake_px,
+		G.settings.item_landing_shake_px * strength,
 		G.settings.item_landing_shake_sec,
 	)
+
+
+func _on_item_landed(item: Repairable) -> void:
+	restock_parts(item)
 	%TicketCard.show_item(item.ticket)
 	G.audio.play_sound_delayed(&"hmm_curious", 0.45)
 

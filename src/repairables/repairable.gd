@@ -17,6 +17,9 @@ extends Node2D
 signal layer_removed(layer: RepairLayer)
 signal layer_installed(layer: RepairLayer)
 signal point_finished(point: InteractionPoint)
+## The arriving item hit the bench. Strength is 1 for the first hit and
+## less for each later bounce.
+signal impacted(strength: float)
 ## The arrival is over. The item sits on the bench and its clock runs.
 signal landed
 signal finished
@@ -36,6 +39,11 @@ enum Mode {
 
 ## How many times the item jerks when an unfinished item is pressed.
 const _SHAKE_STEPS := 4
+## The share of the arrival spent falling; the bounces take the rest.
+const _ARRIVAL_FALL_SHARE := 0.55
+const _ARRIVAL_BOUNCE_COUNT := 3
+## Each bounce's height as a share of the one before.
+const _ARRIVAL_BOUNCE_DECAY := 0.4
 
 @export var item_name := ""
 ## The customer's complaint, shown on the ticket.
@@ -64,6 +72,11 @@ var drop_area: Area2D:
 var _repair_sequence: RepairSequence
 var _shake_tween: Tween
 var _motion_tween: Tween
+var _arrival_start_position := Vector2.ZERO
+var _arrival_target_position := Vector2.ZERO
+var _arrival_start_rotation := 0.0
+## How many times the arriving item has hit the bench.
+var _arrival_impact_count := 0
 var _outline_hint: OutlineHint
 var _outlined_art: Sprite2D
 var _art_material_before_outline: Material
@@ -223,12 +236,18 @@ func arrive(target_global_position: Vector2) -> void:
 	mode = Mode.ENTERING
 	var angle_max := deg_to_rad(G.settings.item_arrival_angle_max_deg)
 	rotation = randf_range(-angle_max, angle_max)
-	_start_motion(
-		target_global_position,
+	_arrival_start_position = global_position
+	_arrival_target_position = target_global_position
+	_arrival_start_rotation = rotation
+	_arrival_impact_count = 0
+	_kill_motion_tween()
+	_motion_tween = create_tween()
+	_motion_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_motion_tween.tween_method(
+		_set_arrival_progress,
 		0.0,
+		1.0,
 		G.settings.item_arrival_sec,
-		Tween.TRANS_BACK,
-		Tween.EASE_OUT,
 	)
 	_motion_tween.tween_callback(_land)
 
@@ -357,11 +376,63 @@ func _kill_motion_tween() -> void:
 		_motion_tween.kill()
 
 
+## 0 is at the spawn point; 1 has landed. The item falls, speeding up,
+## then bounces a few times, each bounce lower than the last.
+func _set_arrival_progress(progress: float) -> void:
+	rotation = lerpf(
+		_arrival_start_rotation,
+		0.0,
+		ease(progress, 0.4),
+	)
+	if progress < _ARRIVAL_FALL_SHARE:
+		var fall := progress / _ARRIVAL_FALL_SHARE
+		global_position = _arrival_start_position.lerp(
+			_arrival_target_position,
+			fall * fall,
+		)
+		return
+
+	# Each bounce lasts in proportion to the square root of its height,
+	# like a real one.
+	var heights: Array[float] = []
+	var total_duration := 0.0
+	var height := G.settings.item_arrival_bounce_px
+	for i in _ARRIVAL_BOUNCE_COUNT:
+		heights.append(height)
+		total_duration += sqrt(height)
+		height *= _ARRIVAL_BOUNCE_DECAY
+	var bounce_time := (
+		(progress - _ARRIVAL_FALL_SHARE)
+		/ (1.0 - _ARRIVAL_FALL_SHARE)
+		* total_duration
+	)
+	var rise := 0.0
+	# The first hit ends the fall; each finished bounce is another.
+	var impact_count := 1
+	for bounce_height in heights:
+		var duration := sqrt(bounce_height)
+		if bounce_time < duration:
+			var bounce := bounce_time / duration
+			rise = bounce_height * 4.0 * bounce * (1.0 - bounce)
+			break
+		bounce_time -= duration
+		impact_count += 1
+	global_position = _arrival_target_position + Vector2(0.0, -rise)
+	while _arrival_impact_count < impact_count:
+		_impact(pow(_ARRIVAL_BOUNCE_DECAY, _arrival_impact_count))
+		_arrival_impact_count += 1
+
+
+func _impact(strength: float) -> void:
+	if is_equal_approx(strength, 1.0):
+		G.audio.play_sound(&"thud")
+	impacted.emit(strength)
+
+
 func _land() -> void:
 	mode = Mode.UNDER_REPAIR
 	quality.par_time_sec = par_time_sec
 	set_physics_process(true)
-	G.audio.play_sound(&"thud")
 	landed.emit()
 
 

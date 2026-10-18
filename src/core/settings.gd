@@ -86,12 +86,17 @@ enum PhysicsLayer {
 @export_group("")
 
 @export_group("Item flow")
-## Seconds an item takes to drop in from above and land.
-@export var item_arrival_sec := 0.6
+## Seconds an item takes to drop in from above, land and finish
+## bouncing.
+@export var item_arrival_sec := 0.9
+## How high an arriving item's first bounce goes. Each later bounce is
+## lower.
+@export var item_arrival_bounce_px := 60.0
 ## The most an arriving item is turned, in degrees. It straightens as it
 ## lands.
 @export var item_arrival_angle_max_deg := 8.0
-## The camera shake when an item lands.
+## The camera shake when an arriving item first hits the bench. Each
+## later bounce shakes less.
 @export var item_landing_shake_px := 7.0
 @export var item_landing_shake_sec := 0.15
 ## Seconds an item takes to ease back when it is dropped away from the
