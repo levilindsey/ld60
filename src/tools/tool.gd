@@ -80,6 +80,9 @@ var _is_hint_active := false
 var _follow_offset_tween: Tween
 var _shake_tween: Tween
 var _drop_shadow: DropShadow
+## True once the tip has been outside this tool's holder during
+## the current hold, which arms putting it away by its tip.
+var _tip_left_holder := false
 
 
 func _ready() -> void:
@@ -117,6 +120,43 @@ func _physics_process(_delta: float) -> void:
 		place_tip(
 			G.level.hand.pointer_position + follow_offset + _shake_offset
 		)
+		_check_holder_return()
+
+
+## Dragging the tip into this tool's own holder puts the tool
+## away, like dragging its neck there already does. The tip must
+## leave the holder first, so taking the tool off the rack (its
+## tip starts beyond the holder) never puts it straight back.
+func _check_holder_return() -> void:
+	if not is_instance_valid(G.level):
+		return
+	if follow_offset.length() > 2.0:
+		# Still gliding from the rack into the hand.
+		return
+	if _is_tip_over_own_holder():
+		if _tip_left_holder:
+			put_away()
+	else:
+		_tip_left_holder = true
+
+
+## Whether the tip (the cursor position) is inside this tool's
+## own ToolHolder area right now.
+func _is_tip_over_own_holder() -> bool:
+	var query := PhysicsPointQueryParameters2D.new()
+	query.position = get_tip_position()
+	query.collision_mask = Settings.PhysicsLayer.TOOL_HOLDERS
+	query.collide_with_areas = true
+	query.collide_with_bodies = false
+	var hits := get_world_2d().direct_space_state.intersect_point(
+		query,
+		4,
+	)
+	for hit in hits:
+		var holder := hit.get("collider") as ToolHolder
+		if is_instance_valid(holder) and holder.type == type:
+			return true
+	return false
 
 
 ## Points the drop shadow at the treatment this mode calls for:
@@ -172,6 +212,7 @@ func _set_mode(to_mode: Mode, _from_mode: Mode) -> void:
 ## Called by the hand when it takes this tool.
 func pick_up() -> void:
 	var from_tip := get_tip_position()
+	_tip_left_holder = false
 	mode = Mode.HELD
 	# Glide from the rack into the hand (LX5).
 	ease_follow_offset_from(from_tip - G.level.hand.pointer_position)

@@ -14,7 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://bl6bxtj82jtcy" path="res://assets/images/manual_page0001.png" id="14_page1"]
 [ext_resource type="Texture2D" uid="uid://bik16fm0enfxo" path="res://assets/images/manual_page0002.png" id="15_page2"]
 [ext_resource type="Texture2D" uid="uid://b5jej1flts5qt" path="res://assets/images/manual_page0003.png" id="16_page3"]
-[ext_resource type="PackedScene" uid="uid://dmb7ltq7tuwvv" path="res://src/level/drawer.tscn" id="17_drawer"]
+[ext_resource type="PackedScene" uid="uid://x4y22cyrn3q1" path="res://src/level/drawer_new.tscn" id="17_drawer"]
 [ext_resource type="PackedScene" path="res://src/props/radio.tscn" id="18_radio"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
@@ -166,7 +166,7 @@ shape = SubResource("CircleShape2D_giktf")
 metadata/_edit_lock_ = true
 
 [node name="GlueHolder" type="Area2D" parent="ToolHolders" unique_id=737979922]
-position = Vector2(348, 264)
+position = Vector2(611, 289)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
@@ -236,3 +236,9 @@ layer = 100
 
 [node name="Receipt" parent="FlowOverlays" unique_id=1906733515 instance=ExtResource("8_receipt")]
 unique_name_in_owner = true
+
+[node name="WorkableArea" type="Area2D" parent="." unique_id=181084016]
+unique_name_in_owner = true
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="WorkableArea" unique_id=638619667]
+polygon = PackedVector2Array(463, 132, 517, 286, 390, 288, 374, 306, -374, 305, -393, 282, -541, 286, -478, 135)

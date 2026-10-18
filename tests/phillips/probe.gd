@@ -14,6 +14,11 @@ const _MAIN_SCENE_PATH := "res://src/core/main.tscn"
 const _TIMEOUT_SEC := 150.0
 const _CIRCLE_RADIUS := 26.0
 const _STEP_SEC := 0.05
+## A tracked drag's measured speed lands at about three
+## quarters of its nominal speed (each step spans four physics
+## frames), so aim this much past the zone center to put the
+## needle on it, the way a player watching the needle would.
+const _TRACKED_SPEED_GAIN := 4.0 / 3.0
 
 var _item: Repairable
 var _cover: RepairLayer
@@ -53,6 +58,7 @@ func _run() -> void:
 	await _grab_driver()
 	_check_zone_continuity()
 	_check_gauge_tint()
+	_check_gauge_needle_wrap()
 	await _check_cam_outs()
 	await _check_removals()
 	await _check_install()
@@ -89,25 +95,44 @@ func _grab_driver() -> void:
 
 ## The zone never reverses: at the fast end it wraps back to the
 ## slow end and keeps climbing the same way.
-## The gauge face tints toward whichever end is nearer: green
-## as the screw nears done, red as the grip nears empty.
+## The gauge face stays plain while the strip-out meter has room
+## and only reddens in its low end: progress never greens it.
 func _check_gauge_tint() -> void:
+	_left.grip_meter = 1.0
+	_left._turned_rad = _left._get_total_rad() * 0.9
+	var success_color := _left.gauge._get_background_color(_left)
+	_expect(
+		absf(success_color.r - success_color.g) < 0.01,
+		"the gauge face does not green as the screw nears done",
+	)
+	_left.grip_meter = 0.8
+	var calm_color := _left.gauge._get_background_color(_left)
+	_expect(
+		absf(calm_color.r - calm_color.g) < 0.01,
+		"the gauge face stays plain above the meter's low end",
+	)
 	_left.grip_meter = 0.02
 	_left._turned_rad = 0.0
 	var failure_color := _left.gauge._get_background_color(_left)
 	_expect(
 		failure_color.r > failure_color.g,
-		"the gauge face reddens as the grip nears empty",
-	)
-	_left.grip_meter = 1.0
-	_left._turned_rad = _left._get_total_rad() * 0.9
-	var success_color := _left.gauge._get_background_color(_left)
-	_expect(
-		success_color.g > success_color.r,
-		"the gauge face greens as the screw nears done",
+		"the gauge face reddens in the meter's low end",
 	)
 	_left._turned_rad = 0.0
 	_left.grip_meter = G.settings.phillips_meter_start
+
+
+## The needle must keep moving past the dial's downward seam
+## instead of pinning there once the speed passes the top.
+func _check_gauge_needle_wrap() -> void:
+	var gauge_max := G.settings.phillips_gauge_max_rad_per_sec
+	var seam_angle := _left.gauge._speed_to_angle(gauge_max)
+	var past_seam_angle := _left.gauge._speed_to_angle(gauge_max + 1.0)
+	var past_step := wrapf(past_seam_angle - seam_angle, -PI, PI)
+	_expect(
+		past_step < -0.1,
+		"the gauge needle continues past the downward seam",
+	)
 
 
 func _check_zone_continuity() -> void:
@@ -164,6 +189,13 @@ func _check_cam_outs() -> void:
 		_left.mode == InteractionPoint.Mode.ACTIVE,
 		"the driver engages the left screw",
 	)
+	var driver_sprite := (
+		_driver.get_node("%AnimatedSprite2D") as AnimatedSprite2D
+	)
+	_expect(
+		driver_sprite.animation == &"default",
+		"the driver animation waits until the screw makes progress",
+	)
 	await _seconds(1.2)
 	_expect(
 		not _left.has_started_dragging()
@@ -183,7 +215,13 @@ func _check_cam_outs() -> void:
 		< _left.gauge._speed_to_angle(2.0),
 		"coming out, the gauge sweeps counter-clockwise",
 	)
-	await _drag_circle(_left.global_position, 1.2, 1.8, -1.0)
+	# Pin the zone high so the slow drag stays below it: too
+	# slow only means anything against the zone's current spot.
+	_left._zone_center_rad_per_sec = 10.0
+	_left._zone_climb_rad_per_sec = 0.0
+	_left._zone_target_climb_rad_per_sec = 0.0
+	_left._zone_retarget_left_sec = 30.0
+	await _drag_circle(_left.global_position, 1.2, 5.0, -1.0)
 	_expect(
 		_left.health == _left.max_health - 1,
 		"circling too slowly cams the bit out",
@@ -201,7 +239,7 @@ func _check_cam_outs() -> void:
 	_left._zone_climb_rad_per_sec = 0.0
 	_left._zone_target_climb_rad_per_sec = 0.0
 	_left._zone_retarget_left_sec = 10.0
-	await _drag_circle(_left.global_position, 16.0, 3.4, -1.0)
+	await _drag_circle(_left.global_position, 16.0, 5.0, -1.0)
 	_expect(
 		_left.health == _left.max_health - 2,
 		"circling too fast cams the bit out",
@@ -214,12 +252,35 @@ func _check_removals() -> void:
 	# The removal check is about turning, not health.
 	_left.health = _left.max_health
 	await _press_tool_at(_driver, _left.global_position)
+	await _drag_circle(_left.global_position, 5.0, 2.0, -1.0, _left)
+	var driver_sprite := (
+		_driver.get_node("%AnimatedSprite2D") as AnimatedSprite2D
+	)
+	_expect(
+		driver_sprite.animation == &"twisting",
+		"the driver animation plays while the screw makes progress",
+	)
 	await _drag_to_resting(_left)
 	_expect(
 		await _wait_for_travel(_left, Screw.Travel.RESTING),
 		"tracking the sliding zone removes the left screw",
 	)
 	await _press_tool_at(_driver, _right.global_position)
+	# Progress counts only inside the green window itself: a
+	# settled speed just past its edge must leave the slide put.
+	_right._zone_center_rad_per_sec = 5.0
+	_right._zone_climb_rad_per_sec = 0.0
+	_right._zone_target_climb_rad_per_sec = 0.0
+	_right._zone_retarget_left_sec = 30.0
+	await _drag_circle(_right.global_position, 6.7, 1.5, -1.0)
+	await _drag_circle(_right.global_position, 9.5, 1.5, -1.0)
+	var settled_slide := _right.slide
+	await _drag_circle(_right.global_position, 9.5, 1.5, -1.0)
+	_expect(
+		absf(_right.slide - settled_slide) < 0.01,
+		"progress stops outside the green window (slide %.2f kept)"
+		% settled_slide,
+	)
 	# Circling around empty bench, away from the screw, still
 	# turns it. Only the drag's turning counts, not its center.
 	# Circle until it is clearly turning and stop there: the
@@ -286,8 +347,19 @@ func _check_install() -> void:
 		+ " has to circle",
 	)
 	# The seated screw sits raised: press its slid-up hit shape.
-	await _press_tool_at(_driver, _left.hit_shape.global_position)
-	await _drag_circle(_left.global_position, 5.0, 4.0, 1.0, _left)
+	# Drive it in tracked bursts, re-engaging after a cam-out:
+	# progress is kept between tries.
+	for attempt in 3:
+		if _left.mode == InteractionPoint.Mode.FINISHED:
+			break
+		if _left.mode != InteractionPoint.Mode.ACTIVE:
+			await _press_tool_at(
+				_driver, _left.hit_shape.global_position
+			)
+		await _drag_circle(
+			_left.global_position, 5.0, 3.0, 1.0, _left
+		)
+		await _seconds(0.7)
 	_expect(
 		_left.mode == InteractionPoint.Mode.FINISHED
 		and _left.slide < 0.01,
@@ -334,7 +406,10 @@ func _drag_until_turned(
 		if screw.slide > target_slide:
 			break
 		angle += (
-			-1.0 * screw.get_zone_center_rad_per_sec() * _STEP_SEC
+			-1.0
+			* screw.get_zone_center_rad_per_sec()
+			* _TRACKED_SPEED_GAIN
+			* _STEP_SEC
 		)
 		var point := (
 			center + Vector2(cos(angle), sin(angle)) * _CIRCLE_RADIUS
@@ -374,6 +449,7 @@ func _drag_circle(
 		if is_instance_valid(tracked_screw):
 			speed_rad_per_sec = (
 				tracked_screw.get_zone_center_rad_per_sec()
+				* _TRACKED_SPEED_GAIN
 			)
 		angle += direction * speed_rad_per_sec * _STEP_SEC
 		var point := (

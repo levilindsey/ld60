@@ -46,5 +46,3 @@ hammer_scene = ExtResource("11_hammer")
 glue_scene = ExtResource("14_glue")
 phillips_screw_driver_scene = ExtResource("12_phildriver")
 defect_popup_scene = ExtResource("4_popup")
-hint_delay_sec = 7.0
-hint_tool_delay_sec = 16.0

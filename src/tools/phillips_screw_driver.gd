@@ -17,12 +17,21 @@ func _ready() -> void:
 	G.check(is_instance_valid(art))
 
 
-func _start_twist_animation() -> void:
-	%AnimatedSprite2D.play("twisting")
+## Whether the twisting animation is playing. It only plays
+## while the engaged screw is actually making progress.
+var _is_twist_animation_active := false
 
 
-func _stop_twist_animation() -> void:
-	%AnimatedSprite2D.play("default")
+## Starts the twisting animation while the screw makes progress
+## and returns to the still art when it stops.
+func set_twist_animation_active(is_active: bool) -> void:
+	if _is_twist_animation_active == is_active:
+		return
+	_is_twist_animation_active = is_active
+	if is_active:
+		%AnimatedSprite2D.play("twisting")
+	else:
+		%AnimatedSprite2D.play("default")
 
 
 func _set_mode(to_mode: Mode, from_mode: Mode) -> void:
@@ -30,9 +39,7 @@ func _set_mode(to_mode: Mode, from_mode: Mode) -> void:
 		return
 
 	if from_mode == Mode.IN_USE:
-		_stop_twist_animation()
-	elif to_mode == Mode.IN_USE:
-		_start_twist_animation()
+		set_twist_animation_active(false)
 
 	super._set_mode(to_mode, from_mode)
 

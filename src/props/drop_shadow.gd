@@ -3,12 +3,12 @@ extends Node2D
 ## A bench shadow under a thing that is resting there. Two kinds:
 ##
 ## - ELLIPSE: a soft ellipse of `size_px`, in world pixels.
-## - SILHOUETTE: dark copies of the host's sprites, drawn again
-##   offset in eight directions so a rim peeks out evenly on
-##   every side of the shape, following the host's position and
-##   rotation. Optionally clipped to the part of the shape at
-##   and below a holder's contact point (a tool resting on its
-##   shoulders: only what hangs below the neck shadows).
+## - SILHOUETTE: dark copies of the host's sprites, scaled up a
+##   little about the art's centre so a rim peeks out on every
+##   side, following the host's position and rotation.
+##   Optionally clipped to the part of the shape at and below a
+##   holder's contact point (a tool resting on its shoulders:
+##   only what hangs below the neck shadows).
 ##
 ## Sizes and offsets are world pixels: the drawing compensates
 ## for any scale above it, the same lesson the outline hint
@@ -22,16 +22,16 @@ enum Kind {
 	SILHOUETTE,
 }
 
-## Rim layers for silhouettes: (rim distance in world pixels,
-## alpha share). Each rim layer draws the shape offset in eight
-## directions at that distance, widening every part of the shape
-## by the same amount: a thin shaft gets as much rim on each side
-## as a wide handle. (Scaling the shape up instead barely widens
-## its thin parts, and a percentage of the texture canvas is
-## mostly transparent padding.) The wider, fainter rim behind
-## fakes a blur; the last layer is the shape itself.
-const _RIM_LAYERS: Array = [[9.0, 0.45], [4.0, 0.7], [0.0, 0.85]]
-const _RIM_STEP := 0.7071
+## Grow layers for silhouettes: (horizontal margin, vertical
+## margin, alpha share), in world pixels the scaled copy extends
+## past the art. Non-uniform on purpose: a lot of scale
+## horizontally so the rim shows on the left and right, only a
+## tiny bit vertically. The bigger, fainter copy behind fakes a
+## blur. Margins are measured on the art's used
+## (non-transparent) rect, not the whole texture canvas: the art
+## sits in mostly transparent padding, and a percentage of the
+## canvas would barely grow the art itself.
+const _GROW_LAYERS: Array = [[20.0, 3.0, 0.45], [10.0, 1.5, 0.8]]
 const _CLIP_SHADER := """
 shader_type canvas_item;
 uniform vec2 holder_pos = vec2(0.0, 0.0);
@@ -80,6 +80,9 @@ var anchor: Node2D
 ## Silhouette copies are drawn at this fraction of the shape's
 ## size (below 1 makes a shadow smaller than its host).
 var size_scale := 1.0
+## Draw only the darkest grow layer, for hosts where the two
+## layers read as two separate shadows (the screws).
+var single_layer := false
 
 var _host: CanvasItem
 var _fade := 0.0
@@ -108,10 +111,12 @@ static func attach_silhouette(
 	shadow_offset: Vector2,
 	should_show: Callable,
 	p_size_scale := 1.0,
+	p_single_layer := false,
 ) -> DropShadow:
 	var shadow := _make(host, shadow_offset, should_show)
 	shadow._pending_sources = sources
 	shadow.size_scale = p_size_scale
+	shadow.single_layer = p_single_layer
 	shadow.kind = Kind.SILHOUETTE
 	return shadow
 
@@ -223,48 +228,117 @@ func _rebuild() -> void:
 		var shader := Shader.new()
 		shader.code = _CLIP_SHADER
 		_clip_material.shader = shader
-	for rim in _RIM_LAYERS:
+	var grow_layers: Array = _GROW_LAYERS
+	if single_layer:
+		grow_layers = [_GROW_LAYERS[_GROW_LAYERS.size() - 1]]
+	for grow in grow_layers:
 		var layer := Node2D.new()
 		add_child(layer)
 		_layers.append(layer)
 		for source in sources:
-			for offset in _rim_offsets(float(rim[0])):
-				var copy: CanvasItem = _make_copy(source)
-				if not is_instance_valid(copy):
-					continue
-				if copy is Sprite2D or copy is AnimatedSprite2D:
-					copy.material = _clip_material
-				layer.add_child(copy)
-				_copies.append(
-					[
-						copy,
-						source,
-						float(rim[1]),
-						(copy as Node2D).scale,
-						(copy as Node2D).position,
-						offset,
-					],
-				)
+			var copy: CanvasItem = _make_copy(source)
+			if not is_instance_valid(copy):
+				continue
+			if copy is Sprite2D or copy is AnimatedSprite2D:
+				copy.material = _clip_material
+			layer.add_child(copy)
+			var base_scale: Vector2 = (copy as Node2D).scale
+			var grow_info := _get_grow(
+				source,
+				Vector2(float(grow[0]), float(grow[1])),
+			)
+			var factor := grow_info[0] as Vector2
+			var centre := grow_info[1] as Vector2
+			# Scale about the art's own centre, so the rim
+			# shows evenly on every side.
+			var shift: Vector2 = (
+				base_scale * ((Vector2.ONE - factor) * centre)
+			)
+			copy.position += Transform2D(
+				copy.rotation,
+				Vector2.ZERO,
+			).basis_xform(shift)
+			_copies.append(
+				[copy, source, float(grow[2]), base_scale, factor],
+			)
 	_update_clip()
 
 
-## The world-pixel offsets one rim layer draws the shape at:
-## eight directions at `distance`, or just the shape itself
-## when the distance is zero.
-func _rim_offsets(distance: float) -> Array[Vector2]:
-	if distance <= 0.0:
-		return [Vector2.ZERO]
-	var diag := distance * _RIM_STEP
-	return [
-		Vector2(distance, 0.0),
-		Vector2(-distance, 0.0),
-		Vector2(0.0, distance),
-		Vector2(0.0, -distance),
-		Vector2(diag, diag),
-		Vector2(diag, -diag),
-		Vector2(-diag, diag),
-		Vector2(-diag, -diag),
-	]
+## The per-axis scale that grows `source`'s art by `margin`
+## world pixels (x and y separately), with the art's centre in
+## the source's local units. Sprite art is measured by the
+## texture's used (non-transparent) rect: the art sits in a
+## mostly transparent canvas, and a margin on the whole canvas
+## would barely grow the art itself.
+func _get_grow(source: CanvasItem, margin: Vector2) -> Array:
+	var size := Vector2.ZERO
+	var centre := Vector2.ZERO
+	if source is Polygon2D:
+		var polygon_source := source as Polygon2D
+		if not polygon_source.polygon.is_empty():
+			var bounds := Rect2(polygon_source.polygon[0], Vector2.ZERO)
+			for point in polygon_source.polygon:
+				bounds = bounds.expand(point)
+			size = bounds.size
+			centre = bounds.get_center() + polygon_source.offset
+	elif source is AnimatedSprite2D:
+		var animated_source := source as AnimatedSprite2D
+		if is_instance_valid(animated_source.sprite_frames):
+			var texture := animated_source.sprite_frames.get_frame_texture(
+				animated_source.animation,
+				animated_source.frame,
+			)
+			if is_instance_valid(texture):
+				var used := _get_used_rect(texture)
+				size = Vector2(used.size)
+				var top_left := animated_source.offset + Vector2(used.position)
+				if animated_source.centered:
+					top_left -= texture.get_size() * 0.5
+				centre = top_left + size * 0.5
+	elif source is Sprite2D:
+		var sprite_source := source as Sprite2D
+		if is_instance_valid(sprite_source.texture):
+			if sprite_source.region_enabled:
+				size = sprite_source.region_rect.size
+				centre = sprite_source.offset + (
+					Vector2.ZERO if sprite_source.centered else size * 0.5
+				)
+			else:
+				var used := _get_used_rect(sprite_source.texture)
+				size = Vector2(used.size)
+				var top_left := sprite_source.offset + Vector2(used.position)
+				if sprite_source.centered:
+					top_left -= sprite_source.texture.get_size() * 0.5
+				centre = top_left + size * 0.5
+	if size.x <= 0.0 or size.y <= 0.0:
+		return [Vector2.ONE, Vector2.ZERO]
+	var basis := source.get_global_transform()
+	var world_size := Vector2(
+		size.x * basis.x.length(),
+		size.y * basis.y.length(),
+	)
+	var factor := Vector2(
+		1.0 + 2.0 * margin.x / maxf(world_size.x, 0.001),
+		1.0 + 2.0 * margin.y / maxf(world_size.y, 0.001),
+	)
+	return [factor, centre]
+
+
+static var _used_rects: Dictionary = {}
+
+
+## The used (non-transparent) rect of a texture, in texture
+## pixels. Cached, since reading a texture's pixels is slow and
+## the answer never changes.
+func _get_used_rect(texture: Texture2D) -> Rect2i:
+	if _used_rects.has(texture):
+		return _used_rects[texture] as Rect2i
+	var rect := Rect2i(Vector2i.ZERO, Vector2i(texture.get_size()))
+	var image := texture.get_image()
+	if is_instance_valid(image) and not image.is_empty():
+		rect = image.get_used_rect()
+	_used_rects[texture] = rect
+	return rect
 
 
 func _collect_sprites(node: Node, into: Array) -> void:
@@ -341,29 +415,24 @@ func _make_copy(source: CanvasItem) -> CanvasItem:
 	return copy
 
 
-## Keeps the silhouette matched to the host: transform per rim
+## Keeps the silhouette matched to the host: transform per grow
 ## layer, per-copy visibility, animation frames and darkness.
-## Each copy sits at its built pose plus its rim offset, converted
-## from world pixels into the layer's space so the rim is the
-## same width whatever the host is scaled by.
 func _sync_silhouette() -> void:
 	if kind != Kind.SILHOUETTE or _copies.is_empty():
 		return
 	var host_transform := _host.get_global_transform()
 	for layer in _layers:
+		# No grow here: each copy carries its own scale factor,
+		# applied around the art's centre at build time.
 		layer.global_transform = Transform2D(
 			host_transform.x,
 			host_transform.y,
 			global_position,
 		)
-	var to_layer := host_transform.affine_inverse()
 	for pair in _copies:
 		var copy := pair[0] as CanvasItem
 		var source := pair[1] as CanvasItem
-		copy.scale = (pair[3] as Vector2) * size_scale
-		copy.position = (pair[4] as Vector2) + to_layer.basis_xform(
-			pair[5] as Vector2,
-		)
+		copy.scale = (pair[3] as Vector2) * (pair[4] as Vector2) * size_scale
 		copy.visible = source.is_visible_in_tree() and _host.visible
 		if copy is Polygon2D and source is Polygon2D:
 			var polygon_copy := copy as Polygon2D

@@ -136,8 +136,13 @@ enum PhysicsLayer {
 
 @export_group("Drawers")
 ## Seconds an open drawer takes to slide to the center of the level,
-## and back to its slot.
+## and back to its slot. The turn to the top-down view takes the
+## same trip, so the two stay in step.
 @export var drawer_move_sec := 0.35
+## Seconds the drawer takes to slide out of its slot, before it
+## turns and travels. The same slide runs in reverse at the end of
+## a close, and out to the same point to take a part back.
+@export var drawer_slide_sec := 0.3
 ## Seconds a drawer takes to open halfway to take a part back.
 @export var drawer_half_open_sec := 0.15
 ## Seconds a returned part takes to rise over the drawer's top edge,
@@ -211,9 +216,14 @@ enum PhysicsLayer {
 @export var phillips_fill_rate := 0.35
 ## Grip lost per second while the speed is out of the band.
 @export var phillips_drain_rate := 0.28
-## Grip a removal starts with, and an install starts with.
-@export var phillips_meter_start := 0.4
-@export var phillips_install_meter_start := 0.65
+## Grip a removal starts with, and an install starts with. It
+## starts full: the meter is only the time left before the bit
+## strips or slips out, never progress toward done.
+@export var phillips_meter_start := 1.0
+@export var phillips_install_meter_start := 1.0
+## Grip level where the gauge face starts reddening. Above this
+## the face stays plain; at empty it is fully red.
+@export var phillips_failure_tint_start := 0.4
 ## Seconds input pauses after a cam-out.
 @export var phillips_cam_out_pause_sec := 0.5
 ## Grace seconds at the start, while the gauge scales in.
@@ -223,12 +233,9 @@ enum PhysicsLayer {
 ## seated and not yet circling costs nothing until then.
 @export var phillips_start_drag_rad := 1.5
 ## Seconds the speed needle smooths over.
-@export var phillips_speed_smoothing_sec := 0.5
+@export var phillips_speed_smoothing_sec := 0.65
 ## Seconds the grip swings between filling and draining over.
 @export var phillips_meter_smoothing_sec := 0.4
-## How far past the band's edges the speed may stray, once in it, in
-## radians per second.
-@export var phillips_band_grace_rad_per_sec := 0.8
 ## Pointer steps shorter than this don't count toward the turning.
 @export var phillips_min_segment_px := 4.0
 @export_group("")

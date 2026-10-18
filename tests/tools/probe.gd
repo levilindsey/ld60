@@ -53,6 +53,7 @@ func _run() -> void:
 		"rag, air blower and hammer are on the rack",
 	)
 	_check_holder_shadows()
+	await _check_holder_return()
 	await _check_rag()
 	await _check_air_blower()
 	await _check_hammer()
@@ -193,6 +194,42 @@ func _union_canvas_rect(root: Node) -> Rect2:
 			result = rect if not found else result.merge(rect)
 			found = true
 	return result
+
+
+## Dragging a held tool's tip over another tool's holder does
+## nothing; over its own holder it puts the tool away.
+func _check_holder_return() -> void:
+	var driver := await _grab(Tool.Type.FLAT_HEAD_SCREW_DRIVER)
+	# Off the rack and away from the holders first.
+	await _move_to(Vector2(-100.0, 100.0))
+	await _physics_frames(4)
+	_expect(
+		driver.mode == Tool.Mode.HELD,
+		"the flathead driver is in hand off the rack",
+	)
+	await _move_to(
+		G.level.get_tool_holder_position(Tool.Type.PHILLIPS_SCREW_DRIVER)
+	)
+	await _physics_frames(4)
+	_expect(
+		driver.mode == Tool.Mode.HELD,
+		"another tool's holder does not take the driver",
+	)
+	await _move_to(
+		G.level.get_tool_holder_position(
+			Tool.Type.FLAT_HEAD_SCREW_DRIVER
+		)
+	)
+	var is_stored := false
+	for frame in 90:
+		await _physics_frames(1)
+		if driver.mode == Tool.Mode.STORED:
+			is_stored = true
+			break
+	_expect(
+		is_stored and _hand.is_empty(),
+		"the tip entering its own holder puts the driver away",
+	)
 
 
 ## Takes a tool off the rack by pressing the tool itself.

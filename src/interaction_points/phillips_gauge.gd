@@ -17,10 +17,9 @@ const _SWEEP_DEG := -360.0
 const _START_DEG := 90.0
 ## The mirrored sweep's start: the same seam at the bottom.
 const _START_TIGHTENING_DEG := 90.0
-## The gauge's face: plain, greening as the screw nears done, and
-## reddening as the grip nears empty. Whichever is nearer wins.
+## The gauge's face: plain while the strip-out meter has room,
+## reddening only in its low end.
 const _BACKGROUND := Color(0.1, 0.1, 0.12, 0.85)
-const _SUCCESS_BACKGROUND := Color(0.09, 0.3, 0.13, 0.92)
 const _FAILURE_BACKGROUND := Color(0.34, 0.09, 0.08, 0.92)
 const _ZONE_COLOR := Color(0.4, 1.0, 0.45)
 
@@ -69,14 +68,12 @@ func _draw() -> void:
 	draw_circle(center, 4.0, Color.WHITE)
 
 
-## The face color right now: greener as the screw nears done,
-## redder as the grip nears empty, plain when neither is close.
+## The face color right now: plain until the strip-out meter
+## reaches its low end, then redder as empty approaches.
 func _get_background_color(screw: PhillipsScrew) -> Color:
-	var success := screw.get_success_share()
-	var failure := screw.get_failure_share()
-	if success >= failure:
-		return _BACKGROUND.lerp(_SUCCESS_BACKGROUND, success)
-	return _BACKGROUND.lerp(_FAILURE_BACKGROUND, failure)
+	return _BACKGROUND.lerp(
+		_FAILURE_BACKGROUND, screw.get_failure_share()
+	)
 
 
 ## Draws the green zone, in two arcs when it straddles the seam
@@ -119,12 +116,13 @@ func _draw_zone_segment(
 	)
 
 
+## Maps a speed to its dial angle. Speeds past the top are not
+## clamped: the needle keeps wrapping around the seam instead of
+## pinning at the bottom while the zone travels on without it.
 func _speed_to_angle(speed_rad_per_sec: float) -> float:
-	var share := clampf(
-		speed_rad_per_sec
-		/ maxf(G.settings.phillips_gauge_max_rad_per_sec, 0.01),
-		0.0,
-		1.0,
+	var share := (
+		maxf(speed_rad_per_sec, 0.0)
+		/ maxf(G.settings.phillips_gauge_max_rad_per_sec, 0.01)
 	)
 	var screw := get_parent() as PhillipsScrew
 	if is_instance_valid(screw) and screw.is_install_mode:

@@ -118,14 +118,24 @@ func _drag_cover_off() -> void:
 func _check_outside_press_closes() -> void:
 	var drawer := _level.get_drawers()[0]
 	var clipping_space := drawer.get_node(
-		"Mover/Node2D/ClippingSpace"
+		"Mover/Scaler/ClippingSpace"
 	) as CanvasItem
 	var unclipped := drawer.get_node(
-		"Mover/Node2D/VisualUnclipped"
+		"Mover/Scaler/VisualUnclipped"
 	) as CanvasItem
 	_expect(
 		clipping_space.visible and not unclipped.visible,
 		"a shut drawer shows its clipped sprite group",
+	)
+	var rest_top := clipping_space.get_node(
+		"Visual/TopPivot"
+	) as Node2D
+	_expect(
+		absf(rest_top.scale.y - 0.16) < 0.01
+		and rest_top.position.is_equal_approx(
+			Vector2(-811.5, -124.0)
+		),
+		"at rest the top view is scaled down above the front",
 	)
 	await _press_at(drawer.global_position)
 	_expect(
@@ -137,6 +147,23 @@ func _check_outside_press_closes() -> void:
 	_expect(
 		not clipping_space.visible and unclipped.visible,
 		"an open drawer shows its unclipped sprite group",
+	)
+	var open_top := unclipped.get_node("TopPivot") as Node2D
+	var open_front := unclipped.get_node("FrontPivot") as Node2D
+	var open_side := unclipped.get_node("SidePivot") as Node2D
+	_expect(
+		open_top.scale.is_equal_approx(Vector2.ONE)
+		and open_top.position.is_equal_approx(
+			Vector2(-907.0, -587.0)
+		),
+		"an open drawer shows the top view at full size",
+	)
+	_expect(
+		absf(open_front.scale.y - 0.16) < 0.01
+		and absf(open_front.skew - (-0.5236)) < 0.01
+		and open_side.scale.is_equal_approx(Vector2(0.14, 1.0))
+		and absf(open_side.rotation - 1.0472) < 0.01,
+		"an open drawer keeps thin front and side strips, turned in",
 	)
 	await _shot("2_drawer_open")
 	for part in _level.get_parts_in_drawer(drawer):

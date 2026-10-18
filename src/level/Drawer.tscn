@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://bjpvyfmvkwkaq"]
+[gd_scene format=3 uid="uid://dq0q06p1k4wyo"]
 
 [ext_resource type="Script" uid="uid://b65kcr1bl02yl" path="res://src/level/drawer.gd" id="1_mmeg0"]
 [ext_resource type="Texture2D" uid="uid://b2v34y4upr08b" path="res://assets/images/opendrawer.png" id="2_3d343"]
@@ -262,7 +262,7 @@ _data = {
 &"open": SubResource("Animation_ttnfj")
 }
 
-[node name="Drawer" type="Node2D" unique_id=601572013]
+[node name="Drawer2" type="Node2D" unique_id=601572013]
 script = ExtResource("1_mmeg0")
 
 [node name="Mover" type="Node2D" parent="." unique_id=2100000001]

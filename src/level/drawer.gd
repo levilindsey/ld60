@@ -37,15 +37,15 @@ enum State {
 const _OPEN_ANIMATION := &"open"
 ## Where an opened drawer sits on the level, in world space.
 const _CENTER_GLOBAL_POSITION := Vector2(0.0, 0.0)
-## The open drawer's inside, in this scene's local space: the dark
-## box in the top-down art. Stored parts rest at random spots in it.
-const _INTERIOR_LOCAL := Rect2(-836.0, -51.0, 1158.0, 558.0)
+## The open drawer's inside, in this scene's local space: the top
+## view's panel on the shared art canvas. Stored parts rest at
+## random spots in it.
+const _INTERIOR_LOCAL := Rect2(-1503.0, -1037.0, 1307.0, 1140.0)
 const _INTERIOR_MARGIN_PX := 40.0
-## The drawer's face on its canvas, used for press and drop checks.
-const _HIT_SIZE := Vector2(1234.0, 1247.0)
-## Halfway through the open animation, where a drawer pauses to
-## take a part back.
-const _HALF_OPEN_FRACTION := 0.5
+## The point in the open animation where the slide out of the slot
+## ends and the turn to the top-down view begins. A drawer taking a
+## part back pauses here, pulled out but still facing forward.
+const _SLIDE_FRACTION := 0.375
 ## How far above its top edge a returning part rises, in world
 ## pixels, before it sinks back down inside.
 const _PUT_AWAY_CLEARANCE_PX := 50.0
@@ -94,10 +94,16 @@ func has_global_point(global_point: Vector2) -> bool:
 	return get_hit_global_rect().has_point(global_point)
 
 
-## The drawer's face in world space, following the wrapper.
+## The drawer's face in world space, following the wrapper. The
+## size comes from the hit shape itself, so the check follows the
+## scene when the shape is resized there.
 func get_hit_global_rect() -> Rect2:
 	var transform := (%HitArea as Area2D).global_transform
-	var half_size := _HIT_SIZE * 0.5
+	var shape := (
+		(%HitArea as Area2D).get_node("CollisionShape2D")
+		as CollisionShape2D
+	).shape as RectangleShape2D
+	var half_size := shape.size * 0.5
 	var corners := PackedVector2Array([
 		transform * Vector2(-half_size.x, -half_size.y),
 		transform * Vector2(half_size.x, -half_size.y),
@@ -159,20 +165,18 @@ func get_random_interior_global_position() -> Vector2:
 	return transform * local_point
 
 
-## Plays the open animation, then slides the drawer to the center.
-## Stored parts appear once `opened` fires at the end.
+## Slides out of the slot, then turns to the top-down view while
+## the wrapper slides to the center. Stored parts appear once
+## `opened` fires at the end.
 func open_drawer() -> void:
 	if state != State.CLOSED:
 		return
 	state = State.OPENING
 	var generation := _generation
 	_kill_tween()
-	# The half-open seeks freeze the player at speed 0. Restore the
-	# speed and restart it, so the full play always runs.
-	(%AnimationPlayer as AnimationPlayer).speed_scale = 1.0
-	(%AnimationPlayer as AnimationPlayer).stop()
-	(%AnimationPlayer as AnimationPlayer).play(_OPEN_ANIMATION)
-	await (%AnimationPlayer as AnimationPlayer).animation_finished
+	await _tween_open_fraction(
+		_SLIDE_FRACTION, G.settings.drawer_slide_sec
+	).finished
 	if generation != _generation:
 		return
 	# Out of the slot: the unclipped group makes the trip.
@@ -180,13 +184,19 @@ func open_drawer() -> void:
 	_kill_tween()
 	_tween = create_tween()
 	_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
-	_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	_tween.set_parallel()
+	_tween.tween_method(
+		_apply_open_fraction,
+		_open_fraction,
+		1.0,
+		G.settings.drawer_move_sec,
+	)
 	_tween.tween_property(
 		%Mover,
 		"position",
 		_mover_center_position(),
 		G.settings.drawer_move_sec,
-	)
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	await _tween.finished
 	if generation != _generation:
 		return
@@ -194,8 +204,8 @@ func open_drawer() -> void:
 	opened.emit()
 
 
-## Hides the stored parts, slides back to the slot, then reverses
-## the open animation.
+## Hides the stored parts, turns back and slides to the slot
+## together, swaps to the clipped group, then slides home.
 func close_drawer() -> void:
 	if state != State.OPEN:
 		return
@@ -205,21 +215,27 @@ func close_drawer() -> void:
 	_kill_tween()
 	_tween = create_tween()
 	_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
-	_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	_tween.set_parallel()
+	_tween.tween_method(
+		_apply_open_fraction,
+		_open_fraction,
+		_SLIDE_FRACTION,
+		G.settings.drawer_move_sec,
+	)
 	_tween.tween_property(
 		%Mover,
 		"position",
 		Vector2.ZERO,
 		G.settings.drawer_move_sec,
-	)
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	await _tween.finished
 	if generation != _generation:
 		return
 	# Back in the slot: the clipped group slides it home.
 	_set_clipped(true)
-	(%AnimationPlayer as AnimationPlayer).speed_scale = 1.0
-	(%AnimationPlayer as AnimationPlayer).play_backwards(_OPEN_ANIMATION)
-	await (%AnimationPlayer as AnimationPlayer).animation_finished
+	await _tween_open_fraction(
+		0.0, G.settings.drawer_slide_sec
+	).finished
 	if generation != _generation:
 		return
 	state = State.CLOSED
@@ -254,10 +270,10 @@ func take_part(part: Part) -> void:
 		part.is_returning = false
 		return
 	state = State.STORING
-	_tween_open_fraction(_HALF_OPEN_FRACTION)
+	_tween_open_fraction(_SLIDE_FRACTION)
 	await _sink_part(part)
 	_store_part(part)
-	await _tween_open_fraction(0.0)
+	await _tween_open_fraction(0.0, G.settings.drawer_slide_sec)
 	state = State.CLOSED
 	closed.emit()
 
@@ -279,7 +295,7 @@ func store_parts(parts: Array[Part]) -> void:
 	if loose.is_empty():
 		return
 	state = State.STORING
-	_tween_open_fraction(_HALF_OPEN_FRACTION)
+	_tween_open_fraction(_SLIDE_FRACTION)
 	var top_y := get_hit_global_rect().position.y
 	var up_tween := create_tween()
 	up_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
@@ -312,7 +328,7 @@ func store_parts(parts: Array[Part]) -> void:
 	await down_tween.finished
 	for part in loose:
 		_store_part(part)
-	await _tween_open_fraction(0.0)
+	await _tween_open_fraction(0.0, G.settings.drawer_slide_sec)
 	state = State.CLOSED
 	closed.emit()
 
@@ -371,9 +387,12 @@ func _mover_center_position() -> Vector2:
 	)
 
 
-## Tweens the open animation to a fraction of its length and holds
-## it there. Returns the tween.
-func _tween_open_fraction(to_fraction: float) -> Tween:
+## Tweens the open animation to a fraction of its length over
+## `duration_sec` and holds it there. Returns the tween.
+func _tween_open_fraction(
+	to_fraction: float,
+	duration_sec: float = G.settings.drawer_half_open_sec,
+) -> Tween:
 	if is_instance_valid(_fraction_tween):
 		_fraction_tween.kill()
 	_fraction_tween = create_tween()
@@ -382,15 +401,15 @@ func _tween_open_fraction(to_fraction: float) -> Tween:
 		_apply_open_fraction,
 		_open_fraction,
 		to_fraction,
-		G.settings.drawer_half_open_sec,
+		duration_sec,
 	)
 	return _fraction_tween
 
 
 func _apply_open_fraction(fraction: float) -> void:
-	# A fraction left over from a put-away must never freeze a
-	# drawer that has moved on to a full open or close.
-	if state != State.STORING and state != State.CLOSED:
+	# A fraction left over from a finished sequence must never
+	# freeze a drawer that has settled open in the center.
+	if state == State.OPEN:
 		return
 	_open_fraction = fraction
 	var player := %AnimationPlayer as AnimationPlayer

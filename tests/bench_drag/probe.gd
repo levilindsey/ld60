@@ -152,6 +152,11 @@ func _check_screw_rest_and_drag() -> void:
 		"a resting screw's shadow is drawn smaller than the screw"
 		+ " (%.0f%%)" % (screw_shadow.size_scale * 100.0),
 	)
+	_expect(
+		is_instance_valid(screw_shadow)
+		and screw_shadow.get_copy_count() == 1,
+		"a resting screw casts a single shadow, not two",
+	)
 	# Drag it across the bench and let go.
 	var middle := rest_position + _screw.rest_hit_offset
 	var rotation_before := _screw.bench_art.rotation

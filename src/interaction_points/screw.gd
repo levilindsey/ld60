@@ -209,10 +209,11 @@ func _ready() -> void:
 	DropShadow.attach_silhouette(
 		bench_art,
 		[],
-		Vector2(0.0, 5.0),
+		Vector2(0.0, 3.0),
 		func() -> bool:
 			return travel == Travel.RESTING and not is_carried,
 		0.8,
+		true,
 	)
 	health = max_health
 	_update_head_frame()

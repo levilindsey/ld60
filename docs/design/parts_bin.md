@@ -12,13 +12,16 @@ drag out a replacement and fit it into the empty spot.
 ## The diegetic drawers (current)
 
 Decision (Levi, 2026-10-18): the parts menu below is gone. Three
-diegetic drawers (`src/level/Drawer.tscn`, `Drawer`) stack
-vertically on the left side of the level, each a full-frame art
-canvas like the room, so the front face can align with the
-background art. Each drawer has an `AnimationPlayer` "open"
-animation that flips the front face to a top-down view, and a
-`%Mover` wrapper: the animation drives the sprites, so the slide
-to the center of the level tweens the wrapper.
+diegetic drawers (`src/level/drawer_new.tscn`, `Drawer`) stack
+vertically on the left side of the level. The art is three
+orthographic views (top, front, side) on one shared canvas laid
+out as an unfolded box. At rest the top and side views are scaled
+down and skewed next to the front, faking a slight angle. The
+"open" animation slides the drawer out of its slot (clipped by an
+L-shaped mask, like the screws leaving their holes), then turns
+it to mostly top-down, with the front and side left as thin
+skewed strips, while the `%Mover` wrapper tweens it to the center
+of the level. Putting it back runs the whole thing in reverse.
 
 - A press on a shut drawer plays the open animation, then slides
   the drawer to the center. Its stored parts appear at random
