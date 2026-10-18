@@ -88,6 +88,7 @@ func open() -> void:
 	G.print("Opening instruction manual", ScaffolderLog.CATEGORY_INTERACTION)
 	_play_sound(&"page_flip")
 	state = State.LIFTING
+	_set_resting_order(false)
 	_tween_lift(0.0, 1.0, _on_lifted)
 
 
@@ -269,6 +270,7 @@ func _on_cover_closed() -> void:
 
 
 func _on_lowered() -> void:
+	_set_resting_order(true)
 	state = State.CLOSED
 	closed.emit()
 

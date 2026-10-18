@@ -211,12 +211,13 @@ default_color = Color(0.9, 0.15, 0.1, 1)
 
 [node name="ManualOpenSpot" type="Marker2D" parent="." unique_id=2052140931]
 
-[node name="InstructionManual" parent="." unique_id=742015103 node_paths=PackedStringArray("open_spot") instance=ExtResource("12_manual")]
+[node name="InstructionManual" parent="." unique_id=742015103 node_paths=PackedStringArray("open_spot", "resting_draw_before") instance=ExtResource("12_manual")]
 position = Vector2(-460.00003, 188)
 scale = Vector2(0.45, 0.45)
 page_contents = Array[Texture2D]([ExtResource("13_page0"), ExtResource("14_page1"), ExtResource("15_page2"), ExtResource("16_page3")])
 open_spot = NodePath("../ManualOpenSpot")
 desk_corners = PackedVector2Array(-162.7, -33.3, 22.3, -69.4, 206.5, 42.3, -39.9, 124.2)
+resting_draw_before = NodePath("../Repairables")
 
 [node name="TicketOpenSpot" type="Marker2D" parent="." unique_id=1326991672]
 position = Vector2(0, -30)
