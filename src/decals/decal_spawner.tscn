@@ -2,7 +2,9 @@
 
 [ext_resource type="Script" path="res://src/decals/decal_spawner.gd" id="1_spawner"]
 [ext_resource type="Resource" path="res://src/decals/skid_decal_set.tres" id="2_skid"]
+[ext_resource type="Resource" path="res://src/decals/glue_blob_set.tres" id="3_blob"]
 
 [node name="DecalSpawner" type="Node"]
 script = ExtResource("1_spawner")
 skid_set = ExtResource("2_skid")
+glue_blob_set = ExtResource("3_blob")

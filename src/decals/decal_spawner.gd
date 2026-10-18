@@ -18,9 +18,11 @@ extends Node
 
 enum Kind {
 	SKID,
+	GLUE_BLOB,
 }
 
 @export var skid_set: DecalSet
+@export var glue_blob_set: DecalSet
 
 ## Picks the texture, rotation, scale and flips. A test can set its seed.
 var random := RandomNumberGenerator.new()

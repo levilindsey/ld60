@@ -136,6 +136,8 @@ func _check_air_blower() -> void:
 	var blower := blower_tool as AirBlower
 	_expect(_hand.held == blower, "the hand holds the air blower")
 	_expect(blower.plump_sprite.visible, "the bulb starts plump")
+	# Let the held turn settle, so the aim uses the final direction.
+	await _seconds(0.5)
 	var aim := dust.global_position - blower.get_nozzle_direction() * 60.0
 	await _press_down(aim)
 	_expect(blower.squeezed_sprite.visible, "a tap squeezes the bulb")
@@ -157,9 +159,15 @@ func _check_air_blower() -> void:
 		not is_zero_approx(fan.art.rotation),
 		"puffs spin the fan",
 	)
-	await _press_at(
+	# Gliding onto its holder puts a held tool away on its own.
+	# Pressing there would only take it again.
+	await _move_to(
 		G.level.get_tool_holder_position(Tool.Type.AIR_BLOWER)
 	)
+	for frame in 60:
+		if blower.mode == Tool.Mode.STORED:
+			break
+		await get_tree().physics_frame
 	_expect(
 		blower.mode == Tool.Mode.STORED,
 		"the air blower goes back on the rack",

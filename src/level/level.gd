@@ -65,6 +65,7 @@ func _ready() -> void:
 	spawn_tool(Tool.Type.AIR_BLOWER)
 	spawn_tool(Tool.Type.HAMMER)
 	spawn_tool(Tool.Type.PHILLIPS_SCREW_DRIVER)
+	spawn_tool(Tool.Type.GLUE)
 	if G.ensure(
 		not G.settings.item_queue.is_empty(),
 		"The item queue is empty.",

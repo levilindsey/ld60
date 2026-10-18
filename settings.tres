@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://src/tools/hammer.tscn" id="11_hammer"]
 [ext_resource type="PackedScene" path="res://src/tools/phillips_screw_driver.tscn" id="12_phildriver"]
 [ext_resource type="PackedScene" path="res://src/repairables/test_phillips_repairable.tscn" id="13_philitem"]
+[ext_resource type="PackedScene" path="res://src/tools/glue.tscn" id="14_glue"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("5_outline")
@@ -41,4 +42,5 @@ rag_scene = ExtResource("9_rag")
 air_blower_scene = ExtResource("10_blower")
 hammer_scene = ExtResource("11_hammer")
 phillips_screw_driver_scene = ExtResource("12_phildriver")
+glue_scene = ExtResource("14_glue")
 defect_popup_scene = ExtResource("4_popup")

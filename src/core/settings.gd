@@ -137,8 +137,7 @@ enum PhysicsLayer {
 @export var rag_scene: PackedScene
 @export var air_blower_scene: PackedScene
 @export var hammer_scene: PackedScene
-## Planned (LX22). The glue bottle art has not landed yet, so no
-## scene is assigned and the tool is not spawned.
+## The placeholder bottle art stands in until the real one lands.
 @export var glue_scene: PackedScene
 @export var phillips_screw_driver_scene: PackedScene
 @export_group("")

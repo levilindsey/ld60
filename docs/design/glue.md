@@ -3,12 +3,10 @@
 Ledger: **LX22** (M2). Depends on [tools.md](tools.md) (LX7) and
 [decals.md](decals.md) (LX13).
 
-Planned ahead (2026-10-17): `Tool.Type.GLUE`,
-`InteractionPoint.Type.CRACK` and the "Glue" tuning group in
-`settings.gd` are registered, with no scene assigned. The tool
-and the `Crack` point land when the glue bottle sprite and the
-crack art arrive. `GrimeSpot` and `DustClump` already work the
-same way, with placeholder blobs until their sprites land.
+Built for LX22 with `glue_bottle_placeholder.png` standing in
+for the bottle art. The crack is still a drawn line, not a
+decal. `GrimeSpot` and `DustClump` work the same way, with
+placeholder blobs until their sprites land.
 
 ## What the player does
 

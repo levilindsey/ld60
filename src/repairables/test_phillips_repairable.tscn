@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" path="res://src/interaction_points/phillips_screw.tscn" id="2_screw"]
 [ext_resource type="Script" path="res://src/repairables/repair_layer.gd" id="3_layer"]
 [ext_resource type="Script" path="res://src/repairables/surface.gd" id="4_surface"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/crack.tscn" id="5_crack"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_case"]
 size = Vector2(96, 96)
@@ -39,6 +40,11 @@ offset_right = 46.0
 offset_bottom = 46.0
 mouse_filter = 2
 color = Color(0.22, 0.2, 0.18, 1)
+
+[node name="Crack" parent="Layers/Inside" instance=ExtResource("5_crack")]
+position = Vector2(-40, 5)
+scale = Vector2(0.7, 0.7)
+is_required = false
 
 [node name="Cover" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
 script = ExtResource("3_layer")

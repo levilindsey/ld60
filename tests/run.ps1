@@ -54,6 +54,7 @@ $Runs = @(
     @{ Name = "parts"; Probe = "parts"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
     @{ Name = "tools"; Probe = "tools"; UserArguments = @(); TimeoutSeconds = 150; WindowedArguments = @() }
     @{ Name = "phillips"; Probe = "phillips"; UserArguments = @(); TimeoutSeconds = 180; WindowedArguments = @() }
+    @{ Name = "glue"; Probe = "glue"; UserArguments = @(); TimeoutSeconds = 120; WindowedArguments = @() }
 )
 
 

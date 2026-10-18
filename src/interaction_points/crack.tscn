@@ -1,0 +1,27 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/interaction_points/crack.gd" id="1_crack"]
+
+[sub_resource type="Curve2D" id="Curve2D_crack"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 14, 0, 0, 0, 0, 80, -8, 0, 0, 0, 0, 120, 0)
+}
+point_count = 4
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_crack"]
+radius = 62.0
+
+[node name="Crack" type="Area2D" node_paths=PackedStringArray("path")]
+collision_layer = 4
+collision_mask = 0
+monitoring = false
+script = ExtResource("1_crack")
+path = NodePath("Path")
+accepted_tools = Array[int]([4])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(60, 0)
+shape = SubResource("CircleShape2D_crack")
+
+[node name="Path" type="Path2D" parent="."]
+curve = SubResource("Curve2D_crack")
