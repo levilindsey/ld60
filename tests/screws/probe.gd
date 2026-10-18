@@ -102,6 +102,16 @@ func _ready() -> void:
 func _run() -> void:
 	await _seconds(0.3)
 	_expect(G.state.state == StateMain.State.TITLE, "boot shows the title")
+	for sound_name in G.audio.STREAM_PLAYERS_BY_NAME:
+		if sound_name.ends_with("_theme"):
+			continue
+		var player: AudioStreamPlayer = (
+			G.audio.STREAM_PLAYERS_BY_NAME[sound_name]
+		)
+		_expect(
+			is_instance_valid(player.stream),
+			"LX25: the %s sound has a stream" % sound_name,
+		)
 	_check_drift_table()
 	G.state.transition(StateMain.State.GAME)
 	await _seconds(0.8)
@@ -294,7 +304,7 @@ func _collect_nodes() -> void:
 
 
 ## The hole and the clip space sit 7 px above where they used to,
-## so the screw art sits higher over its hole.
+## and the screw art sits on its hole, not displaced above it.
 func _check_hole_positions() -> void:
 	for screw: FlatHeadScrew in [_screw_left, _screw_right]:
 		var hole := screw.get_node("Hole") as Node2D
@@ -308,6 +318,14 @@ func _check_hole_positions() -> void:
 			clip_position.is_equal_approx(Vector2(0.0, -40.2)),
 			"%s: the clip space sits at (0, -40.2), got %s"
 			% [screw.name, clip_position],
+		)
+		var head_gap := screw.head.global_position.distance_to(
+			hole.global_position
+		)
+		_expect(
+			head_gap < 2.0,
+			"%s: the screw sits on its hole (%.2f px off)"
+			% [screw.name, head_gap],
 		)
 
 

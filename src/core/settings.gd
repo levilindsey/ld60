@@ -34,12 +34,19 @@ enum PhysicsLayer {
 @export var default_level_scene: PackedScene
 
 @export_group("Hand")
+## The pointing hand shown by default everywhere. This texture
+## replaces the arrow shape.
+@export var point_cursor_texture: Texture2D
+## Where the point cursor's hot spot sits, in the resized
+## texture's pixels: the fingertip.
+@export var point_cursor_hotspot := Vector2(18.0, 2.0)
 ## The open hand shown over things the empty hand can grab. Godot
 ## has no grab cursor shape, so this texture replaces the
 ## pointing-hand shape wherever the hand offers a grab.
 @export var grab_cursor_texture: Texture2D
-## Where the grab cursor's hot spot sits, in texture pixels.
-@export var grab_cursor_hotspot := Vector2(25.0, 38.0)
+## Where the grab cursor's hot spot sits, in the resized
+## texture's pixels: the palm.
+@export var grab_cursor_hotspot := Vector2(27.0, 35.0)
 ## Seconds for a held tool to ease into the pointer instead of jumping.
 @export var tool_follow_ease_sec := 0.2
 ## Seconds a tool shakes when a point doesn't accept it.

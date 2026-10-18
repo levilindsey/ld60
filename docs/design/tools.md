@@ -21,15 +21,18 @@ each tool:
 
 - **What is held:** nothing, one tool, one part, or the item (while it
   is dragged to the outbox). Only one at a time.
-- **The cursor:** an arrow when the hand is empty, an open hand when
-  it is empty and over something it can grab (a stored tool, the
-  parts drawer and its menu slots, a broken part that wiggles out, a
-  ready set-aside layer, a resting screw, a finished item), and
-  hidden while anything is held. Godot has no open-hand shape, so
-  the pointing-hand shape carries a custom texture
-  (`assets/images/cursors/hand_open.png`, set in `settings.tres`).
-  The hand also resets the cursor when the level restarts or a held
-  thing is freed (LX2).
+- **The cursor:** a pointing hand by default everywhere in the
+  app, an open hand when the hand is empty and over something it
+  can grab (a stored tool, the parts drawer and its menu slots, a
+  broken part that wiggles out, a ready set-aside layer, a resting
+  screw, a finished item), and hidden while anything is held.
+  Godot has no pointing or open hand shapes of its own here, so
+  the arrow shape carries `assets/images/cursors/cursor_point.png`
+  and the pointing-hand shape carries
+  `assets/images/cursors/cursor_grab.png` (both set in
+  `settings.tres` and registered by `Main`). The hand also resets
+  the cursor when the level restarts or a held thing is freed
+  (LX2).
 - **Presses:** one `_unhandled_input` takes left-button presses and
   releases for the whole bench and ignores the other buttons (LX3).
 - **Input owner:** while a microgame runs (the Phillips gauge, a hammer

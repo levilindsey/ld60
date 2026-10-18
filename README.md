@@ -80,8 +80,22 @@ powershell -ExecutionPolicy Bypass -File scripts/export_web.ps1
 python scripts/serve_web.py    # then open http://localhost:8060
 ```
 
-The zip it produces (`build/ld60-web.zip`) is what gets uploaded to
-itch.io.
+To publish to itch.io (our page is `levilindsey/repair-shop`), push the
+build with Butler:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/deploy_itch.ps1
+```
+
+First time on a new machine: install
+[Butler](https://itchio.itch.io/butler), then run `butler login` once.
+One-time setup on the itch page itself (Butler can't set these): in
+**Edit game**, set **Kind of project** to **HTML**, and on the `html5`
+upload tick **This file will be played in the browser** with a
+1280×720 viewport. Without those two, the page shows a download button
+instead of a playable game.
+The zip from `export_web.ps1` (`build/ld60-web.zip`) still works for a
+manual upload in the itch dashboard.
 
 ## Links
 

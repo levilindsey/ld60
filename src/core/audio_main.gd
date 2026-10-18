@@ -6,9 +6,10 @@ extends Node2D
 
 @export var mute_volume := -80.0
 
-## Placeholder stream players. Assign actual AudioStream assets on
-## the corresponding nodes in `audio_main.tscn` as audio lands during
-## the jam, and add new named entries here as needed.
+## Stream players, one per sound name. Their streams are the cleaned
+## foley in `assets/audio/foley_cleaned/`, assigned on the nodes in
+## `audio_main.tscn`. The theme players stay empty until music lands.
+## Add new named entries here as needed.
 @onready var STREAM_PLAYERS_BY_NAME := {
 	"menu_theme" = %MenuTheme,
 	"main_theme" = %MainTheme,

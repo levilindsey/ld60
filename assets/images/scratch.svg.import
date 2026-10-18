@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://toqd3k1v5yng"
-path="res://.godot/imported/hand_open.png-bfea0985aa6d9716a2e1086f9e551b3d.ctex"
+uid="uid://ckua5wjn75rv8"
+path="res://.godot/imported/scratch.svg-d63d09e1da4b9eb0f286c59148bad6c3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/cursors/hand_open.png"
-dest_files=["res://.godot/imported/hand_open.png-bfea0985aa6d9716a2e1086f9e551b3d.ctex"]
+source_file="res://assets/images/scratch.svg"
+dest_files=["res://.godot/imported/scratch.svg-d63d09e1da4b9eb0f286c59148bad6c3.ctex"]
 
 [params]
 
@@ -38,3 +38,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
+svg/scale=1.0
+editor/scale_with_editor_scale=false
+editor/convert_colors_with_editor_theme=false

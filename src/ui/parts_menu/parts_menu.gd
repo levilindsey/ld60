@@ -16,6 +16,7 @@ const _SLOT_SIZE := Vector2(120.0, 120.0)
 const _SLOT_GAP_PX := 16.0
 
 var _is_open := false
+var _is_closing := false
 var _is_animating := false
 var _slots: Array[Control] = []
 var _slot_types: Array[Part.Type] = []
@@ -33,6 +34,13 @@ func is_open() -> bool:
 	return _is_open
 
 
+## True while the menu is up and not on its way out. Once a part is
+## chosen or the menu is cancelled, the copies fly home but the
+## bench already takes presses again.
+func is_blocking_bench() -> bool:
+	return _is_open and not _is_closing
+
+
 ## Flies the parts out of the drawer. `part_types` fills the slots.
 func open_menu(
 	part_types: Array[Part.Type],
@@ -43,6 +51,7 @@ func open_menu(
 	# Reopening mid-close is fine: the old copies go away and a fresh
 	# set flies out.
 	_is_open = true
+	_is_closing = false
 	_is_animating = true
 	%Backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
 	_drawer_screen_position = drawer_screen_position
@@ -88,8 +97,8 @@ func _build_slot(part_type: Part.Type) -> Control:
 	slot.size = _SLOT_SIZE
 	slot.pivot_offset = _SLOT_SIZE * 0.5
 	slot.mouse_filter = Control.MOUSE_FILTER_STOP
-	# The pointing-hand shape shows the open-hand grab texture the
-	# hand registers for it (Hand._set_up_grab_cursor).
+	# The pointing-hand shape shows the open-hand grab texture
+	# registered for it in Main._set_up_cursors.
 	slot.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 	var background := ColorRect.new()
@@ -138,6 +147,7 @@ func _choose(index: int) -> void:
 ## Flies every slot but `chosen_index` back into the drawer, fades the
 ## menu and hides it. The chosen slot only fades.
 func _fly_back(chosen_index: int) -> void:
+	_is_closing = true
 	# Closing: the bench takes presses again right away, even while
 	# the copies are still flying home.
 	%Backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -173,6 +183,7 @@ func _on_flown(opened: bool) -> void:
 	_is_animating = false
 	if not opened:
 		_is_open = false
+		_is_closing = false
 		visible = false
 		for slot in _slots:
 			slot.queue_free()
@@ -186,6 +197,9 @@ func _on_backdrop_gui_input(event: InputEvent) -> void:
 		== MOUSE_BUTTON_LEFT
 		and (event as InputEventMouseButton).pressed
 	):
+		# Take the press, so it cannot also reach the bench behind
+		# the menu (the drawer, the tool rack, the item).
+		accept_event()
 		cancel()
 
 
@@ -196,6 +210,7 @@ func _on_slot_gui_input(event: InputEvent, index: int) -> void:
 		== MOUSE_BUTTON_LEFT
 		and (event as InputEventMouseButton).pressed
 	):
+		accept_event()
 		_choose(index)
 
 

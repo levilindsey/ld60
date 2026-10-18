@@ -10,7 +10,7 @@ extends RefCounted
 const _MIN_TRAVEL_PX := 12.0
 ## Dragging further than this from the press point, in screen pixels,
 ## yanks the part out at once.
-const _YANK_DISTANCE_PX := 60.0
+const _YANK_DISTANCE_PX := 300.0
 ## The rock at a full drag, in radians: about 10 degrees.
 const _MAX_ROCK_RAD := 0.174533
 
