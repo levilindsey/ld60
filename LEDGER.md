@@ -154,7 +154,7 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 - **LX15** · Parts drawer and part swap: drawer below the ticket,
   parts menu, wiggle-out, sockets (`docs/design/parts_bin.md`). Done in
-  4fb89dc (2026-10-17). Levi still to play it (menu feel, drawer look
+  392c842 (2026-10-17). Levi still to play it (menu feel, drawer look
   with real art); sounds wait for LX25, part art for LX24.
 - **LX53** · Screws slide up the screen as they turn out and back down as
   they turn in (`Screw.slide`, `screw_slide_px`). Done in 3c4522f to
