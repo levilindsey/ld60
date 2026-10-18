@@ -1,10 +1,7 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://ccdw1u28lthc5"]
 
-[ext_resource type="Script" path="res://src/tools/glue.gd" id="1_glue"]
+[ext_resource type="Script" uid="uid://dq2batu75vvva" path="res://src/tools/glue.gd" id="1_glue"]
 [ext_resource type="Texture2D" uid="uid://762ryxytnd5" path="res://assets/images/glue_bottle_placeholder.png" id="2_bottle"]
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_grab"]
-radius = 300.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
 radius = 40.0
@@ -12,48 +9,52 @@ radius = 40.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_holder"]
 radius = 200.0
 
-[node name="Glue" type="Node2D" node_paths=PackedStringArray("art", "cursor_position", "grab_area", "interaction_area", "holder_area")]
+[node name="Glue" type="Node2D" unique_id=1095026910 node_paths=PackedStringArray("art", "cursor_position", "grab_area", "interaction_area", "holder_area")]
 script = ExtResource("1_glue")
 art = NodePath("Wrapper/Art")
+type = 4
 cursor_position = NodePath("Wrapper/CursorPosition")
 grab_area = NodePath("Wrapper/GrabArea")
 interaction_area = NodePath("Wrapper/InteractionArea")
 holder_area = NodePath("Wrapper/HolderArea")
-type = 4
 
-[node name="Wrapper" type="Node2D" parent="."]
+[node name="Wrapper" type="Node2D" parent="." unique_id=1053359982]
 scale = Vector2(0.2, 0.2)
 
-[node name="CursorPosition" type="Marker2D" parent="Wrapper"]
+[node name="CursorPosition" type="Marker2D" parent="Wrapper" unique_id=1337733744]
 
-[node name="GrabArea" type="Area2D" parent="Wrapper"]
+[node name="Art" type="Node2D" parent="Wrapper" unique_id=1105929718]
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="Sprite" type="Sprite2D" parent="Wrapper/Art" unique_id=1105925836]
+position = Vector2(-5.0000005, -75)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("2_bottle")
+
+[node name="GrabArea" type="Area2D" parent="Wrapper" unique_id=324791401]
 collision_mask = 0
 monitoring = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/GrabArea"]
-position = Vector2(0, 400)
-shape = SubResource("CircleShape2D_grab")
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Wrapper/GrabArea" unique_id=1197257274]
+position = Vector2(-4.9999995, 0)
+polygon = PackedVector2Array(119.999985, 189.99998, 119.999985, -184.99998, 49.999996, -184.99998, 49.999996, -224.99998, 19.999998, -224.99998, 4.9999995, -319.99997, -14.999998, -224.99998, -44.999996, -224.99998, -44.999996, -184.99998, -119.999985, -184.99998, -119.999985, 189.99998)
 
-[node name="InteractionArea" type="Area2D" parent="Wrapper"]
+[node name="InteractionArea" type="Area2D" parent="Wrapper" unique_id=454981902]
+position = Vector2(0, -305)
 collision_layer = 0
 collision_mask = 4
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/InteractionArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/InteractionArea" unique_id=18878778]
 shape = SubResource("CircleShape2D_interaction")
+metadata/_edit_lock_ = true
 
-[node name="HolderArea" type="Area2D" parent="Wrapper"]
+[node name="HolderArea" type="Area2D" parent="Wrapper" unique_id=150195283]
+position = Vector2(0, 189.99998)
 collision_layer = 0
 collision_mask = 16
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/HolderArea"]
-position = Vector2(0, -600)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/HolderArea" unique_id=20787699]
 shape = SubResource("CircleShape2D_holder")
-
-[node name="Art" type="Node2D" parent="Wrapper"]
-
-[node name="Sprite" type="Sprite2D" parent="Wrapper/Art"]
-position = Vector2(0, 541)
-scale = Vector2(0.5, 0.5)
-texture = ExtResource("2_bottle")
+metadata/_edit_lock_ = true

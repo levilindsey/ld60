@@ -14,7 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://coo7afm5ydr44" path="res://src/tools/hammer.tscn" id="11_hammer"]
 [ext_resource type="PackedScene" uid="uid://dolqnwf6ir2dd" path="res://src/tools/phillips_screw_driver.tscn" id="12_phildriver"]
 [ext_resource type="PackedScene" path="res://src/repairables/test_phillips_repairable.tscn" id="13_philitem"]
-[ext_resource type="PackedScene" path="res://src/tools/glue.tscn" id="14_glue"]
+[ext_resource type="PackedScene" uid="uid://ccdw1u28lthc5" path="res://src/tools/glue.tscn" id="14_glue"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("5_outline")
