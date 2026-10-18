@@ -18,6 +18,16 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
 
+- **LX54** · Screws pull out to a rest spot on the bench after the last
+  twist; a press brings one back to sink into its hole before the install
+  twists (Levi's `RemoveScrew` and clip space, 4e44a86).
+  - owner: claude 194d3b69 (coordinator), agent `screw-pullout`
+  - branch: `lx54-pullout`, in the agent's worktree under
+    `.claude/worktrees/`; last commit: none yet
+  - evidence: `.claude/probes/LX54/` (frames), new checks in `tests/screws/`
+  - next: the agent builds it from the brief
+  - brief: `docs/design/screw_pullout.md`
+
 ## Next
 
 - **LX41** · Play M1 by hand, with a mouse and on a touch screen: the
@@ -86,7 +96,8 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   `radio.png~`) and a 69 MB `.kra` (GitHub warns over 50 MB and
   rejects over 100 MB). Levi: leave them for now (2026-10-17). Since
   then: a 20 MB `window.kra-autosave.kra` (cb47839, deleted in 2d71113)
-  and a 9.6 MB `room!!!!!!.png5857331650.tmp` (2d71113). Ignoring `*~`,
+  a 9.6 MB `room!!!!!!.png5857331650.tmp` (2d71113), and
+  `screwwwzzzzzzflat.png~` (4e44a86). Ignoring `*~`,
   `*autosave*` and `*.tmp` in `.gitignore` would stop new ones.
 - **LX36** · Decals have no cap per part, so repeated unseats pile up,
   and a part that draws nothing (a plain `Node2D`) shows its decals
