@@ -6,11 +6,12 @@ Ledger: **LX20** (M2). Depends on [tools.md](tools.md) (LX7),
 
 ## What the player does
 
-Hold the rag over the solvent bottle and press: the bottle tips and
-soaks the rag. Then drag the rag back and forth over grime to wipe it
-off. Some surfaces must not be wiped.
+Drag the rag back and forth over grime to wipe it off. Some
+surfaces must not be wiped. As built for LX20 there is no solvent
+yet, so the rag wipes dry. Soaking below is the later version,
+kept for when a solvent bottle lands.
 
-## Soaking
+## Soaking (later, not built)
 
 - The rag is the held tool. The bottle is a fixed prop on the desk
   (`SolventBottle`, an Area2D).
@@ -81,8 +82,10 @@ surfaces.
 
 - `Rag extends Tool`, an effect tool with a footprint area about 40 px
   across. While pressed and moving, it calls `on_wiped(amount, delta)`
-  on the grime points and sensitive surfaces under it.
+  on the grime points and sensitive surfaces under it. Built: the
+  hanging sprite shows on the rack, the bunched sprite in the hand.
 - `SolventBottle` sits on the desk with its own tipping animation.
+  Not built yet. There is no bottle and no wetness for now.
 
 ## Later
 

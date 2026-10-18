@@ -324,11 +324,16 @@ func _press_rack(global_point: Vector2) -> bool:
 
 
 ## 6. Holding a tool: its tip goes to the press, then it acts there.
+## Effect tools act at the press point and stay in the hand. Engage
+## tools go IN_USE on the point under the tip.
 func _press_with_tool(global_point: Vector2) -> bool:
 	var held_tool := get_held_tool()
 	if not is_instance_valid(held_tool) or held_tool.mode != Tool.Mode.HELD:
 		return false
 	held_tool.snap_tip_to(global_point)
+	if held_tool.is_effect_tool():
+		held_tool.on_effect_pressed(global_point)
+		return true
 	var target := find_point(global_point)
 	if not is_instance_valid(target) or not target.can_engage():
 		return false

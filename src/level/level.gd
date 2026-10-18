@@ -56,6 +56,9 @@ func _ready() -> void:
 
 	# TODO: Add some level and spawn configs to control when what things spawn.
 	spawn_tool(Tool.Type.FLAT_HEAD_SCREW_DRIVER)
+	spawn_tool(Tool.Type.RAG)
+	spawn_tool(Tool.Type.AIR_BLOWER)
+	spawn_tool(Tool.Type.HAMMER)
 	if G.ensure(
 		not G.settings.item_queue.is_empty(),
 		"The item queue is empty.",

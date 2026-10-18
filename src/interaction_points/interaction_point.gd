@@ -9,6 +9,13 @@ extends Area2D
 enum Type {
 	FLAT_HEAD_SCREW,
 	PART_SOCKET,
+	GRIME_SPOT,
+	DUST_CLUMP,
+	FAN,
+	STUCK_PART,
+	BENT_PART,
+	SEAT_PART,
+	CRACK,
 }
 
 enum Mode {

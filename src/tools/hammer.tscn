@@ -1,0 +1,64 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/tools/hammer.gd" id="1_hammer"]
+[ext_resource type="Script" path="res://src/tools/hammer_reticle.gd" id="3_reticle"]
+[ext_resource type="Texture2D" uid="uid://cs6jpvvmbimix" path="res://assets/images/hammertime.png" id="2_hammer"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_grab"]
+radius = 450.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
+radius = 60.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_holder"]
+radius = 200.0
+
+[node name="Hammer" type="Node2D" node_paths=PackedStringArray("art", "cursor_position", "grab_area", "interaction_area", "holder_area")]
+script = ExtResource("1_hammer")
+art = NodePath("Wrapper/Art")
+cursor_position = NodePath("Wrapper/CursorPosition")
+grab_area = NodePath("Wrapper/GrabArea")
+interaction_area = NodePath("Wrapper/InteractionArea")
+holder_area = NodePath("Wrapper/HolderArea")
+type = 3
+
+[node name="Wrapper" type="Node2D" parent="."]
+scale = Vector2(0.2, 0.2)
+
+[node name="CursorPosition" type="Marker2D" parent="Wrapper"]
+
+[node name="GrabArea" type="Area2D" parent="Wrapper"]
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/GrabArea"]
+position = Vector2(-400, 100)
+shape = SubResource("CircleShape2D_grab")
+
+[node name="InteractionArea" type="Area2D" parent="Wrapper"]
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/InteractionArea"]
+shape = SubResource("CircleShape2D_interaction")
+
+[node name="HolderArea" type="Area2D" parent="Wrapper"]
+collision_layer = 0
+collision_mask = 16
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/HolderArea"]
+position = Vector2(0, -600)
+shape = SubResource("CircleShape2D_holder")
+
+[node name="Art" type="Node2D" parent="Wrapper"]
+
+[node name="Sprite" type="Sprite2D" parent="Wrapper/Art"]
+position = Vector2(-646, -10)
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("2_hammer")
+
+[node name="Reticle" type="Node2D" parent="."]
+z_index = 100
+script = ExtResource("3_reticle")

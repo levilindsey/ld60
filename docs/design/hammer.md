@@ -82,7 +82,10 @@ later ones get narrow middle bands.
 ## Building it
 
 - `Hammer extends Tool`, an effect tool. It registers as the hand's
-  input owner from the press until the recoil ends.
+  input owner from the press until the recoil ends. Built for
+  LX18 with `StuckPart`, `BentPart` and `SeatPart` on one
+  `StrikablePoint` base. Dent and crack decals wait for LX24.
+  Bare surfaces take defects without decals for now.
 - On impact it calls `on_struck(global_position, charge)` on the
   topmost target under the strike point: a point if there is one, else
   a surface.

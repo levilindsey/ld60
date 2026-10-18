@@ -5,6 +5,8 @@
 [ext_resource type="Script" path="res://src/repairables/repair_layer.gd" id="3_layer"]
 [ext_resource type="Script" path="res://src/repairables/surface.gd" id="4_surface"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/part_socket.tscn" id="5_socket"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/grime_spot.tscn" id="6_grime"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/dust_clump.tscn" id="7_dust"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_case"]
 size = Vector2(96, 96)
@@ -43,6 +45,14 @@ color = Color(0.22, 0.2, 0.18, 1)
 
 [node name="Socket" parent="Layers/Inside" instance=ExtResource("5_socket")]
 position = Vector2(0, 8)
+
+[node name="Grime" parent="Layers/Inside" instance=ExtResource("6_grime")]
+position = Vector2(-30, -30)
+is_required = false
+
+[node name="Dust" parent="Layers/Inside" instance=ExtResource("7_dust")]
+position = Vector2(30, -30)
+is_required = false
 
 [node name="Cover" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
 script = ExtResource("3_layer")

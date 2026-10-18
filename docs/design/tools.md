@@ -92,8 +92,8 @@ there, so nothing changes.
 | Phillips | Engage | Engage a Phillips screw; the gauge opens | Hold to push | The needle eases off |
 | Pliers | Engage | Clamp a stripped screw | Drag side to side | Nothing |
 | Hammer | Effect | Lock the strike point, wind up | Strength builds | Swing |
-| Canned air | Effect | Spray | Keep spraying | Stop |
-| Rag | Effect | Soak (over the bottle) or wipe | Drag to wipe | Stop |
+| Air blower | Effect | Puff | Nothing | Nothing |
+| Rag | Effect | Wipe | Drag to wipe | Stop |
 | Oil can | Effect | One drop | More drops, faster | Stop |
 | Glue | Effect | Squeeze | Drag along the crack | Stop |
 

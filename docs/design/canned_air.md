@@ -5,8 +5,10 @@ Ledger: **LX14** (M1). Depends on [tools.md](tools.md) (LX7) and
 
 ## What the player does
 
-Hold to spray. Dust in the spray blows away, and fans spin when blown
-on.
+Tap to puff. As built for LX14 the tool is a hand bulb, not a
+can: each tap squeezes it once (the plump sprite swaps to the
+squeezed one) and puffs air out of the nozzle. Dust in the puff
+blows away, and fans spin when blown on.
 
 ## Rules
 
@@ -35,10 +37,11 @@ whir that follows the fan's speed.
 
 ## Building it
 
-- `CannedAir extends Tool`, an effect tool. While pressed, it collects
-  the areas overlapping its cone (an `Area2D` with a
-  `CollisionPolygon2D`) and calls `on_sprayed(strength, direction,
-  delta)` on each.
+- `AirBlower extends Tool`, an effect tool. A tap counts as
+  `air_puff_sec` of spray. It tests the dust and fan points on the
+  item against its cone (about 200 px, 30 degrees, out of the
+  nozzle) and calls `on_sprayed(strength, direction, delta)` on
+  each one inside.
 - `DustClump` and `Fan` implement `on_sprayed()`.
 
 ## Later

@@ -133,6 +133,71 @@ enum PhysicsLayer {
 
 @export_group("Tools")
 @export var flat_head_screw_driver_scene: PackedScene
+@export var rag_scene: PackedScene
+@export var air_blower_scene: PackedScene
+@export var hammer_scene: PackedScene
+## Planned (LX22). The glue bottle art has not landed yet, so no
+## scene is assigned and the tool is not spawned.
+@export var glue_scene: PackedScene
+@export_group("")
+
+@export_group("Rag")
+## Hit points of grime removed per second at the speed cap.
+@export var rag_wipe_rate := 2.0
+## Drag speed in pixels per second that wipes at the full rate.
+@export var rag_speed_cap_px_per_sec := 400.0
+## Extra grime hit points removed each time the drag reverses.
+@export var rag_reversal_bonus := 0.12
+## Pixels wiped on a sensitive surface before it is ruined.
+@export var sensitive_ruin_distance_px := 300.0
+## The share of that distance that already costs a minor smear.
+@export var sensitive_minor_fraction := 0.3
+@export_group("")
+
+@export_group("Air blower")
+## How far a puff reaches, in pixels.
+@export var air_cone_length_px := 200.0
+## Half of the puff cone's width, in degrees.
+@export var air_cone_half_angle_deg := 15.0
+## Dust hit points removed per second of full strength spray.
+@export var air_blow_rate := 1.5
+## One tap counts as this many seconds of spray.
+@export var air_puff_sec := 0.4
+## Seconds the bulb stays squeezed after a tap.
+@export var air_squeeze_sec := 0.18
+## Spin a fan gains per second of full strength spray.
+@export var fan_spin_gain := 8.0
+@export_group("")
+
+@export_group("Hammer")
+## Seconds of holding that fill the strength ring.
+@export var hammer_charge_sec := 1.2
+## Degrees the hammer lifts at full charge.
+@export var hammer_max_windup_deg := 70.0
+## Seconds the swing down takes.
+@export var hammer_swing_sec := 0.08
+## Seconds hammer and target freeze on impact.
+@export var hammer_hit_stop_sec := 0.06
+## Seconds the recoil takes after a swing.
+@export var hammer_recoil_sec := 0.2
+## Strength ring radius in pixels, and the bigger touch one.
+@export var hammer_reticle_radius_px := 40.0
+@export var hammer_reticle_radius_touch_px := 64.0
+## Past the band by this much, a hit is far too hard.
+@export var hammer_far_margin := 0.2
+## Charge where a bare surface starts to take damage.
+@export var hammer_surface_damage_charge := 0.55
+@export_group("")
+
+@export_group("Glue")
+## Planned (LX22). Coverage gained per second on a crack sample.
+@export var glue_flow_rate := 2.0
+## Seconds a covered crack dries before it is done.
+@export var glue_dry_sec := 3.0
+## Coverage past this on one sample spawns a blob and a defect.
+@export var glue_blob_coverage := 1.5
+## How close the nozzle must be to a crack sample, in pixels.
+@export var glue_radius_px := 10.0
 @export_group("")
 
 @export_group("Quality")
@@ -234,6 +299,14 @@ func get_tool_scene_from_type(type: Tool.Type) -> PackedScene:
 	match type:
 		Tool.Type.FLAT_HEAD_SCREW_DRIVER:
 			return flat_head_screw_driver_scene
+		Tool.Type.RAG:
+			return rag_scene
+		Tool.Type.AIR_BLOWER:
+			return air_blower_scene
+		Tool.Type.HAMMER:
+			return hammer_scene
+		Tool.Type.GLUE:
+			return glue_scene
 		_:
 			G.fatal()
 			return null

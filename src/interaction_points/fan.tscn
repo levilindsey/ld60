@@ -1,0 +1,38 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/interaction_points/fan.gd" id="1_fan"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_fan"]
+radius = 18.0
+
+[node name="Fan" type="Area2D" node_paths=PackedStringArray("art")]
+collision_layer = 4
+collision_mask = 0
+monitoring = false
+script = ExtResource("1_fan")
+art = NodePath("Art")
+accepted_tools = Array[int]([2])
+is_required = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_fan")
+
+[node name="Art" type="Node2D" parent="."]
+
+[node name="BladeA" type="Polygon2D" parent="Art"]
+color = Color(0.65, 0.68, 0.72, 1)
+polygon = PackedVector2Array(0, -3, 17, -6, 17, 6, 0, 3)
+
+[node name="BladeB" type="Polygon2D" parent="Art"]
+rotation = 2.0943952
+color = Color(0.65, 0.68, 0.72, 1)
+polygon = PackedVector2Array(0, -3, 17, -6, 17, 6, 0, 3)
+
+[node name="BladeC" type="Polygon2D" parent="Art"]
+rotation = 4.18879
+color = Color(0.65, 0.68, 0.72, 1)
+polygon = PackedVector2Array(0, -3, 17, -6, 17, 6, 0, 3)
+
+[node name="Hub" type="Polygon2D" parent="Art"]
+color = Color(0.4, 0.42, 0.45, 1)
+polygon = PackedVector2Array(-4, -4, 4, -4, 4, 4, -4, 4)

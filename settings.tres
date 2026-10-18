@@ -9,6 +9,9 @@
 [ext_resource type="PackedScene" path="res://src/repairables/finish_sparkle.tscn" id="6_sparkle"]
 [ext_resource type="Texture2D" uid="uid://c1wq44nrt4htx" path="res://assets/images/cursors/cursor_grab.png" id="7_hand"]
 [ext_resource type="Texture2D" uid="uid://by5dmf6ybbvjo" path="res://assets/images/cursors/cursor_point.png" id="8_point"]
+[ext_resource type="PackedScene" path="res://src/tools/rag.tscn" id="9_rag"]
+[ext_resource type="PackedScene" path="res://src/tools/air_blower.tscn" id="10_blower"]
+[ext_resource type="PackedScene" path="res://src/tools/hammer.tscn" id="11_hammer"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("5_outline")
@@ -31,4 +34,7 @@ finish_sparkle_scene = ExtResource("6_sparkle")
 flat_head_screw_repairable_scene = ExtResource("3_yixrw")
 item_queue = Array[int]([0, 0, 0])
 flat_head_screw_driver_scene = ExtResource("2_xmm7k")
+rag_scene = ExtResource("9_rag")
+air_blower_scene = ExtResource("10_blower")
+hammer_scene = ExtResource("11_hammer")
 defect_popup_scene = ExtResource("4_popup")
