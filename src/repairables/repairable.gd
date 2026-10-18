@@ -44,6 +44,9 @@ const _ARRIVAL_FALL_SHARE := 0.55
 const _ARRIVAL_BOUNCE_COUNT := 3
 ## Each bounce's height as a share of the one before.
 const _ARRIVAL_BOUNCE_DECAY := 0.4
+## Above the level's drawers (z_index 15), so a leaving item slides over
+## them into the outbox.
+const _LEAVING_Z_INDEX := 16
 
 @export var item_name := ""
 ## The customer's complaint, shown on the ticket.
@@ -305,6 +308,7 @@ func leave(
 	exit_global_position: Vector2,
 ) -> void:
 	mode = Mode.LEAVING
+	z_index = _LEAVING_Z_INDEX
 	set_physics_process(false)
 	_start_motion(
 		tray_global_position,
