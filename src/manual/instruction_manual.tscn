@@ -24,6 +24,7 @@ shader_parameter/bottom_left = Vector2(-120, 160)
 size = Vector2(48, 48)
 
 [node name="InstructionManual" type="Node2D"]
+z_index = 90
 script = ExtResource("1_manual")
 
 [node name="Spine" type="Sprite2D" parent="."]
