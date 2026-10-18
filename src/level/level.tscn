@@ -11,6 +11,11 @@
 [ext_resource type="Script" uid="uid://dvbr5nmpc61tu" path="res://src/level/parts_bin.gd" id="9_bin"]
 [ext_resource type="PackedScene" path="res://src/parts/part.tscn" id="10_part"]
 [ext_resource type="PackedScene" uid="uid://day4xku4ip812" path="res://src/ui/parts_menu/parts_menu.tscn" id="11_menu"]
+[ext_resource type="PackedScene" path="res://src/manual/instruction_manual.tscn" id="12_manual"]
+[ext_resource type="Texture2D" uid="uid://doc4jnkrixmjs" path="res://assets/images/manual_page0000.png" id="13_page0"]
+[ext_resource type="Texture2D" uid="uid://bl6bxtj82jtcy" path="res://assets/images/manual_page0001.png" id="14_page1"]
+[ext_resource type="Texture2D" uid="uid://bik16fm0enfxo" path="res://assets/images/manual_page0002.png" id="15_page2"]
+[ext_resource type="Texture2D" uid="uid://b5jej1flts5qt" path="res://assets/images/manual_page0003.png" id="16_page3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_drawer"]
 size = Vector2(320, 84)
@@ -208,6 +213,15 @@ default_color = Color(0.9, 0.15, 0.1, 1)
 points = PackedVector2Array(-8, 8, 8, -8)
 width = 4.0
 default_color = Color(0.9, 0.15, 0.1, 1)
+
+[node name="ManualDeskSpot" type="Marker2D" parent="."]
+position = Vector2(-493, 261)
+scale = Vector2(0.45, 0.45)
+
+[node name="InstructionManual" parent="." node_paths=PackedStringArray("desk_spot") instance=ExtResource("12_manual")]
+page_contents = Array[Texture2D]([ExtResource("13_page0"), ExtResource("14_page1"), ExtResource("15_page2"), ExtResource("16_page3")])
+desk_spot = NodePath("../ManualDeskSpot")
+desk_cover_corners = PackedVector2Array(-162.7, -33.3, 22.3, -69.4, 206.5, 42.3, -39.9, 124.2)
 
 [node name="FlowOverlays" type="CanvasLayer" parent="." unique_id=937127538]
 layer = 100

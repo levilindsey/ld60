@@ -85,8 +85,6 @@ func _ready() -> void:
 	%Closed.position.x = -spine_overlap
 	%Leaf.spine_overlap = spine_overlap
 	_show_spread()
-	%ClickArea.input_event.connect(_on_click_area_input_event)
-	%CloseButton.input_event.connect(_on_close_button_input_event)
 	_open_position = global_position
 	_open_rotation = global_rotation
 	_open_scale = global_scale
@@ -105,6 +103,16 @@ func _input(event: InputEvent) -> void:
 		_set_leaf_progress(_get_drag_progress(_get_local_x(event)))
 	elif _is_left_mouse_event(event, false):
 		_release_drag(_get_local_x(event))
+
+
+# Presses are routed here rather than through Area2D picking, so the
+# manual sees them before the level's Hand and can keep them from
+# reaching items behind it.
+func _unhandled_input(event: InputEvent) -> void:
+	if not _is_left_mouse_event(event, true):
+		return
+	if _handle_press(event as InputEventMouseButton):
+		get_viewport().set_input_as_handled()
 
 
 func open() -> void:
@@ -159,23 +167,30 @@ func _on_left_page_unfolded() -> void:
 	opened.emit()
 
 
-func _on_click_area_input_event(
-	_viewport: Node,
-	event: InputEvent,
-	_shape_index: int,
-) -> void:
-	if not _is_left_mouse_event(event, true):
-		return
-	var x := _get_local_x(event)
+## Returns whether the press landed on the manual.
+func _handle_press(event: InputEventMouseButton) -> bool:
+	if %CloseButton.visible and _is_on_shape(%CloseButtonShape, event):
+		close()
+		return true
 	match state:
 		State.CLOSED:
 			var cover_point := (
 				(%Cover.make_input_local(event) as InputEventMouse).position
 			)
-			if Geometry2D.is_point_in_polygon(cover_point, _cover_corners):
-				open()
+			if not Geometry2D.is_point_in_polygon(cover_point, _cover_corners):
+				return false
+			open()
+			return true
 		State.IDLE:
+			if not _is_on_shape(%ClickAreaShape, event):
+				return false
+			var x := _get_local_x(event)
 			_start_drag(x >= 0.0, x)
+			return true
+		_:
+			# Mid-animation, the book still blocks presses on what's
+			# behind it.
+			return _is_on_shape(%ClickAreaShape, event)
 
 
 func _start_drag(is_forward: bool, x: float) -> void:
@@ -226,15 +241,6 @@ func _on_leaf_settled(is_completing: bool) -> void:
 	state = State.IDLE
 	if is_completing:
 		page_flipped.emit(spread_index)
-
-
-func _on_close_button_input_event(
-	_viewport: Node,
-	event: InputEvent,
-	_shape_index: int,
-) -> void:
-	if _is_left_mouse_event(event, true):
-		close()
 
 
 func _turn_back_to_first_spread() -> void:
@@ -483,6 +489,15 @@ func _get_page_content(page_index: int) -> Texture2D:
 	if page_index < page_contents.size():
 		return page_contents[page_index]
 	return null
+
+
+func _is_on_shape(
+	shape_node: CollisionShape2D,
+	event: InputEventMouse,
+) -> bool:
+	var point := (shape_node.make_input_local(event) as InputEventMouse).position
+	var size := (shape_node.shape as RectangleShape2D).size
+	return Rect2(-size / 2.0, size).has_point(point)
 
 
 func _get_local_x(event: InputEventMouse) -> float:

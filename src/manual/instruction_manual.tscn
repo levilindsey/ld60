@@ -81,9 +81,15 @@ texture = ExtResource("6_cover")
 [node name="CloseButton" type="Area2D" parent="."]
 unique_name_in_owner = true
 visible = false
+collision_layer = 0
+collision_mask = 0
+input_pickable = false
+monitoring = false
+monitorable = false
 position = Vector2(266, -186)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CloseButton"]
+[node name="CloseButtonShape" type="CollisionShape2D" parent="CloseButton"]
+unique_name_in_owner = true
 shape = SubResource("RectangleShape2D_close")
 
 [node name="CloseButtonSprite" type="Sprite2D" parent="CloseButton"]
@@ -92,6 +98,12 @@ texture = ExtResource("8_close")
 
 [node name="ClickArea" type="Area2D" parent="."]
 unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 0
+input_pickable = false
+monitoring = false
+monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ClickArea"]
+[node name="ClickAreaShape" type="CollisionShape2D" parent="ClickArea"]
+unique_name_in_owner = true
 shape = SubResource("RectangleShape2D_spread")
