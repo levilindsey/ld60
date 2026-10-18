@@ -28,6 +28,11 @@ const _LIFT_DURATION_SEC := 0.3
 ## perspective_quad shader as its material.
 @export var warped_sprite: Sprite2D
 @export var close_button: PropCloseButton
+## Optional. While resting, the prop moves to just before this sibling and
+## drops to z_index 0, so this sibling and everything after it draw over
+## the prop and see presses first. Lifting moves it back to its own place
+## and z_index.
+@export var resting_draw_before: Node
 
 
 var _open_position := Vector2.ZERO
@@ -36,6 +41,9 @@ var _open_scale := Vector2.ONE
 var _open_skew := 0.0
 var _warped_corners := PackedVector2Array()
 var _lift_tween_id := -1
+var _lifted_z_index := 0
+## The sibling the prop follows while lifted.
+var _lifted_after: Node
 
 
 func _ready() -> void:
@@ -44,9 +52,15 @@ func _ready() -> void:
 	_open_scale = global_scale
 	_open_skew = global_skew
 	_set_warped_corners(_get_flat_corners())
+	_lifted_z_index = z_index
+	var index := get_index()
+	if index > 0:
+		_lifted_after = get_parent().get_child(index - 1)
 	if is_instance_valid(desk_spot):
 		_set_lift(0.0)
 		reset_physics_interpolation()
+	# Deferred: the parent is still setting up its children.
+	_set_resting_order.call_deferred(true)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -87,6 +101,28 @@ func _tween_lift(
 func _stop_lift() -> void:
 	G.time.clear_tween(_lift_tween_id)
 	_lift_tween_id = -1
+
+
+## Switches between the resting place in the tree (see
+## `resting_draw_before`) and the prop's own lifted place.
+func _set_resting_order(is_resting: bool) -> void:
+	if not is_instance_valid(resting_draw_before):
+		return
+	var parent := get_parent()
+	var target_index: int
+	if is_resting:
+		z_index = 0
+		target_index = resting_draw_before.get_index()
+		if get_index() < target_index:
+			target_index -= 1
+	else:
+		z_index = _lifted_z_index
+		target_index = 0
+		if is_instance_valid(_lifted_after):
+			target_index = _lifted_after.get_index()
+			if get_index() > target_index:
+				target_index += 1
+	parent.move_child(self, target_index)
 
 
 ## 0 rests at `desk_spot`; 1 is the open pose.

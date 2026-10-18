@@ -111,6 +111,7 @@ func _on_landed() -> void:
 
 func _lift() -> void:
 	state = State.LIFTING
+	_set_resting_order(false)
 	_play_sound(&"card_pickup")
 	_tween_lift(0.0, 1.0, _on_lifted)
 
@@ -132,6 +133,7 @@ func _lower() -> void:
 
 
 func _on_lowered() -> void:
+	_set_resting_order(true)
 	if _is_leave_requested:
 		_leave()
 	else:
