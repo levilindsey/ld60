@@ -243,7 +243,7 @@ func _handle_press(global_point: Vector2) -> bool:
 	)
 
 
-## Over a screw resting on the bench: once its layer is back on, send it
+## 2. Over a screw resting on the bench: once its layer is back on, send it
 ## back to its hole, whatever the hand holds. Before that the press does
 ## nothing (docs/design/screw_pullout.md).
 func _press_resting_screw(global_point: Vector2) -> bool:
@@ -255,7 +255,7 @@ func _press_resting_screw(global_point: Vector2) -> bool:
 	return true
 
 
-## 2. Over a set-aside layer that is ready to go back: put it back.
+## 3. Over a set-aside layer that is ready to go back: put it back.
 func _press_set_aside_layer(global_point: Vector2) -> bool:
 	var layer := _find_ready_layer(global_point)
 	if not is_instance_valid(layer):
@@ -264,7 +264,7 @@ func _press_set_aside_layer(global_point: Vector2) -> bool:
 	return true
 
 
-## Over the parts drawer: holding a part returns it. Holding a tool
+## 4. Over the parts drawer: holding a part returns it. Holding a tool
 ## puts it away first. Empty-handed, the parts menu opens.
 func _press_drawer(global_point: Vector2) -> bool:
 	var bin := _find_parts_bin(global_point)
@@ -285,7 +285,7 @@ func _press_drawer(global_point: Vector2) -> bool:
 	return true
 
 
-## Holding a part: a press over a socket tries to fit it. Any other
+## 7. Holding a part: a press over a socket tries to fit it. Any other
 ## press nopes and keeps the part. The drawer press comes first.
 func _press_with_part(global_point: Vector2) -> bool:
 	var part := held as Part
@@ -298,7 +298,7 @@ func _press_with_part(global_point: Vector2) -> bool:
 	return true
 
 
-## 3. Over the tool rack: take that tool. A held tool goes back first.
+## 5. Over the tool rack: take that tool. A held tool goes back first.
 func _press_rack(global_point: Vector2) -> bool:
 	var rack_tool := _find_rack_tool(global_point)
 	if not is_instance_valid(rack_tool):
@@ -315,7 +315,7 @@ func _press_rack(global_point: Vector2) -> bool:
 	return true
 
 
-## 4. Holding a tool: its tip goes to the press, then it acts there.
+## 6. Holding a tool: its tip goes to the press, then it acts there.
 func _press_with_tool(global_point: Vector2) -> bool:
 	var held_tool := get_held_tool()
 	if not is_instance_valid(held_tool) or held_tool.mode != Tool.Mode.HELD:
@@ -331,8 +331,8 @@ func _press_with_tool(global_point: Vector2) -> bool:
 	return true
 
 
-## 6. Empty hand over a point: poke it.
-## 7. Empty hand over the item: drag it if finished, or shake it.
+## 8. Empty hand over a point: poke it.
+## 9. Empty hand over the item: drag it if finished, or shake it.
 func _press_with_empty_hand(global_point: Vector2) -> bool:
 	if is_instance_valid(held):
 		return false
