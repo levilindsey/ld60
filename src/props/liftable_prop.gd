@@ -128,7 +128,7 @@ func _tween_lift(
 		_LIFT_DURATION_SEC,
 		"ease_in_out",
 		0.0,
-		TimeType.APP_PHYSICS,
+		TimeType.PLAY_PHYSICS,
 		on_completed,
 	)
 

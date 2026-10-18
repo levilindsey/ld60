@@ -68,7 +68,7 @@ func show_item(complaint: String) -> void:
 		_FALL_DURATION_SEC,
 		"linear",
 		0.0,
-		TimeType.APP_PHYSICS,
+		TimeType.PLAY_PHYSICS,
 		_on_landed,
 	)
 
@@ -150,7 +150,7 @@ func _leave() -> void:
 		_LEAVE_DURATION_SEC,
 		"ease_in",
 		0.0,
-		TimeType.APP_PHYSICS,
+		TimeType.PLAY_PHYSICS,
 		_on_left,
 	)
 
