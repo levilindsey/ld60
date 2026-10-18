@@ -46,6 +46,7 @@ func setup(part_type: Type) -> void:
 ## The wrong socket, or a press that fits nowhere. No penalty.
 func nope() -> void:
 	G.audio.play_sound(&"clunk")
+	G.audio.play_sound(&"hmm_grumpy")
 	G.level.hand.show_nope(global_position)
 	if is_instance_valid(_shake_tween):
 		_shake_tween.kill()

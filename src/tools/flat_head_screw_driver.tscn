@@ -70,7 +70,7 @@ holder_area = NodePath("Node2D/HolderArea")
 held_rotation_deg = 40.0
 
 [node name="Node2D" type="Node2D" parent="." unique_id=1471896538]
-scale = Vector2(0.2, 0.2)
+scale = Vector2(0.25, 0.25)
 
 [node name="CursorPosition" type="Marker2D" parent="Node2D" unique_id=1842626005]
 
@@ -111,4 +111,4 @@ rotation = -1.5707964
 scale = Vector2(0.6, 0.6)
 sprite_frames = SubResource("SpriteFrames_60exv")
 autoplay = "default"
-frame_progress = 0.45587105
+frame_progress = 0.91773057

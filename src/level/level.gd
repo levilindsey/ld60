@@ -333,7 +333,7 @@ func _on_defect_added(
 	points: int,
 	world_position: Vector2,
 ) -> void:
-	G.audio.play_sound(&"hmm_grumpy")
+	G.audio.play_sound(&"hmm_frustrated")
 	DefectPopup.spawn(self, points, world_position)
 
 
