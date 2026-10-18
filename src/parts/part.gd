@@ -57,6 +57,34 @@ func _ready() -> void:
 	)
 
 
+## How far the part reaches from its middle, in world pixels.
+## The level keeps this much of the part inside the workable
+## area when it comes to rest, and it sets how much the part
+## bounces and skids when it lands there.
+func get_radius_px() -> float:
+	var radius := 0.0
+	for point in get_polygon(type):
+		radius = maxf(radius, point.length())
+	return radius
+
+
+## The level starts bringing this part back to the workable
+## area. Until `finish_bench_return()` the part cannot be
+## grabbed, which `is_returning` already says for a part on
+## its way into a drawer.
+func start_bench_return() -> void:
+	is_returning = true
+	if is_instance_valid(_shake_tween):
+		_shake_tween.kill()
+	%Art.position = Vector2.ZERO
+
+
+## The part has come to rest inside the workable area.
+func finish_bench_return() -> void:
+	is_returning = false
+	z_index = 10
+
+
 ## Sets the part's kind and rebuilds its placeholder art.
 func setup(part_type: Type) -> void:
 	type = part_type

@@ -355,6 +355,42 @@ enum PhysicsLayer {
 @export var flathead_touch_gain := 2.0
 @export_group("")
 
+@export_group("Workable area")
+## Extra inset inside the `%WorkableArea` polygon, on top of each
+## piece's own radius, that a returned piece aims for. It keeps
+## the whole piece clear of the edge when it comes to rest.
+@export var workable_edge_padding_px := 6.0
+## Highest sideways drift, in pixels per second, of a piece that
+## is dropped above the workable area and falls straight down
+## under `default_gravity_acceleration`. A wider sideways gap
+## stretches the fall instead of speeding the drift up.
+@export var workable_fall_max_drift_px_per_sec := 700.0
+## Lowest and highest arc peak, in pixels above the landing
+## point, of a flick that brings a piece in from below or from
+## the side. The peak grows with the distance to travel between
+## these two.
+@export var workable_flick_peak_min_px := 36.0
+@export var workable_flick_peak_max_px := 160.0
+## A landing slower than this, in pixels per second downward,
+## does not bounce. It only skids.
+@export var workable_bounce_min_speed_px_per_sec := 160.0
+## Bounce kept from a landing, before the piece's size takes
+## its share. The kept share is this minus the piece's radius
+## in pixels times `workable_bounce_size_falloff`, clamped so
+## even the biggest piece keeps a little bounce.
+@export var workable_bounce_restitution := 0.42
+@export var workable_bounce_size_falloff := 0.004
+## Skid slowdown, in pixels per second squared, for a piece
+## whose radius is 20 pixels. It scales with the square root
+## of the radius, so a big piece stops in a shorter skid than
+## a small one at the same landing speed.
+@export var workable_skid_deceleration := 650.0
+## Share of the skid speed kept as spin, as a turn per second
+## per pixel per second of skid, divided by the radius. A
+## smaller piece spins faster in its skid than a bigger one.
+@export var workable_spin_factor := 1.0
+@export_group("")
+
 @export_group("Screw rest")
 ## Where a pulled-out screw waits on the bench while its layer is off
 ## (docs/design/screw_pullout.md). The first removed screw rests at

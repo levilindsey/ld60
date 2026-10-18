@@ -43,6 +43,11 @@ const _SHAKE_STEPS := 4
 @export var par_time_sec := 90.0
 
 var mode := Mode.ENTERING
+## True while the level is bringing this finished item back
+## to the workable area after it was dropped outside both the
+## workable area and the outbox. It cannot be grabbed again
+## until it comes to rest, unless the hand catches it first.
+var is_returning := false
 ## The layers, innermost first. Collected from `%Layers`.
 var layers: Array[RepairLayer] = []
 ## True while the item is finished.
@@ -228,9 +233,38 @@ func arrive(target_global_position: Vector2) -> void:
 	_motion_tween.tween_callback(_land)
 
 
+## How far this item reaches from its middle, in world
+## pixels. Its `%DropArea` is 100 by 100, so half of that.
+## The level keeps this much of a finished item inside the
+## workable area when it comes to rest, and it sets how
+## much the item bounces and skids when it lands there. A
+## big item like this bounces little and stops quickly.
+func get_bench_radius_px() -> float:
+	return 50.0
+
+
+## The level starts bringing this finished item back to the
+## workable area. Any ease home that was running stops.
+func start_bench_return() -> void:
+	is_returning = true
+	_kill_motion_tween()
+
+
+## The item has come to rest inside the workable area,
+## straightened up again.
+func finish_bench_return() -> void:
+	is_returning = false
+	rotation = 0.0
+	reset_physics_interpolation()
+
+
 ## The hand picked the item up. Whatever move was running stops.
 func on_grabbed() -> void:
 	_kill_motion_tween()
+	if is_returning:
+		is_returning = false
+		if is_instance_valid(G.level):
+			G.level.cancel_bench_return(self)
 
 
 ## Eases the item, straightened, to a world position. The hand calls it

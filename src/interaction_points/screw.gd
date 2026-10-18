@@ -135,6 +135,10 @@ var slide := 0.0:
 var travel := Travel.HOME
 ## True while the hand is carrying this screw across the bench.
 var is_carried := false
+## True while the level is bringing this screw back to the
+## workable area after it was dropped outside it. It cannot
+## be picked up again until it comes to rest.
+var is_returning := false
 
 ## The head's angle when the screw is all the way in.
 var _home_head_rotation := 0.0
@@ -211,7 +215,11 @@ func _ready() -> void:
 		[],
 		Vector2(0.0, 3.0),
 		func() -> bool:
-			return travel == Travel.RESTING and not is_carried,
+			return (
+				travel == Travel.RESTING
+				and not is_carried
+				and not is_returning
+			),
 		0.8,
 		true,
 	)
@@ -344,6 +352,36 @@ func install() -> void:
 	slide = 0.0
 	finish()
 	installed.emit()
+
+
+## How far the resting screw reaches from the middle the
+## player grabs it by, in world pixels. The level keeps this
+## much of the screw inside the workable area when it comes
+## to rest, and it sets how much the screw bounces and skids
+## when it lands there.
+func get_rest_radius_px() -> float:
+	return rest_hit_radius_px
+
+
+## The level starts bringing this resting screw back to the
+## workable area. Its set-down roll and its pick-up turn stop
+## where they are, and it cannot be picked up again until it
+## comes to rest.
+func start_bench_return() -> void:
+	is_returning = true
+	_stop_roll()
+	_stop_rest_pulse()
+	if is_instance_valid(_pickup_tween):
+		_pickup_tween.kill()
+	if is_instance_valid(_travel_tween):
+		_travel_tween.kill()
+
+
+## The screw has come to rest inside the workable area. The
+## turn it landed at is the turn it rests at.
+func finish_bench_return() -> void:
+	is_returning = false
+	_rest_rotation = bench_art.rotation
 
 
 ## True when a press on this resting screw would bring it back: its layer
