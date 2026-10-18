@@ -107,6 +107,7 @@ pause={
 2d_physics/layer_5="tool_holders"
 2d_physics/layer_6="surfaces"
 2d_physics/layer_7="parts"
+2d_physics/layer_8="drawer"
 
 [physics]
 
