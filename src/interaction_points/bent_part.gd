@@ -5,13 +5,12 @@ extends StrikablePoint
 ## hit that is too hard flips the error to the other side.
 
 
-## Share of the error one working hit removes.
-const _ERROR_REMOVED_SHARE := 0.45
-
 ## The art that sits bent. It turns straight as hits land.
 @export var art: Node2D
 ## How far the part starts bent, in degrees.
 @export var error_deg := 18.0
+## Working hits that straighten the part.
+@export var hits_to_straighten := 3
 ## At this error or less, the part counts as straight.
 @export var done_threshold_deg := 2.0
 
@@ -32,8 +31,7 @@ func _ready() -> void:
 
 
 func apply_hit(_strength: float, is_over: bool) -> void:
-	var left := 1.0 - _ERROR_REMOVED_SHARE
-	current_error_deg *= left
+	current_error_deg *= _get_error_left_share()
 	if is_over:
 		current_error_deg = -current_error_deg
 	if absf(current_error_deg) <= done_threshold_deg:
@@ -47,3 +45,11 @@ func apply_hit(_strength: float, is_over: bool) -> void:
 func _apply_error() -> void:
 	if is_instance_valid(art):
 		art.rotation = _home_rotation + deg_to_rad(current_error_deg)
+
+
+## The share of the error one hit leaves, spread so that
+## `hits_to_straighten` hits land on the done threshold.
+func _get_error_left_share() -> float:
+	var start := maxf(absf(error_deg), done_threshold_deg + 0.01)
+	var ratio := clampf(done_threshold_deg / start, 0.0, 1.0)
+	return pow(ratio, 1.0 / maxf(float(hits_to_straighten), 1.0))

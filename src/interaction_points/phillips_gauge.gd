@@ -27,8 +27,8 @@ func _draw() -> void:
 	draw_arc(
 		center,
 		_RADIUS,
-		_speed_to_angle(G.settings.phillips_speed_min_rad_per_sec),
-		_speed_to_angle(G.settings.phillips_speed_max_rad_per_sec),
+		_speed_to_angle(screw.get_band_min()),
+		_speed_to_angle(screw.get_band_max()),
 		24,
 		Color(0.4, 1.0, 0.45),
 		7.0,

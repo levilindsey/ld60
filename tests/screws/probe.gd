@@ -556,6 +556,17 @@ func _check_never_correcting() -> void:
 		% edge_point.distance_to(_get_home(screw))
 		+ " center of its home hit shape (radius 12): the shape slid too",
 	)
+	var engage_rotation := screw.head.rotation
+	var resumed := false
+	for frame in 21:
+		await get_tree().physics_frame
+		if not is_equal_approx(screw.head.rotation, engage_rotation):
+			resumed = true
+			break
+	_expect(
+		resumed,
+		"turning resumes within a few frames of re-engaging",
+	)
 	_pull_out.watch(screw)
 	_rest_watch.watch(_screw_left)
 	await _drive(screw, 10.0)

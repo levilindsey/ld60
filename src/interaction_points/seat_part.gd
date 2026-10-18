@@ -9,6 +9,8 @@ extends StrikablePoint
 @export var art: Node2D
 ## How far out the part starts, in pixels.
 @export var seat_distance_px := 24.0
+## Working hits that seat the part.
+@export var hits_to_seat := 2
 ## The way out of the slot. The part starts this way from home.
 @export var seat_axis := Vector2(0.0, -1.0)
 
@@ -31,7 +33,9 @@ func apply_hit(_strength: float, is_over: bool) -> void:
 	if is_over:
 		seat_progress = 1.0
 	else:
-		seat_progress = minf(seat_progress + 0.5, 1.0)
+		seat_progress = minf(
+			seat_progress + 1.0 / maxf(float(hits_to_seat), 1.0), 1.0
+		)
 	_apply_progress()
 	if seat_progress >= 1.0:
 		finish()

@@ -84,7 +84,9 @@ is `phillips_speed_smoothing_sec` (0.5) for the needle and
 `phillips_meter_smoothing_sec` (0.4) for the grip, the sticky
 band grace is `phillips_band_grace_rad_per_sec` (0.8), and steps
 under `phillips_min_segment_px` (4) do not count. Turns out is
-`turns_needed` on the screw (2).
+`turns_needed` on the screw (3). Each screw also has a
+`difficulty` (0.5 to 2): higher narrows its band and drains
+its grip faster.
 
 ## Later
 

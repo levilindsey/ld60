@@ -1,14 +1,13 @@
 class_name DustClump
-extends InteractionPoint
+extends DirtSpot
 ## A clump of dust the air blower puffs away (docs/design/
-## canned_air.md). The dust sprite lands with LX24. Until then
-## the scene draws a placeholder blob.
+## canned_air.md). The art, its set and its color are configured on
+## the shared `DirtSpot` base.
 
 
-## The dust art. It fades as the clump thins.
-@export var art: CanvasItem
-## Hit points the clump starts with.
-@export var hit_points := 1.0
+## How much dust there is. More takes more puffs and draws a
+## bigger clump.
+@export var amount := 1.0
 
 ## Hit points left.
 var hit_points_left := 0.0
@@ -22,8 +21,10 @@ func _ready() -> void:
 	super._ready()
 	type = Type.DUST_CLUMP
 	role = Role.REPAIR
-	G.check(is_instance_valid(art))
-	hit_points_left = hit_points
+	_set_up_art()
+	_art_home_scale *= sqrt(maxf(amount, 0.01))
+	art.scale = _art_home_scale
+	hit_points_left = amount
 	_update_alpha()
 
 
@@ -58,7 +59,7 @@ func _blow_off(direction: Vector2) -> void:
 	var target := global_position + direction * 90.0 + Vector2(0.0, -20.0)
 	_fly_tween.tween_property(self, "global_position", target, 0.35)
 	_fly_tween.tween_property(art, "modulate:a", 0.0, 0.35)
-	_fly_tween.tween_property(art, "scale", Vector2.ONE * 0.3, 0.35)
+	_fly_tween.tween_property(art, "scale", _art_home_scale * 0.3, 0.35)
 	_fly_tween.chain().tween_callback(_finish_blown_off)
 
 
@@ -72,15 +73,13 @@ func _wobble() -> void:
 		_wobble_tween.kill()
 	_wobble_tween = create_tween()
 	_wobble_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
-	var tilt := randf_range(-0.18, 0.18)
+	var tilt := _art_home_rotation + randf_range(-0.18, 0.18)
 	_wobble_tween.tween_property(art, "rotation", tilt, 0.06)
-	_wobble_tween.tween_property(art, "rotation", 0.0, 0.1)
+	_wobble_tween.tween_property(art, "rotation", _art_home_rotation, 0.1)
 
 
 func _update_alpha() -> void:
-	if not is_instance_valid(art):
-		return
 	var fraction := 0.0
-	if hit_points > 0.0:
-		fraction = clampf(hit_points_left / hit_points, 0.0, 1.0)
-	art.modulate.a = 0.25 + 0.75 * fraction
+	if amount > 0.0:
+		fraction = clampf(hit_points_left / amount, 0.0, 1.0)
+	_set_art_alpha(0.25 + 0.75 * fraction)

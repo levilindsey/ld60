@@ -264,6 +264,10 @@ enum PhysicsLayer {
 @export var flathead_twist_angle_deg := 90.0
 ## Seconds between twists, with no drift. The window to recenter.
 @export var flathead_pause_sec := 0.35
+## Seconds after a re-engage with kept twists before the first
+## twist starts. Much shorter than the pause, so picking a
+## slipped screw back up resumes turning right away.
+@export var flathead_resume_delay_sec := 0.12
 ## Seconds before a twist that the creak and the handle squash warn of it.
 @export var flathead_telegraph_sec := 0.15
 ## Each twist drifts the tip by a random fraction of the screw's seat

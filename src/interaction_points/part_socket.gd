@@ -16,6 +16,8 @@ const _ROCK_SHIFT_PX := 20.0
 @export var accepted_part := Part.Type.GEAR
 ## Swings that wiggle the broken part out.
 @export var swings_needed := 6
+## Travel in screen pixels before a reversal counts as a swing.
+@export var swing_min_px := 12.0
 ## False for a socket that starts empty.
 @export var starts_with_broken_part := true
 
@@ -59,7 +61,9 @@ func on_poked() -> void:
 		_last_pointer_screen_position = (
 			G.level.hand.pointer_screen_position
 		)
-		_wiggle.reset(_last_pointer_screen_position, swings_needed)
+		_wiggle.reset(
+			_last_pointer_screen_position, swings_needed, swing_min_px
+		)
 		_apply_wiggle_pose()
 		G.level.hand.set_input_owner(self)
 		G.audio.play_sound(&"creak")

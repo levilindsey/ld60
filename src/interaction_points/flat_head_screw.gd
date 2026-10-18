@@ -31,6 +31,9 @@ const _DANGER_SHAKE_PX := 1.5
 @export_range(0.0, 1.0) var slip_bias := 0.9
 ## Twists that take the screw out.
 @export var twists_needed := 4
+## Scales how tight the slot is: 1 is normal, 2 is twice as hard
+## (half the seat tolerance), 0.5 is twice as easy.
+@export_range(0.5, 2.0, 0.05) var difficulty := 1.0
 ## Twists that drive the screw back in after its layer was put back.
 @export var install_twists := 2
 ## Sparks at the tip when it skids out.
@@ -73,6 +76,7 @@ var _last_pointer_screen_position := Vector2.ZERO
 
 func _ready() -> void:
 	super._ready()
+	seat_tolerance_px /= maxf(difficulty, 0.05)
 	G.check(is_instance_valid(sparks))
 	G.check(G.settings.flathead_slip_max < 1.0)
 	G.check(G.settings.flathead_touch_gain >= 1.0)
@@ -180,6 +184,14 @@ static func pick_drift_px(
 
 func _start_microgame() -> void:
 	_reset_seat()
+	if _twists_done > 0:
+		# A resume after slipping out: skip most of the pause so
+		# turning starts again almost at once.
+		_phase_sec = maxf(
+			G.settings.flathead_pause_sec
+			- G.settings.flathead_resume_delay_sec,
+			0.0,
+		)
 	_engage_head_rotation = head.rotation
 	_last_pointer_screen_position = G.level.hand.pointer_screen_position
 	G.level.hand.set_input_owner(self)

@@ -92,15 +92,17 @@ change: reset the twist count on unseat. LX6 kept the default.
 
 | Setting | Default | Where |
 |---|---|---|
-| `twist_duration_sec` | 1.0 | settings, "Flathead" group |
+| `twist_duration_sec` | 0.85 | settings, "Flathead" group |
 | `twist_angle_deg` | 90 | settings |
 | `pause_sec` | 0.35 | settings |
 | `telegraph_sec` | 0.15 | settings |
 | `slip_min`, `slip_max` | 0.2, 0.6 (keep `slip_max` under 1) | settings |
 | `flathead_touch_gain` | 2.0 | settings, "Flathead" group |
-| `seat_tolerance_px` | 12 | per screw |
+| `seat_tolerance_px` | 9 | per screw |
 | `slip_bias` | 0.9 | per screw |
 | `twists_needed` | 4 | per screw |
+| `difficulty` | 1 (0.5 to 2, tightens the slot) | per screw |
+| `resume_delay_sec` | 0.12 (first twist after a re-engage with kept twists) | settings |
 | `install_twists` | 2 | per screw |
 | slide height | about 6 px | first key of `RemoveScrew`, in the screw scene |
 | `screw_travel_sec` | 0.4 | settings, "Screw rest" group |

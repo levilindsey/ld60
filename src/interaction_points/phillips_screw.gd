@@ -17,7 +17,10 @@ const _TURN_WINDOW_SEC := 0.45
 ## The speed gauge beside the screw.
 @export var gauge: PhillipsGauge
 ## Full turns that take the screw out.
-@export var turns_needed := 2.0
+@export var turns_needed := 3.0
+## Scales how hard the screw is: 1 is normal. Higher narrows the
+## speed band and drains the grip faster.
+@export_range(0.5, 2.0, 0.05) var difficulty := 1.0
 ## The first Phillips screw of the game need never cam out.
 @export var never_drains := false
 
@@ -84,6 +87,23 @@ func is_in_range() -> bool:
 	return _is_in_band
 
 
+## The slow end of this screw's speed band.
+func get_band_min() -> float:
+	return (
+		G.settings.phillips_speed_min_rad_per_sec
+		+ (difficulty - 1.0) * 0.75
+	)
+
+
+## The fast end of this screw's speed band.
+func get_band_max() -> float:
+	return maxf(
+		G.settings.phillips_speed_max_rad_per_sec
+		- (difficulty - 1.0) * 1.5,
+		get_band_min() + 1.0,
+	)
+
+
 ## True while the gauge should draw itself.
 func is_gauge_shown() -> bool:
 	return mode == Mode.ACTIVE
@@ -141,7 +161,9 @@ func _advance(delta: float) -> void:
 	else:
 		grip_meter += (
 			G.settings.phillips_fill_rate * _range_share
-			- G.settings.phillips_drain_rate * (1.0 - _range_share)
+			- G.settings.phillips_drain_rate
+			* difficulty
+			* (1.0 - _range_share)
 		) * delta
 		grip_meter = clampf(grip_meter, 0.0, 1.0)
 
@@ -199,17 +221,16 @@ func _update_circle_speed(delta: float) -> void:
 ## True while the speed sits inside the band's own edges.
 func _is_in_true_band() -> bool:
 	return (
-		pressure_rad_per_sec >= G.settings.phillips_speed_min_rad_per_sec
-		and pressure_rad_per_sec
-		<= G.settings.phillips_speed_max_rad_per_sec
+		pressure_rad_per_sec >= get_band_min()
+		and pressure_rad_per_sec <= get_band_max()
 	)
 
 
 ## Enters the band at its edges and only leaves it a grace past
 ## them, so hovering on an edge does not flicker.
 func _update_band() -> void:
-	var low := G.settings.phillips_speed_min_rad_per_sec
-	var high := G.settings.phillips_speed_max_rad_per_sec
+	var low := get_band_min()
+	var high := get_band_max()
 	if _is_in_band:
 		var grace := G.settings.phillips_band_grace_rad_per_sec
 		_is_in_band = (

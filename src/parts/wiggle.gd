@@ -22,6 +22,7 @@ var rock_angle_rad := 0.0
 var is_yanked := false
 
 var _swings_needed := 4
+var _min_travel_px := _MIN_TRAVEL_PX
 var _start_position := Vector2.ZERO
 var _last_position := Vector2.ZERO
 var _direction := 0.0
@@ -29,12 +30,17 @@ var _travelled_px := 0.0
 
 
 ## Starts a fresh wiggle at a press. `swings_needed` of these pop the
-## part out.
-func reset(press_position: Vector2, swings_needed: int) -> void:
+## part out. A swing only counts after `min_travel_px` of travel.
+func reset(
+	press_position: Vector2,
+	swings_needed: int,
+	min_travel_px := _MIN_TRAVEL_PX,
+) -> void:
 	swings = 0
 	rock_angle_rad = 0.0
 	is_yanked = false
 	_swings_needed = swings_needed
+	_min_travel_px = min_travel_px
 	_start_position = press_position
 	_last_position = press_position
 	_direction = 0.0
@@ -62,7 +68,7 @@ func feed(pointer_position: Vector2) -> bool:
 	if _direction == 0.0:
 		_direction = direction
 	elif direction != _direction:
-		if _travelled_px >= _MIN_TRAVEL_PX:
+		if _travelled_px >= _min_travel_px:
 			swings += 1
 			if swings >= _swings_needed:
 				return true
