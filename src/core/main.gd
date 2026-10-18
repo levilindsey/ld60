@@ -59,6 +59,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_P:
 				if G.settings.is_screenshot_hotkey_enabled:
 					G.utils.take_screenshot()
+			KEY_C:
+				if (
+					is_instance_valid(G.level)
+					and is_instance_valid(G.level.active_repairable)
+					and G.level.active_repairable.mode
+					== Repairable.Mode.UNDER_REPAIR
+				):
+					G.level.active_repairable.complete_for_dev()
 			KEY_O:
 				if is_instance_valid(G.hud):
 					G.hud.visible = not G.hud.visible

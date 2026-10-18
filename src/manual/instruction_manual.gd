@@ -113,7 +113,7 @@ func _on_lifted() -> void:
 		_COVER_FLIP_DURATION_SEC,
 		"ease_in_out",
 		0.0,
-		TimeType.APP_PHYSICS,
+		TimeType.PLAY_PHYSICS,
 		_on_cover_flipped,
 	)
 
@@ -258,7 +258,7 @@ func _on_first_page_folded() -> void:
 		_COVER_FLIP_DURATION_SEC,
 		"ease_in_out",
 		0.0,
-		TimeType.APP_PHYSICS,
+		TimeType.PLAY_PHYSICS,
 		_on_cover_closed,
 	)
 
@@ -302,7 +302,7 @@ func _tween_leaf_progress(
 		duration,
 		"ease_out",
 		0.0,
-		TimeType.APP_PHYSICS,
+		TimeType.PLAY_PHYSICS,
 		on_completed,
 	)
 

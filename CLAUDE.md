@@ -158,7 +158,8 @@ restarts); `G.game_panel.restart_level()` -> a fresh Level instance.
   twist cycle (`docs/design/flathead.md`), timed by the "Flathead"
   group in `settings.gd`.
 - **Dev hotkeys** (`settings.dev_mode`): `P` screenshot (to
-  `user://screenshots/`), `O` toggle HUD, `Esc` pause.
+  `user://screenshots/`), `O` toggle HUD, `C` complete the item on the
+  bench, `R` toggle the radio glitch. `Esc` pauses in any mode.
 
 ## Configuration
 

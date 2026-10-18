@@ -134,3 +134,9 @@ func _add_defect(
 			)
 		_:
 			pass
+	if defect in [
+		RepairQuality.Defect.DENT_SMALL,
+		RepairQuality.Defect.DENT_LARGE,
+		RepairQuality.Defect.CRACK,
+	]:
+		layer.squish()

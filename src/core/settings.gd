@@ -29,7 +29,7 @@ enum PhysicsLayer {
 
 # --- Game configuration ---
 
-@export var default_gravity_acceleration := 1400.0
+@export var default_gravity_acceleration := 2200.0
 
 @export var default_level_scene: PackedScene
 
@@ -99,6 +99,9 @@ enum PhysicsLayer {
 ## later bounce shakes less.
 @export var item_landing_shake_px := 7.0
 @export var item_landing_shake_sec := 0.15
+## How long the outbox's "OUT" label takes to fade in or out with its
+## outline.
+@export var outbox_label_fade_sec := 0.25
 ## Seconds an item takes to ease back when it is dropped away from the
 ## outbox.
 @export var item_return_sec := 0.3
@@ -297,6 +300,11 @@ enum PhysicsLayer {
 @export var hammer_far_margin := 0.2
 ## Charge where a bare surface starts to take damage.
 @export var hammer_surface_damage_charge := 0.55
+## How far a denting hit squashes the piece, as a fraction of its
+## height. It spreads sideways by half as much (like the radio).
+@export var hammer_squish_amount := 0.12
+## Seconds the piece takes to spring back from that squash.
+@export var hammer_squish_recover_sec := 0.3
 @export_group("")
 
 @export_group("Radio")
@@ -407,6 +415,14 @@ enum PhysicsLayer {
 ## most below.
 @export var workable_throw_min_speed_px_per_sec := 500.0
 @export var workable_throw_max_speed_px_per_sec := 1500.0
+## Fastest a dropped or thrown piece may ever move, in
+## pixels per second. Gravity may speed a falling piece up
+## past the throw cap, but never past this.
+@export var workable_max_speed_px_per_sec := 1750.0
+## Wind drag on a piece in the air, as the share of its
+## speed it loses per second. It slows falls and throws a
+## little without ever stopping them.
+@export var workable_wind_drag_per_sec := 0.3
 ## Seconds the cursor's speed is smoothed over before a
 ## release reads it. A single jump of the pointer, the way a
 ## test pushes one, never reads as a throw: the speed has to

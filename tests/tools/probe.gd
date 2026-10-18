@@ -388,6 +388,24 @@ func _check_hammer() -> void:
 	var hammer := hammer_tool as Hammer
 	_expect(_hand.held == hammer, "the hand holds the hammer")
 
+	# The smack lands where the hammer's working end is, not where
+	# the cursor is: a strike aimed by the cursor alone misses.
+	await _press_down(stuck.global_position)
+	await _seconds(0.6)
+	await _release_at(stuck.global_position)
+	await _seconds(0.5)
+	_expect(
+		stuck.hits_done == 0,
+		"a strike aimed by the cursor alone does not smack the part",
+	)
+	var reticle := hammer.get_node("Reticle") as HammerReticle
+	_expect(
+		reticle.to_global(reticle.get_center()).distance_to(
+			hammer.get_work_end_position()
+		) < 1.0,
+		"the hammer reticle sits on the working end, not the origin",
+	)
+
 	# A tap is too weak to jog the stuck part.
 	await _strike(hammer, stuck.global_position, 0.05)
 	_expect(stuck.hits_done == 0, "a tap below the band does nothing")
@@ -407,7 +425,9 @@ func _check_hammer() -> void:
 		"a hit in the band bends the part back a share",
 	)
 	var defects_before := _item.quality.get_defect_count()
-	await _strike(hammer, bent.global_position, 1.3)
+	var bent_layer := bent.get_layer()
+	var rest_scale := bent_layer.scale
+	await _strike(hammer, bent.global_position, 1.3, 0.12)
 	_expect(
 		bent.current_error_deg < 0.0,
 		"a hit over the band flips the bend",
@@ -415,6 +435,15 @@ func _check_hammer() -> void:
 	_expect(
 		_item.quality.get_defect_count() > defects_before,
 		"a hit over the band costs a dent",
+	)
+	_expect(
+		bent_layer.scale.y < rest_scale.y * 0.95,
+		"a denting hit squishes the piece",
+	)
+	await _seconds(0.6)
+	_expect(
+		bent_layer.scale.distance_to(rest_scale) < 0.01,
+		"the piece springs back to rest after the squish",
 	)
 
 	await _strike(hammer, seat.global_position, 0.6)
@@ -429,10 +458,21 @@ func _check_hammer() -> void:
 	)
 
 
-## Holds a swing for `hold_sec` at a point, then lets it go and
-## waits out the swing, the hit stop and the recoil.
-func _strike(_hammer: Hammer, at_position: Vector2, hold_sec: float) -> void:
-	await _press_down(at_position)
+## Holds a swing for `hold_sec` with the hammer's working end on
+## a point, then lets it go and waits out the swing, the hit stop
+## and the recoil (or `settle_sec`, when a check wants to look
+## sooner).
+func _strike(
+	hammer: Hammer,
+	at_position: Vector2,
+	hold_sec: float,
+	settle_sec := 0.5,
+) -> void:
+	var offset := (
+		hammer.get_work_end_position() - hammer.get_tip_position()
+	)
+	var press_point := at_position - offset
+	await _press_down(press_point)
 	await _seconds(hold_sec)
-	await _release_at(at_position)
-	await _seconds(0.5)
+	await _release_at(press_point)
+	await _seconds(settle_sec)

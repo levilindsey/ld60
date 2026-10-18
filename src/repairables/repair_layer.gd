@@ -15,6 +15,9 @@ extends Node2D
 const _SET_ASIDE_MAX_TURN_DEG := 20.0
 const _PULSE_SCALE := 1.08
 const _PULSE_SEC := 0.3
+## Seconds the squash down of a denting hammer hit takes. The
+## spring back is `hammer_squish_recover_sec` in settings.
+const _SQUISH_DOWN_SEC := 0.06
 
 ## The art that decals parent to and clip against. Points and surfaces
 ## are its siblings, not its children. A ColorRect, Sprite2D or
@@ -32,11 +35,16 @@ var is_moving := false
 ## The repair sequence uses it to tell driving screws out from
 ## driving the same screws back in.
 var has_been_removed := false
+## True while the level is bringing this set-aside layer back
+## into the workable area after a drop outside it. It cannot be
+## grabbed until it rests.
+var is_returning := false
 
 var _home_parent: Node
 var _home_index := 0
 var _home_position := Vector2.ZERO
 var _home_rotation := 0.0
+var _home_global_rotation := 0.0
 var _home_scale := Vector2.ONE
 ## The scale it rests at, on the item or at the set-aside spot.
 var _rest_scale := Vector2.ONE
@@ -44,6 +52,7 @@ var _rest_scale := Vector2.ONE
 var _set_aside_rotation := 0.0
 var _move_tween: Tween
 var _pulse_tween: Tween
+var _squish_tween: Tween
 var _outline_hint: OutlineHint
 var _outlined_art: Sprite2D
 var _art_material_before_outline: Material
@@ -56,6 +65,7 @@ func _ready() -> void:
 	_home_index = get_index()
 	_home_position = position
 	_home_rotation = rotation
+	_home_global_rotation = global_rotation
 	_home_scale = scale
 	_rest_scale = scale
 	DropShadow.attach(
@@ -166,7 +176,8 @@ func get_home_global_position() -> Vector2:
 
 ## The player starts dragging this loose layer off the item. It
 ## leaves the item's stack and becomes a loose piece on the bench,
-## staying exactly where it was drawn.
+## staying exactly where it was drawn, then turns by a fresh
+## slight angle, the way the set-aside spot turns it.
 func take_off_for_drag() -> void:
 	G.check(is_on and not is_innermost() and is_loose())
 	var spot := G.level.get_set_aside_spot()
@@ -177,14 +188,77 @@ func take_off_for_drag() -> void:
 	is_moving = true
 	z_index = 10
 	_stop_outline()
+	_home_global_rotation = kept_rotation
 	reparent(spot)
 	global_position = kept_global
 	global_rotation = kept_rotation
 	scale = _home_scale
 	_rest_scale = _home_scale
 	reset_physics_interpolation()
+	_kill_move_tween()
+	_move_tween = create_tween()
+	_move_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_move_tween.set_trans(Tween.TRANS_QUAD).set_ease(
+		Tween.EASE_OUT
+	)
+	_move_tween.tween_property(
+		self,
+		"global_rotation",
+		kept_rotation + randf_range(
+			-deg_to_rad(_SET_ASIDE_MAX_TURN_DEG),
+			deg_to_rad(_SET_ASIDE_MAX_TURN_DEG),
+		),
+		G.settings.layer_move_sec,
+	)
 	if is_instance_valid(item):
 		item.on_layer_removed(self)
+
+
+## Turns this set-aside layer back to the rotation it has on the
+## item, over the usual layer move time. Called when it is
+## grabbed at the stage where it should go back on.
+func straighten_to_home() -> void:
+	_kill_move_tween()
+	_move_tween = create_tween()
+	_move_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_move_tween.set_trans(Tween.TRANS_QUAD).set_ease(
+		Tween.EASE_IN_OUT
+	)
+	_move_tween.tween_property(
+		self,
+		"global_rotation",
+		_home_global_rotation,
+		G.settings.layer_move_sec,
+	)
+
+
+## How far the art reaches from this layer's origin, in world
+## pixels. The bench return keeps the whole piece inside the
+## workable area by this much.
+func get_radius_px() -> float:
+	var radius := 0.0
+	var art_transform := art.get_global_transform()
+	for point in OutlineHint.get_art_polygon(art):
+		radius = maxf(
+			radius,
+			(art_transform * point).distance_to(global_position),
+		)
+	return radius
+
+
+## The level starts bringing this set-aside layer back to the
+## workable area. Until `finish_bench_return()` the layer
+## cannot be grabbed.
+func start_bench_return() -> void:
+	is_returning = true
+	_kill_move_tween()
+	if is_instance_valid(_pulse_tween):
+		_pulse_tween.kill()
+
+
+## The layer has come to rest inside the workable area.
+func finish_bench_return() -> void:
+	is_returning = false
 
 
 ## The player let go of this dragged layer somewhere on the bench.
@@ -260,6 +334,32 @@ func pulse() -> void:
 		_PULSE_SEC * 0.5,
 	)
 	_pulse_tween.tween_property(self, "scale", _rest_scale, _PULSE_SEC * 0.5)
+
+
+## A quick squash and spring back: the flinch when a hammer hit
+## dents or cracks this layer, like the radio's bonk.
+func squish() -> void:
+	if is_moving:
+		return
+	if is_instance_valid(_squish_tween):
+		_squish_tween.kill()
+	scale = _rest_scale
+	var amount := G.settings.hammer_squish_amount
+	var squished := Vector2(
+		_rest_scale.x * (1.0 + amount * 0.5),
+		_rest_scale.y * (1.0 - amount),
+	)
+	_squish_tween = create_tween()
+	_squish_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_squish_tween.tween_property(
+		self, "scale", squished, _SQUISH_DOWN_SEC
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_squish_tween.tween_property(
+		self,
+		"scale",
+		_rest_scale,
+		G.settings.hammer_squish_recover_sec,
+	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 ## Stamps a decal on this layer's art and returns it (null if it

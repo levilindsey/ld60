@@ -63,6 +63,7 @@ var hand: Hand:
 var _resting_screws: Array = []
 
 var _outbox_outline_hint: OutlineHint
+var _outbox_label_tween: Tween
 
 ## Every loose part spawned for the item on the bench: stored in a
 ## drawer, resting on the bench, or on its way back into a drawer.
@@ -265,6 +266,7 @@ func set_outbox_outline_shown(is_shown: bool) -> void:
 		_outbox_outline_hint.set_active(true)
 	elif is_instance_valid(_outbox_outline_hint):
 		_outbox_outline_hint.set_active(false)
+	_fade_outbox_label(1.0 if is_shown else 0.0)
 
 
 ## True while the outbox shows its outline.
@@ -272,6 +274,18 @@ func is_outbox_outline_shown() -> bool:
 	return (
 		is_instance_valid(_outbox_outline_hint)
 		and _outbox_outline_hint.is_active()
+	)
+
+
+func _fade_outbox_label(alpha: float) -> void:
+	if is_instance_valid(_outbox_label_tween):
+		_outbox_label_tween.kill()
+	_outbox_label_tween = create_tween()
+	_outbox_label_tween.tween_property(
+		%OutboxLabel,
+		"modulate:a",
+		alpha,
+		G.settings.outbox_label_fade_sec,
 	)
 
 
@@ -687,6 +701,27 @@ func try_return_screw(
 	)
 
 
+## Starts bringing a set-aside layer back to the workable
+## area after it was dropped outside it, the way
+## `try_return_part()` does for a part. A layer never goes
+## into a drawer: this and resting on the bench are its only
+## drop outcomes besides seating back on its item.
+func try_return_layer(
+	layer: RepairLayer,
+	release_velocity := Vector2.ZERO,
+) -> bool:
+	if not is_instance_valid(layer):
+		return false
+	return _start_bench_return(
+		layer,
+		layer,
+		layer.global_position,
+		layer.get_radius_px(),
+		Vector2.INF,
+		release_velocity,
+	)
+
+
 ## Starts bringing a finished item back after it was
 ## dropped outside both the workable area and the outbox.
 ## It flies to where the bench keeps the item being
@@ -975,9 +1010,37 @@ func _start_bench_return(
 		(owner as Part).start_bench_return()
 	elif owner is Screw:
 		(owner as Screw).start_bench_return()
+	elif owner is RepairLayer:
+		(owner as RepairLayer).start_bench_return()
 	elif owner is Repairable:
 		(owner as Repairable).start_bench_return()
 	return true
+
+
+## One step of air for a piece in flight: gravity pulls it
+## down, wind drag slows it a little, and it never moves
+## faster than the fastest speed in `Settings`.
+func _apply_air(velocity: Vector2, delta: float) -> Vector2:
+	var gravity := maxf(
+		G.settings.default_gravity_acceleration,
+		1.0,
+	)
+	velocity.y += gravity * delta
+	var drag := maxf(G.settings.workable_wind_drag_per_sec, 0.0)
+	if drag > 0.0:
+		velocity *= exp(-drag * delta)
+	return velocity.limit_length(
+		maxf(G.settings.workable_max_speed_px_per_sec, 1.0),
+	)
+
+
+## How far a speed carries in `duration_sec` under wind
+## drag: the time the drag leaves of it. With no drag it is
+## the duration itself.
+func _drag_reach(duration_sec: float, drag: float) -> float:
+	if drag < 0.001:
+		return duration_sec
+	return (1.0 - exp(-drag * duration_sec)) / drag
 
 
 ## The first velocity and the flight time of a trip from
@@ -987,7 +1050,10 @@ func _start_bench_return(
 ## tuning allows, stretching the fall when the gap is wide.
 ## A drop from below or from the side is flicked up in an
 ## arc whose peak grows with the distance, high enough to
-## clear the landing point and fall onto it.
+## clear the landing point and fall onto it. Wind drag is
+## solved for, so the trip still lands on its point: a fall
+## takes a little longer than free fall, and a flick
+## starts a little harder.
 func _solve_return_flight(
 	from_point: Vector2,
 	to_point: Vector2,
@@ -997,17 +1063,26 @@ func _solve_return_flight(
 		1.0,
 	)
 	var displacement := to_point - from_point
+	var drag := maxf(G.settings.workable_wind_drag_per_sec, 0.0)
+	var has_drag := drag >= 0.001
 	if displacement.y > 1.0:
+		var max_drift := maxf(
+			G.settings.workable_fall_max_drift_px_per_sec,
+			1.0,
+		)
+		if has_drag:
+			return _solve_dragged_fall(
+				displacement,
+				gravity,
+				drag,
+				max_drift,
+			)
 		var duration_sec := sqrt(
 			2.0 * displacement.y / gravity,
 		)
 		var velocity := Vector2(
 			displacement.x / maxf(duration_sec, 0.001),
 			0.0,
-		)
-		var max_drift := maxf(
-			G.settings.workable_fall_max_drift_px_per_sec,
-			1.0,
 		)
 		if absf(velocity.x) > max_drift:
 			duration_sec = absf(displacement.x) / max_drift
@@ -1032,6 +1107,18 @@ func _solve_return_flight(
 	var up_sec := absf(up_velocity) / gravity
 	var down_sec := sqrt(2.0 * peak_px / gravity)
 	var flick_duration_sec := up_sec + down_sec
+	if has_drag:
+		var terminal := gravity / drag
+		var reach := _drag_reach(flick_duration_sec, drag)
+		return [
+			Vector2(
+				displacement.x / reach,
+				terminal
+				+ (displacement.y - terminal * flick_duration_sec)
+				/ reach,
+			),
+			flick_duration_sec,
+		]
 	return [
 		Vector2(
 			displacement.x / maxf(flick_duration_sec, 0.001),
@@ -1039,6 +1126,46 @@ func _solve_return_flight(
 		),
 		flick_duration_sec,
 	]
+
+
+## A fall from rest under wind drag, solved the same way:
+## the time a dropped piece takes to fall the gap, found a
+## step at a time from the drag's own fall curve, and the
+## sideways speed that covers the sideways gap in it.
+func _solve_dragged_fall(
+	displacement: Vector2,
+	gravity: float,
+	drag: float,
+	max_drift: float,
+) -> Array:
+	var terminal := gravity / drag
+	var duration_sec := sqrt(
+		2.0 * displacement.y / gravity,
+	)
+	for step in 16:
+		var reach := _drag_reach(duration_sec, drag)
+		var fallen := terminal * (duration_sec - reach)
+		var fall_speed := terminal * (
+			1.0 - exp(-drag * duration_sec)
+		)
+		var error := fallen - displacement.y
+		if absf(error) < 0.01:
+			break
+		duration_sec -= error / maxf(fall_speed, 1.0)
+		duration_sec = maxf(duration_sec, 0.01)
+	var reach := _drag_reach(duration_sec, drag)
+	var velocity := Vector2(displacement.x / reach, 0.0)
+	if absf(velocity.x) > max_drift:
+		velocity.x = signf(displacement.x) * max_drift
+		var ratio := displacement.x * drag / velocity.x
+		if ratio < 0.999:
+			duration_sec = -log(1.0 - ratio) / drag
+			reach = _drag_reach(duration_sec, drag)
+		velocity.y = (
+			terminal
+			+ (displacement.y - terminal * duration_sec) / reach
+		)
+	return [velocity, duration_sec]
 
 
 ## Moves every piece on its way back by one physics step:
@@ -1072,12 +1199,10 @@ func _step_bench_returns(delta: float) -> void:
 
 
 func _step_return_flight(entry: Dictionary, delta: float) -> void:
-	var gravity := maxf(
-		G.settings.default_gravity_acceleration,
-		1.0,
+	var velocity := _apply_air(
+		entry.get("velocity") as Vector2,
+		delta,
 	)
-	var velocity := entry.get("velocity") as Vector2
-	velocity.y += gravity * delta
 	entry["velocity"] = velocity
 	var middle := entry.get("middle") as Vector2
 	middle += velocity * delta
@@ -1120,12 +1245,10 @@ func _step_return_flight(entry: Dictionary, delta: float) -> void:
 ## long, hands it to the guided slide instead, so it still
 ## comes to rest inside.
 func _step_return_thrown(entry: Dictionary, delta: float) -> void:
-	var gravity := maxf(
-		G.settings.default_gravity_acceleration,
-		1.0,
+	var velocity := _apply_air(
+		entry.get("velocity") as Vector2,
+		delta,
 	)
-	var velocity := entry.get("velocity") as Vector2
-	velocity.y += gravity * delta
 	var middle := entry.get("middle") as Vector2
 	middle += velocity * delta
 	var wall_left := entry.get("wall_left") as float
@@ -1299,6 +1422,9 @@ func _step_return_settling(
 	var bounce_velocity := entry.get("bounce_velocity") as float
 	if bounce_height_px > 0.0 or bounce_velocity > 0.0:
 		bounce_velocity -= gravity * delta
+		var drag := maxf(G.settings.workable_wind_drag_per_sec, 0.0)
+		if drag > 0.0:
+			bounce_velocity *= exp(-drag * delta)
 		bounce_height_px += bounce_velocity * delta
 		if bounce_height_px <= 0.0:
 			bounce_height_px = 0.0
@@ -1382,6 +1508,8 @@ func _finish_bench_return(entry: Dictionary) -> void:
 		(owner as Part).finish_bench_return()
 	elif owner is Screw:
 		(owner as Screw).finish_bench_return()
+	elif owner is RepairLayer:
+		(owner as RepairLayer).finish_bench_return()
 	elif owner is Repairable:
 		(owner as Repairable).finish_bench_return()
 	entry["phase"] = -1
@@ -1538,6 +1666,9 @@ func _fade_drawer_parts(drawer: Drawer, is_fading_in: bool) -> void:
 	var old := _part_fade_tweens.get(drawer) as Tween
 	if is_instance_valid(old):
 		old.kill()
+	_part_fade_tweens.erase(drawer)
+	if parts.is_empty():
+		return
 	var tween := create_tween()
 	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	tween.set_parallel()

@@ -51,7 +51,7 @@ func _tween_appearance(
 		_POP_DURATION_SEC,
 		"linear",
 		0.0,
-		TimeType.APP_PHYSICS,
+		TimeType.PLAY_PHYSICS,
 		on_completed,
 	)
 
