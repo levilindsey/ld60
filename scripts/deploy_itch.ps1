@@ -90,6 +90,10 @@ if ($DryRun) {
     Write-Host "Dry run complete: nothing was uploaded." -ForegroundColor Green
 } else {
     Write-Host "Pushed version $Version to https://levilindsey.itch.io/repair-shop" -ForegroundColor Green
-    Write-Host "First push? In the itch dashboard (Edit game), check the embed"
-    Write-Host "size fits the game (1280x720) and flip visibility to Public when ready."
+    Write-Host "One-time page setup (itch dashboard, Edit game - Butler cannot do this):"
+    Write-Host "  1. Set 'Kind of project' to HTML."
+    Write-Host "  2. On the html5 upload, tick 'This file will be played in the browser'"
+    Write-Host "     and set the viewport to 1280x720."
+    Write-Host "Without those two the page shows a download button instead of a player."
+    Write-Host "Flip visibility to Public there when the game is ready for players."
 }
