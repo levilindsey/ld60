@@ -10,8 +10,8 @@
 ~*.dll
 ~*.TMP
 
-# Krita backup files
-*.kra~
+# Krita backup files (.kra~, .png~)
+*~
 
 # OS metadata
 .DS_Store

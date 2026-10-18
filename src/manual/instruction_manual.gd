@@ -105,6 +105,7 @@ func close() -> void:
 
 func _on_cover_flipped() -> void:
 	%Closed.visible = false
+	%Spine.visible = true
 	%Leaf.set_contents(null, _get_page_content(0))
 	%Leaf.visible = true
 	_leaf_bend_direction = 1.0
@@ -233,6 +234,7 @@ func _fold_first_page() -> void:
 
 func _on_first_page_folded() -> void:
 	%Leaf.visible = false
+	%Spine.visible = false
 	%Closed.visible = true
 	%Closed.reset_physics_interpolation()
 	G.time.tween_property(
