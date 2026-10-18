@@ -148,6 +148,11 @@ func _check_wrong_part() -> void:
 		and (_hand.held as Part).type == Part.Type.TUBE,
 		"the tube is in the hand after its slot",
 	)
+	_expect(
+		(_hand.held as Part).z_index > 0
+		and not (_hand.held as Part).z_as_relative,
+		"a held part renders over the top of repairables",
+	)
 	await _press_at(_socket.global_position)
 	_expect(_hand.held is Part, "the wrong part stays in the hand")
 	_expect(
@@ -169,12 +174,17 @@ func _check_right_part() -> void:
 		"the gear is in the hand after its slot",
 	)
 	await _shot("3_gear_held")
+	var gear := _hand.held as Part
 	await _press_at(_socket.global_position)
 	var is_socket_finished := func() -> bool:
 		return _socket.mode == InteractionPoint.Mode.FINISHED
 	_expect(
 		await _wait_until(is_socket_finished),
 		"the gear finishes the socket",
+	)
+	_expect(
+		gear.z_index == 0 and gear.z_as_relative,
+		"an installed part layers with its item again",
 	)
 	_expect(_hand.is_empty(), "the hand is empty after fitting")
 	_expect(not _item.has_finished, "the item still waits for its cover")

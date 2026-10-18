@@ -2,7 +2,9 @@ class_name Part
 extends Node2D
 ## A replacement part from the parts drawer. The hand holds it like a
 ## tool: it follows the pointer, a press tries to fit it, and putting
-## it back is a press on the drawer (docs/design/parts_bin.md).
+## it back is a press on the drawer (docs/design/parts_bin.md). While
+## held or flying home it renders over the top of repairables (the
+## z_index in part.tscn); once installed it layers with its item.
 
 
 enum Type {
@@ -67,6 +69,10 @@ func install_into(socket: PartSocket) -> void:
 	is_installed = true
 	var from_global_position := global_position
 	G.level.hand.release()
+	# Installed, it layers with the item again: the cover can close
+	# over it. While held it stays on top (part.tscn's z_index).
+	z_index = 0
+	z_as_relative = true
 	reparent(socket)
 	global_position = from_global_position
 	reset_physics_interpolation()

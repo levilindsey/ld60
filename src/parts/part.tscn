@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://src/parts/part.gd" id="1_part"]
 
 [node name="Part" type="Node2D"]
+z_index = 10
+z_as_relative = false
 script = ExtResource("1_part")
 
 [node name="Art" type="Polygon2D" parent="."]
