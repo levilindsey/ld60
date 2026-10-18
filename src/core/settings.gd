@@ -99,6 +99,9 @@ enum PhysicsLayer {
 ## later bounce shakes less.
 @export var item_landing_shake_px := 7.0
 @export var item_landing_shake_sec := 0.15
+## How long the outbox's "OUT" label takes to fade in or out with its
+## outline.
+@export var outbox_label_fade_sec := 0.25
 ## Seconds an item takes to ease back when it is dropped away from the
 ## outbox.
 @export var item_return_sec := 0.3

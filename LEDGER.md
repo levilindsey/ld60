@@ -115,9 +115,6 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Residuals (known, not fixed)
 
-- **LX63** · `level.tscn` loads `res://src/level/drawer.tscn`, but the
-  file is `Drawer.tscn` (ef836b1). Windows hides it; a case-sensitive
-  export (web) may fail to load it. Rename one to match.
 - **LX59** · `full_loop`, `full_loop_booklet`, `item_flow`, `screws`
   and `parts` probes fail at HEAD 2d0096b (checked 2026-10-18 on a
   clean worktree, so not LX58 fallout): the Phillips-in-test-box and
@@ -195,6 +192,8 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX63** · `level.tscn` loaded `drawer.tscn` for `Drawer.tscn`. Done
+  in fd489cd (2026-10-18).
 - **LX62** · Idle hints on a derived repair sequence: each item's
   steps are autodetermined from its layers, fasteners, faults and
   sockets (`RepairSequence`); after 7 s without a correct

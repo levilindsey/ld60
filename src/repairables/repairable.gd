@@ -324,6 +324,27 @@ func leave(
 
 
 ## Called by a point when it finishes.
+## Dev only: finishes every point that still needs work and marks the
+## item finished, as if the repair were done, wherever it stands.
+func complete_for_dev() -> void:
+	for layer in layers:
+		for point in layer.get_points():
+			if (
+				point.needs_work()
+				and point.role != InteractionPoint.Role.FASTENER
+			):
+				point.finish()
+	if has_finished:
+		return
+	has_finished = true
+	G.print(
+		"Item completed by dev hotkey: %s" % item_name,
+		ScaffolderLog.CATEGORY_GAME_STATE,
+	)
+	_play_finish_payoff()
+	finished.emit()
+
+
 func on_point_finished(point: InteractionPoint) -> void:
 	point_finished.emit(point)
 	_update_state()

@@ -63,6 +63,7 @@ var hand: Hand:
 var _resting_screws: Array = []
 
 var _outbox_outline_hint: OutlineHint
+var _outbox_label_tween: Tween
 
 ## Every loose part spawned for the item on the bench: stored in a
 ## drawer, resting on the bench, or on its way back into a drawer.
@@ -265,6 +266,7 @@ func set_outbox_outline_shown(is_shown: bool) -> void:
 		_outbox_outline_hint.set_active(true)
 	elif is_instance_valid(_outbox_outline_hint):
 		_outbox_outline_hint.set_active(false)
+	_fade_outbox_label(1.0 if is_shown else 0.0)
 
 
 ## True while the outbox shows its outline.
@@ -272,6 +274,18 @@ func is_outbox_outline_shown() -> bool:
 	return (
 		is_instance_valid(_outbox_outline_hint)
 		and _outbox_outline_hint.is_active()
+	)
+
+
+func _fade_outbox_label(alpha: float) -> void:
+	if is_instance_valid(_outbox_label_tween):
+		_outbox_label_tween.kill()
+	_outbox_label_tween = create_tween()
+	_outbox_label_tween.tween_property(
+		%OutboxLabel,
+		"modulate:a",
+		alpha,
+		G.settings.outbox_label_fade_sec,
 	)
 
 

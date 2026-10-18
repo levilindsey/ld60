@@ -16,6 +16,7 @@
 [ext_resource type="Texture2D" uid="uid://b5jej1flts5qt" path="res://assets/images/manual_page0003.png" id="16_page3"]
 [ext_resource type="PackedScene" uid="uid://dq0q06p1k4wyo" path="res://src/level/Drawer.tscn" id="17_drawer"]
 [ext_resource type="PackedScene" path="res://src/props/radio.tscn" id="18_radio"]
+[ext_resource type="FontFile" uid="uid://dpjyugfnnu6wc" path="res://assets/fonts/reenie_beanie/ReenieBeanie.ttf" id="19_handwriting"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 34.058773
@@ -69,12 +70,18 @@ position = Vector2(-3, 103)
 color = Color(0.2, 0.15, 0.1, 0.4)
 polygon = PackedVector2Array(-53, -110, 8, -102, 102, -110, 4, 110, -53, 110)
 
-[node name="Label" type="Label" parent="Outbox" unique_id=1379218495]
+[node name="OutboxLabel" type="Label" parent="Outbox" unique_id=1379218495]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
 offset_left = -50.0
-offset_top = 59.0
+offset_top = 49.0
 offset_right = 49.0
-offset_bottom = 104.0
-theme_override_font_sizes/font_size = 32
+offset_bottom = 114.0
+theme_override_colors/font_color = Color(1, 0.95, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0.2, 0.13, 0.07, 1)
+theme_override_constants/outline_size = 10
+theme_override_fonts/font = ExtResource("19_handwriting")
+theme_override_font_sizes/font_size = 64
 text = "OUT"
 horizontal_alignment = 1
 vertical_alignment = 1
