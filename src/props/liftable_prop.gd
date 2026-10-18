@@ -2,10 +2,10 @@ class_name LiftableProp
 extends Node2D
 ## A prop that rests flat on the desk and lifts into view to be read.
 ##
-## At rest it sits at `desk_spot`, with `warped_sprite` drawn onto
-## `desk_corners` so it looks like it's lying flat in perspective. Lifting
-## eases it to its open pose, which is wherever the level placed it, while
-## the corners ease back to the flat sprite.
+## At rest it sits wherever the level placed it, with `warped_sprite`
+## drawn onto `desk_corners` so it looks like it's lying flat in
+## perspective. Lifting eases it to `open_spot` while the corners ease back
+## to the flat sprite.
 ##
 ## Presses are routed through `_handle_press()` from `_unhandled_input`
 ## rather than through Area2D picking. A prop placed after the level's Hand
@@ -17,9 +17,9 @@ extends Node2D
 const _LIFT_DURATION_SEC := 0.3
 
 
-## Where the prop rests. Its position, rotation, scale and skew place the
-## resting prop on the desk. Without one, the prop stays put.
-@export var desk_spot: Node2D
+## Where the prop lifts to. Its position, rotation, scale and skew give
+## the open pose. Without one, the prop stays put.
+@export var open_spot: Node2D
 ## The warped sprite's corners while resting on the desk: top left, top
 ## right, bottom right, bottom left, in the sprite's local space. They ease
 ## back to the flat sprite as the prop lifts.
@@ -37,10 +37,10 @@ const _LIFT_DURATION_SEC := 0.3
 @export var shadow: CanvasItem
 
 
-var _open_position := Vector2.ZERO
-var _open_rotation := 0.0
-var _open_scale := Vector2.ONE
-var _open_skew := 0.0
+var _rest_position := Vector2.ZERO
+var _rest_rotation := 0.0
+var _rest_scale := Vector2.ONE
+var _rest_skew := 0.0
 var _warped_corners := PackedVector2Array()
 var _lift_tween_id := -1
 var _lifted_z_index := 0
@@ -49,18 +49,16 @@ var _lifted_after: Node
 
 
 func _ready() -> void:
-	_open_position = global_position
-	_open_rotation = global_rotation
-	_open_scale = global_scale
-	_open_skew = global_skew
+	_rest_position = global_position
+	_rest_rotation = global_rotation
+	_rest_scale = global_scale
+	_rest_skew = global_skew
 	_set_warped_corners(_get_flat_corners())
 	_lifted_z_index = z_index
 	var index := get_index()
 	if index > 0:
 		_lifted_after = get_parent().get_child(index - 1)
-	if is_instance_valid(desk_spot):
-		_set_lift(0.0)
-		reset_physics_interpolation()
+	_set_lift(0.0)
 	# Deferred: the parent is still setting up its children.
 	_set_resting_order.call_deferred(true)
 
@@ -84,7 +82,7 @@ func _tween_lift(
 	on_completed: Callable,
 ) -> void:
 	_stop_lift()
-	if not is_instance_valid(desk_spot):
+	if not is_instance_valid(open_spot):
 		on_completed.call()
 		return
 	_lift_tween_id = G.time.tween_method(
@@ -127,18 +125,19 @@ func _set_resting_order(is_resting: bool) -> void:
 	parent.move_child(self, target_index)
 
 
-## 0 rests at `desk_spot`; 1 is the open pose.
+## 0 rests where the level placed the prop; 1 is at `open_spot`.
 func _set_lift(lift: float) -> void:
 	if is_instance_valid(shadow):
 		shadow.visible = is_zero_approx(lift)
-	global_position = desk_spot.global_position.lerp(_open_position, lift)
-	global_rotation = lerp_angle(
-		desk_spot.global_rotation,
-		_open_rotation,
-		lift,
-	)
-	global_scale = desk_spot.global_scale.lerp(_open_scale, lift)
-	global_skew = lerpf(desk_spot.global_skew, _open_skew, lift)
+	if is_instance_valid(open_spot):
+		global_position = _rest_position.lerp(open_spot.global_position, lift)
+		global_rotation = lerp_angle(
+			_rest_rotation,
+			open_spot.global_rotation,
+			lift,
+		)
+		global_scale = _rest_scale.lerp(open_spot.global_scale, lift)
+		global_skew = lerpf(_rest_skew, open_spot.global_skew, lift)
 
 	var flat_corners := _get_flat_corners()
 	if desk_corners.size() != flat_corners.size():
