@@ -290,12 +290,14 @@ func _check_take_cover_off() -> void:
 		"the twists turn the screw counter-clockwise",
 	)
 	await _drive(_screw_left, 10.0)
-	# The hop off.
-	await _seconds(0.3)
+	# LX54: the screw pulls out of its hole and slides to its rest spot.
+	await _wait_for_travel(_screw_left, Screw.Travel.RESTING)
 	_expect(
 		_screw_left.mode == InteractionPoint.Mode.FINISHED
-		and not _screw_left.visible,
-		"2. the first screw comes out",
+		and _screw_left.travel == Screw.Travel.RESTING
+		and _screw_left.bench_art.visible
+		and not _screw_left.clip_space.visible,
+		"2. the first screw comes out and rests on the bench",
 	)
 	_expect(
 		is_equal_approx(
@@ -317,6 +319,13 @@ func _check_take_cover_off() -> void:
 	await _press_at(_screw_right.global_position)
 	# m1-screws: was `await _seconds(0.5)`.
 	await _drive(_screw_right, 10.0)
+	_expect(
+		_screw_right.travel == Screw.Travel.PULLING_OUT
+		and _cover.is_on
+		and not _cover.is_moving,
+		"LX54: the cover waits while the second screw pulls out",
+	)
+	await _wait_for_travel(_screw_right, Screw.Travel.LEAVING)
 	_expect(
 		_screw_right.mode == InteractionPoint.Mode.FINISHED,
 		"2. the second screw comes out",
@@ -404,7 +413,18 @@ func _check_put_cover_back() -> void:
 	for screw: Screw in [_screw_left, _screw_right]:
 		_expect(
 			screw.is_install_mode
-			and screw.visible
+			and screw.can_come_back()
+			and screw.mode == InteractionPoint.Mode.UNSTARTED,
+			"LX54: %s waits on the bench, in install mode" % screw.name,
+		)
+	# LX54: a press on each resting screw brings it back to its hole.
+	for screw: Screw in [_screw_left, _screw_right]:
+		await _press_resting_screw(screw)
+		await _wait_for_travel(screw, Screw.Travel.HOME)
+		_expect(
+			screw.travel == Screw.Travel.HOME
+			and screw.clip_space.visible
+			and not screw.bench_art.visible
 			and screw.mode == InteractionPoint.Mode.UNSTARTED
 			and is_equal_approx(screw.head.rotation, -Screw.LOOSE_TURN_RAD),
 			"4. %s comes back loose and turned back, in install mode"
@@ -461,7 +481,7 @@ func _check_drive_screws_in() -> void:
 	await _drive(_screw_left, 10.0)
 	_expect(
 		_screw_left.mode == InteractionPoint.Mode.FINISHED
-		and _screw_left.visible
+		and _screw_left.clip_space.visible
 		and is_zero_approx(_screw_left.head.rotation),
 		"5. the first screw turns home and goes in",
 	)
@@ -555,12 +575,16 @@ func _track_head_scale() -> void:
 
 ## m1-screws: plays the flathead microgame well. Every physics frame it
 ## moves the pointer along the slot to put the tip back in the middle.
-## Returns once the screw is no longer ACTIVE, or after `max_sec`.
+## Returns once the screw is no longer ACTIVE or starts to pull out
+## (LX54), or after `max_sec`.
 func _drive(screw: Screw, max_sec: float) -> void:
 	var flathead := screw as FlatHeadScrew
 	var frames := roundi(max_sec * Engine.physics_ticks_per_second)
 	for frame in frames:
-		if screw.mode != InteractionPoint.Mode.ACTIVE:
+		if (
+			screw.mode != InteractionPoint.Mode.ACTIVE
+			or screw.travel != Screw.Travel.HOME
+		):
 			return
 		var motion := InputEventMouseMotion.new()
 		_push_mouse(

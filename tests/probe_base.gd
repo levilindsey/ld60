@@ -141,6 +141,26 @@ func _seconds(duration_sec: float) -> void:
 	await get_tree().create_timer(duration_sec).timeout
 
 
+## LX54: waits until a screw's trip out to the bench and back reaches
+## `travel`, or `max_sec`. True if it did.
+func _wait_for_travel(
+	screw: Screw,
+	travel: Screw.Travel,
+	max_sec := 2.0,
+) -> bool:
+	for frame in roundi(max_sec * Engine.physics_ticks_per_second):
+		if screw.travel == travel:
+			return true
+		await get_tree().physics_frame
+	return screw.travel == travel
+
+
+## LX54: presses a screw that rests on the bench, where a press brings it
+## back once its layer is on.
+func _press_resting_screw(screw: Screw) -> void:
+	await _press_at(screw.bench_art.global_position + screw.rest_hit_offset)
+
+
 ## Saves the viewport to `build/tests/<probe folder>/<shot_name>.png`, in a
 ## run with `-- --screenshots`. The folder gets a `.gdignore`, so the
 ## editor doesn't import the PNGs.
