@@ -27,6 +27,7 @@ extends Node2D
 	"hmm_curious" = %HmmCurious,
 	"hmm_appreciative" = %HmmAppreciative,
 	"hmm_grumpy" = %HmmGrumpy,
+	"hmm_frustrated" = %HmmFrustrated,
 	"sigh_relief" = %SighRelief,
 	"page_flip" = %PageFlip,
 	"pages_flip" = %PagesFlip,

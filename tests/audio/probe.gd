@@ -2,7 +2,8 @@ extends "res://tests/probe_base.gd"
 ## The intro humming (foley round 2). Boots the game on the title,
 ## closes it into a run and checks the humming plays once, stops, and
 ## does not come back on a pause resume. A fresh run from the credits
-## plays it again.
+## plays it again. It also checks a recorded defect answers with one
+## of the frustrated takes (foley round 3).
 ##
 ## Run it with `tests/run.ps1 -Name audio`, or from the repo root
 ## (PowerShell):
@@ -68,6 +69,34 @@ func _run() -> void:
 	)
 	await _seconds(take_sec)
 	_expect(not _humming.playing, "the humming does not restart")
+
+	# A mistake answers with a frustrated hmm from the pooled takes.
+	var frustrated := (
+		G.audio.STREAM_PLAYERS_BY_NAME.get(&"hmm_frustrated")
+		as AudioStreamPlayer
+	)
+	var randomizer := (
+		frustrated.stream as AudioStreamRandomizer
+		if is_instance_valid(frustrated) else null
+	)
+	_expect(
+		is_instance_valid(randomizer)
+		and randomizer.get_streams_count() > 1,
+		"the frustrated sound pools several takes",
+	)
+	if (
+		_expect(await _wait_for_landing(), "the first item lands")
+		and is_instance_valid(frustrated)
+	):
+		G.level.active_repairable.quality.add_defect(
+			RepairQuality.Defect.DENT_SMALL, Vector2.ZERO
+		)
+		await get_tree().process_frame
+		_expect(
+			frustrated.playing or frustrated.has_stream_playback(),
+			"a defect plays a frustrated hmm",
+		)
+		frustrated.stop()
 
 	# A pause resume is not a new run. No second humming.
 	G.state.transition(StateMain.State.PAUSE)

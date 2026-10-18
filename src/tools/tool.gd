@@ -163,6 +163,7 @@ func on_effect_pressed(_global_point: Vector2) -> void:
 ## penalty.
 func nope() -> void:
 	G.audio.play_sound(&"clunk")
+	G.audio.play_sound(&"hmm_grumpy")
 	G.level.hand.show_nope(get_tip_position())
 	if is_instance_valid(_shake_tween):
 		_shake_tween.kill()

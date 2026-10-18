@@ -21,7 +21,7 @@ interaction_area = NodePath("Wrapper/InteractionArea")
 holder_area = NodePath("Wrapper/HolderArea")
 
 [node name="Wrapper" type="Node2D" parent="." unique_id=1313305716]
-scale = Vector2(0.2, 0.2)
+scale = Vector2(0.25, 0.25)
 
 [node name="CursorPosition" type="Marker2D" parent="Wrapper" unique_id=2078462989]
 

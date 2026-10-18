@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dyi4bknkxbvvs"
+path="res://.godot/imported/hmm frustrated 4_a.wav-8a68354cc71072055b06a74c72c1f0da.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/hmm frustrated 4_a.wav"
+dest_files=["res://.godot/imported/hmm frustrated 4_a.wav-8a68354cc71072055b06a74c72c1f0da.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
