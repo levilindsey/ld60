@@ -1,6 +1,6 @@
 class_name PartsBin
 extends Node2D
-## The parts drawer: a fixed space under the ticket that opens the
+## The parts drawer: a fixed space in the upper-left that opens the
 ## parts menu, and takes parts back (docs/design/parts_bin.md).
 
 

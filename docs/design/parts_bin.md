@@ -13,8 +13,8 @@ pick out a replacement and fit it into the empty spot.
 
 Decision (Levi, 2026-10-17, superseding the LX6 bottom-drawer and
 pan plans below): the drawer space sits in the upper-left of the
-screen, below the ticket space. The left edge becomes one column:
-the ticket, then the drawer, then the outbox.
+screen. The ticket sits in the top-right, so it never covers the
+drawer. The left edge holds the drawer, then the outbox.
 
 Earlier plans, kept for the record:
 
@@ -27,10 +27,9 @@ Earlier plans, kept for the record:
 
 ## The drawer and the menu
 
-- The drawer space is a fixed rectangle aligned with the ticket's
-  left edge, with its top below the tallest ticket. The ticket's
-  height varies with its text, so the drawer never moves to make
-  room. It is an Area2D in the world, on a new PARTS physics layer,
+- The drawer space is a fixed rectangle in the upper-left. The
+  ticket sits in the top-right, so the drawer never moves to make
+  room for it. It is an Area2D in the world, on a new PARTS physics layer,
   like the outbox and the tool holders, so the hand finds it with
   the same point query as the rack.
 - Pressing the drawer with an empty hand opens the parts menu. The

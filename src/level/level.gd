@@ -180,7 +180,7 @@ func get_tool_holder_position(type: Tool.Type) -> Vector2:
 	return holder.get_shape_position()
 
 
-## The parts drawer under the ticket.
+## The parts drawer in the upper-left.
 func get_parts_bin() -> PartsBin:
 	return %PartsBin
 

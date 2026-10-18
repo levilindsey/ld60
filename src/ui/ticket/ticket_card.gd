@@ -1,7 +1,7 @@
 class_name TicketCard
 extends Control
-## The repair ticket: a paper card in the corner of the screen that names
-## the item on the bench and shows the customer's complaint
+## The repair ticket: a paper card in the top-right corner of the screen
+## that names the item on the bench and shows the customer's complaint
 ## (docs/design/outbox.md).
 ##
 ## It never takes a mouse press, so the bench under it stays clickable.
@@ -10,7 +10,7 @@ extends Control
 
 ## How long the card takes to slide in or out.
 @export var slide_sec := 0.35
-## How far the card sits off the left edge of the screen while it's away,
+## How far the card sits off the right edge of the screen while it's away,
 ## in pixels.
 @export var slide_distance_px := 420.0
 
@@ -19,7 +19,7 @@ var _tween: Tween
 
 func _ready() -> void:
 	visible = false
-	%Slide.position.x = -slide_distance_px
+	%Slide.position.x = slide_distance_px
 
 
 ## Slides the card in with the item's name and the customer's complaint.
@@ -35,7 +35,7 @@ func show_item(item_name: String, complaint: String) -> void:
 func hide_card() -> void:
 	if not visible:
 		return
-	_slide_to(-slide_distance_px)
+	_slide_to(slide_distance_px)
 	_tween.tween_callback(hide)
 
 

@@ -54,10 +54,14 @@ mouse_filter = 2
 [node name="Paper" type="PanelContainer" parent="Slide"]
 custom_minimum_size = Vector2(320, 0)
 layout_mode = 1
-offset_left = 36.0
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -356.0
 offset_top = 36.0
-offset_right = 356.0
+offset_right = -36.0
 offset_bottom = 36.0
+grow_horizontal = 0
 rotation = -0.035
 mouse_filter = 2
 theme = SubResource("Theme_paper")
