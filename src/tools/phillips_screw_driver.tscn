@@ -1,0 +1,96 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/tools/phillips_screw_driver.gd" id="1_85718"]
+[ext_resource type="Texture2D" uid="uid://cwwmjwv0iwo2d" path="res://assets/images/screwdriverrrrrrrrrrrrrrr.png" id="2_rocp8"]
+[ext_resource type="Texture2D" uid="uid://bibqfxkdfodhw" path="res://assets/images/rrrrrrrrrrrrrevird wercs.png" id="3_5cnk8"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_85718"]
+radius = 20.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
+radius = 200.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5cnk8"]
+atlas = ExtResource("2_rocp8")
+region = Rect2(0, 0, 3508, 2480)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mp5ld"]
+atlas = ExtResource("3_5cnk8")
+region = Rect2(0, 0, 3508, 2480)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_60exv"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5cnk8")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5cnk8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mp5ld")
+}],
+"loop": 1,
+"name": &"twisting",
+"speed": 5.0
+}]
+
+[node name="PhillipsScrewDriver" type="Node2D" unique_id=1486551663 node_paths=PackedStringArray("art", "cursor_position", "grab_area", "interaction_area", "holder_area")]
+script = ExtResource("1_85718")
+art = NodePath("Node2D2/Node2D")
+cursor_position = NodePath("Node2D2/CursorPosition")
+grab_area = NodePath("Node2D2/GrabArea")
+interaction_area = NodePath("Node2D2/InteractionArea")
+holder_area = NodePath("Node2D2/HolderArea")
+type = 5
+held_rotation_deg = 40.0
+
+[node name="Node2D2" type="Node2D" parent="." unique_id=1471896538]
+scale = Vector2(0.2, 0.2)
+
+[node name="CursorPosition" type="Marker2D" parent="Node2D2" unique_id=1842626005]
+
+[node name="GrabArea" type="Area2D" parent="Node2D2" unique_id=311969663]
+unique_name_in_owner = true
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Node2D2/GrabArea" unique_id=287821059]
+polygon = PackedVector2Array(-19, 0, 21, 0, 44.999996, -479.99994, 94.99999, -509.99994, 114.99999, -834.99994, 79.99999, -1114.9999, -44.999996, -1124.9999, -59.999992, -529.99994, -19.999998, -489.99994)
+
+[node name="InteractionArea" type="Area2D" parent="Node2D2" unique_id=1602574643]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D2/InteractionArea" unique_id=1167529110]
+shape = SubResource("CircleShape2D_85718")
+
+[node name="HolderArea" type="Area2D" parent="Node2D2" unique_id=186351695]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 16
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D2/HolderArea" unique_id=554709299]
+position = Vector2(0, -600)
+shape = SubResource("CircleShape2D_giktf")
+
+[node name="Node2D" type="Node2D" parent="Node2D2" unique_id=1950302434]
+rotation = -1.5707964
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Node2D2/Node2D" unique_id=169628297]
+unique_name_in_owner = true
+position = Vector2(525, 90.00003)
+rotation = -1.9172411
+scale = Vector2(0.6, 0.6)
+sprite_frames = SubResource("SpriteFrames_60exv")
+animation = &"twisting"
+autoplay = "default"
+frame_progress = 0.2890306

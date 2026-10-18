@@ -25,6 +25,7 @@ signal departed
 
 enum Type {
 	TEST_FLAT_HEAD_SCREW_REPAIRABLE,
+	TEST_PHILLIPS_REPAIRABLE,
 }
 
 enum Mode {

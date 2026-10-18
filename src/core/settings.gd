@@ -126,6 +126,7 @@ enum PhysicsLayer {
 
 @export_group("Repairables")
 @export var flat_head_screw_repairable_scene: PackedScene
+@export var phillips_repairable_scene: PackedScene
 ## The day's order: the items that arrive, one after another. The game is
 ## won after the last one goes into the outbox.
 @export var item_queue: Array[Repairable.Type] = []
@@ -139,6 +140,29 @@ enum PhysicsLayer {
 ## Planned (LX22). The glue bottle art has not landed yet, so no
 ## scene is assigned and the tool is not spawned.
 @export var glue_scene: PackedScene
+@export var phillips_screw_driver_scene: PackedScene
+@export_group("")
+
+@export_group("Phillips")
+## Slowest circle speed that still turns the screw, in radians
+## per second. About half a turn per second.
+@export var phillips_speed_min_rad_per_sec := 3.0
+## Fastest circle speed that still turns the screw. Circling
+## faster cams the bit out.
+@export var phillips_speed_max_rad_per_sec := 7.0
+## The speed at the end of the gauge's sweep.
+@export var phillips_gauge_max_rad_per_sec := 10.0
+## Grip gained per second while the speed is in the band.
+@export var phillips_fill_rate := 0.25
+## Grip lost per second while the speed is out of the band.
+@export var phillips_drain_rate := 0.375
+## Grip a removal starts with, and an install starts with.
+@export var phillips_meter_start := 0.3
+@export var phillips_install_meter_start := 0.6
+## Seconds input pauses after a cam-out.
+@export var phillips_cam_out_pause_sec := 0.5
+## Grace seconds at the start, while the gauge scales in.
+@export var phillips_intro_sec := 0.33
 @export_group("")
 
 @export_group("Rag")
@@ -290,6 +314,8 @@ func get_repairable_scene_from_type(type: Repairable.Type) -> PackedScene:
 	match type:
 		Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE:
 			return flat_head_screw_repairable_scene
+		Repairable.Type.TEST_PHILLIPS_REPAIRABLE:
+			return phillips_repairable_scene
 		_:
 			G.fatal()
 			return null
@@ -307,6 +333,8 @@ func get_tool_scene_from_type(type: Tool.Type) -> PackedScene:
 			return hammer_scene
 		Tool.Type.GLUE:
 			return glue_scene
+		Tool.Type.PHILLIPS_SCREW_DRIVER:
+			return phillips_screw_driver_scene
 		_:
 			G.fatal()
 			return null

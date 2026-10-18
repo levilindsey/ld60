@@ -16,6 +16,7 @@ enum Type {
 	BENT_PART,
 	SEAT_PART,
 	CRACK,
+	PHILLIPS_SCREW,
 }
 
 enum Mode {

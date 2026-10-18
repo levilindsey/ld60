@@ -11,6 +11,7 @@ enum Type {
 	AIR_BLOWER,
 	HAMMER,
 	GLUE,
+	PHILLIPS_SCREW_DRIVER,
 }
 
 enum Mode {

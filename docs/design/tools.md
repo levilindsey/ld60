@@ -89,7 +89,7 @@ there, so nothing changes.
 | Tool | Kind | Press | Hold or drag | Release |
 |---|---|---|---|---|
 | Flathead | Engage | Engage a flathead screw | Move along the slot to recenter | Nothing |
-| Phillips | Engage | Engage a Phillips screw; the gauge opens | Hold to push | The needle eases off |
+| Phillips | Engage | Engage a Phillips screw; the gauge opens | Drag in circles at a speed in the band | Nothing |
 | Pliers | Engage | Clamp a stripped screw | Drag side to side | Nothing |
 | Hammer | Effect | Lock the strike point, wind up | Strength builds | Swing |
 | Air blower | Effect | Puff | Nothing | Nothing |

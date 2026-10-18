@@ -12,6 +12,8 @@
 [ext_resource type="PackedScene" path="res://src/tools/rag.tscn" id="9_rag"]
 [ext_resource type="PackedScene" path="res://src/tools/air_blower.tscn" id="10_blower"]
 [ext_resource type="PackedScene" path="res://src/tools/hammer.tscn" id="11_hammer"]
+[ext_resource type="PackedScene" path="res://src/tools/phillips_screw_driver.tscn" id="12_phildriver"]
+[ext_resource type="PackedScene" path="res://src/repairables/test_phillips_repairable.tscn" id="13_philitem"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("5_outline")
@@ -37,4 +39,6 @@ flat_head_screw_driver_scene = ExtResource("2_xmm7k")
 rag_scene = ExtResource("9_rag")
 air_blower_scene = ExtResource("10_blower")
 hammer_scene = ExtResource("11_hammer")
+phillips_screw_driver_scene = ExtResource("12_phildriver")
+phillips_repairable_scene = ExtResource("13_philitem")
 defect_popup_scene = ExtResource("4_popup")

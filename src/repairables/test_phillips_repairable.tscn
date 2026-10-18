@@ -1,0 +1,68 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/repairables/test_phillips_repairable.gd" id="1_item"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/phillips_screw.tscn" id="2_screw"]
+[ext_resource type="Script" path="res://src/repairables/repair_layer.gd" id="3_layer"]
+[ext_resource type="Script" path="res://src/repairables/surface.gd" id="4_surface"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_case"]
+size = Vector2(96, 96)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_drop"]
+size = Vector2(100, 100)
+
+[node name="TestPhillipsRepairable" type="Node2D"]
+script = ExtResource("1_item")
+item_name = "Test phillips box"
+ticket = "The cross heads just spin. Circle them out, then in."
+
+[node name="DropArea" type="Area2D" parent="."]
+unique_name_in_owner = true
+collision_layer = 2
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea"]
+shape = SubResource("RectangleShape2D_drop")
+
+[node name="Layers" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Inside" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+script = ExtResource("3_layer")
+art = NodePath("Art")
+
+[node name="Art" type="ColorRect" parent="Layers/Inside"]
+offset_left = -46.0
+offset_top = -46.0
+offset_right = 46.0
+offset_bottom = 46.0
+mouse_filter = 2
+color = Color(0.22, 0.2, 0.18, 1)
+
+[node name="Cover" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+script = ExtResource("3_layer")
+art = NodePath("Art")
+
+[node name="Art" type="ColorRect" parent="Layers/Cover"]
+offset_left = -50.0
+offset_top = -50.0
+offset_right = 50.0
+offset_bottom = 50.0
+mouse_filter = 2
+color = Color(0.35, 0.55, 0.8, 1)
+
+[node name="CaseSurface" type="Area2D" parent="Layers/Cover"]
+collision_layer = 32
+collision_mask = 0
+monitoring = false
+script = ExtResource("4_surface")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layers/Cover/CaseSurface"]
+shape = SubResource("RectangleShape2D_case")
+
+[node name="ScrewLeft" parent="Layers/Cover" instance=ExtResource("2_screw")]
+position = Vector2(-30, -30)
+
+[node name="ScrewRight" parent="Layers/Cover" instance=ExtResource("2_screw")]
+position = Vector2(30, 30)
