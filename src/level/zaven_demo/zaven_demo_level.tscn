@@ -1,20 +1,19 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene format=3 uid="uid://cww7pdvuexpxh"]
 
 [ext_resource type="PackedScene" uid="uid://bukfeupi41tif" path="res://src/level/level.tscn" id="1_level"]
 [ext_resource type="PackedScene" path="res://src/manual/instruction_manual.tscn" id="2_manual"]
-[ext_resource type="Texture2D" path="res://assets/images/manual_page0000.png" id="3_page0"]
-[ext_resource type="Texture2D" path="res://assets/images/manual_page0001.png" id="4_page1"]
-[ext_resource type="Texture2D" path="res://assets/images/manual_page0002.png" id="5_page2"]
-[ext_resource type="Texture2D" path="res://assets/images/manual_page0003.png" id="6_page3"]
+[ext_resource type="Texture2D" uid="uid://doc4jnkrixmjs" path="res://assets/images/manual_page0000.png" id="3_page0"]
+[ext_resource type="Texture2D" uid="uid://bl6bxtj82jtcy" path="res://assets/images/manual_page0001.png" id="4_page1"]
+[ext_resource type="Texture2D" uid="uid://bik16fm0enfxo" path="res://assets/images/manual_page0002.png" id="5_page2"]
+[ext_resource type="Texture2D" uid="uid://b5jej1flts5qt" path="res://assets/images/manual_page0003.png" id="6_page3"]
 
-[node name="ZavenDemoLevel" instance=ExtResource("1_level")]
+[node name="ZavenDemoLevel" unique_id=413100282 instance=ExtResource("1_level")]
 
-[node name="ManualDeskSpot" type="Marker2D" parent="."]
-position = Vector2(-480, 225)
-rotation = -0.06
-scale = Vector2(0.6, 0.32)
-skew = 0.35
+[node name="ManualDeskSpot" type="Marker2D" parent="." index="15" unique_id=1775733971]
+position = Vector2(-493, 261)
+scale = Vector2(0.45, 0.45)
 
-[node name="InstructionManual" parent="." node_paths=PackedStringArray("desk_spot") instance=ExtResource("2_manual")]
-desk_spot = NodePath("../ManualDeskSpot")
+[node name="InstructionManual" parent="." index="16" unique_id=191747233 node_paths=PackedStringArray("desk_spot") instance=ExtResource("2_manual")]
 page_contents = Array[Texture2D]([ExtResource("3_page0"), ExtResource("4_page1"), ExtResource("5_page2"), ExtResource("6_page3")])
+desk_spot = NodePath("../ManualDeskSpot")
+desk_cover_corners = PackedVector2Array(-162.7, -33.3, 22.3, -69.4, 206.5, 42.3, -39.9, 124.2)

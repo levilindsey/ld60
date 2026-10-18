@@ -55,6 +55,11 @@ const _FLING_SPEED_PX_PER_SEC := 600.0
 ## lay the closed book flat on the desk. The manual lifts from here to its
 ## own placement in the level to open. Without one, the manual stays put.
 @export var desk_spot: Node2D
+## The closed cover's corners while resting on the desk, for a perspective
+## view of the book lying flat: top left, top right, bottom right, bottom
+## left. In the cover sprite's local space, where the unwarped cover spans
+## ±120 by ±160. They ease back to the flat cover as the manual lifts.
+@export var desk_cover_corners := PackedVector2Array()
 
 
 var state := State.CLOSED
@@ -71,6 +76,7 @@ var _open_position := Vector2.ZERO
 var _open_rotation := 0.0
 var _open_scale := Vector2.ONE
 var _open_skew := 0.0
+var _cover_corners := PackedVector2Array()
 
 
 func _ready() -> void:
@@ -85,6 +91,7 @@ func _ready() -> void:
 	_open_rotation = global_rotation
 	_open_scale = global_scale
 	_open_skew = global_skew
+	_set_cover_corners(_get_flat_cover_corners())
 	if is_instance_valid(desk_spot):
 		_set_lift(0.0)
 		reset_physics_interpolation()
@@ -120,6 +127,7 @@ func close() -> void:
 
 func _on_lifted() -> void:
 	state = State.OPENING
+	%RightPage.visible = true
 	_pop_in_close_button()
 	G.time.tween_property(
 		%Closed,
@@ -161,7 +169,10 @@ func _on_click_area_input_event(
 	var x := _get_local_x(event)
 	match state:
 		State.CLOSED:
-			if x >= 0.0:
+			var cover_point := (
+				(%Cover.make_input_local(event) as InputEventMouse).position
+			)
+			if Geometry2D.is_point_in_polygon(cover_point, _cover_corners):
 				open()
 		State.IDLE:
 			_start_drag(x >= 0.0, x)
@@ -283,6 +294,7 @@ func _on_first_page_folded() -> void:
 
 func _on_cover_closed() -> void:
 	state = State.LOWERING
+	%RightPage.visible = false
 	_tween_lift(1.0, 0.0, _on_lowered)
 
 
@@ -323,6 +335,36 @@ func _set_lift(lift: float) -> void:
 	)
 	global_scale = desk_spot.global_scale.lerp(_open_scale, lift)
 	global_skew = lerpf(desk_spot.global_skew, _open_skew, lift)
+
+	var flat_corners := _get_flat_cover_corners()
+	if desk_cover_corners.size() != flat_corners.size():
+		_set_cover_corners(flat_corners)
+		return
+	var corners := PackedVector2Array()
+	for i in flat_corners.size():
+		corners.append(desk_cover_corners[i].lerp(flat_corners[i], lift))
+	_set_cover_corners(corners)
+
+
+## The cover's corners when it isn't warped: top left, top right, bottom
+## right, bottom left, in the cover sprite's local space.
+func _get_flat_cover_corners() -> PackedVector2Array:
+	var half_size: Vector2 = %Cover.texture.get_size() / 2.0
+	return PackedVector2Array([
+		Vector2(-half_size.x, -half_size.y),
+		Vector2(half_size.x, -half_size.y),
+		Vector2(half_size.x, half_size.y),
+		Vector2(-half_size.x, half_size.y),
+	])
+
+
+func _set_cover_corners(corners: PackedVector2Array) -> void:
+	_cover_corners = corners
+	var material: ShaderMaterial = %Cover.material
+	material.set_shader_parameter("top_left", corners[0])
+	material.set_shader_parameter("top_right", corners[1])
+	material.set_shader_parameter("bottom_right", corners[2])
+	material.set_shader_parameter("bottom_left", corners[3])
 
 
 func _get_drag_progress(x: float) -> float:

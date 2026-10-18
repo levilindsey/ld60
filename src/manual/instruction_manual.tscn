@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://src/manual/instruction_manual.gd" id="1_manual"]
 [ext_resource type="PackedScene" path="res://src/manual/manual_page.tscn" id="2_page"]
@@ -8,9 +8,17 @@
 [ext_resource type="Texture2D" path="res://assets/images/manual_front.png" id="6_cover"]
 [ext_resource type="Texture2D" path="res://assets/images/manual_spine.png" id="7_spine"]
 [ext_resource type="Texture2D" path="res://assets/images/closebutton.png" id="8_close"]
+[ext_resource type="Shader" path="res://assets/shaders/perspective_quad.gdshader" id="9_perspective"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_spread"]
 size = Vector2(480, 320)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cover"]
+shader = ExtResource("9_perspective")
+shader_parameter/top_left = Vector2(-120, -160)
+shader_parameter/top_right = Vector2(120, -160)
+shader_parameter/bottom_right = Vector2(120, 160)
+shader_parameter/bottom_left = Vector2(-120, 160)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_close"]
 size = Vector2(48, 48)
@@ -31,6 +39,7 @@ outline = ExtResource("4_outline_left")
 
 [node name="RightPage" parent="." instance=ExtResource("2_page")]
 unique_name_in_owner = true
+visible = false
 outline = ExtResource("5_outline_right")
 
 [node name="Leaf" type="Node2D" parent="."]
@@ -64,6 +73,8 @@ outline = ExtResource("4_outline_left")
 unique_name_in_owner = true
 
 [node name="Cover" type="Sprite2D" parent="Closed"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_cover")
 position = Vector2(120, 0)
 texture = ExtResource("6_cover")
 
