@@ -89,11 +89,11 @@ there, so nothing changes.
 | Tool | Kind | Press | Hold or drag | Release |
 |---|---|---|---|---|
 | Flathead | Engage | Engage a flathead screw | Move along the slot to recenter | Nothing |
-| Phillips | Engage | Engage a Phillips screw; the gauge opens | Hold to push | The needle eases off |
+| Phillips | Engage | Engage a Phillips screw; the gauge opens | Drag in circles at a speed in the band | Nothing |
 | Pliers | Engage | Clamp a stripped screw | Drag side to side | Nothing |
 | Hammer | Effect | Lock the strike point, wind up | Strength builds | Swing |
-| Canned air | Effect | Spray | Keep spraying | Stop |
-| Rag | Effect | Soak (over the bottle) or wipe | Drag to wipe | Stop |
+| Air blower | Effect | Puff | Nothing | Nothing |
+| Rag | Effect | Wipe | Drag to wipe | Stop |
 | Oil can | Effect | One drop | More drops, faster | Stop |
 | Glue | Effect | Squeeze | Drag along the crack | Stop |
 

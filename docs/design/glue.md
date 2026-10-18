@@ -3,6 +3,11 @@
 Ledger: **LX22** (M2). Depends on [tools.md](tools.md) (LX7) and
 [decals.md](decals.md) (LX13).
 
+Built for LX22 with `glue_bottle_placeholder.png` standing in
+for the bottle art. The crack is still a drawn line, not a
+decal. `GrimeSpot` and `DustClump` work the same way, with
+placeholder blobs until their sprites land.
+
 ## What the player does
 
 Hold to squeeze the glue and trace along a crack. Cover the whole

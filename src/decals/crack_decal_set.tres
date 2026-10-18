@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="DecalSet" format=3]
+
+[ext_resource type="Script" uid="uid://dc7g3y14j3ldu" path="res://src/decals/decal_set.gd" id="1_decal_set"]
+[ext_resource type="Texture2D" uid="uid://jog83x8unswi" path="res://assets/images/decals/cracks0000.png" id="2_crack"]
+[ext_resource type="Texture2D" uid="uid://f1dadls67ebu" path="res://assets/images/decals/cracks0001.png" id="3_crack"]
+[ext_resource type="Texture2D" uid="uid://bly230urhf10a" path="res://assets/images/decals/cracks0002.png" id="4_crack"]
+[ext_resource type="Texture2D" uid="uid://bol8oe8lptlj4" path="res://assets/images/decals/cracks0003.png" id="5_crack"]
+
+[resource]
+script = ExtResource("1_decal_set")
+textures = Array[Texture2D]([ExtResource("2_crack"), ExtResource("3_crack"), ExtResource("4_crack"), ExtResource("5_crack")])
+scale_range = Vector2(0.8, 1.25)
+can_flip_horizontally = true
+can_flip_vertically = true
+tint = Color(0.14, 0.13, 0.14, 0.95)

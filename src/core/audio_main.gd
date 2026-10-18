@@ -8,8 +8,12 @@ extends Node2D
 
 ## Stream players, one per sound name. Their streams are the cleaned
 ## foley in `assets/audio/foley_cleaned/`, assigned on the nodes in
-## `audio_main.tscn`. The theme players stay empty until music lands.
-## Add new named entries here as needed.
+## `audio_main.tscn`. Sounds with several good takes use an
+## AudioStreamRandomizer on the node, so each play picks a take. The
+## humming is a one-off intro. StateMain plays it once when the game
+## starts, after the title screen closes. It is not a theme and it
+## never loops. The themes stay empty until music lands. Add new
+## named entries here as needed.
 @onready var STREAM_PLAYERS_BY_NAME := {
 	"menu_theme" = %MenuTheme,
 	"main_theme" = %MainTheme,
@@ -19,6 +23,17 @@ extends Node2D
 	"thud" = %Thud,
 	"ding" = %Ding,
 	"hmm" = %Hmm,
+	"humming" = %Humming,
+	"hmm_curious" = %HmmCurious,
+	"hmm_appreciative" = %HmmAppreciative,
+	"hmm_grumpy" = %HmmGrumpy,
+	"hmm_frustrated" = %HmmFrustrated,
+	"sigh_relief" = %SighRelief,
+	"page_flip" = %PageFlip,
+	"pages_flip" = %PagesFlip,
+	"card_land" = %CardLand,
+	"card_pickup" = %CardPickup,
+	"scrawling" = %Scrawling,
 	"creak" = %Creak,
 	"ratchet" = %Ratchet,
 	"scrape" = %Scrape,

@@ -56,6 +56,7 @@ func start_game() -> void:
 ## return, so the boot-time transition into the initial TITLE state
 ## still runs its side effects (pause + menu theme + HUD overlay).
 func transition(to_state: State) -> void:
+	var from_state := state
 	state = to_state
 
 	match to_state:
@@ -69,6 +70,11 @@ func transition(to_state: State) -> void:
 				G.game_panel.start_game()
 			get_tree().paused = false
 			G.audio.fade_to_main_theme()
+			# The intro humming is a one-off. It plays when a run
+			# starts (from the title or the credits), never when a
+			# pause resumes.
+			if from_state == State.TITLE or from_state == State.CREDITS:
+				G.audio.play_sound(&"humming")
 		State.PAUSE:
 			get_tree().paused = true
 			G.audio.fade_to_menu_theme()

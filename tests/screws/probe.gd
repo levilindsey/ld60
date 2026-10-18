@@ -1,9 +1,10 @@
 extends "res://tests/probe_base.gd"
 ## The screws (LX10, LX11). Boots the game and checks screw health and the
 ## flathead twist cycle with pushed pointer input: a player who corrects,
-## one who never does, yanks that strip a screw, the stand-in pry, a
-## seized screw, how a screw slides up as it turns out and back down as it
-## turns in (screws.md "Removal"), and the `slip_bias` table in flathead.md.
+## one who never does, pushes that strip a screw, the stand-in pry, a
+## seized screw, how a screw slides up as it turns out and back down as
+## it turns in (screws.md "Removal"), and the `slip_bias` table in
+## flathead.md.
 ##
 ## Run it with `tests/run.ps1 -Name screws`, or from the repo root
 ## (PowerShell):
@@ -22,16 +23,20 @@ const _DRIFT_TABLE_SEED := 6060
 ## flathead.md "Tuning": slip_bias, the median twists to unseat, the
 ## percent that unseat on twist 2, the percent that unseat within 4.
 const _BIAS_TABLE := [
-	[0.5, 6, 6.3, 32.5],
-	[0.8, 4, 8.5, 57.7],
-	[0.9, 3, 10.2, 76.5],
-	[1.0, 3, 12.5, 99.7],
+	[0.5, 4, 40.9, 66.3],
+	[0.8, 2, 55.7, 82.6],
+	[0.9, 2, 67.2, 92.1],
+	[1.0, 2, 82.2, 100.0],
 ]
 ## The table rounds to a tenth of a percent, and the probe samples fewer
 ## screws than the table did.
 const _TABLE_TOLERANCE_PERCENT := 0.5
-## How far a yank moves the pointer along the slot: past the tolerance.
+## How far a push moves the pointer along the slot: past the tolerance,
+## so the tip ends up stopped at the slot's end.
 const _YANK_PX := 20.0
+## How far the probe drags a finger along the slot to check the touch
+## gain (LX47).
+const _TOUCH_MOVE_PX := 3.0
 ## The player who never corrects gets a drift seed that skids the tip out
 ## on this twist.
 const _UNSEAT_TWIST := 3
@@ -222,7 +227,7 @@ func _watch_sounds() -> bool:
 		)
 		player.stream = AudioStreamGenerator.new()
 		_sound_counts[sound_name] = 0
-	G.audio.play_sound("creak")
+	G.audio.play_sound(&"creak")
 	var is_counted := _is_sound_playing("creak")
 	_poll_sounds()
 	G.audio.stop_sound("creak")
@@ -491,7 +496,7 @@ func _check_never_correcting() -> void:
 		)
 	_expect(
 		decals.size() == decal_count + 1
-		and absf(decal_distance - 21.0) < 0.5,
+		and absf(decal_distance - (screw.seat_tolerance_px + 9.0)) < 0.5,
 		"a skid decal on the cover past the end of the slot (%d new, %.1f"
 		% [decals.size() - decal_count, decal_distance]
 		+ " px from the head)",
@@ -500,7 +505,8 @@ func _check_never_correcting() -> void:
 		screw.head.global_position
 	)
 	_expect(
-		screw.sparks.emitting and absf(sparks_distance - 12.0) < 0.5,
+		screw.sparks.emitting
+		and absf(sparks_distance - screw.seat_tolerance_px) < 0.5,
 		"sparks at the end of the slot (%.1f px from the head)"
 		% sparks_distance,
 	)
@@ -549,6 +555,17 @@ func _check_never_correcting() -> void:
 		"the driver engages ScrewRight again, by a press %.1f px from the"
 		% edge_point.distance_to(_get_home(screw))
 		+ " center of its home hit shape (radius 12): the shape slid too",
+	)
+	var engage_rotation := screw.head.rotation
+	var resumed := false
+	for frame in 21:
+		await get_tree().physics_frame
+		if not is_equal_approx(screw.head.rotation, engage_rotation):
+			resumed = true
+			break
+	_expect(
+		resumed,
+		"turning resumes within a few frames of re-engaging",
 	)
 	_pull_out.watch(screw)
 	_rest_watch.watch(_screw_left)
@@ -639,8 +656,12 @@ func _start_fresh_level() -> bool:
 	return _expect(_hand.held == _tool, "take the driver in the fresh level")
 
 
-## Three yanks along the slot: each skids out, costs 1 health and shows
-## the next head frame. The third strips the screw.
+## Three pushes to the end of the slot. In the pause each one stops at
+## the end and does not skid (LX47). The first then skids when the
+## player pushes it past the end during the twist. The other two skid
+## when the twist's drift pushes a tip held at the end past it. Each
+## skid costs 1 health and shows the next head frame. The third strips
+## the screw.
 func _check_yanks() -> void:
 	var screw := _screw_left
 	var decal_count := _get_decals().size()
@@ -652,11 +673,92 @@ func _check_yanks() -> void:
 	var skids := 0
 	for yank in 3:
 		_reset_sounds()
+		# The first push-off is the player's during the twist, so its
+		# drift pulls the other way. The rest are the drift's own.
+		var drift_seed := _find_push_off_seed(
+			screw,
+			-1.0 if yank == 0 else 1.0,
+		)
+		if not _expect(
+			drift_seed >= 0,
+			"found a drift seed that pushes the tip off the slot's end",
+		):
+			return
+		screw._random.seed = drift_seed
 		await _press_at(screw.global_position)
+		if yank == 0:
+			await _move_touch_to(
+				_hand.pointer_position
+				+ screw.get_slot_axis() * _TOUCH_MOVE_PX
+			)
+			_expect(
+				is_equal_approx(G.settings.flathead_touch_gain, 2.0)
+				and absf(
+					screw.tip_offset_px
+					- _TOUCH_MOVE_PX * G.settings.flathead_touch_gain
+				) < 0.01,
+				"LX47: a %.0f px touch drag moves the tip %.0f px at"
+				% [_TOUCH_MOVE_PX, screw.tip_offset_px]
+				+ " the touch gain (gain %.1f, tip %.2f px)"
+				% [G.settings.flathead_touch_gain, screw.tip_offset_px],
+			)
+			await _move_to(
+				_hand.pointer_position
+				- screw.get_slot_axis() * _TOUCH_MOVE_PX
+			)
+			_expect(
+				absf(
+					screw.tip_offset_px
+					- _TOUCH_MOVE_PX
+					* (G.settings.flathead_touch_gain - 1.0)
+				) < 0.01,
+				"LX47: the mouse stays 1 to 1 (tip back to %.2f px)"
+				% screw.tip_offset_px,
+			)
 		await _move_to(
 			_hand.pointer_position + screw.get_slot_axis() * _YANK_PX
 		)
-		await _physics_frames(1)
+		if yank == 0:
+			_expect(
+				screw.mode == InteractionPoint.Mode.ACTIVE
+				and screw.health == screw.max_health
+				and absf(screw.tip_offset_px - screw.seat_tolerance_px)
+				< 0.01
+				and _count("skid") == 0,
+				"LX47: a hard push in the pause stops at the slot's end"
+				+ " (offset %.2f of %.2f px, health %d)"
+				% [
+					screw.tip_offset_px,
+					screw.seat_tolerance_px,
+					screw.health,
+				],
+			)
+			var twist_frames := 0
+			while (
+				screw._phase != FlatHeadScrew.Phase.TWIST
+				and screw.mode == InteractionPoint.Mode.ACTIVE
+				and twist_frames < _UNSEAT_TIMEOUT_FRAMES
+			):
+				twist_frames += 1
+				await get_tree().physics_frame
+			await _move_to(
+				_hand.pointer_position
+				+ screw.get_slot_axis() * _YANK_PX
+			)
+			_expect(
+				screw.mode == InteractionPoint.Mode.UNSTARTED
+				and screw.health == screw.max_health - 1
+				and _count("skid") == 1,
+				"LX47: a push during the twist slides the tip out"
+				+ " (health %d)" % screw.health,
+			)
+		var frames_waited := 0
+		while (
+			screw.mode == InteractionPoint.Mode.ACTIVE
+			and frames_waited < _UNSEAT_TIMEOUT_FRAMES
+		):
+			frames_waited += 1
+			await get_tree().physics_frame
 		healths.append(screw.health)
 		frames.append(screw.get_head_frame())
 		points.append(_item.quality.get_defect_points_total())
@@ -669,7 +771,7 @@ func _check_yanks() -> void:
 		skids += _count("skid")
 	_expect(
 		str(healths) == "[2, 1, 0]" and str(frames) == "[1, 2, 3]",
-		"LX10: each yank costs 1 health and shows the next frame (health %s,"
+		"LX10: each skid costs 1 health and shows the next frame (health %s,"
 		% str(healths)
 		+ " frames %s)" % str(frames),
 	)
@@ -695,11 +797,11 @@ func _check_yanks() -> void:
 		_events.count("ScrewLeft:stripped") == 1
 		and _events.has("ScrewLeft:damaged:0")
 		and screw.is_stripped(),
-		"the third yank strips the screw, once",
+		"the third skid strips the screw, once",
 	)
 	_expect(
 		skids == 3 and _get_decals().size() == decal_count + 3,
-		"a skid and a decal for each yank (%d skids, %d decals)"
+		"a skid and a decal for each push off the end (%d skids, %d decals)"
 		% [skids, _get_decals().size() - decal_count],
 	)
 
@@ -930,6 +1032,39 @@ func _drive_install(screw: FlatHeadScrew) -> void:
 	await _drive(screw, 10.0)
 	await _physics_frames(1)
 	_slide.check(_expect, "%s in" % screw.name, 1.0)
+
+
+## Moves the pointer as an emulated touch drag, so the hand reports
+## touch and the flathead applies its touch gain.
+func _move_touch_to(world_point: Vector2) -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.device = InputEvent.DEVICE_ID_EMULATION
+	_push_mouse(motion, world_point)
+	await _physics_frames(2)
+
+
+## A seed whose first drift goes `wanted_sign`'s way along the slot.
+## A drift toward the pushed end pushes a tip held there past it. One
+## the other way leaves the push-off to the player. Returns -1 if none
+## is found.
+func _find_push_off_seed(
+	screw: FlatHeadScrew,
+	wanted_sign: float,
+) -> int:
+	for drift_seed in range(1, 10000):
+		var random := RandomNumberGenerator.new()
+		random.seed = drift_seed
+		var drift := FlatHeadScrew.pick_drift_px(
+			random,
+			screw._drift_sign,
+			screw.slip_bias,
+			screw.seat_tolerance_px,
+			G.settings.flathead_slip_min,
+			G.settings.flathead_slip_max,
+		)
+		if drift * wanted_sign > 0.0:
+			return drift_seed
+	return -1
 
 
 ## A seed for the screw's drifts that skids the tip out on twist `twist`

@@ -74,10 +74,10 @@ Ledger: **LX10** (M1). Depends on [repairables.md](repairables.md)
 ## Install mode (putting it back)
 
 - When a layer goes back on, its screws go into INSTALL mode. A screw
-  resting on the bench glows (a slow pulse, like a layer that can go
-  back) until a press brings it back. The press works whatever the hand
-  holds, and the hand keeps it. Before the layer is back on, a press on
-  a resting screw does nothing.
+  resting on the bench gets the gradient outline (pulsing, like a
+  layer that can go back) until a press brings it back. The press
+  works whatever the hand holds, and the hand keeps it. Before the
+  layer is back on, a press on a resting screw does nothing.
 - Coming back, the bench art slides over the hole (`screw_travel_sec`),
   the clipped art takes over, and `RemoveScrew` plays backwards: the
   screw sinks into its hole and turns back into the top-down head. It

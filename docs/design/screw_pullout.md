@@ -17,10 +17,11 @@ top-down head squashes and fades into the angled view.
    forward from where the twists left it.
 3. At its end, `ClippingSpace` hides and `UnclippedAnglePerspective`
    shows (it matches the animation's end pose). The screw slides off to
-   its own rest spot on the bench.
+   its own rest spot on the bench, turning to a fresh random angle as
+   it goes.
 4. It waits there while its layer is off. Once the layer is back on
    (`set_install_mode()`), a press on the resting screw sends it back
-   over its hole.
+   over its hole, turning back to its home turn on the way.
 5. There the sprites swap back and `RemoveScrew` plays backwards: the
    screw sinks into the hole and turns back into the top-down head.
 6. It now sits loose in its hole, raised (`slide` 1) and turned back

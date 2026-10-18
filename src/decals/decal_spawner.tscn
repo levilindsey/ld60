@@ -2,7 +2,25 @@
 
 [ext_resource type="Script" path="res://src/decals/decal_spawner.gd" id="1_spawner"]
 [ext_resource type="Resource" path="res://src/decals/skid_decal_set.tres" id="2_skid"]
+[ext_resource type="Resource" path="res://src/decals/glue_blob_set.tres" id="3_blob"]
+[ext_resource type="Resource" path="res://src/decals/dent_decal_set.tres" id="4_dent"]
+[ext_resource type="Resource" path="res://src/decals/crack_decal_set.tres" id="5_crack"]
+[ext_resource type="Resource" path="res://src/decals/scratch_decal_set.tres" id="6_scratch"]
+[ext_resource type="Resource" path="res://src/decals/rust_decal_set.tres" id="7_rust"]
+[ext_resource type="Resource" path="res://src/decals/dust_decal_set.tres" id="8_dust"]
+[ext_resource type="Resource" path="res://src/decals/dust_2_decal_set.tres" id="9_dust2"]
+[ext_resource type="Resource" path="res://src/decals/grime_decal_set.tres" id="10_grime"]
+[ext_resource type="Resource" path="res://src/decals/grime_2_decal_set.tres" id="11_grime2"]
 
 [node name="DecalSpawner" type="Node"]
 script = ExtResource("1_spawner")
 skid_set = ExtResource("2_skid")
+glue_blob_set = ExtResource("3_blob")
+dent_set = ExtResource("4_dent")
+crack_set = ExtResource("5_crack")
+scratch_set = ExtResource("6_scratch")
+rust_set = ExtResource("7_rust")
+dust_set = ExtResource("8_dust")
+dust_2_set = ExtResource("9_dust2")
+grime_set = ExtResource("10_grime")
+grime_2_set = ExtResource("11_grime2")

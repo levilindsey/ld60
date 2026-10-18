@@ -1,0 +1,66 @@
+[gd_scene format=3 uid="uid://k22j46btanto"]
+
+[ext_resource type="Script" uid="uid://dkjdge0ymcd82" path="res://src/tools/rag.gd" id="1_rag"]
+[ext_resource type="Texture2D" uid="uid://cvp7nwjg12211" path="res://assets/images/towel (hanging).png" id="2_hanging"]
+[ext_resource type="Texture2D" uid="uid://lv00w0djvcuv" path="res://assets/images/towel.png" id="3_held"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
+radius = 159.99998
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_holder"]
+radius = 129.99997
+
+[node name="Rag" type="Node2D" unique_id=1372363687 node_paths=PackedStringArray("hanging_sprite", "held_sprite", "cursor_position", "grab_area", "interaction_area", "holder_area")]
+script = ExtResource("1_rag")
+hanging_sprite = NodePath("Wrapper/Art/HangingSprite")
+held_sprite = NodePath("Wrapper/Art/HeldSprite")
+type = 1
+cursor_position = NodePath("Wrapper/CursorPosition")
+grab_area = NodePath("Wrapper/GrabArea")
+interaction_area = NodePath("Wrapper/InteractionArea")
+holder_area = NodePath("Wrapper/HolderArea")
+
+[node name="Wrapper" type="Node2D" parent="." unique_id=1313305716]
+scale = Vector2(0.25, 0.25)
+
+[node name="CursorPosition" type="Marker2D" parent="Wrapper" unique_id=2078462989]
+
+[node name="GrabArea" type="Area2D" parent="Wrapper" unique_id=1039722584]
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Wrapper/GrabArea" unique_id=870811665]
+scale = Vector2(0.8, 0.8)
+polygon = PackedVector2Array(-39.999996, -449.99997, 0, -409.99997, 34.999996, -329.99997, 99.99999, 34.999996, 174.99998, 274.99997, 79.99999, 459.99997, -99.99999, 284.99997, -94.99999, 239.99997, -144.99998, 204.99998, -144.99998, 114.99999, -69.99999, -309.99997, -64.99999, -359.99997)
+
+[node name="InteractionArea" type="Area2D" parent="Wrapper" unique_id=425211928]
+position = Vector2(-40, -85)
+collision_layer = 0
+collision_mask = 36
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/InteractionArea" unique_id=1795830284]
+shape = SubResource("CircleShape2D_interaction")
+metadata/_edit_lock_ = true
+
+[node name="HolderArea" type="Area2D" parent="Wrapper" unique_id=881107376]
+position = Vector2(-29.999985, -335)
+collision_layer = 0
+collision_mask = 16
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/HolderArea" unique_id=2112991587]
+shape = SubResource("CircleShape2D_holder")
+metadata/_edit_lock_ = true
+
+[node name="Art" type="Node2D" parent="Wrapper" unique_id=1038598075]
+scale = Vector2(0.55, 0.55)
+
+[node name="HangingSprite" type="Sprite2D" parent="Wrapper/Art" unique_id=1267473586]
+scale = Vector2(0.8, 0.8)
+texture = ExtResource("2_hanging")
+
+[node name="HeldSprite" type="Sprite2D" parent="Wrapper/Art" unique_id=561255560]
+visible = false
+texture = ExtResource("3_held")
+flip_h = true

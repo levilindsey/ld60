@@ -26,10 +26,17 @@ var hand: Hand:
 ## untyped so a freed screw never lands in a typed variable.
 var _resting_screws: Array = []
 
+var _outbox_outline_hint: OutlineHint
+
 
 func _enter_tree() -> void:
 	if not is_instance_valid(G.main):
-		# This level scene was run directly. Boot the full game into it.
+		# This level scene was run directly. Drop its children before
+		# they enter the tree, since they expect a booted game. Then
+		# boot the full game into this level.
+		for child in get_children():
+			remove_child(child)
+			child.free()
 		G.boot_from_level(self)
 		return
 	G.level = self
@@ -54,6 +61,11 @@ func _ready() -> void:
 
 	# TODO: Add some level and spawn configs to control when what things spawn.
 	spawn_tool(Tool.Type.FLAT_HEAD_SCREW_DRIVER)
+	spawn_tool(Tool.Type.RAG)
+	spawn_tool(Tool.Type.AIR_BLOWER)
+	spawn_tool(Tool.Type.HAMMER)
+	spawn_tool(Tool.Type.PHILLIPS_SCREW_DRIVER)
+	spawn_tool(Tool.Type.GLUE)
 	if G.ensure(
 		not G.settings.item_queue.is_empty(),
 		"The item queue is empty.",
@@ -75,6 +87,7 @@ func win() -> void:
 		return
 	G.print("Game won", ScaffolderLog.CATEGORY_GAME_STATE)
 	has_won = true
+	G.audio.play_sound(&"sigh_relief")
 	G.state.transition(StateMain.State.CREDITS)
 
 
@@ -127,6 +140,33 @@ func drop_item(item: Repairable) -> void:
 		return_item(item)
 
 
+## Shows or hides the outline around the outbox. A finished item
+## turns it on, so the bench says where the item goes next.
+func set_outbox_outline_shown(is_shown: bool) -> void:
+	if is_shown:
+		if not is_instance_valid(_outbox_outline_hint):
+			var placeholder := (
+				%Outbox.get_node("Placeholder") as Polygon2D
+			)
+			var points := OutlineHint.get_art_polygon(placeholder)
+			if points.is_empty():
+				return
+			_outbox_outline_hint = OutlineHint.new()
+			placeholder.add_child(_outbox_outline_hint)
+			_outbox_outline_hint.polygon = points
+		_outbox_outline_hint.set_active(true)
+	elif is_instance_valid(_outbox_outline_hint):
+		_outbox_outline_hint.set_active(false)
+
+
+## True while the outbox shows its outline.
+func is_outbox_outline_shown() -> bool:
+	return (
+		is_instance_valid(_outbox_outline_hint)
+		and _outbox_outline_hint.is_active()
+	)
+
+
 ## Eases an item back to where the bench keeps the item being repaired.
 func return_item(item: Repairable) -> void:
 	if is_instance_valid(item):
@@ -151,7 +191,7 @@ func get_tool_holder_position(type: Tool.Type) -> Vector2:
 	return holder.get_shape_position()
 
 
-## The parts drawer under the ticket.
+## The parts drawer in the upper-left.
 func get_parts_bin() -> PartsBin:
 	return %PartsBin
 
@@ -163,13 +203,13 @@ func get_parts_menu() -> PartsMenu:
 
 ## Where layers wait while they are off the item.
 func get_set_aside_spot() -> Node2D:
-	return %SetAsideSpot
+	return %PartSetAsideSpot
 
 
 ## The layers at the set-aside spot, bottom of the stack first.
 func get_set_aside_layers() -> Array[RepairLayer]:
 	var layers: Array[RepairLayer] = []
-	for child in %SetAsideSpot.get_children():
+	for child in %PartSetAsideSpot.get_children():
 		if child is RepairLayer:
 			layers.append(child as RepairLayer)
 	return layers
@@ -201,10 +241,11 @@ func free_screw_rest_spot(screw: Screw) -> void:
 
 
 ## The world position of rest spot number `index`, counting from 0.
+## The row starts at the `%ScrewSetAsideSpot` marker.
 func get_screw_rest_position(index: int) -> Vector2:
 	var row_size := maxi(G.settings.screw_rest_row_size, 1)
 	return (
-		G.settings.screw_rest_first_position
+		(%ScrewSetAsideSpot as Node2D).global_position
 		+ G.settings.screw_rest_step * (index % row_size)
 		+ G.settings.screw_rest_row_step * floori(float(index) / row_size)
 	)
@@ -256,6 +297,7 @@ func _spawn_next_item() -> void:
 ## The item leaves through the outbox. The bench is empty from here until
 ## the next item arrives.
 func _send_to_outbox(item: Repairable) -> void:
+	set_outbox_outline_shown(false)
 	active_repairable = null
 	%TicketCard.hide_card()
 	item.departed.connect(_on_item_departed.bind(item), CONNECT_ONE_SHOT)
@@ -270,7 +312,8 @@ func _on_item_landed(item: Repairable) -> void:
 		G.settings.item_landing_shake_px,
 		G.settings.item_landing_shake_sec,
 	)
-	%TicketCard.show_item(item.item_name, item.ticket)
+	%TicketCard.show_item(item.ticket)
+	G.audio.play_sound_delayed(&"hmm_curious", 0.45)
 
 
 ## The item slid off the screen: its receipt opens and, unless that was
@@ -290,6 +333,7 @@ func _on_defect_added(
 	points: int,
 	world_position: Vector2,
 ) -> void:
+	G.audio.play_sound(&"hmm_frustrated")
 	DefectPopup.spawn(self, points, world_position)
 
 

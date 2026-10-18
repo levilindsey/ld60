@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://ceoh7wl32vjnk"
+path="res://.godot/imported/sigh 2.wav-7352717869e97497e6425a49f97527ef.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/sigh 2.wav"
+dest_files=["res://.godot/imported/sigh 2.wav-7352717869e97497e6425a49f97527ef.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

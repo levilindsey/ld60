@@ -1,0 +1,116 @@
+[gd_scene format=3 uid="uid://dolqnwf6ir2dd"]
+
+[ext_resource type="Script" uid="uid://dnsfjtnlfluct" path="res://src/tools/phillips_screw_driver.gd" id="1_85718"]
+[ext_resource type="Texture2D" uid="uid://bjdmdoqf7ofql" path="res://assets/images/frame_phillip0000.png" id="2_u4u72"]
+[ext_resource type="Texture2D" uid="uid://bteb2g76iqtvo" path="res://assets/images/frame_phillip0001.png" id="3_8hs6w"]
+[ext_resource type="Texture2D" uid="uid://cg6ffto75thxv" path="res://assets/images/frame_phillip0002.png" id="4_b0wyx"]
+[ext_resource type="Texture2D" uid="uid://wux14isf477k" path="res://assets/images/frame_phillip0003.png" id="5_171xb"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_85718"]
+radius = 29.999996
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
+radius = 200.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_308ow"]
+atlas = ExtResource("2_u4u72")
+region = Rect2(0, 0, 3508, 2480)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1yb6i"]
+atlas = ExtResource("2_u4u72")
+region = Rect2(0, 0, 3508, 2480)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gngvu"]
+atlas = ExtResource("3_8hs6w")
+region = Rect2(0, 0, 3508, 2480)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_txh3m"]
+atlas = ExtResource("4_b0wyx")
+region = Rect2(0, 0, 3508, 2480)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gg275"]
+atlas = ExtResource("5_171xb")
+region = Rect2(0, 0, 3508, 2480)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lqr1o"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_308ow")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1yb6i")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gngvu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_txh3m")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gg275")
+}],
+"loop": 1,
+"name": &"twisting",
+"speed": 5.0
+}]
+
+[node name="PhillipsScrewDriver" type="Node2D" unique_id=1486551663 node_paths=PackedStringArray("art", "cursor_position", "grab_area", "interaction_area", "holder_area")]
+script = ExtResource("1_85718")
+art = NodePath("Node2D/Node2D")
+type = 5
+cursor_position = NodePath("Node2D/CursorPosition")
+grab_area = NodePath("Node2D/GrabArea")
+interaction_area = NodePath("Node2D/InteractionArea")
+holder_area = NodePath("Node2D/HolderArea")
+held_rotation_deg = 40.0
+
+[node name="Node2D" type="Node2D" parent="." unique_id=1471896538]
+scale = Vector2(0.25, 0.25)
+
+[node name="CursorPosition" type="Marker2D" parent="Node2D" unique_id=1842626005]
+
+[node name="GrabArea" type="Area2D" parent="Node2D" unique_id=311969663]
+unique_name_in_owner = true
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Node2D/GrabArea" unique_id=287821059]
+polygon = PackedVector2Array(-19.999998, 0, 9.999999, 9.999999, 34.999996, -504.99994, 79.99999, -524.99994, 69.99999, -609.99994, 99.99999, -829.99994, 84.99999, -974.9999, 59.999992, -1119.9999, -34.999996, -1134.9999, -74.99999, -1019.9999, -74.99999, -784.99994, -54.999996, -619.99994, -74.99999, -534.99994, -24.999998, -514.99994)
+
+[node name="InteractionArea" type="Area2D" parent="Node2D" unique_id=1602574643]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D/InteractionArea" unique_id=1167529110]
+shape = SubResource("CircleShape2D_85718")
+
+[node name="HolderArea" type="Area2D" parent="Node2D" unique_id=186351695]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 16
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Node2D/HolderArea" unique_id=554709299]
+position = Vector2(0, -510)
+shape = SubResource("CircleShape2D_giktf")
+
+[node name="Node2D" type="Node2D" parent="Node2D" unique_id=1527904396]
+rotation = -1.5707964
+scale = Vector2(0.99999994, 0.99999994)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Node2D/Node2D" unique_id=927756525]
+unique_name_in_owner = true
+position = Vector2(590, 65)
+rotation = -1.5707964
+scale = Vector2(0.6, 0.6)
+sprite_frames = SubResource("SpriteFrames_lqr1o")
+autoplay = "default"
+frame_progress = 0.7130345

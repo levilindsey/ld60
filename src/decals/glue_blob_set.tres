@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="DecalSet" format=3 uid="uid://dhkmlkw8vexb8"]
+
+[ext_resource type="Script" uid="uid://dc7g3y14j3ldu" path="res://src/decals/decal_set.gd" id="1_decal_set"]
+[ext_resource type="Texture2D" uid="uid://bci75cox5c2tn" path="res://assets/images/decals/glue0000.png" id="2_glue"]
+[ext_resource type="Texture2D" uid="uid://dsqh5gla6635f" path="res://assets/images/decals/glue0001.png" id="3_glue"]
+[ext_resource type="Texture2D" uid="uid://w026bdjj2k2t" path="res://assets/images/decals/glue0002.png" id="4_glue"]
+[ext_resource type="Texture2D" uid="uid://b4r2bybm8rxk0" path="res://assets/images/decals/glue0003.png" id="5_glue"]
+
+[resource]
+script = ExtResource("1_decal_set")
+textures = Array[Texture2D]([ExtResource("2_glue"), ExtResource("3_glue"), ExtResource("4_glue"), ExtResource("5_glue")])
+has_random_rotation = false
+can_flip_horizontally = true
+can_flip_vertically = false
+tint = Color(1, 0.93, 0.55, 1)

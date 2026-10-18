@@ -25,12 +25,15 @@ const _DANGER_SHAKE_PX := 1.5
 
 ## How far the tip can move along the slot from the center before it skids
 ## out, about half the slot's length.
-@export var seat_tolerance_px := 12.0
+@export var seat_tolerance_px := 9.0
 ## The chance that a twist drifts the tip this screw's way. The other
 ## twists drift it the other way (flathead.md "Tuning").
 @export_range(0.0, 1.0) var slip_bias := 0.9
 ## Twists that take the screw out.
 @export var twists_needed := 4
+## Scales how tight the slot is: 1 is normal, 2 is twice as hard
+## (half the seat tolerance), 0.5 is twice as easy.
+@export_range(0.5, 2.0, 0.05) var difficulty := 1.0
 ## Twists that drive the screw back in after its layer was put back.
 @export var install_twists := 2
 ## Sparks at the tip when it skids out.
@@ -73,8 +76,10 @@ var _last_pointer_screen_position := Vector2.ZERO
 
 func _ready() -> void:
 	super._ready()
+	seat_tolerance_px /= maxf(difficulty, 0.05)
 	G.check(is_instance_valid(sparks))
 	G.check(G.settings.flathead_slip_max < 1.0)
+	G.check(G.settings.flathead_touch_gain >= 1.0)
 	_random.randomize()
 	_drift_sign = 1.0 if _random.randf() < 0.5 else -1.0
 
@@ -120,8 +125,11 @@ func get_tip_position() -> Vector2:
 
 
 ## The hand calls this on every pointer motion while this screw owns the
-## pointer. Motion along the slot moves the tip. Motion across it does
-## nothing.
+## pointer. Motion along the slot moves the tip. At rest the tip stops
+## at the slot's ends, so a push can never skid it out. While the screw
+## is turning the push may carry it past the end and skid it out.
+## Motion across the slot does nothing. A touch drag is amplified by
+## `flathead_touch_gain`, so a finger need not travel as far as the tip.
 func on_pointer_moved(_global_position: Vector2) -> void:
 	# Screen pixels, so a camera shake doesn't count as motion.
 	var screen_delta := (
@@ -133,7 +141,19 @@ func on_pointer_moved(_global_position: Vector2) -> void:
 			screen_delta
 		)
 	)
-	tip_offset_px += world_delta.dot(get_slot_axis())
+	var gain := 1.0
+	if G.level.hand.is_touch:
+		gain = G.settings.flathead_touch_gain
+	var next_offset_px := (
+		tip_offset_px + world_delta.dot(get_slot_axis()) * gain
+	)
+	if _phase == Phase.PAUSE:
+		next_offset_px = clampf(
+			next_offset_px,
+			-seat_tolerance_px,
+			seat_tolerance_px,
+		)
+	tip_offset_px = next_offset_px
 
 
 ## A finger can land anywhere, so motion counts from the new press.
@@ -164,19 +184,30 @@ static func pick_drift_px(
 
 func _start_microgame() -> void:
 	_reset_seat()
+	if _twists_done > 0:
+		# A resume after slipping out: skip most of the pause so
+		# turning starts again almost at once.
+		_phase_sec = maxf(
+			G.settings.flathead_pause_sec
+			- G.settings.flathead_resume_delay_sec,
+			0.0,
+		)
 	_engage_head_rotation = head.rotation
 	_last_pointer_screen_position = G.level.hand.pointer_screen_position
 	G.level.hand.set_input_owner(self)
 
 
 ## One physics frame of the twist cycle: pause, telegraph, twist.
+## The tip can only pass the slot's end while the screw is turning,
+## pushed by the drift or by the player, so the unseat check runs only
+## in that phase.
 func _advance_cycle(delta: float) -> void:
 	_phase_sec += delta
 	if _phase == Phase.TWIST:
 		_turn_and_drift()
-	if absf(tip_offset_px) > seat_tolerance_px:
-		_unseat()
-		return
+		if absf(tip_offset_px) > seat_tolerance_px:
+			_unseat()
+			return
 	_set_in_danger(
 		absf(tip_offset_px) > seat_tolerance_px * _DANGER_FRACTION
 	)
@@ -198,7 +229,7 @@ func _advance_cycle(delta: float) -> void:
 ## A creak and a tensed handle warn of the next twist.
 func _telegraph() -> void:
 	_is_telegraphed = true
-	G.audio.play_sound("creak", true)
+	G.audio.play_sound(&"creak", true)
 	var driver := engaged_tool as FlatHeadScrewDriver
 	if is_instance_valid(driver):
 		driver.tense(G.settings.flathead_telegraph_sec)
@@ -240,7 +271,7 @@ func _finish_twist() -> void:
 	head.rotation = _twist_to_rotation
 	slide = _twist_to_slide
 	if _twists_done < _get_twist_count():
-		G.audio.play_sound("ratchet", true)
+		G.audio.play_sound(&"ratchet", true)
 		_phase = Phase.PAUSE
 		_phase_sec = 0.0
 		_is_telegraphed = false
@@ -264,7 +295,7 @@ func _unseat() -> void:
 		seat_tolerance_px,
 	)
 	_set_in_danger(false)
-	G.audio.play_sound("skid", true)
+	G.audio.play_sound(&"skid", true)
 	var layer := get_layer()
 	if is_instance_valid(layer) and is_instance_valid(layer.art):
 		# The scratch starts at the end of the slot and runs the way the tip
@@ -308,7 +339,7 @@ func _set_in_danger(is_in_danger: bool) -> void:
 	_is_in_danger = is_in_danger
 	if is_in_danger:
 		# The scrape's rising pitch comes with LX25.
-		G.audio.play_sound("scrape")
+		G.audio.play_sound(&"scrape")
 	else:
 		G.audio.stop_sound("scrape")
 

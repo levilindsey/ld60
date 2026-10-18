@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DecalSet" format=3]
+
+[ext_resource type="Script" uid="uid://dc7g3y14j3ldu" path="res://src/decals/decal_set.gd" id="1_decal_set"]
+[ext_resource type="Texture2D" uid="uid://ln81ths5i0g2" path="res://assets/images/decals/dust0000.png" id="2_dust"]
+[ext_resource type="Texture2D" uid="uid://bbqopm0ureif5" path="res://assets/images/decals/dust0001.png" id="3_dust"]
+[ext_resource type="Texture2D" uid="uid://ccxjyo5msldtg" path="res://assets/images/decals/dust0002.png" id="4_dust"]
+[ext_resource type="Texture2D" uid="uid://boatgwuumo6bi" path="res://assets/images/decals/dust0003.png" id="5_dust"]
+
+[resource]
+script = ExtResource("1_decal_set")
+textures = Array[Texture2D]([ExtResource("2_dust"), ExtResource("3_dust"), ExtResource("4_dust"), ExtResource("5_dust")])
+can_flip_horizontally = true
+can_flip_vertically = true
+tint = Color(0.8, 0.76, 0.68, 0.8)

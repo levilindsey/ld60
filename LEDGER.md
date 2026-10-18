@@ -9,14 +9,27 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 - **LX47** · Flathead calls from the m1-screws handoff
   (`docs/design/m1_agents.md`), my picks in brackets: 2 install twists of
   101.25 degrees from a 22.5 degree tilt [keep]; the ratchet only between
-  twists [keep]; overcorrecting unseats, in the pause too [stop the push
-  at the slot's end, so only a drift skids]; the 12 px seat tolerance is
-  about 1 mm of finger travel, inferred [a touch gain, as a setting].
+  twists [keep]. Decided by Levi (2026-10-17, rev. 2026-10-18): the
+  tip unseats only while the screw is turning, by its drift or the
+  player's push; at rest the push stops at the slot's end. Touch
+  drags move the tip at `flathead_touch_gain` 2.0, the mouse 1 to 1.
 
 ## In progress
 
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
+
+- **LX58** · Hook up the new decal textures: tinted sets for dents,
+  cracks, scratches, rust, dust (two sets), grime (two sets) and glue;
+  sprite dirt points with set and color config; hammer dents and
+  cracks fitted onto parts. (LX24 follow-on.)
+  owner: Levi (Muse Code)
+  branch: mainline
+  next: Levi to review and commit the working tree, then move this
+    to Done. Implemented, uncommitted on purpose (no commit ask).
+  brief: `docs/design/decals.md`, `docs/design/hammer.md`.
+  evidence: `src/decals/`, `src/interaction_points/dirt_spot.gd`,
+    `tests/decals/` (43 checks pass; tools/phillips/glue/audio too).
 
 - **LX56** · Recurring itch deploys until Mon 2026-10-19 13:00 PDT:
   Muse cron job `90714525` (every 2 h at :17) pushes the working
@@ -45,31 +58,25 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   screw's glow, the rest spots (placeholders from (-440, 80), which may
   overlap the parts drawer or the rack), and the bench art's draw order
   against a held tool, the set-aside cover and the other resting screws.
+  From LX14, LX18 and LX20: the rag drag feel and its reversal bonus,
+  the bulb aim and squeeze, the hammer ring timing, band width and
+  recoil, and the rack spots at (430, 80), (541, 120) and (460, 220).
+  From LX17: circling a Phillips screw with a mouse and a finger,
+  the band at 3 to 7 rad/s, the gauge at (100, -100) from the head,
+  and the Phillips holder at (460, 40). From LX22: tracing glue
+  along a crack, the flood point, the 3 s dry, and the glue
+  holder at (209, 301).
   The sounds wait for LX25 (no streams yet), the screw art for LX24.
-- **LX14** · Canned air: spray cone, dust clumps, fans
-  (`docs/design/canned_air.md`).
 - **LX16** · First item end to end: the virtual pet egg
   (`docs/design/items.md`). It replaces the three test items in
   `settings.tres` `item_queue`.
-- **LX17** · Phillips pressure gauge (`docs/design/phillips.md`). Feed
-  `Screw.slide` from its turn like the flathead, and give its scene the
-  pull-out nodes (`screw_pullout.md` "Reuse"). Generalize
-  `tests/screws/slide_recorder.gd` and `pull_out_recorder.gd` (typed to
-  `FlatHeadScrew`), and put new checks in their own script (LX55).
-- **LX18** · Hammer: wind-up ring, strength bands, jog, realign, reseat
-  (`docs/design/hammer.md`).
 - **LX19** · Pliers for stripped screws (`docs/design/pliers.md`). They
   replace m1-screws' stand-in pry: a pried screw comes back as new, and
   one that strips going in is pried home with `Screw.install()`. The
   stand-in also snaps the rest of the slide in one frame (LX53). Since
   LX54 a screw pried out goes to the bench like a removed one.
-- **LX20** · Rag and solvent, sensitive surfaces
-  (`docs/design/solvent.md`). Smears pass their surface as
-  `RepairQuality.add_defect()`'s `source`, so a ruined smear replaces
-  the minor one.
 - **LX21** · Oil can: drops, pivots, squeaks, misuse
   (`docs/design/oil_can.md`).
-- **LX22** · Glue along cracks and clips (`docs/design/glue.md`).
 - **LX23** · Items 2 to 5: rotary phone, Walkman, CRT TV, ray gun
   (`docs/design/items.md` "The jam cut").
 - **LX24** · Art: screw states, decals, part states, effects, UI
@@ -85,6 +92,10 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   (cb47839) and `screweeeeeeeeddddddd.png` is in `flat_head_screw.tscn`;
   the other four (one in `gui/`) are not used yet. With new screw art,
   pose the bench art like `RemoveScrew`'s last key (`screw_pullout.md`).
+  Also: the real glue bottle for `glue_bottle_placeholder.png`, a
+  crack decal for the drawn `Crack` line, and the grime and dust
+  sprites for the placeholder blobs (`grime_spot.tscn`,
+  `dust_clump.tscn`).
 - **LX25** · Sounds: collect each design doc's "Feedback" list and add
   the streams to `src/core/audio_main.tscn`. Levi's cleaned foley is in
   `assets/audio/foley_cleaned/`; the flathead's scrape wants a rising
@@ -94,6 +105,13 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   Chrome and Edge are verified (`docs/design/decals.md` "Clipping").
 
 ## Residuals (known, not fixed)
+
+- **LX59** · `full_loop`, `full_loop_booklet`, `item_flow`, `screws`
+  and `parts` probes fail at HEAD 2d0096b (checked 2026-10-18 on a
+  clean worktree, so not LX58 fallout): the Phillips-in-test-box and
+  tuning commits (10927f5, 2d0096b) moved the game, and the probe
+  updates are still uncommitted in the main tree
+  (`tests/screws/probe.gd`). Owner: whoever lands the tuning.
 
 - **LX27** · Source art is huge (3508x2480 PNGs, 0.6 to 2.2 MB each, drawn
   at about 0.2 scale): downscale it or cap the import size before the
@@ -159,9 +177,28 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 - **LX50** · Screw extras: a handle lean, a grippier flathead, a screw
   dish, security screws (`docs/design/m1_agents.md`, the m1-screws
   handoff).
+- **LX57** · Solvent bottle and soaking for the rag: wetness, drying,
+  drips (`docs/design/solvent.md` "Soaking (later, not built)"). The
+  rag wipes dry until a bottle prop lands.
 
 ## Done
 
+- **LX22** · Glue along cracks: squeeze, trace, dry, blobs
+  (`docs/design/glue.md`). Done in 37959f3 (2026-10-17) with the
+  placeholder bottle. Levi still to play it (LX41).
+- **LX17** · Phillips circular drag: circle speed in the band
+  turns the screw, an empty grip cams out (`docs/design/
+  phillips.md`). Done in a71ec36 (2026-10-17). Levi still to
+  play it (LX41).
+- **LX14** · Air blower bulb: tap puffs, dust clumps and fans
+  (`docs/design/canned_air.md`). Done in b96ebaa (2026-10-17). Levi
+  still to play it (LX41).
+- **LX18** · Hammer: wind-up ring, strength bands, jog, realign,
+  reseat (`docs/design/hammer.md`). Done in b96ebaa (2026-10-17).
+  Levi still to play it (LX41).
+- **LX20** · Rag and sensitive surfaces, dry until solvent lands
+  (`docs/design/solvent.md`). Done in b96ebaa (2026-10-17). Levi
+  still to play it (LX41).
 - **LX54** · Screws pull out to a rest spot on the bench after the last
   twist, and a press brings one back to sink into its hole before the
   install twists (`docs/design/screw_pullout.md`). Done in c0e493d to

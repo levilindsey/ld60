@@ -19,6 +19,13 @@ extends Resource
 ## skid follows the slip. If false, the rotation is random.
 @export var is_aligned_to_direction: bool = false
 
+## If false, the decal keeps the orientation it was drawn in, in the
+## part's own frame, instead of a random spin. Scratches use this: they
+## run vertically, with the thick initial-contact end at the bottom.
+## Glue uses it too: its strings run vertically. Such a set should also
+## turn off `can_flip_vertically`, or half the spawns land upside down.
+@export var has_random_rotation: bool = true
+
 ## Each flip happens on half of the spawns when it is allowed.
 @export var can_flip_horizontally: bool = false
 @export var can_flip_vertically: bool = true

@@ -10,7 +10,12 @@
 [ext_resource type="PackedScene" path="res://src/ui/receipt/receipt.tscn" id="8_receipt"]
 [ext_resource type="Script" uid="uid://dvbr5nmpc61tu" path="res://src/level/parts_bin.gd" id="9_bin"]
 [ext_resource type="PackedScene" path="res://src/parts/part.tscn" id="10_part"]
-[ext_resource type="PackedScene" path="res://src/ui/parts_menu/parts_menu.tscn" id="11_menu"]
+[ext_resource type="PackedScene" uid="uid://day4xku4ip812" path="res://src/ui/parts_menu/parts_menu.tscn" id="11_menu"]
+[ext_resource type="PackedScene" path="res://src/manual/instruction_manual.tscn" id="12_manual"]
+[ext_resource type="Texture2D" uid="uid://doc4jnkrixmjs" path="res://assets/images/manual_page0000.png" id="13_page0"]
+[ext_resource type="Texture2D" uid="uid://bl6bxtj82jtcy" path="res://assets/images/manual_page0001.png" id="14_page1"]
+[ext_resource type="Texture2D" uid="uid://bik16fm0enfxo" path="res://assets/images/manual_page0002.png" id="15_page2"]
+[ext_resource type="Texture2D" uid="uid://b5jej1flts5qt" path="res://assets/images/manual_page0003.png" id="16_page3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_drawer"]
 size = Vector2(320, 84)
@@ -111,7 +116,7 @@ unique_name_in_owner = true
 
 [node name="FlatHeadScrewDriverHolder" type="Area2D" parent="ToolHolders" unique_id=417891166]
 unique_name_in_owner = true
-position = Vector2(541, 308)
+position = Vector2(603, 298)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
@@ -122,12 +127,75 @@ metadata/_custom_type_script = "uid://bfo0vmq35oagd"
 shape = SubResource("CircleShape2D_giktf")
 metadata/_edit_lock_ = true
 
+[node name="RagHolder" type="Area2D" parent="ToolHolders" unique_id=2045496507]
+position = Vector2(289, 301)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("3_af42n")
+type = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/RagHolder" unique_id=636768773]
+shape = SubResource("CircleShape2D_giktf")
+metadata/_edit_lock_ = true
+
+[node name="AirBlowerHolder" type="Area2D" parent="ToolHolders" unique_id=1435836391]
+position = Vector2(450, 299)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("3_af42n")
+type = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/AirBlowerHolder" unique_id=1229575146]
+shape = SubResource("CircleShape2D_giktf")
+metadata/_edit_lock_ = true
+
+[node name="HammerHolder" type="Area2D" parent="ToolHolders" unique_id=1443814677]
+position = Vector2(368, 301)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("3_af42n")
+type = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/HammerHolder" unique_id=2147140142]
+shape = SubResource("CircleShape2D_giktf")
+metadata/_edit_lock_ = true
+
+[node name="PhillipsScrewDriverHolder" type="Area2D" parent="ToolHolders" unique_id=203465196]
+position = Vector2(527, 299)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("3_af42n")
+type = 5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/PhillipsScrewDriverHolder" unique_id=207696165]
+shape = SubResource("CircleShape2D_giktf")
+metadata/_edit_lock_ = true
+
+[node name="GlueHolder" type="Area2D" parent="ToolHolders" unique_id=737979922]
+position = Vector2(209, 301)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("3_af42n")
+type = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/GlueHolder" unique_id=226583405]
+shape = SubResource("CircleShape2D_giktf")
+
 [node name="Repairables" type="Node" parent="." unique_id=75239543]
 unique_name_in_owner = true
 
-[node name="SetAsideSpot" type="Node2D" parent="." unique_id=19567912]
+[node name="PartSetAsideSpot" type="Node2D" parent="." unique_id=19567912]
 unique_name_in_owner = true
-position = Vector2(362, 188)
+position = Vector2(324, 206)
+
+[node name="ScrewSetAsideSpot" type="Node2D" parent="." unique_id=72004810]
+unique_name_in_owner = true
+position = Vector2(-403, 178)
 
 [node name="Tools" type="Node" parent="." unique_id=1614121728]
 unique_name_in_owner = true
@@ -150,11 +218,29 @@ points = PackedVector2Array(-8, 8, 8, -8)
 width = 4.0
 default_color = Color(0.9, 0.15, 0.1, 1)
 
+[node name="ManualDeskSpot" type="Marker2D" parent="." unique_id=2052140931]
+position = Vector2(-493, 261)
+scale = Vector2(0.45, 0.45)
+
+[node name="InstructionManual" parent="." unique_id=742015103 node_paths=PackedStringArray("desk_spot") instance=ExtResource("12_manual")]
+page_contents = Array[Texture2D]([ExtResource("13_page0"), ExtResource("14_page1"), ExtResource("15_page2"), ExtResource("16_page3")])
+desk_spot = NodePath("../ManualDeskSpot")
+desk_corners = PackedVector2Array(-162.7, -33.3, 22.3, -69.4, 206.5, 42.3, -39.9, 124.2)
+
+[node name="TicketDeskSpot" type="Marker2D" parent="." unique_id=1326991672]
+position = Vector2(425, 177)
+scale = Vector2(0.3, 0.3)
+
+[node name="TicketCard" parent="." unique_id=1682604079 node_paths=PackedStringArray("desk_spot", "resting_draw_before") instance=ExtResource("7_ticket")]
+unique_name_in_owner = true
+position = Vector2(0, -30)
+scale = Vector2(1.3, 1.3)
+desk_spot = NodePath("../TicketDeskSpot")
+desk_corners = PackedVector2Array(-259.4, -145.5, 382.1, -92.8, 337.3, 189.2, -448, 108.8)
+resting_draw_before = NodePath("../Repairables")
+
 [node name="FlowOverlays" type="CanvasLayer" parent="." unique_id=937127538]
 layer = 100
-
-[node name="TicketCard" parent="FlowOverlays" unique_id=1682604079 instance=ExtResource("7_ticket")]
-unique_name_in_owner = true
 
 [node name="PartsMenu" parent="FlowOverlays" unique_id=120604193 instance=ExtResource("11_menu")]
 unique_name_in_owner = true

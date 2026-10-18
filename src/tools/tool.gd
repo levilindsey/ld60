@@ -7,6 +7,11 @@ extends Node2D
 
 enum Type {
 	FLAT_HEAD_SCREW_DRIVER,
+	RAG,
+	AIR_BLOWER,
+	HAMMER,
+	GLUE,
+	PHILLIPS_SCREW_DRIVER,
 }
 
 enum Mode {
@@ -66,7 +71,8 @@ func _ready() -> void:
 
 	G.check(is_instance_valid(interaction_area))
 	G.check(
-		interaction_area.collision_mask
+		(interaction_area.collision_mask
+			& Settings.PhysicsLayer.INTERACTION_POINTS)
 		== Settings.PhysicsLayer.INTERACTION_POINTS
 	)
 
@@ -140,10 +146,24 @@ func stop_use() -> void:
 	ease_follow_offset_from(from_tip - G.level.hand.pointer_position)
 
 
+## True for effect tools. They stay HELD and act where they press
+## instead of engaging one point (docs/design/tools.md).
+func is_effect_tool() -> bool:
+	return false
+
+
+## Called by the hand when a press lands while this effect tool is
+## held. The tool acts at the press point. It may register as the
+## hand's input owner to keep the drag and the release.
+func on_effect_pressed(_global_point: Vector2) -> void:
+	pass
+
+
 ## The press landed on a point that does not accept this tool. No
 ## penalty.
 func nope() -> void:
-	G.audio.play_sound("clunk")
+	G.audio.play_sound(&"clunk")
+	G.audio.play_sound(&"hmm_grumpy")
 	G.level.hand.show_nope(get_tip_position())
 	if is_instance_valid(_shake_tween):
 		_shake_tween.kill()

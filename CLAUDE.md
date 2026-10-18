@@ -69,10 +69,13 @@ that finishes it.
 - `src/parts/` - `part.gd` (drawer parts the hand holds like tools),
   `wiggle.gd` (shared swing counter).
 - `src/manual/` - Zaven's page-turning `InstructionManual`.
+- `src/props/` - `LiftableProp` (rests flat on the desk in perspective,
+  lifts into view when tapped; base of `InstructionManual` and
+  `TicketCard`) and the shared `PropCloseButton`.
 - `src/ui/hud/` - `hud.gd`/`hud.tscn`: title/pause/credits overlays.
 - `src/ui/super_hud/` - Top-level HUD host with `debug_console`.
 - `assets/` - `fonts/` (Special Elite for menus and printed paper,
-  Caveat for handwriting), `images/` (tool art, `props/` background + Krita source, `gui/`
+  Reenie Beanie for handwriting), `images/` (tool art, `props/` background + Krita source, `gui/`
   buttons, `placeholders/`), `shaders/sprite_outline.gdshader`.
 - `docs/design/` - One design doc per piece of work.
 - `scripts/` - `check.ps1` (run after every change), `godot_helpers.ps1`
@@ -105,7 +108,8 @@ that finishes it.
    (arrive, ticket, repair, outbox, receipt: `docs/design/outbox.md`).
 
 **Running a level directly** (F6 / "Run Current Scene"): `Level`
-sees no `G.main`, skips its own setup, and calls
+sees no `G.main`, frees its children before they enter the tree,
+skips its own setup, and calls
 `G.boot_from_level()`. That records the level's path in
 `G.level_scene_override_path` and swaps to `main.tscn`, which boots
 normally but skips TITLE and loads that level instead of

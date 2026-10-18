@@ -84,9 +84,29 @@ func _check_configuration() -> void:
 		"settings.tres loads the three-item queue (got %s)" % queue_text,
 	)
 	_expect(
-		G.settings.finished_outline_material is ShaderMaterial,
+		G.settings.outline_hint_material is ShaderMaterial,
 		"settings.tres loads the outline material",
 	)
+	var outline_material := G.settings.outline_hint_material
+	if is_instance_valid(outline_material):
+		var color_inner: Color = outline_material.get_shader_parameter(
+			"outline_color_inner",
+		)
+		var color_outer: Color = outline_material.get_shader_parameter(
+			"outline_color_outer",
+		)
+		var outline_width_px: float = (
+			outline_material.get_shader_parameter("outline_width_px")
+		)
+		_expect(
+			outline_material.shader.resource_path
+			== "res://assets/shaders/sprite_outline_gradient.gdshader"
+			and color_inner.a > color_outer.a
+			and outline_width_px > 1.0,
+			"the outline is the gradient one, fading across its depth"
+			+ " (%.1f world px wide at any sprite scale)"
+			% outline_width_px,
+		)
 	_expect(
 		is_instance_valid(G.settings.finish_sparkle_scene),
 		"settings.tres loads the sparkle scene",
@@ -214,9 +234,12 @@ func _check_finish() -> void:
 	var stopped_sec := _item.quality.repair_time_sec
 	await _seconds(0.5)
 	_expect(
-		is_instance_valid(_item._glow_tween)
-		and _item.modulate != Color.WHITE,
-		"3. the finished item glows",
+		_item.is_showing_outline() and _item.modulate == Color.WHITE,
+		"3. the finished item shows the outline, not a modulate glow",
+	)
+	_expect(
+		G.level.is_outbox_outline_shown(),
+		"3. the outbox shows the outline too",
 	)
 	_expect(
 		is_equal_approx(_item.quality.repair_time_sec, stopped_sec),
@@ -348,6 +371,10 @@ func _check_outbox() -> void:
 		and _level.active_repairable == null
 		and _hand.is_empty(),
 		"5. dropping it on the outbox sends it off",
+	)
+	_expect(
+		not _level.is_outbox_outline_shown(),
+		"5. the outbox outline goes with it",
 	)
 	var has_hidden := await _wait_until(
 		func() -> bool: return not ticket.visible,

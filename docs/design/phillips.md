@@ -1,121 +1,116 @@
-# Phillips screwdriver: the pressure gauge
+# Phillips screwdriver: circling at speed
 
 Ledger: **LX17** (M2). Depends on [tools.md](tools.md) (LX7) and
-[screws.md](screws.md) (LX10). Based on Stardew Valley's fishing bar;
-its real numbers are at the bottom.
+[screws.md](screws.md) (LX10).
+
+Revised 2026-10-17 (Levi): the pressure is the circle speed, not
+a hold and release needle. The grip meter and the cam-out stay.
 
 ## What the player does
 
-Engage a Phillips screw and a round pressure gauge pops up beside it.
-The needle is how hard you are pushing. Hold anywhere to push harder;
-let go and the needle falls back. Keep the needle inside the green arc,
-which wanders, and the grip meter fills. Fill it and the screw is out.
-Let it empty and the bit cams out.
+Engage a Phillips screw and drag in circles around its head. A
+gauge beside the screw shows the circle speed as a needle, the
+target zone in green, and the grip as a ring. The green zone
+keeps sliding counter-clockwise around the gauge at an ever
+changing pace, like tracking the fish in Stardew Valley's
+fishing game: keep speeding the drag up and slowing it down so
+the needle stays in the green. Circle at a speed inside the
+zone and the screw turns. Too slow or too fast and it does not
+turn, and the grip drains. An empty grip cams the bit out.
 
 ## Rules
 
-- **Dial:** a 240 degree sweep with a stop pin at each end. The needle
-  starts resting on the bottom pin.
-- **Needle physics:** holding accelerates the needle up at 380
-  degrees/s², and letting go accelerates it down at the same rate. Both
-  are multiplied by 0.6 while the needle is inside the arc, so it calms
-  down exactly when the player is succeeding. That is Stardew's hidden
-  trick.
-- **Pins:** the needle bounces off a pin, keeping 2/3 of its speed,
-  with a clink. A press while it rests on a pin zeroes its speed, so a
-  press from rest always starts clean.
-- **Green arc:** 40 to 75 degrees wide. Its center moves toward random
-  targets with a smoothed speed, in the screw's style (below). Cap its
-  speed at about 150 degrees/s so the needle can always follow.
-- **Grip meter:** starts at 0.3. It fills at 0.25/s while the needle is
-  inside the arc and drains at 0.375/s while it is outside. At 1.0 the
-  screw is out. At 0 the bit cams out: the screw takes 1 damage, the
-  driver hops, input pauses for 0.5 s while the needle drops, and the
-  meter restarts at 0.3.
-- **Fair start:** the arc starts around the resting needle, and nothing
-  moves for the first 0.33 s while the gauge scales in.
-- **Tutorial:** the first Phillips screw of the game never drains. That
-  rule teaches "hold, don't tap".
-- **Install mode:** the meter starts at 0.6.
+- **Circling:** the speed is how fast the drag's direction
+  turns, read from recent pointer steps and never from where
+  the screw sits. Any circle, neat or shaky, anywhere, turns
+  its heading at the circle's own rate. Steps under 4 px do
+  not count. The turning is averaged over 0.45 s and then
+  smoothed over 0.5 s, so the needle has some weight.
+  Dragging the wrong way reads as a negative speed.
+- **The zone:** 3.5 radians per second wide. It starts centered on
+  6.25 rad/s, where the old fixed band sat, then its center
+  climbs at a pace that eases toward a fresh random target
+  between 0.8 and 2.2 rad/s per second, picked every 1.2 to
+  2.6 s. On the gauge, climbing speed reads as the green arc
+  sliding counter-clockwise; at the fast end it wraps back to
+  the slow end and keeps going. Inside the zone the screw and
+  the driver turn with the drag and the slide follows the turn,
+  like the flathead. Outside it nothing turns. The zone is
+  sticky: once in, the speed may stray 0.8 rad/s past either
+  end before it counts as out, so hovering on an edge does not
+  flicker.
+- **Grip meter:** starts at 0.4. It fills at 0.35/s while the
+  speed is in the zone and drains at 0.28/s while it is out,
+  swinging between the two over 0.4 s, so a brief stray costs
+  almost nothing. At 0 the bit cams out: the screw takes 1
+  damage, the driver hops, input pauses for 0.5 s, the meter
+  restarts at 0.4, and the turns so far are kept.
+- **Fair start:** nothing drains for the first 0.33 s while the
+  gauge scales in.
+- **Done:** three full turns take the screw out. It then pulls
+  out to the bench like a flathead.
+- **Tutorial:** the first Phillips screw of the game never
+  drains (`never_drains` on the screw).
+- **Install mode:** circle the other way. The grip starts at
+  0.65, and the loose turn (`LOOSE_TURN_RAD`) drives it home.
 
-## Screw styles
+## Screw styles (later)
 
-| Style | How the arc moves | Used for |
-|---|---|---|
-| SMOOTH | A slow, steady drift between targets | A clean screw |
-| MIXED | The default | A scratched screw |
-| DART | Adds sudden big jumps | A chewed screw |
-| SINKER | Starts high and drifts lower as it frees up | A seized screw after oiling |
-| FLOATER | Drifts higher over time | A long screw |
+Every screw's zone slides the same way for now. A later pass can
+vary the motion per screw: a clean screw gets a wide slow zone, a
+chewed one a zone that jumps, a seized one a zone that slows as
+it frees up.
 
 ## Feedback
 
-- Two sound loops: a turning ratchet while inside the arc and a
-  strained creak while outside. A sting the moment the needle leaves
-  the arc, and a creak on every press.
-- The screw turns while the needle is inside and stops while it is
-  outside.
-- The needle is green inside and red outside. Inside, the needle
-  jitters about 1 degree ("you've got it"); outside, the arc pulses.
-- The meter is a ring around the gauge's hub that shifts from red to
-  green as it fills.
-- Done: a pop, then the gauge shakes for 0.3 s and scales out.
-  Cam-out: a scrape and sparks.
+- The screw turns while the speed is in the zone and stops
+  while it is out.
+- The needle is green in the zone and red out of it. The gauge
+  sweep runs counter-clockwise, so faster circling swings the
+  needle up and to the left. The grip
+  ring around the hub shifts from red to green as it fills.
+- Done: a pop from `Screw.remove()`. Cam-out: a scrape and
+  sparks. Turning and creak loops wait for LX25.
 
 ## Building it
 
-- `PhillipsScrew` ([screws.md](screws.md)) owns the minigame and
-  registers as the hand's input owner, so every press goes to it alone.
-- The gauge is a `Node2D` that draws itself in `_draw()`: the dial and
-  the green arc with `draw_arc()`, the meter ring, and the needle with
-  `draw_line()`. Call `queue_redraw()` every frame.
-- Place it about 120 px from the screw, on the side away from the tool
-  body, and keep it on screen.
-- Each `_physics_process`, in this order: move the arc, move the needle
-  (thrust or gravity, the 0.6 factor, the pins), update the meter, then
-  check for done or cam-out.
+- `PhillipsScrew` ([screws.md](screws.md)) owns the microgame and
+  registers as the hand's input owner, so every drag goes to it
+  alone. It feeds `Screw.slide` from its turns like the flathead.
+- The gauge (`PhillipsGauge`, a child of the screw scene) draws
+  itself in `_draw()`: the zone with `draw_arc()`, the grip ring,
+  and the speed needle with `draw_line()`. The screw moves the
+  zone in `_update_zone()`; the gauge only reads its ends.
+- The driver borrows the flathead driver's art for now. The
+  screw's top-down head is `screwin around.png` and its
+  perspective view is `screwwwzzzzzz.png`.
 - When done, the tool returns to HELD. When stripped (the third
-  cam-out), the tool is ejected and the screw needs the pliers. No
-  cancel is needed.
+  cam-out), the tool is ejected and the screw needs the pliers.
 
 ## Tuning
 
-| Setting | Default |
-|---|---|
-| `sweep_deg` | 240 |
-| `needle_acceleration` | 380 degrees/s² |
-| `in_arc_factor` | 0.6 |
-| `pin_restitution` | 0.667 |
-| `arc_width_deg` | 40 to 75, per screw |
-| `arc_max_speed` | 150 degrees/s |
-| `meter_start` | 0.3 |
-| `fill_rate` | 0.25/s |
-| `drain_rate` | 0.375/s (keep it 1.5 times the fill rate) |
-| `cam_out_pause_sec` | 0.5 |
-| `intro_sec` | 0.33 |
-
-A screw with the needle held in the arc throughout takes about 2.8 s.
-Stardew's rates would take 5.8 s, too slow with four or more screws
-per item.
-
-## Stardew's numbers, for reference
-
-From the decompiled `BobberBar.cs`, at 60 ticks per second:
-- thrust and gravity are both 0.25 px/tick² on a 568 px track (about
-  1.6 track heights per second²), with no speed cap;
-- both are multiplied by 0.6 while on target, and the walls bounce at
-  2/3 of the speed;
-- the meter starts at 0.3, fills 0.002 per tick (0.12/s) and drains
-  0.003 per tick (0.18/s);
-- the bar is 17% of the track, growing to 31% with upgrades;
-- the first fish ever starts at 0.1 and never drains.
-
-Sources: the decompiled BobberBar.cs (github.com/veywrn/StardewValley)
-and wiki.stardewvalley.net/Fishing.
+In the "Phillips" group in `settings.gd`: the zone starts
+centered between `phillips_speed_min_rad_per_sec` (2.5) and
+`phillips_speed_max_rad_per_sec` (10), is
+`phillips_zone_width_rad_per_sec` (3.5) wide, and climbs at a pace
+easing between `phillips_zone_move_min_rad_per_sec` (0.8) and
+`phillips_zone_move_max_rad_per_sec` (2.2), retargeted every
+`phillips_zone_retarget_min_sec` to `phillips_zone_retarget_max_sec`
+(1.2 to 2.6 s). The gauge tops out at 14, fill is 0.35/s, drain
+is 0.28/s, the meter starts at 0.4 (0.65 to install), the
+cam-out pause is 0.5 s and the intro is 0.33 s. The smoothing
+is `phillips_speed_smoothing_sec` (0.5) for the needle and
+`phillips_meter_smoothing_sec` (0.4) for the grip, the sticky
+zone grace is `phillips_band_grace_rad_per_sec` (0.8), and steps
+under `phillips_min_segment_px` (4) do not count. Turns out is
+`turns_needed` on the screw (3). Each screw also has a
+`difficulty` (0.5 to 2): higher narrows its zone, slides it
+faster and drains its grip faster.
 
 ## Later
 
-- Perfect bonus: a sparkle and +2 quality when the meter never drained.
-- A gauge built into the screwdriver's handle, like a torque driver.
-- Upgrades: a magnetic tip widens the arc.
-- A side goal: a glint on the dial to hold the needle on for a bonus.
+- Perfect bonus: a sparkle and +2 quality when the meter never
+  drained.
+- A gauge built into the screwdriver's handle, like a torque
+  driver.
+- Upgrades: a magnetic tip widens the zone.

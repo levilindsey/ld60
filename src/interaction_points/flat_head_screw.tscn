@@ -121,7 +121,7 @@ tracks/3/keys = {
 "times": PackedFloat32Array(0, 0.3),
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [Vector2(-5.3191495, 587.2341), Vector2(-0.5, 496.36262)]
+"values": [Vector2(-5.3191495, 587.2341), Vector2(-0.5, 496.3626)]
 }
 tracks/4/type = "value"
 tracks/4/imported = false
@@ -187,7 +187,7 @@ scale = Vector2(0.34042558, 0.75531924)
 texture = ExtResource("4_t7xyj")
 
 [node name="TopDownHead" type="Node2D" parent="ClippingSpace/PositioningWrapper" unique_id=940362607]
-position = Vector2(0, 427.65962)
+position = Vector2(0, 427.6596)
 scale = Vector2(0.26595747, 0.26595747)
 
 [node name="Head" type="Sprite2D" parent="ClippingSpace/PositioningWrapper/TopDownHead" unique_id=1688050116]

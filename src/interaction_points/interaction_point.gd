@@ -9,6 +9,15 @@ extends Area2D
 enum Type {
 	FLAT_HEAD_SCREW,
 	PART_SOCKET,
+	GRIME_SPOT,
+	DUST_CLUMP,
+	FAN,
+	STUCK_PART,
+	BENT_PART,
+	SEAT_PART,
+	CRACK,
+	PHILLIPS_SCREW,
+	RUST_SPOT,
 }
 
 enum Mode {
@@ -144,7 +153,7 @@ func finish() -> void:
 ## The empty hand pressed this point: the "inspect" action. Points
 ## override it to squeak, rattle or jerk.
 func on_poked() -> void:
-	G.audio.play_sound("click")
+	G.audio.play_sound(&"click")
 	if is_instance_valid(_poke_tween):
 		_poke_tween.kill()
 	rotation = 0.0

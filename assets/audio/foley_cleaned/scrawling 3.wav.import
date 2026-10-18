@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://c3csyorh2ipha"
+path="res://.godot/imported/scrawling 3.wav-a6e08630b94fb99cec4151e0021fbebc.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/scrawling 3.wav"
+dest_files=["res://.godot/imported/scrawling 3.wav-a6e08630b94fb99cec4151e0021fbebc.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
