@@ -262,6 +262,9 @@ enum PhysicsLayer {
 ## unseat the tip.
 @export var flathead_slip_min := 0.2
 @export var flathead_slip_max := 0.6
+## A touch drag moves the flathead's tip this many times as far as the
+## finger (docs/design/flathead.md "Correcting"). Mouse motion is 1 to 1.
+@export var flathead_touch_gain := 2.0
 @export_group("")
 
 @export_group("Screw rest")

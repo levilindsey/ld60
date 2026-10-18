@@ -75,6 +75,7 @@ func _ready() -> void:
 	super._ready()
 	G.check(is_instance_valid(sparks))
 	G.check(G.settings.flathead_slip_max < 1.0)
+	G.check(G.settings.flathead_touch_gain >= 1.0)
 	_random.randomize()
 	_drift_sign = 1.0 if _random.randf() < 0.5 else -1.0
 
@@ -122,7 +123,8 @@ func get_tip_position() -> Vector2:
 ## The hand calls this on every pointer motion while this screw owns the
 ## pointer. Motion along the slot moves the tip, stopped at the slot's
 ## ends, so the player's own push can never skid it out. Motion across
-## the slot does nothing.
+## the slot does nothing. A touch drag is amplified by
+## `flathead_touch_gain`, so a finger need not travel as far as the tip.
 func on_pointer_moved(_global_position: Vector2) -> void:
 	# Screen pixels, so a camera shake doesn't count as motion.
 	var screen_delta := (
@@ -134,8 +136,11 @@ func on_pointer_moved(_global_position: Vector2) -> void:
 			screen_delta
 		)
 	)
+	var gain := 1.0
+	if G.level.hand.is_touch:
+		gain = G.settings.flathead_touch_gain
 	tip_offset_px = clampf(
-		tip_offset_px + world_delta.dot(get_slot_axis()),
+		tip_offset_px + world_delta.dot(get_slot_axis()) * gain,
 		-seat_tolerance_px,
 		seat_tolerance_px,
 	)

@@ -34,6 +34,9 @@ const _TABLE_TOLERANCE_PERCENT := 0.5
 ## How far a push moves the pointer along the slot: past the tolerance,
 ## so the tip ends up stopped at the slot's end.
 const _YANK_PX := 20.0
+## How far the probe drags a finger along the slot to check the touch
+## gain (LX47).
+const _TOUCH_MOVE_PX := 3.0
 ## The player who never corrects gets a drift seed that skids the tip out
 ## on this twist.
 const _UNSEAT_TWIST := 3
@@ -664,6 +667,35 @@ func _check_yanks() -> void:
 			return
 		screw._random.seed = drift_seed
 		await _press_at(screw.global_position)
+		if yank == 0:
+			await _move_touch_to(
+				_hand.pointer_position
+				+ screw.get_slot_axis() * _TOUCH_MOVE_PX
+			)
+			_expect(
+				is_equal_approx(G.settings.flathead_touch_gain, 2.0)
+				and absf(
+					screw.tip_offset_px
+					- _TOUCH_MOVE_PX * G.settings.flathead_touch_gain
+				) < 0.01,
+				"LX47: a %.0f px touch drag moves the tip %.0f px at"
+				% [_TOUCH_MOVE_PX, screw.tip_offset_px]
+				+ " the touch gain (gain %.1f, tip %.2f px)"
+				% [G.settings.flathead_touch_gain, screw.tip_offset_px],
+			)
+			await _move_to(
+				_hand.pointer_position
+				- screw.get_slot_axis() * _TOUCH_MOVE_PX
+			)
+			_expect(
+				absf(
+					screw.tip_offset_px
+					- _TOUCH_MOVE_PX
+					* (G.settings.flathead_touch_gain - 1.0)
+				) < 0.01,
+				"LX47: the mouse stays 1 to 1 (tip back to %.2f px)"
+				% screw.tip_offset_px,
+			)
 		await _move_to(
 			_hand.pointer_position + screw.get_slot_axis() * _YANK_PX
 		)
@@ -962,6 +994,15 @@ func _drive_install(screw: FlatHeadScrew) -> void:
 	await _drive(screw, 10.0)
 	await _physics_frames(1)
 	_slide.check(_expect, "%s in" % screw.name, 1.0)
+
+
+## Moves the pointer as an emulated touch drag, so the hand reports
+## touch and the flathead applies its touch gain.
+func _move_touch_to(world_point: Vector2) -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.device = InputEvent.DEVICE_ID_EMULATION
+	_push_mouse(motion, world_point)
+	await _physics_frames(2)
 
 
 ## A seed whose first drift goes the way the probe pushes the tip, so

@@ -110,9 +110,13 @@ bus = &"Music"
 
 [node name="MainTheme" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
-stream = ExtResource("15_humming")
-volume_db = -14.0
 bus = &"Music"
+
+[node name="Humming" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("15_humming")
+volume_db = -6.0
+bus = &"SFX"
 
 [node name="EndTheme" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true

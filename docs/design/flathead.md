@@ -40,7 +40,10 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
 - **Correcting:** mouse motion along the slot moves the tip,
   `offset += event.relative.dot(slot_axis)`, stopped at the slot's
   ends (`-seat_tolerance_px` to `seat_tolerance_px`). Motion across
-  the slot is ignored. On touch, the player drags a finger.
+  the slot is ignored. On touch, the player drags a finger, and the
+  motion is multiplied by `flathead_touch_gain` (2.0), so a finger
+  travels half as far as the tip. The mouse stays 1 to 1 (LX47,
+  Levi 2026-10-17).
 - **Unseat:** only during a twist, when its drift pushes
   `abs(offset) > seat_tolerance_px`, the tip skids out. The player's
   own push stops at the end and can never skid it, in the pause or in
@@ -93,6 +96,7 @@ change: reset the twist count on unseat. LX6 kept the default.
 | `pause_sec` | 0.35 | settings |
 | `telegraph_sec` | 0.15 | settings |
 | `slip_min`, `slip_max` | 0.2, 0.6 (keep `slip_max` under 1) | settings |
+| `flathead_touch_gain` | 2.0 | settings, "Flathead" group |
 | `seat_tolerance_px` | 12 | per screw |
 | `slip_bias` | 0.9 | per screw |
 | `twists_needed` | 4 | per screw |

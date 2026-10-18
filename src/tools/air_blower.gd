@@ -6,7 +6,7 @@ extends Tool
 
 
 ## Where the nozzle points, before the tool's own turn.
-const _NOZZLE_DIRECTION := Vector2(-0.7071, 0.7071)
+const _NOZZLE_DIRECTION := Vector2.DOWN
 
 ## The plump bulb, at rest.
 @export var plump_sprite: Sprite2D

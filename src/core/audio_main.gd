@@ -10,9 +10,10 @@ extends Node2D
 ## foley in `assets/audio/foley_cleaned/`, assigned on the nodes in
 ## `audio_main.tscn`. Sounds with several good takes use an
 ## AudioStreamRandomizer on the node, so each play picks a take. The
-## main theme is the humming take. It starts on the GAME state, after
-## the title screen closes. The menu and end themes stay empty until
-## music lands. Add new named entries here as needed.
+## humming is a one-off intro. StateMain plays it once when the game
+## starts, after the title screen closes. It is not a theme and it
+## never loops. The themes stay empty until music lands. Add new
+## named entries here as needed.
 @onready var STREAM_PLAYERS_BY_NAME := {
 	"menu_theme" = %MenuTheme,
 	"main_theme" = %MainTheme,
@@ -22,6 +23,7 @@ extends Node2D
 	"thud" = %Thud,
 	"ding" = %Ding,
 	"hmm" = %Hmm,
+	"humming" = %Humming,
 	"hmm_curious" = %HmmCurious,
 	"hmm_appreciative" = %HmmAppreciative,
 	"hmm_grumpy" = %HmmGrumpy,

@@ -10,8 +10,8 @@ residuals, decisions waiting on Levi, and ideas. Convention:
   (`docs/design/m1_agents.md`), my picks in brackets: 2 install twists of
   101.25 degrees from a 22.5 degree tilt [keep]; the ratchet only between
   twists [keep]. Decided by Levi (2026-10-17): only a twist's drift
-  unseats, never the player's push. Left: the 12 px seat tolerance is
-  about 1 mm of finger travel, inferred [touch-only gain, as a setting].
+  unseats, never the player's push; touch drags move the tip at
+  `flathead_touch_gain` 2.0, the mouse 1 to 1.
 
 ## In progress
 
