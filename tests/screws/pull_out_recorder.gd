@@ -120,13 +120,14 @@ func check_pull_out(
 	)
 	# The side view holds its end pose once the animation is done, and the
 	# hidden bench art sat at its home spot under the screw just before. By
-	# the swap frame the bench art may have begun its eased slide, so its
-	# position is compared from the frame before, and its scale and turn
-	# from the swap frame, where it shows.
+	# the swap frame the bench art may have begun its eased slide and its
+	# turn toward its rest rotation, so its position and turn are compared
+	# from the frame before, and its scale from the swap frame, where it
+	# shows.
 	var gap_px: float = after.side_position.distance_to(before.bench_position)
 	var scale_ratio: float = after.bench_scale.x / after.side_scale.x
 	var turn_gap: float = absf(
-		angle_difference(after.bench_rotation, after.side_rotation)
+		angle_difference(before.bench_rotation, after.side_rotation)
 	)
 	expect.call(
 		gap_px < SWAP_TOLERANCE_PX
@@ -153,11 +154,22 @@ func check_pull_out(
 		% [label, travel_frames, expected_frames, rest_gap_px]
 		+ " px off",
 	)
+	var rest_turn_gap := absf(
+		angle_difference(
+			_samples[rest].bench_rotation, _screw._rest_rotation
+		)
+	)
+	expect.call(
+		rest_turn_gap < 0.01,
+		"%s: the bench art rests turned to its set-down rotation"
+		% label
+		+ " (%.3f rad, %.4f off)" % [_screw._rest_rotation, rest_turn_gap],
+	)
 
 
 ## Checks that the screw stayed at rest spot `rest_spot` in every sample
 ## since it began to rest, while its layer lifted off and settled, and did
-## not glow, since it cannot come back yet.
+## not outlined, since it cannot come back yet.
 func check_rest_kept(
 	expect: Callable,
 	label: String,
@@ -178,7 +190,7 @@ func check_rest_kept(
 		is_resting = (
 			is_resting
 			and sample.travel == Screw.Travel.RESTING
-			and not sample.glowing
+			and not sample.outlined
 		)
 		largest_gap_px = maxf(
 			largest_gap_px,
@@ -238,12 +250,15 @@ func check_come_back(expect: Callable, label: String) -> void:
 		% [label, back, sink],
 	):
 		return
-	var is_glow_stopped := true
+	var is_outline_stopped := true
 	for index in range(back, _samples.size()):
-		is_glow_stopped = is_glow_stopped and not _samples[index].glowing
+		is_outline_stopped = (
+			is_outline_stopped and not _samples[index].outlined
+		)
 	expect.call(
-		back > 0 and _samples[back - 1].glowing and is_glow_stopped,
-		"%s: the resting screw glows until the press, then stops" % label,
+		back > 0 and _samples[back - 1].outlined and is_outline_stopped,
+		"%s: the resting screw is outlined until the press, then stops"
+		% label,
 	)
 	var expected_frames := _get_travel_frames()
 	var before := _samples[sink - 1]
@@ -307,6 +322,11 @@ func check_come_back(expect: Callable, label: String) -> void:
 		% [label, end.slide]
 		+ " out and the head turned back like a loose screw",
 	)
+	expect.call(
+		absf(angle_difference(end.bench_rotation, 0.0)) < 0.01,
+		"%s: the bench art turns back to its home turn on the way back"
+		% label,
+	)
 
 
 ## The first sample from `from` on whose trip is at `travel`, or -1.
@@ -356,10 +376,7 @@ func _sample() -> void:
 		"side_scale": side_view.global_scale,
 		"side_rotation": side_view.global_rotation,
 		"shape_disabled": _screw.hit_shape.disabled,
-		"glowing": (
-			is_instance_valid(_screw._glow_tween)
-			and _screw._glow_tween.is_valid()
-		),
+		"outlined": _screw.is_showing_outline(),
 		"layer_moving": is_instance_valid(layer) and layer.is_moving,
 		"layer_on": is_instance_valid(layer) and layer.is_on,
 	})

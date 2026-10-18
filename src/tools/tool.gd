@@ -143,7 +143,7 @@ func stop_use() -> void:
 ## The press landed on a point that does not accept this tool. No
 ## penalty.
 func nope() -> void:
-	G.audio.play_sound("clunk")
+	G.audio.play_sound(&"clunk")
 	G.level.hand.show_nope(get_tip_position())
 	if is_instance_valid(_shake_tween):
 		_shake_tween.kill()

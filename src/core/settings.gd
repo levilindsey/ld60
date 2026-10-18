@@ -97,9 +97,11 @@ enum PhysicsLayer {
 ## How fast a dragged item's tilt catches up with its target. Higher is
 ## quicker.
 @export var drag_tilt_follow_rate := 12.0
-## The outline that glows around a finished item's top layer. Only
-## Sprite2D art shows it. Placeholder art gets the glow pulse alone.
-@export var finished_outline_material: ShaderMaterial
+## The gradient outline that marks what can be pressed next: a layer
+## ready to go back on, a resting screw that can come back, a finished
+## item and the outbox. Sprite2D art gets this material. ColorRect and
+## Polygon2D art gets the same rim drawn by OutlineHint instead.
+@export var outline_hint_material: ShaderMaterial
 ## The burst of sparkles when an item is finished.
 @export var finish_sparkle_scene: PackedScene
 @export_group("")

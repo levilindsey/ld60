@@ -44,7 +44,7 @@ func get_screen_position() -> Vector2:
 
 ## Opens the parts menu out of the drawer.
 func open_menu() -> void:
-	G.audio.play_sound("whoosh")
+	G.audio.play_sound(&"whoosh")
 	G.level.get_parts_menu().open_menu(_CATALOG, get_screen_position())
 
 
@@ -60,4 +60,4 @@ func _on_part_selected(part_type: Part.Type) -> void:
 	part.setup(part_type)
 	part.global_position = G.level.hand.pointer_position
 	G.level.hand.grab(part)
-	G.audio.play_sound("click")
+	G.audio.play_sound(&"click")

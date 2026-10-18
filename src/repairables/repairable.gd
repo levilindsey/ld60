@@ -7,8 +7,9 @@ extends Node2D
 ## point is FINISHED and every fastener is in.
 ##
 ## It also plays its own trip through the shop (docs/design/outbox.md):
-## `arrive()` drops it onto the bench, a finished item glows and can be
-## dragged (`on_grabbed()`, `return_to()`), and `leave()` sends it off
+## `arrive()` drops it onto the bench, a finished item gets the
+## outline and can be dragged (`on_grabbed()`, `return_to()`), and
+## `leave()` sends it off
 ## through the outbox. Every item scene needs a `%DropArea` on the
 ## REPAIRABLES physics layer for the outbox to detect.
 
@@ -34,9 +35,6 @@ enum Mode {
 
 ## How many times the item jerks when an unfinished item is pressed.
 const _SHAKE_STEPS := 4
-## The color a finished item pulses to, and the seconds of half a pulse.
-const _GLOW_COLOR := Color(1.3, 1.25, 0.85)
-const _GLOW_HALF_PULSE_SEC := 0.6
 
 @export var item_name := ""
 ## The customer's complaint, shown on the ticket.
@@ -59,8 +57,8 @@ var drop_area: Area2D:
 
 var _shake_tween: Tween
 var _motion_tween: Tween
-var _glow_tween: Tween
-var _outlined_art: CanvasItem
+var _outline_hint: OutlineHint
+var _outlined_art: Sprite2D
 var _art_material_before_outline: Material
 
 
@@ -152,7 +150,7 @@ func on_pressed() -> void:
 		G.level.hand.drag_item(self)
 		return
 	shake()
-	G.audio.play_sound("hmm")
+	G.audio.play_sound(&"hmm")
 	pulse_remaining_points()
 
 
@@ -314,7 +312,7 @@ func _land() -> void:
 	mode = Mode.UNDER_REPAIR
 	quality.par_time_sec = par_time_sec
 	set_physics_process(true)
-	G.audio.play_sound("thud")
+	G.audio.play_sound(&"thud")
 	landed.emit()
 
 
@@ -325,7 +323,7 @@ func _depart() -> void:
 
 func _update_state() -> void:
 	for layer in layers:
-		layer.update_glow()
+		layer.update_outline()
 	var is_now_finished := is_finished()
 	if is_now_finished == has_finished:
 		return
@@ -338,59 +336,66 @@ func _update_state() -> void:
 		_play_finish_payoff()
 		finished.emit()
 	else:
-		_stop_glow()
+		_stop_outline()
 		# Undoing the work starts the clock again.
 		set_physics_process(mode == Mode.UNDER_REPAIR)
 
 
-## A ding, a burst of sparkles and a glow that lasts until the item goes.
-## The clock stops.
+## A ding, a burst of sparkles and an outline that lasts until the
+## item goes. The clock stops.
 func _play_finish_payoff() -> void:
 	set_physics_process(false)
-	G.audio.play_sound("ding")
+	G.audio.play_sound(&"ding")
 	if is_instance_valid(G.settings.finish_sparkle_scene):
 		var sparkle: CPUParticles2D = (
 			G.settings.finish_sparkle_scene.instantiate()
 		)
 		add_child(sparkle)
 		sparkle.finished.connect(sparkle.queue_free)
-	_start_glow()
+	_start_outline()
 
 
-## The finished item pulses, and its top layer gets the outline when its
-## art can show it.
-func _start_glow() -> void:
-	_stop_glow()
-	var outline_material := G.settings.finished_outline_material
+## True while the finished item shows its outline.
+func is_showing_outline() -> bool:
+	if is_instance_valid(_outline_hint) and _outline_hint.is_active():
+		return true
+	return is_instance_valid(_outlined_art)
+
+
+## The finished item and the outbox get the outline. The item's top
+## layer carries the item's share of it.
+func _start_outline() -> void:
+	_stop_outline()
 	var layer := get_exposed_layer()
-	if (
-		is_instance_valid(outline_material)
-		and is_instance_valid(layer)
-		and layer.art is Sprite2D
-	):
-		_outlined_art = layer.art
-		_art_material_before_outline = _outlined_art.material
-		_outlined_art.material = outline_material
-	_glow_tween = create_tween().set_loops()
-	_glow_tween.tween_property(
-		self,
-		"modulate",
-		_GLOW_COLOR,
-		_GLOW_HALF_PULSE_SEC,
-	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_glow_tween.tween_property(
-		self,
-		"modulate",
-		Color.WHITE,
-		_GLOW_HALF_PULSE_SEC,
-	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	if is_instance_valid(layer):
+		if layer.art is Sprite2D:
+			if is_instance_valid(G.settings.outline_hint_material):
+				_outlined_art = layer.art as Sprite2D
+				_art_material_before_outline = (
+					OutlineHint.apply_to_sprite(_outlined_art)
+				)
+		else:
+			if not is_instance_valid(_outline_hint):
+				var points := OutlineHint.get_art_polygon(layer.art)
+				if not points.is_empty():
+					_outline_hint = OutlineHint.new()
+					layer.art.add_child(_outline_hint)
+					_outline_hint.polygon = points
+			if is_instance_valid(_outline_hint):
+				_outline_hint.set_active(true)
+	if is_instance_valid(G.level):
+		G.level.set_outbox_outline_shown(true)
 
 
-func _stop_glow() -> void:
-	if is_instance_valid(_glow_tween):
-		_glow_tween.kill()
-	modulate = Color.WHITE
+func _stop_outline() -> void:
+	if is_instance_valid(_outline_hint):
+		_outline_hint.set_active(false)
 	if is_instance_valid(_outlined_art):
-		_outlined_art.material = _art_material_before_outline
+		OutlineHint.remove_from_sprite(
+			_outlined_art,
+			_art_material_before_outline,
+		)
 	_outlined_art = null
 	_art_material_before_outline = null
+	if is_instance_valid(G.level):
+		G.level.set_outbox_outline_shown(false)

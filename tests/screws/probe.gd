@@ -224,7 +224,7 @@ func _watch_sounds() -> bool:
 		)
 		player.stream = AudioStreamGenerator.new()
 		_sound_counts[sound_name] = 0
-	G.audio.play_sound("creak")
+	G.audio.play_sound(&"creak")
 	var is_counted := _is_sound_playing("creak")
 	_poll_sounds()
 	G.audio.stop_sound("creak")

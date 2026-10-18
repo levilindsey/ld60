@@ -352,6 +352,13 @@ func _check_take_cover_off() -> void:
 		"the cover rests on the spot, shrunk",
 	)
 	_expect(
+		absf(angle_difference(_cover.rotation, _cover._set_aside_rotation))
+		< 0.001
+		and absf(_cover._set_aside_rotation - _cover._home_rotation)
+		<= deg_to_rad(20.0) + 0.001,
+		"the cover rests turned within 20 degrees of how it sits",
+	)
+	_expect(
 		_events.has("layer_removed:Cover"),
 		"the item emits layer_removed",
 	)
@@ -363,8 +370,8 @@ func _check_take_cover_off() -> void:
 	# drawer flow itself is checked by tests/parts.
 	_socket.finish()
 	_expect(
-		_cover.is_ready_to_go_back() and is_instance_valid(_cover._glow_tween),
-		"the cover glows, ready to go back",
+		_cover.is_ready_to_go_back() and _cover.is_showing_outline(),
+		"the cover shows the outline, ready to go back",
 	)
 
 
@@ -438,9 +445,9 @@ func _check_put_cover_back() -> void:
 		"the item isn't finished with loose screws",
 	)
 	_expect(
-		not is_instance_valid(_cover._glow_tween)
+		not _cover.is_showing_outline()
 		and _cover.modulate == Color.WHITE,
-		"the glow stops",
+		"the outline stops",
 	)
 
 

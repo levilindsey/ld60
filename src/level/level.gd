@@ -26,6 +26,8 @@ var hand: Hand:
 ## untyped so a freed screw never lands in a typed variable.
 var _resting_screws: Array = []
 
+var _outbox_outline_hint: OutlineHint
+
 
 func _enter_tree() -> void:
 	if not is_instance_valid(G.main):
@@ -125,6 +127,33 @@ func drop_item(item: Repairable) -> void:
 		_send_to_outbox(item)
 	else:
 		return_item(item)
+
+
+## Shows or hides the outline around the outbox. A finished item
+## turns it on, so the bench says where the item goes next.
+func set_outbox_outline_shown(is_shown: bool) -> void:
+	if is_shown:
+		if not is_instance_valid(_outbox_outline_hint):
+			var placeholder := (
+				%Outbox.get_node("Placeholder") as Polygon2D
+			)
+			var points := OutlineHint.get_art_polygon(placeholder)
+			if points.is_empty():
+				return
+			_outbox_outline_hint = OutlineHint.new()
+			placeholder.add_child(_outbox_outline_hint)
+			_outbox_outline_hint.polygon = points
+		_outbox_outline_hint.set_active(true)
+	elif is_instance_valid(_outbox_outline_hint):
+		_outbox_outline_hint.set_active(false)
+
+
+## True while the outbox shows its outline.
+func is_outbox_outline_shown() -> bool:
+	return (
+		is_instance_valid(_outbox_outline_hint)
+		and _outbox_outline_hint.is_active()
+	)
 
 
 ## Eases an item back to where the bench keeps the item being repaired.
@@ -256,6 +285,7 @@ func _spawn_next_item() -> void:
 ## The item leaves through the outbox. The bench is empty from here until
 ## the next item arrives.
 func _send_to_outbox(item: Repairable) -> void:
+	set_outbox_outline_shown(false)
 	active_repairable = null
 	%TicketCard.hide_card()
 	item.departed.connect(_on_item_departed.bind(item), CONNECT_ONE_SHOT)

@@ -45,7 +45,7 @@ func setup(part_type: Type) -> void:
 
 ## The wrong socket, or a press that fits nowhere. No penalty.
 func nope() -> void:
-	G.audio.play_sound("clunk")
+	G.audio.play_sound(&"clunk")
 	G.level.hand.show_nope(global_position)
 	if is_instance_valid(_shake_tween):
 		_shake_tween.kill()
@@ -76,7 +76,7 @@ func install_into(socket: PartSocket) -> void:
 	reparent(socket)
 	global_position = from_global_position
 	reset_physics_interpolation()
-	G.audio.play_sound("snap")
+	G.audio.play_sound(&"snap")
 	var tween := create_tween()
 	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -91,7 +91,7 @@ func install_into(socket: PartSocket) -> void:
 func fly_home(home_global_position: Vector2) -> void:
 	_is_flying = true
 	G.level.hand.release()
-	G.audio.play_sound("whoosh")
+	G.audio.play_sound(&"whoosh")
 	var tween := create_tween()
 	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)

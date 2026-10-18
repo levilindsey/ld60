@@ -5,15 +5,18 @@
 [ext_resource type="PackedScene" uid="uid://m8ven6g4aiv4" path="res://src/tools/flat_head_screw_driver.tscn" id="2_xmm7k"]
 [ext_resource type="PackedScene" uid="uid://oljisvtq3csc" path="res://src/repairables/test_flat_head_screw_repairable.tscn" id="3_yixrw"]
 [ext_resource type="PackedScene" path="res://src/ui/defect_popup/defect_popup.tscn" id="4_popup"]
-[ext_resource type="Shader" uid="uid://bwlltrspkpdrj" path="res://assets/shaders/sprite_outline.gdshader" id="5_outline"]
+[ext_resource type="Shader" uid="uid://6yvsi55alfqx" path="res://assets/shaders/sprite_outline_gradient.gdshader" id="5_outline"]
 [ext_resource type="PackedScene" path="res://src/repairables/finish_sparkle.tscn" id="6_sparkle"]
 [ext_resource type="Texture2D" uid="uid://c1wq44nrt4htx" path="res://assets/images/cursors/cursor_grab.png" id="7_hand"]
 [ext_resource type="Texture2D" uid="uid://by5dmf6ybbvjo" path="res://assets/images/cursors/cursor_point.png" id="8_point"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("5_outline")
-shader_parameter/outline_color = Color(1, 0.92, 0.4, 1)
-shader_parameter/outline_width = 3.0
+shader_parameter/outline_color_inner = Color(1, 0.92, 0.4, 1)
+shader_parameter/outline_color_outer = Color(1, 0.92, 0.4, 0)
+shader_parameter/outline_width = 8.0
+shader_parameter/gradient_power = 1.0
+shader_parameter/pulse_speed = 0.9
 shader_parameter/outline_enabled = true
 
 [resource]
@@ -23,7 +26,7 @@ pauses_on_focus_out = false
 default_level_scene = ExtResource("1_w7hap")
 point_cursor_texture = ExtResource("8_point")
 grab_cursor_texture = ExtResource("7_hand")
-finished_outline_material = SubResource("ShaderMaterial_outline")
+outline_hint_material = SubResource("ShaderMaterial_outline")
 finish_sparkle_scene = ExtResource("6_sparkle")
 flat_head_screw_repairable_scene = ExtResource("3_yixrw")
 item_queue = Array[int]([0, 0, 0])

@@ -205,7 +205,7 @@ func _advance_cycle(delta: float) -> void:
 ## A creak and a tensed handle warn of the next twist.
 func _telegraph() -> void:
 	_is_telegraphed = true
-	G.audio.play_sound("creak", true)
+	G.audio.play_sound(&"creak", true)
 	var driver := engaged_tool as FlatHeadScrewDriver
 	if is_instance_valid(driver):
 		driver.tense(G.settings.flathead_telegraph_sec)
@@ -247,7 +247,7 @@ func _finish_twist() -> void:
 	head.rotation = _twist_to_rotation
 	slide = _twist_to_slide
 	if _twists_done < _get_twist_count():
-		G.audio.play_sound("ratchet", true)
+		G.audio.play_sound(&"ratchet", true)
 		_phase = Phase.PAUSE
 		_phase_sec = 0.0
 		_is_telegraphed = false
@@ -271,7 +271,7 @@ func _unseat() -> void:
 		seat_tolerance_px,
 	)
 	_set_in_danger(false)
-	G.audio.play_sound("skid", true)
+	G.audio.play_sound(&"skid", true)
 	var layer := get_layer()
 	if is_instance_valid(layer) and is_instance_valid(layer.art):
 		# The scratch starts at the end of the slot and runs the way the tip
@@ -315,7 +315,7 @@ func _set_in_danger(is_in_danger: bool) -> void:
 	_is_in_danger = is_in_danger
 	if is_in_danger:
 		# The scrape's rising pitch comes with LX25.
-		G.audio.play_sound("scrape")
+		G.audio.play_sound(&"scrape")
 	else:
 		G.audio.stop_sound("scrape")
 

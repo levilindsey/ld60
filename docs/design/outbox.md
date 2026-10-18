@@ -21,8 +21,10 @@ Ledger: **LX9** (M1). Depends on [repairables.md](repairables.md)
 
 ## Finishing
 
-When the item reports `finished`: a ding, a sparkle, an outline glow
-(`assets/shaders/sprite_outline.gdshader`), and it can now be dragged.
+When the item reports `finished`: a ding, a sparkle, the gradient
+outline on the item and on the outbox
+(`assets/shaders/sprite_outline_gradient.gdshader`), and it can now
+be dragged.
 
 ## Dragging
 
@@ -73,8 +75,9 @@ hand-off to the receipt, and the queue.
   the held item back on the bench.
 - The last receipt closing calls `win()`, not the last departure.
 - Timings and the tilt limits are the "Item flow" group in `settings.gd`.
-- `ColorRect` placeholder art gets the modulate glow only. The outline
-  shader needs `Sprite2D` art with transparent margins.
+- `Sprite2D` art gets the outline shader, which needs transparent
+  margins. `ColorRect` and `Polygon2D` art gets the same rim drawn by
+  `OutlineHint` instead.
 
 ## Later
 

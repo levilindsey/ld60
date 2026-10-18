@@ -64,10 +64,6 @@ const _PLACEHOLDER_FRAME_TINTS: Array[Color] = [
 ]
 ## Seconds from the grind to the stand-in pry.
 const _PRY_DELAY_SEC := 0.3
-## A resting screw that can come back glows like a layer that can go back:
-## this bright at the top of each pulse, and this long for each half.
-const _GLOW_COLOR := Color(1.35, 1.35, 1.0)
-const _GLOW_HALF_PERIOD_SEC := 0.5
 
 ## The screw head's art, seen from the top. The twists turn it. If it is an
 ## `AnimatedSprite2D`, its frames are the `HeadFrame` states in order.
@@ -139,6 +135,10 @@ var _shape_slide_offset := Vector2.ZERO
 ## Where `bench_art` sits under the screw, and its scale.
 var _bench_art_home_position := Vector2.ZERO
 var _bench_art_home_scale := Vector2.ONE
+var _bench_art_home_rotation := 0.0
+## The turn this screw was left at where it rests on the bench. A
+## fresh one is picked each time it is set down.
+var _rest_rotation := 0.0
 ## Where the bench art starts and ends its trip, in world pixels. A trip
 ## back ends over the hole wherever the screw is.
 var _travel_from := Vector2.ZERO
@@ -149,8 +149,9 @@ var _is_strip_warned := false
 var _is_seize_warned := false
 var _pry_tween: Tween
 var _travel_tween: Tween
-var _glow_tween: Tween
 var _rest_pulse_tween: Tween
+var _outlined_bench_art: Sprite2D
+var _bench_material_before_outline: Material
 
 
 func _init() -> void:
@@ -180,6 +181,7 @@ func _ready() -> void:
 	_shape_slide_offset = slide_frame.basis_xform(_slide_offset)
 	_bench_art_home_position = bench_art.position
 	_bench_art_home_scale = bench_art.scale
+	_bench_art_home_rotation = bench_art.rotation
 	bench_art.hide()
 	animation_player.animation_finished.connect(_on_animation_finished)
 	health = max_health
@@ -271,8 +273,8 @@ func engage(tool: Tool) -> void:
 
 
 ## Its layer is back on. A screw in its hole sits loose, turned back and
-## slid out, ready to be driven in. A screw on the bench glows until a
-## press brings it back (`come_back()`).
+## slid out, ready to be driven in. A screw on the bench gets the
+## outline until a press brings it back (`come_back()`).
 func set_install_mode() -> void:
 	super.set_install_mode()
 	is_install_mode = true
@@ -280,7 +282,7 @@ func set_install_mode() -> void:
 		head.rotation = _home_head_rotation - LOOSE_TURN_RAD
 		_snap_slide(1.0)
 	elif travel == Travel.RESTING:
-		_start_glow()
+		_start_outline()
 	if is_stripped():
 		# Stand-in until LX19. A pried screw is scrap, and a new one comes
 		# from the parts bin. Until then the old one comes back as new.
@@ -294,7 +296,7 @@ func set_install_mode() -> void:
 ## stays ACTIVE until it is out of the hole, so its layer waits for it, and
 ## then finish() tells the layer and the item.
 func remove() -> void:
-	G.audio.play_sound("pop")
+	G.audio.play_sound(&"pop")
 	slide = 1.0
 	release_tool()
 	removed.emit()
@@ -307,7 +309,7 @@ func remove() -> void:
 ## the head home before it calls this, and the screw ends up all the way
 ## in.
 func install() -> void:
-	G.audio.play_sound("click")
+	G.audio.play_sound(&"click")
 	slide = 0.0
 	finish()
 	installed.emit()
@@ -317,6 +319,12 @@ func install() -> void:
 ## is back on and it waits at its rest spot.
 func can_come_back() -> bool:
 	return is_install_mode and travel == Travel.RESTING
+
+
+## True while the resting screw shows the outline that says a press
+## brings it back.
+func is_showing_outline() -> bool:
+	return is_instance_valid(_outlined_bench_art)
 
 
 ## True when a world position is on this screw while it rests on the
@@ -338,11 +346,11 @@ func come_back() -> void:
 		return
 	if is_instance_valid(G.level):
 		G.level.free_screw_rest_spot(self)
-	_stop_glow()
+	_stop_outline()
 	_stop_rest_pulse()
 	travel = Travel.RETURNING
 	_travel_from = bench_art.global_position
-	_start_travel(_reach_hole)
+	_start_travel(_reach_hole, _bench_art_home_rotation)
 
 
 ## One short pulse that shows this point still needs work. A resting
@@ -380,7 +388,7 @@ func _start_microgame() -> void:
 ## The driver no longer bites: a press grinds and nopes. Only the pliers
 ## work now (LX19).
 func _press_stripped(tool: Tool) -> void:
-	G.audio.play_sound("grind")
+	G.audio.play_sound(&"grind")
 	if not _is_strip_warned:
 		_is_strip_warned = true
 		tool.nope()
@@ -409,7 +417,7 @@ func _pry() -> void:
 ## A seized screw won't turn. The first try only grinds as a warning, and
 ## each stalled try after it costs 1 damage.
 func _press_seized(tool: Tool) -> void:
-	G.audio.play_sound("grind")
+	G.audio.play_sound(&"grind")
 	tool.nope()
 	if not _is_seize_warned:
 		_is_seize_warned = true
@@ -501,21 +509,22 @@ func _leave_hole() -> void:
 	hit_shape.set_deferred("disabled", true)
 	bench_art.show()
 	bench_art.reparent(_get_bench_parent())
-	bench_art.rotation = 0.0
+	bench_art.rotation = _bench_art_home_rotation
 	bench_art.scale = _bench_art_home_scale
 	bench_art.reset_physics_interpolation()
+	_rest_rotation = randf_range(0.0, TAU)
 	_travel_from = bench_art.global_position
 	_travel_to = _travel_from
 	if is_instance_valid(G.level):
 		_travel_to = G.level.take_screw_rest_spot(self)
-	_start_travel(_reach_rest_spot)
+	_start_travel(_reach_rest_spot, _rest_rotation)
 	finish()
 
 
 func _reach_rest_spot() -> void:
 	travel = Travel.RESTING
 	if is_install_mode:
-		_start_glow()
+		_start_outline()
 
 
 ## Over the hole: the clipped art takes over again and sinks into the
@@ -523,7 +532,7 @@ func _reach_rest_spot() -> void:
 func _reach_hole() -> void:
 	bench_art.reparent(self, false)
 	bench_art.position = _bench_art_home_position
-	bench_art.rotation = 0.0
+	bench_art.rotation = _bench_art_home_rotation
 	bench_art.scale = _bench_art_home_scale
 	bench_art.hide()
 	head.rotation = _home_head_rotation - LOOSE_TURN_RAD
@@ -542,20 +551,28 @@ func _settle_in_hole() -> void:
 	hit_shape.set_deferred("disabled", false)
 
 
-## Slides the bench art from `_travel_from`, eased, then calls `on_done`.
-func _start_travel(on_done: Callable) -> void:
+## Slides the bench art from `_travel_from`, turning it to
+## `to_rotation` on the way, eased, then calls `on_done`.
+func _start_travel(on_done: Callable, to_rotation: float) -> void:
 	if is_instance_valid(_travel_tween):
 		_travel_tween.kill()
-	_travel_tween = create_tween()
+	_travel_tween = create_tween().set_parallel()
 	_travel_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	_travel_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	var duration_sec := G.settings.screw_travel_sec
 	_travel_tween.tween_method(
 		_place_bench_art,
 		0.0,
 		1.0,
-		G.settings.screw_travel_sec,
+		duration_sec,
 	)
-	_travel_tween.tween_callback(on_done)
+	_travel_tween.tween_property(
+		bench_art,
+		"rotation",
+		to_rotation,
+		duration_sec,
+	)
+	_travel_tween.chain().tween_callback(on_done)
 
 
 ## Puts the bench art `weight` of the way along its trip. A trip back ends
@@ -567,29 +584,28 @@ func _place_bench_art(weight: float) -> void:
 	bench_art.global_position = _travel_from.lerp(to_position, weight)
 
 
-## A slow glow on the resting screw: a press brings it back.
-func _start_glow() -> void:
-	_stop_glow()
-	_glow_tween = create_tween().set_loops()
-	_glow_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
-	_glow_tween.tween_property(
-		bench_art,
-		"modulate",
-		_GLOW_COLOR,
-		_GLOW_HALF_PERIOD_SEC,
-	)
-	_glow_tween.tween_property(
-		bench_art,
-		"modulate",
-		Color.WHITE,
-		_GLOW_HALF_PERIOD_SEC,
+## The outline on the resting screw: a press brings it back.
+func _start_outline() -> void:
+	if is_showing_outline():
+		return
+	if not bench_art is Sprite2D:
+		return
+	if not is_instance_valid(G.settings.outline_hint_material):
+		return
+	_outlined_bench_art = bench_art as Sprite2D
+	_bench_material_before_outline = OutlineHint.apply_to_sprite(
+		_outlined_bench_art,
 	)
 
 
-func _stop_glow() -> void:
-	if is_instance_valid(_glow_tween):
-		_glow_tween.kill()
-	bench_art.modulate = Color.WHITE
+func _stop_outline() -> void:
+	if is_instance_valid(_outlined_bench_art):
+		OutlineHint.remove_from_sprite(
+			_outlined_bench_art,
+			_bench_material_before_outline,
+		)
+	_outlined_bench_art = null
+	_bench_material_before_outline = null
 
 
 func _stop_rest_pulse() -> void:
