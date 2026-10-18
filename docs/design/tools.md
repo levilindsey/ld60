@@ -21,10 +21,15 @@ each tool:
 
 - **What is held:** nothing, one tool, one part, or the item (while it
   is dragged to the outbox). Only one at a time.
-- **The cursor:** an arrow when the hand is empty, a grab hand when it
-  is empty and over something it can take, and hidden while anything
-  is held. The hand also resets the cursor when the level restarts or
-  a held thing is freed (LX2).
+- **The cursor:** an arrow when the hand is empty, an open hand when
+  it is empty and over something it can grab (a stored tool, the
+  parts drawer and its menu slots, a broken part that wiggles out, a
+  ready set-aside layer, a resting screw, a finished item), and
+  hidden while anything is held. Godot has no open-hand shape, so
+  the pointing-hand shape carries a custom texture
+  (`assets/images/cursors/hand_open.png`, set in `settings.tres`).
+  The hand also resets the cursor when the level restarts or a held
+  thing is freed (LX2).
 - **Presses:** one `_unhandled_input` takes left-button presses and
   releases for the whole bench and ignores the other buttons (LX3).
 - **Input owner:** while a microgame runs (the Phillips gauge, a hammer
@@ -49,22 +54,28 @@ what is under it (`PhysicsDirectSpaceState2D.intersect_point()` with
 areas on), and takes the first rule that matches:
 
 1. **A microgame owns input:** send it the press.
-2. **Over a set-aside layer that is ready to go back:** put it back.
-3. **Over the tool rack or the parts bin:** take that tool or part, or
-   open the bin if it is closed. A held tool goes back to its holder
-   first.
-4. **Holding a tool:** move the tool so its tip is at the press point,
+2. **Over a screw resting on the bench:** once its layer is back on,
+   send it back to its hole, whatever the hand holds. Before that the
+   press does nothing ([screw_pullout.md](screw_pullout.md)).
+3. **Over a set-aside layer that is ready to go back:** put it back.
+4. **Over the parts drawer:** holding a part returns it. Holding a
+   tool puts it away first. Empty-handed, the parts menu opens
+   ([parts_bin.md](parts_bin.md)).
+5. **Over the tool rack:** take that tool. A held tool goes back to
+   its holder first.
+6. **Holding a tool:** move the tool so its tip is at the press point,
    then let the tool act there (engage the point under the tip, or
    start its effect). The press also cancels any follow offset still
    easing out.
-5. **Holding a part:** nothing yet; the part drops on release.
-6. **Empty hand, over a point:** poke it (`on_poked()`). A dry pivot
+7. **Holding a part:** a press over a socket tries to fit it. Any
+   other press nopes and keeps the part. Releasing drops nothing.
+8. **Empty hand, over a point:** poke it (`on_poked()`). A dry pivot
    squeaks, a loose part rattles, a stuck lever jerks. This is the
    "inspect" action.
-7. **Empty hand, over the item:** drag it if it is finished. Otherwise
+9. **Empty hand, over the item:** drag it if it is finished. Otherwise
    shake it and pulse its remaining points, which is a free hint.
 
-Rule 4 is what makes touch work. A finger has no hover, so the tip has
+Rule 6 is what makes touch work. A finger has no hover, so the tip has
 to reach the target in the same event that presses. It also means the
 tool asks what is under the tip directly, instead of waiting for the
 next physics frame's area overlaps. With a mouse the tip is already

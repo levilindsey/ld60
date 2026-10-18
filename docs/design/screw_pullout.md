@@ -129,3 +129,50 @@ Taken by the coordinator. Levi may still change them.
   check (feel, mouse, touch), and a `Ledger items` list.
 
 ## Handoff
+
+2026-10-17, agent `screw-pullout` on branch `lx54-pullout`: done, in
+about 1.5 hours.
+
+- **Commits.** `aff4ab4` folds the scene into `flat_head_screw.tscn` and
+  builds the pull-out in `screw.gd`, the rest spots in `level.gd` and
+  the hand's hook. `da99453` makes the probes press the resting screw
+  back and adds the new checks (`tests/screws/pull_out_recorder.gd`).
+  `0c2a0fb` makes the no-pop check compare scale and turn too. The docs
+  and this handoff come last.
+- **Settled in the code.**
+  - The layer waits for the pull-out. `remove()` still emits `removed`
+    as the pull-out starts, but the screw stays ACTIVE until
+    `_leave_hole()` calls `finish()`.
+  - `ClippingSpace` has `clip_children = 1`: it clips, and its mask
+    doesn't show.
+  - A resting screw in install mode glows (a looped tween on
+    `bench_art.modulate`), and `pulse()` scales it once when the item
+    shows what still needs work.
+- **Checks.** `scripts/check.ps1 -Tests` passes: full_loop 76,
+  full_loop_booklet 6, item_flow 72, screws 178. Each step was broken
+  once in `screw.gd` (`.claude/probes/LX54/break_checks.ps1`, results in
+  `break_results_1.md` and `break_results.md`), and checks failed every
+  time: the swap (7), a 1.1x pop (3), the rest spot (6), the press gate
+  (3), the reverse slide (16) and install ending off home (4).
+- **Frames.** A windowed full_loop run with `capture_frames.diff`
+  applied saved crops to `.claude/probes/LX54/frames/`, and
+  `contact_sheet.ps1` tiled them into `sheet_out.png`, `sheet_back.png`
+  and `sheet_wide.png`. Neither swap pops. The twists raise the head
+  about 5 px between `slide` 0.17 and 0.99, as expected (6 px at 1), and
+  the clip space hides the shank below the hole. At the swap the bench
+  art's home is 0.078 px from the side view's end, at a scale ratio of
+  1.0013 and no turn.
+- **Not checked** (needs a person): the feel and ease of the trip, how
+  the glow looks, the bench art's draw order against a held tool and the
+  set-aside cover, where the rest spots sit on screen, sound and touch.
+- **Open.**
+  - `tests/screws/probe.gd` is 998 lines, just under gdlint's 1000.
+    Split it before adding checks.
+  - The rest spots are placeholders and may collide with the parts
+    drawer (LX15) or the rack.
+  - The LX15 rebase meets this branch in `hand.gd` (the resting-screw
+    press comes first in `_handle_press`, plus a line in `_can_take`),
+    `level.gd` (the rest-spot functions) and `settings.gd` (the "Screw
+    rest" group, and `screw_slide_px` is gone).
+  - Optional: pose the bench art exactly like `RemoveScrew`'s last frame
+    to remove the 0.078 px and 1.0013 residual.

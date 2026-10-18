@@ -65,12 +65,14 @@ that finishes it.
 - `src/repairables/` - `repairable.gd`, `repair_layer.gd`,
   `surface.gd`, plus a script and scene per item.
 - `src/interaction_points/` - `interaction_point.gd`, `screw.gd`
-  (`Screw`), plus a script and scene per point.
+  (`Screw`), `part_socket.gd`, plus a script and scene per point.
+- `src/parts/` - `part.gd` (drawer parts the hand holds like tools),
+  `wiggle.gd` (shared swing counter).
 - `src/manual/` - Zaven's page-turning `InstructionManual`.
 - `src/ui/hud/` - `hud.gd`/`hud.tscn`: title/pause/credits overlays.
 - `src/ui/super_hud/` - Top-level HUD host with `debug_console`.
-- `assets/` - `fonts/pxlzr/` (Levi's own SIL-OFL pixel font),
-  `images/` (tool art, `props/` background + Krita source, `gui/`
+- `assets/` - `fonts/` (Special Elite for menus and printed paper,
+  Caveat for handwriting), `images/` (tool art, `props/` background + Krita source, `gui/`
   buttons, `placeholders/`), `shaders/sprite_outline.gdshader`.
 - `docs/design/` - One design doc per piece of work.
 - `scripts/` - `check.ps1` (run after every change), `godot_helpers.ps1`
@@ -166,7 +168,8 @@ restarts); `G.game_panel.restart_level()` -> a fresh Level instance.
 - `project.godot` - Input actions, physics layers, rendering.
 - Renderer: `gl_compatibility`; linear texture filtering (Godot
   default; the art is hand-drawn, not pixel art); `canvas_items`
-  stretch at 1280x720; physics interpolation on.
+  stretch at 1280x720 with aspect `keep` (scales to fit the window,
+  black bars on the sides or top/bottom); physics interpolation on.
 
 ### Input Actions
 
@@ -184,6 +187,7 @@ missing. Add new actions there too.
 4. `table`
 5. `tool_holders`
 6. `surfaces`
+7. `parts`
 
 `Settings.PhysicsLayer` mirrors these as bit flags; keep the two in
 sync.
@@ -195,8 +199,8 @@ Interactions are click/tap driven; keyboard and gamepad support is
 not a requirement. Touch arrives as emulated mouse events, so handle
 `InputEventMouseButton` (left button) for clicks and taps. Shared
 button art lives in `assets/images/gui/`
-and is wired into `src/core/main_theme.tres` (pxlzr font + textured
-buttons). `src/ui/super_hud/` hosts the `debug_console` overlay on
+and is wired into `src/core/main_theme.tres` (Special Elite font +
+textured buttons). `src/ui/super_hud/` hosts the `debug_console` overlay on
 a CanvasLayer above the in-game HUD.
 
 ## Web + Windows Builds

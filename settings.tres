@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://src/ui/defect_popup/defect_popup.tscn" id="4_popup"]
 [ext_resource type="Shader" uid="uid://bwlltrspkpdrj" path="res://assets/shaders/sprite_outline.gdshader" id="5_outline"]
 [ext_resource type="PackedScene" path="res://src/repairables/finish_sparkle.tscn" id="6_sparkle"]
+[ext_resource type="Texture2D" uid="uid://toqd3k1v5yng" path="res://assets/images/cursors/hand_open.png" id="7_hand"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("5_outline")
@@ -19,6 +20,7 @@ script = ExtResource("1_krfic")
 start_in_game = false
 pauses_on_focus_out = false
 default_level_scene = ExtResource("1_w7hap")
+grab_cursor_texture = ExtResource("7_hand")
 finished_outline_material = SubResource("ShaderMaterial_outline")
 finish_sparkle_scene = ExtResource("6_sparkle")
 flat_head_screw_repairable_scene = ExtResource("3_yixrw")

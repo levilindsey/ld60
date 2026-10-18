@@ -10,6 +10,7 @@ enum PhysicsLayer {
 	TABLE = 1 << 3,
 	TOOL_HOLDERS = 1 << 4,
 	SURFACES = 1 << 5,
+	PARTS = 1 << 6,
 }
 
 # --- General configuration ---
@@ -33,6 +34,12 @@ enum PhysicsLayer {
 @export var default_level_scene: PackedScene
 
 @export_group("Hand")
+## The open hand shown over things the empty hand can grab. Godot
+## has no grab cursor shape, so this texture replaces the
+## pointing-hand shape wherever the hand offers a grab.
+@export var grab_cursor_texture: Texture2D
+## Where the grab cursor's hot spot sits, in texture pixels.
+@export var grab_cursor_hotspot := Vector2(25.0, 38.0)
 ## Seconds for a held tool to ease into the pointer instead of jumping.
 @export var tool_follow_ease_sec := 0.2
 ## Seconds a tool shakes when a point doesn't accept it.
@@ -160,11 +167,17 @@ enum PhysicsLayer {
 @export var flathead_slip_max := 0.6
 @export_group("")
 
-@export_group("Screw slide")
-## How far a screw slides up the screen, in world pixels, while it turns
-## all the way out. It slides back down as it turns in
-## (docs/design/screws.md "Removal").
-@export var screw_slide_px := 6.0
+@export_group("Screw rest")
+## Where a pulled-out screw waits on the bench while its layer is off
+## (docs/design/screw_pullout.md). The first removed screw rests at the
+## first position, and each next one a step along the row. A full row
+## starts a new one a row step away.
+@export var screw_rest_first_position := Vector2(-440.0, 80.0)
+@export var screw_rest_step := Vector2(36.0, 0.0)
+@export var screw_rest_row_step := Vector2(0.0, 56.0)
+@export var screw_rest_row_size := 5
+## Seconds a screw takes to slide from its hole to its rest spot, and back.
+@export var screw_travel_sec := 0.4
 @export_group("")
 
 

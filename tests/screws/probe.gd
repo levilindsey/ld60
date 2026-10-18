@@ -42,6 +42,8 @@ const _SEED_MARGIN_PX := 0.5
 const _TILTED_SCREW_DEG := 33.0
 ## Records and checks a screw's slide (no `class_name`, so loaded by path).
 const SlideRecorder := preload("res://tests/screws/slide_recorder.gd")
+## Records and checks a screw's pull-out to the bench and back (LX54).
+const PullOutRecorder := preload("res://tests/screws/pull_out_recorder.gd")
 const _WATCHED_SOUNDS: Array[String] = [
 	"creak",
 	"ratchet",
@@ -65,6 +67,10 @@ var _drive_min_art_scale := 1.0
 var _drive_twist_samples := 0
 var _drive_untwisted_frames := 0
 var _slide := SlideRecorder.new()
+## One record for the screw on its trip, and one for a screw that rests
+## meanwhile.
+var _pull_out := PullOutRecorder.new()
+var _rest_watch := PullOutRecorder.new()
 
 var _level: Level
 var _tool: FlatHeadScrewDriver
@@ -108,6 +114,7 @@ func _run() -> void:
 	_collect_nodes()
 	get_tree().physics_frame.connect(_track_scale)
 
+	_check_hole_positions()
 	await _check_correcting()
 	await _check_never_correcting()
 	await _check_install()
@@ -269,7 +276,7 @@ func _collect_nodes() -> void:
 	_item.finished.connect(func() -> void: _events.append("finished"))
 	_item.quality.defect_added.connect(_on_defect_added)
 	for screw: FlatHeadScrew in [_screw_left, _screw_right]:
-		_homes[screw] = screw.global_position
+		_homes[screw] = screw.head.global_position
 		var prefix := String(screw.name)
 		screw.damaged.connect(
 			func(health: int) -> void:
@@ -286,6 +293,24 @@ func _collect_nodes() -> void:
 		)
 
 
+## The hole and the clip space sit 7 px above where they used to,
+## so the screw art sits higher over its hole.
+func _check_hole_positions() -> void:
+	for screw: FlatHeadScrew in [_screw_left, _screw_right]:
+		var hole := screw.get_node("Hole") as Node2D
+		_expect(
+			hole.position.is_equal_approx(Vector2(0.0, -1.0)),
+			"%s: the hole sits at (0, -1), got %s"
+			% [screw.name, hole.position],
+		)
+		var clip_position := (screw.clip_space as Node2D).position
+		_expect(
+			clip_position.is_equal_approx(Vector2(0.0, -40.2)),
+			"%s: the clip space sits at (0, -40.2), got %s"
+			% [screw.name, clip_position],
+		)
+
+
 ## A player who corrects every frame: the tip stays seated and the screw
 ## comes out in its four twists.
 func _check_correcting() -> void:
@@ -296,9 +321,11 @@ func _check_correcting() -> void:
 		"take the driver",
 	)
 	_reset_sounds()
-	# Turn the screw's node in its scene: up must still be up the screen.
-	var scene_rotation := _screw_left.rotation
-	_screw_left.rotation = deg_to_rad(_TILTED_SCREW_DEG)
+	# Turn the screw's node as a scene would: the turn moves onto the head,
+	# so up must still be up the screen.
+	var tilt := deg_to_rad(_TILTED_SCREW_DEG)
+	_screw_left.rotation = tilt
+	_screw_left.make_upright()
 	await _press_at(_screw_left.global_position)
 	_expect(
 		_tool.mode == Tool.Mode.IN_USE
@@ -306,19 +333,21 @@ func _check_correcting() -> void:
 		and _hand.input_owner == _screw_left,
 		"LX11: the driver engages ScrewLeft, which takes the pointer",
 	)
+	_pull_out.watch(_screw_left)
 	await _drive(_screw_left, 10.0)
-	await _physics_frames(1)
 	_slide.check(
 		_expect,
 		"ScrewLeft out, its node turned %.0f deg" % _TILTED_SCREW_DEG,
 		0.0,
 	)
-	_screw_left.rotation = scene_rotation
+	var turned_deg := rad_to_deg(
+		_screw_left.head.rotation - _screw_left._home_head_rotation
+	)
 	_expect(
-		_screw_left.mode == InteractionPoint.Mode.FINISHED
-		and is_equal_approx(_screw_left.head.rotation, -TAU),
-		"correcting: four twists of 90 degrees take ScrewLeft out (head at"
-		+ " %.1f deg)" % rad_to_deg(_screw_left.head.rotation),
+		_screw_left.travel == Screw.Travel.PULLING_OUT
+		and is_equal_approx(turned_deg, -360.0),
+		"correcting: four twists of 90 degrees take ScrewLeft out (head"
+		+ " turned %.1f deg)" % turned_deg,
 	)
 	_expect(
 		_drive_max_offset_px < 1.0 and _drive_correction_px > 9.0,
@@ -378,6 +407,12 @@ func _check_correcting() -> void:
 		% [lowest_deg, highest_deg]
 		+ " ends at %.1f)" % rad_to_deg(_tool.rotation),
 	)
+	await _wait_for_travel(_screw_left, Screw.Travel.RESTING)
+	_pull_out.stop()
+	_pull_out.check_pull_out(_expect, "ScrewLeft", 0)
+	# Put the slot back upright for the checks after this one.
+	_screw_left.head.rotation -= tilt
+	_screw_left._home_head_rotation -= tilt
 
 
 ## A player who never corrects: the drifts walk the tip off the end of the
@@ -465,7 +500,7 @@ func _check_never_correcting() -> void:
 		and _count("pop") == 0,
 		"sounds: a scrape near the end, then one skid (%s)" % _sounds_text(),
 	)
-	var px := G.settings.screw_slide_px
+	var px := screw.get_slide_height_px()
 	var kept_slide := screw.slide
 	var kept_rise := _get_rise(screw)
 	var turned := absf(screw.head.rotation - screw._home_head_rotation) / TAU
@@ -497,16 +532,18 @@ func _check_never_correcting() -> void:
 		% edge_point.distance_to(_get_home(screw))
 		+ " center of its home hit shape (radius 12): the shape slid too",
 	)
+	_pull_out.watch(screw)
+	_rest_watch.watch(_screw_left)
 	await _drive(screw, 10.0)
-	await _physics_frames(1)
 	_slide.check(
 		_expect,
 		"ScrewRight's last twists after the unseat",
 		kept_slide,
 	)
+	var out_rotation := screw._home_head_rotation - TAU
 	_expect(
-		screw.mode == InteractionPoint.Mode.FINISHED
-		and is_equal_approx(screw.head.rotation, -TAU)
+		screw.travel == Screw.Travel.PULLING_OUT
+		and is_equal_approx(screw.head.rotation, out_rotation)
 		and screw.health == screw.max_health - 1,
 		"the kept twists count: two more take ScrewRight out (head at %.1f"
 		% rad_to_deg(screw.head.rotation)
@@ -516,12 +553,33 @@ func _check_never_correcting() -> void:
 		_count("creak") == 2 and _count("ratchet") == 1 and _count("pop") == 1,
 		"sounds for the last two twists (%s)" % _sounds_text(),
 	)
-	_expect(_cover.is_moving, "both screws out: the cover lifts")
+	_expect(
+		_cover.is_on and not _cover.is_moving,
+		"the cover waits while ScrewRight pulls out",
+	)
+	await _wait_for_travel(screw, Screw.Travel.RESTING)
+	_expect(
+		screw.mode == InteractionPoint.Mode.FINISHED and _cover.is_moving,
+		"both screws out: the cover lifts once ScrewRight has left its hole",
+	)
+	_pull_out.check_pull_out(_expect, "ScrewRight", 1)
 
 
 ## Both screws go back in. Driving in plays a click, not a pop.
 func _check_install() -> void:
 	await _seconds(0.9)
+	_pull_out.stop()
+	_rest_watch.stop()
+	_rest_watch.check_rest_kept(_expect, "ScrewLeft", 0)
+	_pull_out.check_rest_kept(_expect, "ScrewRight", 1)
+	# Before the cover is back on, a press on a resting screw does nothing.
+	var held := _hand.held
+	_pull_out.watch(_screw_left)
+	await _press_resting_screw(_screw_left)
+	await _physics_frames(10)
+	_pull_out.stop()
+	_pull_out.check_press_ignored(_expect, "ScrewLeft", 0)
+	_expect(_hand.held == held, "the press leaves the hand as it was")
 	await _put_cover_back()
 	for screw: FlatHeadScrew in [_screw_left, _screw_right]:
 		_reset_sounds()
@@ -652,6 +710,14 @@ func _check_stripped_press() -> void:
 func _check_pry() -> void:
 	await _seconds(0.8)
 	_reset_sounds()
+	# Where the head stands when the screw emits removed, before the pull-out
+	# moves its art.
+	var removed_rises: Array[float] = []
+	_screw_left.removed.connect(
+		func() -> void: removed_rises.append(_get_rise(_screw_left)),
+		CONNECT_ONE_SHOT,
+	)
+	_pull_out.watch(_screw_left)
 	await _press_at(_screw_left.global_position)
 	_expect(
 		_screw_left.mode == InteractionPoint.Mode.ACTIVE
@@ -661,21 +727,24 @@ func _check_pry() -> void:
 		"the next press grinds and starts the stand-in pry (%s)"
 		% _sounds_text(),
 	)
-	await _seconds(0.7)
+	await _wait_for_travel(_screw_left, Screw.Travel.RESTING)
+	_pull_out.stop()
 	_expect(
 		_screw_left.mode == InteractionPoint.Mode.FINISHED
-		and not _screw_left.visible
+		and _screw_left.travel == Screw.Travel.RESTING
 		and _count("pop") == 1
 		and _events.count("ScrewLeft:removed") == 1,
-		"the stand-in pry takes the stripped screw out (%s)" % _sounds_text(),
+		"the stand-in pry takes the stripped screw out to the bench (%s)"
+		% _sounds_text(),
 	)
-	var rise := _get_rise(_screw_left)
+	var rise := -1.0 if removed_rises.is_empty() else removed_rises[0]
 	_expect(
-		_screw_left.slide == 1.0
-		and absf(rise - G.settings.screw_slide_px) < SlideRecorder.TOLERANCE_PX
+		absf(rise - _screw_left.get_slide_height_px())
+		< SlideRecorder.TOLERANCE_PX
 		and rise > SlideRecorder.MIN_SLIDE_PX,
 		"the pry leaves the stripped screw all the way out (%.2f px up)" % rise,
 	)
+	_pull_out.check_pull_out(_expect, "ScrewLeft pried", 0)
 
 
 ## A seized screw grinds without turning. The first try is a warning, and
@@ -727,12 +796,13 @@ func _check_seized() -> void:
 		"the freed screw takes the driver",
 	)
 	await _drive(screw, 10.0)
-	await _physics_frames(1)
+	await _wait_for_travel(screw, Screw.Travel.RESTING)
 	_expect(
 		screw.mode == InteractionPoint.Mode.FINISHED
+		and screw.travel == Screw.Travel.RESTING
 		and screw.health == 1
 		and screw.get_head_frame() == Screw.HeadFrame.CHEWED,
-		"the freed screw comes out, still chewed",
+		"the freed screw comes out to the bench, still chewed",
 	)
 
 
@@ -747,7 +817,8 @@ func _check_install_after_strip() -> void:
 		and _screw_left.get_head_frame() == Screw.HeadFrame.CLEAN
 		and _screw_left.head.modulate == Color.WHITE
 		and not _screw_left._is_strip_warned
-		and _screw_left.visible
+		and _screw_left.travel == Screw.Travel.HOME
+		and _screw_left.clip_space.visible
 		and _screw_left.mode == InteractionPoint.Mode.UNSTARTED,
 		"stand-in until LX19: the pried screw comes back as new",
 	)
@@ -768,21 +839,41 @@ func _check_install_after_strip() -> void:
 
 
 ## Puts the driver back, puts the set-aside cover back on and takes the
-## driver again.
+## driver again. Then a press on each screw resting on the bench brings it
+## back to its hole, loose and raised.
 func _put_cover_back() -> void:
+	# LX15: the gear swap under the cover has to happen first, or the
+	# cover will not go back and the item cannot finish. The drawer
+	# flow itself is checked by tests/parts.
+	_finish_socket()
 	await _press_at(_holder_position)
 	await _press_at(_cover.global_position)
 	await _seconds(0.6)
 	_expect(
 		_cover.is_on
 		and not _cover.is_moving
-		and _screw_left.is_install_mode
-		and _screw_right.is_install_mode,
-		"the cover goes back on with its screws loose",
+		and _screw_left.can_come_back()
+		and _screw_right.can_come_back(),
+		"the cover goes back on, and its screws wait on the bench to come back",
 	)
 	await _press_at(_holder_position)
 	await _seconds(0.4)
 	_expect(_hand.held == _tool, "take the driver again")
+	for screw: FlatHeadScrew in [_screw_left, _screw_right]:
+		_pull_out.watch(screw)
+		await _press_resting_screw(screw)
+		await _wait_for_travel(screw, Screw.Travel.HOME)
+		_pull_out.stop()
+		_pull_out.check_come_back(_expect, screw.name)
+	_expect(_hand.held == _tool, "the driver stays in the hand meanwhile")
+
+
+## Finishes the test item's part socket directly, once.
+func _finish_socket() -> void:
+	for layer in _item.layers:
+		for point in layer.get_points():
+			if point is PartSocket and point.mode != InteractionPoint.Mode.FINISHED:
+				point.finish()
 
 
 ## Where the screw sits at home, in world pixels.
@@ -808,10 +899,12 @@ func _get_top_edge_point(screw: FlatHeadScrew) -> Vector2:
 ## then the slide checks for the way down.
 func _drive_install(screw: FlatHeadScrew) -> void:
 	var rise := _get_rise(screw)
+	var px := screw.get_slide_height_px()
 	_expect(
 		screw.slide == 1.0
-		and screw.visible
-		and absf(rise - G.settings.screw_slide_px) < SlideRecorder.TOLERANCE_PX
+		and screw.travel == Screw.Travel.HOME
+		and screw.clip_space.visible
+		and absf(rise - px) < SlideRecorder.TOLERANCE_PX
 		and rise > SlideRecorder.MIN_SLIDE_PX,
 		"%s comes back loose and raised (%.2f px up)" % [screw.name, rise],
 	)
@@ -879,7 +972,7 @@ func _is_driver_resting() -> bool:
 ## Plays the flathead microgame well. Every physics frame it moves the
 ## pointer along the slot to put the tip back in the middle, and samples
 ## the tip, the driver's animation and the handle. Returns once the screw
-## is no longer ACTIVE, or after `max_sec`.
+## is no longer ACTIVE or starts to pull out, or after `max_sec`.
 func _drive(screw: FlatHeadScrew, max_sec: float) -> void:
 	_drive_max_offset_px = 0.0
 	_drive_correction_px = 0.0
@@ -889,7 +982,10 @@ func _drive(screw: FlatHeadScrew, max_sec: float) -> void:
 	_slide.begin(screw, _tool, _get_home(screw))
 	var frames := roundi(max_sec * Engine.physics_ticks_per_second)
 	for frame in frames:
-		if screw.mode != InteractionPoint.Mode.ACTIVE:
+		if (
+			screw.mode != InteractionPoint.Mode.ACTIVE
+			or screw.travel != Screw.Travel.HOME
+		):
 			return
 		var offset := screw.tip_offset_px
 		_drive_max_offset_px = maxf(_drive_max_offset_px, absf(offset))

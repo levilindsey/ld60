@@ -1,9 +1,9 @@
-﻿Copyright (c) 2021,  “levilindsey”
-(https://fontstruct.com/fontstructors/1953745/levilindsey)
+Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
 http://scripts.sil.org/OFL
+
 
 -----------------------------------------------------------
 SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007

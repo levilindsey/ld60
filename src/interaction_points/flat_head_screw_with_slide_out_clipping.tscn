@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://3ci1btt1ijw2"]
+[gd_scene format=3 uid="uid://ctbdwnlx1mvsa"]
 
 [ext_resource type="Script" uid="uid://dnhtim17pwlns" path="res://src/interaction_points/flat_head_screw.gd" id="1_eu2r4"]
 [ext_resource type="Texture2D" uid="uid://bbsbswnunrrqw" path="res://assets/images/circle.png" id="2_w7024"]

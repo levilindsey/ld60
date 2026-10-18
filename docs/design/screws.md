@@ -42,28 +42,56 @@ Ledger: **LX10** (M1). Depends on [repairables.md](repairables.md)
 - **It slides as it turns.** The screw also slides up the screen out of
   its hole as it turns out, and back down as it turns in (Levi,
   2026-10-17). `Screw.slide` is the fraction, 0 at home and 1 all the
-  way out, and the whole screw (head, slot, damage frames, rust and hit
-  shape) sits `screw_slide_px` (6, "Screw slide" in settings) times that
-  far up from home. It is always up the screen, even if a screw node is
-  turned in its scene. A screw type feeds `slide` from its own turn:
-  the flathead raises it by an even share per twist, eased like the
-  head's turn, so it is fully out at the end of its last twist and never
-  moves in the pause between twists. An unseat leaves it where it is,
-  with its twists. The Phillips screw feeds it the same way.
-- When a screw finishes, it backs out: it turns loose, then hops off
-  and disappears (MVP) or flies into a screw dish (Later).
+  way out. It moves the screw's art (`slide_node`, inside the clip space
+  that hides what is below the hole) and its hit shape. The root stays
+  put: it holds the hole and the clip mask. At `slide` 1 the art sits at
+  `RemoveScrew`'s first key, the backed-out pose, about 6 px up
+  (`get_slide_height_px()`), so the height is tuned in the animation
+  editor. It is always up the screen, even if a screw node is turned in
+  its scene. A screw type feeds `slide` from its own turn: the flathead
+  raises it by an even share per twist, eased like the head's turn, so
+  it is fully out at the end of its last twist and never moves in the
+  pause between twists. An unseat leaves it where it is, with its
+  twists. The Phillips screw feeds it the same way.
+- **It pulls out to the bench** (LX54, [screw_pullout.md](screw_pullout.md)).
+  At the end of the last twist, `remove()` pops, gives the driver back
+  to the hand, emits `removed` and plays `RemoveScrew` forward from the
+  backed-out pose (0.3 s). At its end the clipped art hides, and
+  `bench_art` (`UnclippedAnglePerspective`, posed like the animation's
+  last frame) takes over and slides to the screw's rest spot in
+  `screw_travel_sec` (0.4). The screw stays ACTIVE until it is out of
+  the hole, so its layer waits for it. Then `finish()` tells the layer
+  and the item. `Screw.travel` tracks the trip: HOME, PULLING_OUT,
+  LEAVING, RESTING, RETURNING, SINKING.
+- **Rest spots.** Each screw out takes the first free spot in a row on
+  the bench, in removal order ("Screw rest" in settings: the first at
+  (-440, 80), 36 px apart, rows of 5, 56 px between rows). A new level
+  frees them all. The bench art moves to the item's parent, so it stays
+  on the bench when its layer lifts off.
+- The stand-in pry (until LX19) uses the same pull-out.
 - The hole stays, as part of the layer art or as a hole decal.
 
 ## Install mode (putting it back)
 
-- When a layer goes back on, its screws reappear loose in their holes,
-  in INSTALL mode, turned back and slid all the way out (`slide` 1).
-  Driving one in slides it back down, to exactly home on its last
+- When a layer goes back on, its screws go into INSTALL mode. A screw
+  resting on the bench glows (a slow pulse, like a layer that can go
+  back) until a press brings it back. The press works whatever the hand
+  holds, and the hand keeps it. Before the layer is back on, a press on
+  a resting screw does nothing.
+- Coming back, the bench art slides over the hole (`screw_travel_sec`),
+  the clipped art takes over, and `RemoveScrew` plays backwards: the
+  screw sinks into its hole and turns back into the top-down head. It
+  ends loose: slid all the way out (`slide` 1) and turned back by
+  `LOOSE_TURN_RAD`. Its hit shape is off until then, so it can't be
+  engaged on the way.
+- Driving one in slides it back down, to exactly home on its last
   twist.
 - The same microgame, shorter: the flathead needs `install_twists` (2),
   and the Phillips meter starts at 0.6. Damage can still happen.
 - A screw that was pulled with pliers is scrap. Its hole shows empty;
-  drag a new screw from the parts bin onto it, then drive it in.
+  drag a new screw from the parts bin onto it, then drive it in. Until
+  LX19, a pried screw rests on the bench like the others and comes back
+  as new.
 
 ## Building it
 

@@ -51,6 +51,7 @@ $Runs = @(
     @{ Name = "full_loop_booklet"; Probe = "full_loop"; UserArguments = @("--booklet"); TimeoutSeconds = 60; WindowedArguments = @("--debug-collisions") },
     @{ Name = "item_flow"; Probe = "item_flow"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() },
     @{ Name = "screws"; Probe = "screws"; UserArguments = @(); TimeoutSeconds = 150; WindowedArguments = @() }
+    @{ Name = "parts"; Probe = "parts"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
 )
 
 

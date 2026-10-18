@@ -54,6 +54,7 @@ var _drag_previous_pointer := Vector2.ZERO
 func _ready() -> void:
 	pointer_screen_position = get_viewport().get_mouse_position()
 	%NopeIcon.visible = false
+	_set_up_grab_cursor()
 	_update_cursor()
 
 
@@ -233,14 +234,29 @@ func _handle_press(global_point: Vector2) -> bool:
 			input_owner.on_pointer_pressed(global_point)
 		return true
 	return (
-		_press_set_aside_layer(global_point)
+		_press_resting_screw(global_point)
+		or _press_set_aside_layer(global_point)
+		or _press_drawer(global_point)
 		or _press_rack(global_point)
+		or _press_with_part(global_point)
 		or _press_with_tool(global_point)
 		or _press_with_empty_hand(global_point)
 	)
 
 
-## 2. Over a set-aside layer that is ready to go back: put it back.
+## 2. Over a screw resting on the bench: once its layer is back on, send it
+## back to its hole, whatever the hand holds. Before that the press does
+## nothing (docs/design/screw_pullout.md).
+func _press_resting_screw(global_point: Vector2) -> bool:
+	var screw := G.level.get_resting_screw_at(global_point)
+	if not is_instance_valid(screw):
+		return false
+	if screw.can_come_back():
+		screw.come_back()
+	return true
+
+
+## 3. Over a set-aside layer that is ready to go back: put it back.
 func _press_set_aside_layer(global_point: Vector2) -> bool:
 	var layer := _find_ready_layer(global_point)
 	if not is_instance_valid(layer):
@@ -249,7 +265,41 @@ func _press_set_aside_layer(global_point: Vector2) -> bool:
 	return true
 
 
-## 3. Over the tool rack: take that tool. A held tool goes back first.
+## 4. Over the parts drawer: holding a part returns it. Holding a tool
+## puts it away first. Empty-handed, the parts menu opens.
+func _press_drawer(global_point: Vector2) -> bool:
+	var bin := _find_parts_bin(global_point)
+	if not is_instance_valid(bin):
+		return false
+	if held is Part:
+		bin.take_back(held as Part)
+		return true
+	if held is Repairable:
+		return false
+	var held_tool := get_held_tool()
+	if is_instance_valid(held_tool):
+		if held_tool.mode == Tool.Mode.IN_USE:
+			# A point has the tool. Let it finish first.
+			return true
+		held_tool.put_away()
+	bin.open_menu()
+	return true
+
+
+## 7. Holding a part: a press over a socket tries to fit it. Any other
+## press nopes and keeps the part. The drawer press comes first.
+func _press_with_part(global_point: Vector2) -> bool:
+	var part := held as Part
+	if not is_instance_valid(part):
+		return false
+	var socket := _find_socket(global_point)
+	if is_instance_valid(socket):
+		return socket.try_fit(part)
+	part.nope()
+	return true
+
+
+## 5. Over the tool rack: take that tool. A held tool goes back first.
 func _press_rack(global_point: Vector2) -> bool:
 	var rack_tool := _find_rack_tool(global_point)
 	if not is_instance_valid(rack_tool):
@@ -266,7 +316,7 @@ func _press_rack(global_point: Vector2) -> bool:
 	return true
 
 
-## 4. Holding a tool: its tip goes to the press, then it acts there.
+## 6. Holding a tool: its tip goes to the press, then it acts there.
 func _press_with_tool(global_point: Vector2) -> bool:
 	var held_tool := get_held_tool()
 	if not is_instance_valid(held_tool) or held_tool.mode != Tool.Mode.HELD:
@@ -282,9 +332,8 @@ func _press_with_tool(global_point: Vector2) -> bool:
 	return true
 
 
-## 5. Holding a part: nothing yet, the part drops on release.
-## 6. Empty hand over a point: poke it.
-## 7. Empty hand over the item: drag it if finished, or shake it.
+## 8. Empty hand over a point: poke it.
+## 9. Empty hand over the item: drag it if finished, or shake it.
 func _press_with_empty_hand(global_point: Vector2) -> bool:
 	if is_instance_valid(held):
 		return false
@@ -343,8 +392,10 @@ func _track_pointer(event: InputEventMouse) -> void:
 	is_touch = event.device == InputEvent.DEVICE_ID_EMULATION
 
 
-## Arrow when empty, a grab hand when empty and over something it can
-## take, a drag hand while an item is held, hidden while a tool is held.
+## Arrow when empty, an open hand when empty and over something it
+## can grab, a drag hand while an item is held, hidden while a tool
+## is held. The open hand is the pointing-hand shape with the grab
+## texture from `_set_up_grab_cursor()` drawn in its place.
 func _update_cursor() -> void:
 	if not is_inside_tree() or not _is_level_running():
 		return
@@ -367,6 +418,22 @@ func _is_level_running() -> bool:
 	return is_instance_valid(G.level) and G.level.is_ancestor_of(self)
 
 
+## Godot has no open-hand shape. The pointing-hand shape stands in
+## for it, with this texture drawn in its place. The parts menu's
+## slots ask for the same shape, so they show the open hand too.
+func _set_up_grab_cursor() -> void:
+	if not is_instance_valid(G.settings):
+		return
+	var texture := G.settings.grab_cursor_texture
+	if not is_instance_valid(texture):
+		return
+	Input.set_custom_mouse_cursor(
+		texture,
+		Input.CURSOR_POINTING_HAND,
+		G.settings.grab_cursor_hotspot,
+	)
+
+
 func _apply_cursor(
 	to_mouse_mode: Input.MouseMode,
 	to_cursor_shape: Input.CursorShape,
@@ -381,10 +448,24 @@ func _apply_cursor(
 
 func _can_take(global_point: Vector2) -> bool:
 	if is_instance_valid(input_owner):
-		return false
+		# A broken part being wiggled out still shows the open hand.
+		# Every other running microgame takes the arrow instead.
+		var owner_socket := input_owner as PartSocket
+		return (
+			is_instance_valid(owner_socket)
+			and owner_socket.has_tuggable_part()
+		)
+	var screw := G.level.get_resting_screw_at(global_point)
+	if is_instance_valid(screw) and screw.can_come_back():
+		return true
 	if is_instance_valid(_find_ready_layer(global_point)):
 		return true
+	if is_instance_valid(_find_parts_bin(global_point)):
+		return true
 	if is_instance_valid(_find_rack_tool(global_point)):
+		return true
+	var socket := _find_socket(global_point)
+	if is_instance_valid(socket) and socket.has_tuggable_part():
 		return true
 	var item := _find_item(global_point)
 	return is_instance_valid(item) and item.has_finished
@@ -419,6 +500,33 @@ func _find_rack_tool(global_point: Vector2) -> Tool:
 			or (area is ToolHolder and tool == held)
 		):
 			return tool
+	return null
+
+
+## The parts drawer under a world position, or null.
+func _find_parts_bin(global_point: Vector2) -> PartsBin:
+	for area in _query(global_point, Settings.PhysicsLayer.PARTS):
+		var node: Node = area
+		while is_instance_valid(node):
+			if node is PartsBin:
+				return node as PartsBin
+			node = node.get_parent()
+	return null
+
+
+## The first socket under a world position on an exposed layer, or
+## null. Finished sockets still count: pressing one nopes.
+func _find_socket(global_point: Vector2) -> PartSocket:
+	for area in _query(
+		global_point, Settings.PhysicsLayer.INTERACTION_POINTS
+	):
+		var socket := area as PartSocket
+		if (
+			is_instance_valid(socket)
+			and socket.is_visible_in_tree()
+			and socket.is_exposed()
+		):
+			return socket
 	return null
 
 
