@@ -311,7 +311,7 @@ func _on_item_landed(item: Repairable) -> void:
 		G.settings.item_landing_shake_px,
 		G.settings.item_landing_shake_sec,
 	)
-	%TicketCard.show_item(item.item_name, item.ticket)
+	%TicketCard.show_item(item.ticket)
 	G.audio.play_sound_delayed(&"hmm_curious", 0.45)
 
 

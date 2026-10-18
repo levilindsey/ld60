@@ -1,15 +1,12 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://src/ui/ticket/ticket_card.gd" id="1_ticket"]
-[ext_resource type="FontFile" path="res://assets/fonts/special_elite/SpecialElite-Regular.ttf" id="3_elite"]
 [ext_resource type="FontFile" path="res://assets/fonts/reenie_beanie/ReenieBeanie.ttf" id="4_handwriting"]
 [ext_resource type="Shader" path="res://assets/shaders/perspective_quad.gdshader" id="5_perspective"]
 [ext_resource type="PackedScene" path="res://src/props/prop_close_button.tscn" id="6_close"]
 [ext_resource type="Texture2D" path="res://assets/images/repairticket.png" id="7_paper"]
 
 [sub_resource type="Theme" id="Theme_paper"]
-default_font = ExtResource("3_elite")
-default_font_size = 22
 Label/colors/font_color = Color(0.22, 0.15, 0.08, 1)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_display"]
@@ -70,13 +67,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/separation = 6
-
-[node name="NameLabel" type="Label" parent="ContentViewport/Paper/Contents"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "Item"
-autowrap_mode = 3
 
 [node name="ComplaintLabel" type="Label" parent="ContentViewport/Paper/Contents"]
 unique_name_in_owner = true

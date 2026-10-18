@@ -1,7 +1,7 @@
 class_name TicketCard
 extends LiftableProp
-## The repair ticket: a paper card that names the item on the bench and
-## shows the customer's complaint (docs/design/outbox.md).
+## The repair ticket: a paper card with the customer's complaint about the
+## item on the bench (docs/design/outbox.md).
 ##
 ## When an item arrives, the ticket flutters down onto the desk beside it.
 ## Tapping it lifts it up to read, and its close button sets it back down.
@@ -47,11 +47,9 @@ func _ready() -> void:
 	visible = false
 
 
-## Drops the ticket onto the desk with the item's name and the customer's
-## complaint. A ticket that is still showing swaps its text and drops
-## again.
-func show_item(item_name: String, complaint: String) -> void:
-	%NameLabel.text = item_name
+## Drops the ticket onto the desk with the customer's complaint. A ticket
+## that is still showing swaps its text and drops again.
+func show_item(complaint: String) -> void:
 	%ComplaintLabel.text = complaint
 	_stop_motion()
 	close_button.hide()
