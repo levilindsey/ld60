@@ -1,3 +1,4 @@
+@tool
 class_name LiftableProp
 extends Node2D
 ## A prop that rests flat on the desk and lifts into view to be read.
@@ -6,6 +7,10 @@ extends Node2D
 ## drawn onto `desk_corners` so it looks like it's lying flat in
 ## perspective. Lifting eases it to `open_spot` while the corners ease back
 ## to the flat sprite.
+##
+## In the editor, only the resting perspective warp runs, so the level
+## shows the prop as it looks on the desk. Subclasses need `@tool` too for
+## that, and must skip their own setup in the editor.
 ##
 ## Presses are routed through `_handle_press()` from `_unhandled_input`
 ## rather than through Area2D picking. A prop placed after the level's Hand
@@ -23,7 +28,11 @@ const _LIFT_DURATION_SEC := 0.3
 ## The warped sprite's corners while resting on the desk: top left, top
 ## right, bottom right, bottom left, in the sprite's local space. They ease
 ## back to the flat sprite as the prop lifts.
-@export var desk_corners := PackedVector2Array()
+@export var desk_corners := PackedVector2Array():
+	set(value):
+		desk_corners = value
+		if Engine.is_editor_hint() and is_node_ready():
+			_preview_in_editor()
 ## The sprite drawn in perspective while resting. It needs the
 ## perspective_quad shader as its material.
 @export var warped_sprite: Sprite2D
@@ -46,9 +55,13 @@ var _lift_tween_id := -1
 var _lifted_z_index := 0
 ## The sibling the prop follows while lifted.
 var _lifted_after: Node
+var _has_preview_material := false
 
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		_preview_in_editor()
+		return
 	_rest_position = global_position
 	_rest_rotation = global_rotation
 	_rest_scale = global_scale
@@ -64,10 +77,32 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Engine.is_editor_hint():
+		return
 	if not _is_left_mouse_event(event, true):
 		return
 	if _handle_press(event as InputEventMouseButton):
 		get_viewport().set_input_as_handled()
+
+
+## Shows the resting warp in the editor. It works on a copy of the
+## material, so the preview never changes the material saved with the
+## prop's scene.
+func _preview_in_editor() -> void:
+	if not is_instance_valid(warped_sprite) or warped_sprite.texture == null:
+		return
+	if not _has_preview_material:
+		var original := warped_sprite.material
+		var copy := original.duplicate()
+		warped_sprite.material = copy
+		if is_instance_valid(shadow) and shadow.material == original:
+			shadow.material = copy
+		_has_preview_material = true
+	var flat_corners := _get_flat_corners()
+	if desk_corners.size() == flat_corners.size():
+		_set_warped_corners(desk_corners)
+	else:
+		_set_warped_corners(flat_corners)
 
 
 ## Handles a left press. Returns whether it landed on the prop, which keeps

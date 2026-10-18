@@ -1,3 +1,4 @@
+@tool
 class_name InstructionManual
 extends LiftableProp
 ## An in-world instruction manual. Starts closed on the desk; tapping the
@@ -60,6 +61,9 @@ var _drag_velocity_x := 0.0
 
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		super()
+		return
 	%LeftPage.position.x = -_PAGE_WIDTH / 2.0 + spine_overlap
 	%RightPage.position.x = _PAGE_WIDTH / 2.0 - spine_overlap
 	%Closed.position.x = -spine_overlap
