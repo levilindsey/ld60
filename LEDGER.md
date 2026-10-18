@@ -18,17 +18,6 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
 
-- **LX54** · Screws pull out to a rest spot on the bench after the last
-  twist; a press brings one back to sink into its hole before the install
-  twists (Levi's `RemoveScrew` and clip space, 4e44a86).
-  - owner: claude 194d3b69 (coordinator), agent `screw-pullout`
-  - branch: `lx54-pullout`, worktree
-    `.claude/worktrees/agent-a890b2f6c313d03a6`; last commit: `aff4ab4`
-    (WIP, unpushed)
-  - evidence: `.claude/probes/LX54/` (frames), new checks in `tests/screws/`
-  - next: the agent finishes the probes and the new checks, then reports
-  - brief: `docs/design/screw_pullout.md`
-
 ## Next
 
 - **LX41** · Play M1 by hand, with a mouse and on a touch screen: the
@@ -36,28 +25,34 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   placement (LX12). From m1-core: the pick-up ease, the auto put-away
   near the rack (too eager?), the cursor and mouse visibility (also
   paused), the booklet, the screw's turn and its 22.5 degree loose
-  angle, the set-aside spot at (360,100). From m1-flow: the drag and
+  angle, the set-aside spot at (362, 188). From m1-flow: the drag and
   its tilt, the drag cursor shown while an item is held, the ticket's
   look, the outbox at the left edge. From m1-screws: correcting the tip
   with a mouse and with a finger, and the touch drags on the Pixel
-  (LX47). From LX53: the slide's size (`screw_slide_px`, 6 px), and
-  pressing a raised screw, whose hit shape moves up with it. The sounds
-  wait for LX25 (no streams yet), the screw art for LX24.
+  (LX47). From LX53 and LX54: the slide's size (the first key of
+  `RemoveScrew`, about 6 px), pressing a raised screw, whose hit shape
+  moves up with it, the trip to the bench and its ease, the resting
+  screw's glow, the rest spots (placeholders from (-440, 80), which may
+  overlap the parts drawer or the rack), and the bench art's draw order
+  against a held tool, the set-aside cover and the other resting screws.
+  The sounds wait for LX25 (no streams yet), the screw art for LX24.
 - **LX14** · Canned air: spray cone, dust clumps, fans
   (`docs/design/canned_air.md`).
 - **LX16** · First item end to end: the virtual pet egg
   (`docs/design/items.md`). It replaces the three test items in
   `settings.tres` `item_queue`.
 - **LX17** · Phillips pressure gauge (`docs/design/phillips.md`). Feed
-  `Screw.slide` from its turn like the flathead, generalize
-  `tests/screws/slide_recorder.gd` (typed to `FlatHeadScrew`), and put
-  new checks in their own script: `tests/screws/probe.gd` is 933 lines.
+  `Screw.slide` from its turn like the flathead, and give its scene the
+  pull-out nodes (`screw_pullout.md` "Reuse"). Generalize
+  `tests/screws/slide_recorder.gd` and `pull_out_recorder.gd` (typed to
+  `FlatHeadScrew`), and put new checks in their own script (LX55).
 - **LX18** · Hammer: wind-up ring, strength bands, jog, realign, reseat
   (`docs/design/hammer.md`).
 - **LX19** · Pliers for stripped screws (`docs/design/pliers.md`). They
   replace m1-screws' stand-in pry: a pried screw comes back as new, and
   one that strips going in is pried home with `Screw.install()`. The
-  stand-in also snaps the rest of the slide in one frame (LX53).
+  stand-in also snaps the rest of the slide in one frame (LX53). Since
+  LX54 a screw pried out goes to the bench like a removed one.
 - **LX20** · Rag and solvent, sensitive surfaces
   (`docs/design/solvent.md`). Smears pass their surface as
   `RepairQuality.add_defect()`'s `source`, so a ruined smear replaces
@@ -77,7 +72,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   item's outline needs `Sprite2D` art with transparent margins;
   `ColorRect` placeholders only get the glow. Of Taryn's six new screw and
   driver PNGs, `rrrrrrrrrrrrrevird wercs.png` is the driver's second frame
-  (cb47839); the other five (one in `gui/`) are not used yet.
+  (cb47839) and `screweeeeeeeeddddddd.png` is in `flat_head_screw.tscn`;
+  the other four (one in `gui/`) are not used yet. With new screw art,
+  pose the bench art like `RemoveScrew`'s last key (`screw_pullout.md`).
 - **LX25** · Sounds: collect each design doc's "Feedback" list and add
   the streams to `src/core/audio_main.tscn`. Levi's cleaned foley is in
   `assets/audio/foley_cleaned/`; the flathead's scrape wants a rising
@@ -121,6 +118,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   `screws` runs (`tests/run.ps1 -Name <run> -Screenshots`), Godot found
   on PATH alone, and a real export without `tests/` (only
   `--export-pack` was searched; LX26).
+- **LX55** · `tests/screws/probe.gd` is 1010 lines, past gdlint's default
+  1000 (nothing runs gdlint here). Split it before more screw checks land
+  (LX17 to LX19; the LX54 handoff in `docs/design/screw_pullout.md`).
 
 ## Ideas (not scheduled)
 
@@ -152,6 +152,10 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX54** · Screws pull out to a rest spot on the bench after the last
+  twist, and a press brings one back to sink into its hole before the
+  install twists (`docs/design/screw_pullout.md`). Done in c0e493d to
+  6988520 (2026-10-17). Levi still to play it (LX41).
 - **LX15** · Parts drawer and part swap: drawer below the ticket,
   parts menu, wiggle-out, sockets (`docs/design/parts_bin.md`). Done in
   392c842 (2026-10-17). Levi still to play it (menu feel, drawer look
