@@ -1,7 +1,8 @@
 class_name InstructionManual
-extends Node2D
-## An in-world instruction manual. Starts closed; tapping the cover flips it
-## open. Once open, pages turn by swiping (or tapping) a page.
+extends LiftableProp
+## An in-world instruction manual. Starts closed on the desk; tapping the
+## cover lifts it and flips it open. Once open, pages turn by swiping (or
+## tapping) a page.
 ##
 ## Page turns use a single bending ManualLeaf hinged at the spine. Leaf
 ## progress 0 means the leaf lies over the right page; 1 means it lies over
@@ -27,18 +28,11 @@ enum State {
 
 const _PAGE_WIDTH := 240.0
 const _COVER_FLIP_DURATION_SEC := 0.2
-## Duration of the move between the desk and the open pose.
-const _LIFT_DURATION_SEC := 0.3
 ## Duration of a full leaf turn. Partial turns take proportionally less.
 const _FULL_TURN_DURATION_SEC := 0.4
 const _MIN_TURN_DURATION_SEC := 0.02
 ## Duration of each fast page turn while closing.
 const _CLOSING_TURN_DURATION_SEC := 0.12
-const _CLOSE_BUTTON_POP_DURATION_SEC := 0.3
-## How far the close button overshoots its size as it pops in.
-const _CLOSE_BUTTON_OVERSHOOT := 1.7
-## How far the close button is spun while fully shrunk.
-const _CLOSE_BUTTON_SPIN_RADIANS := -PI
 ## Releases that moved less than this count as taps.
 const _TAP_MAX_DISTANCE_PX := 8.0
 ## Release speed in the turn direction that completes a turn early.
@@ -51,15 +45,6 @@ const _FLING_SPEED_PX_PER_SEC := 600.0
 ## How far each page (and the cover) slides toward the spine, so the page
 ## outlines overlap there instead of leaving a gap.
 @export var spine_overlap := 4.0
-## Where the closed manual rests. Its position, rotation, scale and skew
-## lay the closed book flat on the desk. The manual lifts from here to its
-## own placement in the level to open. Without one, the manual stays put.
-@export var desk_spot: Node2D
-## The closed cover's corners while resting on the desk, for a perspective
-## view of the book lying flat: top left, top right, bottom right, bottom
-## left. In the cover sprite's local space, where the unwarped cover spans
-## ±120 by ±160. They ease back to the flat cover as the manual lifts.
-@export var desk_cover_corners := PackedVector2Array()
 
 
 var state := State.CLOSED
@@ -72,11 +57,6 @@ var _leaf_bend_direction := 1.0
 var _drag_start_x := 0.0
 var _drag_start_progress := 0.0
 var _drag_velocity_x := 0.0
-var _open_position := Vector2.ZERO
-var _open_rotation := 0.0
-var _open_scale := Vector2.ONE
-var _open_skew := 0.0
-var _cover_corners := PackedVector2Array()
 
 
 func _ready() -> void:
@@ -85,14 +65,7 @@ func _ready() -> void:
 	%Closed.position.x = -spine_overlap
 	%Leaf.spine_overlap = spine_overlap
 	_show_spread()
-	_open_position = global_position
-	_open_rotation = global_rotation
-	_open_scale = global_scale
-	_open_skew = global_skew
-	_set_cover_corners(_get_flat_cover_corners())
-	if is_instance_valid(desk_spot):
-		_set_lift(0.0)
-		reset_physics_interpolation()
+	super()
 
 
 func _input(event: InputEvent) -> void:
@@ -103,16 +76,6 @@ func _input(event: InputEvent) -> void:
 		_set_leaf_progress(_get_drag_progress(_get_local_x(event)))
 	elif _is_left_mouse_event(event, false):
 		_release_drag(_get_local_x(event))
-
-
-# Presses are routed here rather than through Area2D picking, so the
-# manual sees them before the level's Hand and can keep them from
-# reaching items behind it.
-func _unhandled_input(event: InputEvent) -> void:
-	if not _is_left_mouse_event(event, true):
-		return
-	if _handle_press(event as InputEventMouseButton):
-		get_viewport().set_input_as_handled()
 
 
 func open() -> void:
@@ -131,14 +94,14 @@ func close() -> void:
 	G.print("Closing instruction manual", ScaffolderLog.CATEGORY_INTERACTION)
 	_play_sound(&"pages_flip")
 	state = State.CLOSING
-	_pop_out_close_button()
+	close_button.pop_out()
 	_turn_back_to_first_spread()
 
 
 func _on_lifted() -> void:
 	state = State.OPENING
 	%RightPage.visible = true
-	_pop_in_close_button()
+	close_button.pop_in()
 	G.time.tween_property(
 		%Closed,
 		"scale:x",
@@ -169,17 +132,13 @@ func _on_left_page_unfolded() -> void:
 	opened.emit()
 
 
-## Returns whether the press landed on the manual.
 func _handle_press(event: InputEventMouseButton) -> bool:
-	if %CloseButton.visible and _is_on_shape(%CloseButtonShape, event):
+	if close_button.is_pressed_by(event):
 		close()
 		return true
 	match state:
 		State.CLOSED:
-			var cover_point := (
-				(%Cover.make_input_local(event) as InputEventMouse).position
-			)
-			if not Geometry2D.is_point_in_polygon(cover_point, _cover_corners):
+			if not _is_on_warped_sprite(event):
 				return false
 			open()
 			return true
@@ -312,76 +271,6 @@ func _on_lowered() -> void:
 	closed.emit()
 
 
-func _tween_lift(
-	from_lift: float,
-	to_lift: float,
-	on_completed: Callable,
-) -> void:
-	if not is_instance_valid(desk_spot):
-		on_completed.call()
-		return
-	G.time.tween_method(
-		self,
-		"_set_lift",
-		from_lift,
-		to_lift,
-		_LIFT_DURATION_SEC,
-		"ease_in_out",
-		0.0,
-		TimeType.APP_PHYSICS,
-		on_completed,
-	)
-
-
-## 0 rests at `desk_spot`; 1 is the open pose where the level placed the
-## manual.
-func _set_lift(lift: float) -> void:
-	global_position = desk_spot.global_position.lerp(_open_position, lift)
-	global_rotation = lerp_angle(
-		desk_spot.global_rotation,
-		_open_rotation,
-		lift,
-	)
-	global_scale = desk_spot.global_scale.lerp(_open_scale, lift)
-	global_skew = lerpf(desk_spot.global_skew, _open_skew, lift)
-
-	var flat_corners := _get_flat_cover_corners()
-	if desk_cover_corners.size() != flat_corners.size():
-		_set_cover_corners(flat_corners)
-		return
-	var corners := PackedVector2Array()
-	for i in flat_corners.size():
-		corners.append(desk_cover_corners[i].lerp(flat_corners[i], lift))
-	_set_cover_corners(corners)
-
-
-## The cover's corners when it isn't warped: top left, top right, bottom
-## right, bottom left, in the cover sprite's local space.
-func _get_flat_cover_corners() -> PackedVector2Array:
-	var half_size: Vector2 = %Cover.texture.get_size() / 2.0
-	return PackedVector2Array([
-		Vector2(-half_size.x, -half_size.y),
-		Vector2(half_size.x, -half_size.y),
-		Vector2(half_size.x, half_size.y),
-		Vector2(-half_size.x, half_size.y),
-	])
-
-
-func _set_cover_corners(corners: PackedVector2Array) -> void:
-	_cover_corners = corners
-	var material: ShaderMaterial = %Cover.material
-	material.set_shader_parameter("top_left", corners[0])
-	material.set_shader_parameter("top_right", corners[1])
-	material.set_shader_parameter("bottom_right", corners[2])
-	material.set_shader_parameter("bottom_left", corners[3])
-
-
-func _play_sound(sound_name: StringName, force_restart := false) -> void:
-	# The manual can be run on its own, before AudioMain exists.
-	if is_instance_valid(G.audio):
-		G.audio.play_sound(sound_name, force_restart)
-
-
 func _get_drag_progress(x: float) -> float:
 	var drag_x := _drag_start_x - x
 	return clampf(
@@ -433,57 +322,6 @@ func _prepare_leaf(lower_spread: int) -> void:
 	%Leaf.visible = true
 
 
-func _pop_in_close_button() -> void:
-	%CloseButton.visible = true
-	_set_close_button_appearance(0.0)
-	%CloseButtonSprite.reset_physics_interpolation()
-	_tween_close_button_appearance(
-		0.0,
-		1.0,
-		_set_close_button_appearance.bind(1.0),
-	)
-
-
-func _pop_out_close_button() -> void:
-	_tween_close_button_appearance(1.0, 0.0, _on_close_button_popped_out)
-
-
-func _on_close_button_popped_out() -> void:
-	%CloseButton.visible = false
-
-
-func _tween_close_button_appearance(
-	from_appearance: float,
-	to_appearance: float,
-	on_completed: Callable,
-) -> void:
-	G.time.tween_method(
-		self,
-		"_set_close_button_appearance",
-		from_appearance,
-		to_appearance,
-		_CLOSE_BUTTON_POP_DURATION_SEC,
-		"linear",
-		0.0,
-		TimeType.APP_PHYSICS,
-		on_completed,
-	)
-
-
-## 0 is fully shrunk and spun away; 1 is at rest. Scale follows a "back"
-## curve, so it overshoots slightly on the way in and winds up slightly
-## before shrinking on the way out.
-func _set_close_button_appearance(appearance: float) -> void:
-	var t := appearance - 1.0
-	var back_scale := (
-		1.0
-		+ (_CLOSE_BUTTON_OVERSHOOT + 1.0) * t * t * t
-		+ _CLOSE_BUTTON_OVERSHOOT * t * t
-	)
-	%CloseButtonSprite.scale = Vector2.ONE * maxf(back_scale, 0.0)
-	%CloseButtonSprite.rotation = _CLOSE_BUTTON_SPIN_RADIANS * t * t
-
-
 func _show_spread() -> void:
 	%LeftPage.set_content(_get_page_content(spread_index * 2))
 	%RightPage.set_content(_get_page_content(spread_index * 2 + 1))
@@ -500,23 +338,5 @@ func _get_page_content(page_index: int) -> Texture2D:
 	return null
 
 
-func _is_on_shape(
-	shape_node: CollisionShape2D,
-	event: InputEventMouse,
-) -> bool:
-	var point := (shape_node.make_input_local(event) as InputEventMouse).position
-	var size := (shape_node.shape as RectangleShape2D).size
-	return Rect2(-size / 2.0, size).has_point(point)
-
-
 func _get_local_x(event: InputEventMouse) -> float:
 	return (make_input_local(event) as InputEventMouse).position.x
-
-
-func _is_left_mouse_event(event: InputEvent, is_pressed: bool) -> bool:
-	# Touch input arrives as emulated mouse events.
-	return (
-		event is InputEventMouseButton
-		and event.button_index == MOUSE_BUTTON_LEFT
-		and event.pressed == is_pressed
-	)

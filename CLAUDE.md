@@ -69,6 +69,9 @@ that finishes it.
 - `src/parts/` - `part.gd` (drawer parts the hand holds like tools),
   `wiggle.gd` (shared swing counter).
 - `src/manual/` - Zaven's page-turning `InstructionManual`.
+- `src/props/` - `LiftableProp` (rests flat on the desk in perspective,
+  lifts into view when tapped; base of `InstructionManual` and
+  `TicketCard`) and the shared `PropCloseButton`.
 - `src/ui/hud/` - `hud.gd`/`hud.tscn`: title/pause/credits overlays.
 - `src/ui/super_hud/` - Top-level HUD host with `debug_console`.
 - `assets/` - `fonts/` (Special Elite for menus and printed paper,
