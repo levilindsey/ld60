@@ -227,6 +227,14 @@ func find_surface(global_point: Vector2) -> Surface:
 ## The press rules from tools.md "Routing a press", in order. Returns
 ## true when the press was used.
 func _handle_press(global_point: Vector2) -> bool:
+	# The parts menu is up: its backdrop usually takes the press and
+	# cancels the menu. Any press that still arrives here only
+	# cancels it too, never the bench behind it (the drawer, the
+	# tool rack, the item).
+	var parts_menu := G.level.get_parts_menu()
+	if is_instance_valid(parts_menu) and parts_menu.is_blocking_bench():
+		parts_menu.cancel()
+		return true
 	# 1. A microgame owns input.
 	if is_instance_valid(input_owner):
 		if input_owner.has_method("on_pointer_pressed"):
@@ -430,6 +438,10 @@ func _apply_cursor(
 
 
 func _can_take(global_point: Vector2) -> bool:
+	# Nothing on the bench can be taken while the parts menu is up.
+	var parts_menu := G.level.get_parts_menu()
+	if is_instance_valid(parts_menu) and parts_menu.is_blocking_bench():
+		return false
 	if is_instance_valid(input_owner):
 		# A broken part being wiggled out still shows the open hand.
 		# Every other running microgame takes the arrow instead.

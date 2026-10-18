@@ -65,6 +65,7 @@ func _run() -> void:
 		return
 
 	await _check_cancel()
+	await _check_menu_blocks_bench()
 	await _check_wiggle_out()
 	await _check_wrong_part()
 	await _check_right_part()
@@ -103,6 +104,53 @@ func _check_cancel() -> void:
 		"a press outside the slots cancels the menu",
 	)
 	_expect(_hand.is_empty(), "the hand is empty after cancelling")
+
+
+func _check_menu_blocks_bench() -> void:
+	# Pressing the drawer again only cancels the menu: it does not
+	# reopen it straight away.
+	await _press_at(_drawer_position)
+	_expect(
+		await _wait_until(
+			func() -> bool: return _level.get_parts_menu().is_open()
+		),
+		"the menu opens again for the drawer check",
+	)
+	await _seconds(0.6)
+	await _press_at(_drawer_position)
+	_expect(
+		await _wait_until(
+			func() -> bool: return not _level.get_parts_menu().is_open()
+		),
+		"a press on the drawer while the menu is open only cancels it",
+	)
+	_expect(_hand.is_empty(), "the hand stays empty after the drawer press")
+
+	# Pressing a tool behind the menu only cancels the menu: the tool
+	# stays on the rack.
+	await _press_at(_drawer_position)
+	_expect(
+		await _wait_until(
+			func() -> bool: return _level.get_parts_menu().is_open()
+		),
+		"the menu opens again for the tool check",
+	)
+	await _seconds(0.6)
+	var tool_position := Vector2(541.0, 308.0)
+	await _move_to(tool_position)
+	_expect_cursor(
+		Input.MOUSE_MODE_VISIBLE,
+		Input.CURSOR_ARROW,
+		"over a tool while the menu is open",
+	)
+	await _press_at(tool_position)
+	_expect(
+		await _wait_until(
+			func() -> bool: return not _level.get_parts_menu().is_open()
+		),
+		"a press over a tool while the menu is open only cancels it",
+	)
+	_expect(_hand.is_empty(), "the tool stays on the rack while the menu is open")
 
 
 func _check_wiggle_out() -> void:
