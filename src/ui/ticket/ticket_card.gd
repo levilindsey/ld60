@@ -25,9 +25,11 @@ const _FALL_DURATION_SEC := 1.6
 const _FALL_HEIGHT_PX := 700.0
 ## How far the ticket sways side to side as it falls.
 const _FALL_SWAY_PX := 90.0
-const _FALL_SWAY_CYCLES := 3.0
+const _FALL_SWAY_CYCLES := 2.0
+## How much the ticket rises at the ends of each swing, like a pendulum.
+const _FALL_SWING_LIFT_PX := 25.0
 ## How far the ticket rocks as it falls.
-const _FALL_ROCK_RADIANS := 0.5
+const _FALL_ROCK_RADIANS := 0.35
 const _LEAVE_DURATION_SEC := 0.35
 ## How far the ticket rises as it fades away.
 const _LEAVE_RISE_PX := 60.0
@@ -168,17 +170,18 @@ func _stop_motion() -> void:
 	_stop_lift()
 
 
-## 0 is high above the desk spot; 1 has landed on it. The ticket sways and
-## rocks less as it settles.
+## 0 is high above the desk spot; 1 has landed on it. The ticket swings
+## side to side like a pendulum, rising at the ends of each swing and
+## leaning into it, and swings less as it settles.
 func _set_fall(progress: float) -> void:
 	_set_lift(0.0)
-	var remaining := 1.0 - progress
-	var sway_angle := TAU * _FALL_SWAY_CYCLES * progress
-	global_position += Vector2(
-		_FALL_SWAY_PX * sin(sway_angle) * remaining,
-		-_FALL_HEIGHT_PX * remaining * remaining,
+	var remaining := 1.0 - smoothstep(0.0, 1.0, progress)
+	var swing_angle := TAU * _FALL_SWAY_CYCLES * progress
+	global_position += remaining * Vector2(
+		_FALL_SWAY_PX * sin(swing_angle),
+		-_FALL_HEIGHT_PX + _FALL_SWING_LIFT_PX * cos(2.0 * swing_angle),
 	)
-	global_rotation += _FALL_ROCK_RADIANS * cos(sway_angle) * remaining
+	global_rotation += _FALL_ROCK_RADIANS * cos(swing_angle) * remaining
 
 
 ## 0 rests on the desk spot; 1 has risen and faded away.
