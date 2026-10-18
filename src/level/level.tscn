@@ -10,7 +10,7 @@
 [ext_resource type="PackedScene" path="res://src/ui/receipt/receipt.tscn" id="8_receipt"]
 [ext_resource type="Script" uid="uid://dvbr5nmpc61tu" path="res://src/level/parts_bin.gd" id="9_bin"]
 [ext_resource type="PackedScene" path="res://src/parts/part.tscn" id="10_part"]
-[ext_resource type="PackedScene" path="res://src/ui/parts_menu/parts_menu.tscn" id="11_menu"]
+[ext_resource type="PackedScene" uid="uid://day4xku4ip812" path="res://src/ui/parts_menu/parts_menu.tscn" id="11_menu"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_drawer"]
 size = Vector2(320, 84)
@@ -111,7 +111,7 @@ unique_name_in_owner = true
 
 [node name="FlatHeadScrewDriverHolder" type="Area2D" parent="ToolHolders" unique_id=417891166]
 unique_name_in_owner = true
-position = Vector2(541, 308)
+position = Vector2(603, 298)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
@@ -122,49 +122,53 @@ metadata/_custom_type_script = "uid://bfo0vmq35oagd"
 shape = SubResource("CircleShape2D_giktf")
 metadata/_edit_lock_ = true
 
-[node name="RagHolder" type="Area2D" parent="ToolHolders"]
-position = Vector2(430, 80)
+[node name="RagHolder" type="Area2D" parent="ToolHolders" unique_id=2045496507]
+position = Vector2(289, 301)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
 script = ExtResource("3_af42n")
 type = 1
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/RagHolder"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/RagHolder" unique_id=636768773]
 shape = SubResource("CircleShape2D_giktf")
+metadata/_edit_lock_ = true
 
-[node name="AirBlowerHolder" type="Area2D" parent="ToolHolders"]
-position = Vector2(541, 120)
+[node name="AirBlowerHolder" type="Area2D" parent="ToolHolders" unique_id=1435836391]
+position = Vector2(450, 299)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
 script = ExtResource("3_af42n")
 type = 2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/AirBlowerHolder"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/AirBlowerHolder" unique_id=1229575146]
 shape = SubResource("CircleShape2D_giktf")
+metadata/_edit_lock_ = true
 
-[node name="HammerHolder" type="Area2D" parent="ToolHolders"]
-position = Vector2(460, 220)
+[node name="HammerHolder" type="Area2D" parent="ToolHolders" unique_id=1443814677]
+position = Vector2(368, 301)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
 script = ExtResource("3_af42n")
 type = 3
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/HammerHolder"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/HammerHolder" unique_id=2147140142]
 shape = SubResource("CircleShape2D_giktf")
+metadata/_edit_lock_ = true
 
-[node name="PhillipsScrewDriverHolder" type="Area2D" parent="ToolHolders"]
-position = Vector2(460, 40)
+[node name="PhillipsScrewDriverHolder" type="Area2D" parent="ToolHolders" unique_id=203465196]
+position = Vector2(527, 299)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
 script = ExtResource("3_af42n")
 type = 5
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/PhillipsScrewDriverHolder"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/PhillipsScrewDriverHolder" unique_id=207696165]
 shape = SubResource("CircleShape2D_giktf")
+metadata/_edit_lock_ = true
 
 [node name="Repairables" type="Node" parent="." unique_id=75239543]
 unique_name_in_owner = true
