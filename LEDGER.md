@@ -28,13 +28,6 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   - evidence: `.claude/probes/LX54/` (frames), new checks in `tests/screws/`
   - next: the agent finishes the probes and the new checks, then reports
   - brief: `docs/design/screw_pullout.md`
-- **LX15** · Parts drawer and part swap: drawer below the ticket,
-  parts menu, wiggle-out, sockets (`docs/design/parts_bin.md`).
-  - owner: claude (Levi session), since 2026-10-17
-  - branch: `main` (working tree)
-  - evidence: `tests/parts/` (18 checks; the full suite is green)
-  - next: Levi plays it (menu feel, drawer look with real art);
-    sounds wait for LX25, part art for LX24
 
 ## Next
 
@@ -159,6 +152,10 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX15** · Parts drawer and part swap: drawer below the ticket,
+  parts menu, wiggle-out, sockets (`docs/design/parts_bin.md`). Done in
+  4fb89dc (2026-10-17). Levi still to play it (menu feel, drawer look
+  with real art); sounds wait for LX25, part art for LX24.
 - **LX53** · Screws slide up the screen as they turn out and back down as
   they turn in (`Screw.slide`, `screw_slide_px`). Done in 3c4522f to
   4deac21 (2026-10-17).
