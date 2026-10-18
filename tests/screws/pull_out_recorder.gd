@@ -10,7 +10,8 @@ extends RefCounted
 ## Positions that must be exact agree within this many world pixels.
 const EXACT_PX := 0.001
 ## The bench art takes over from the clipped side view within this many
-## world pixels and this fraction of its scale, so the swap does not pop.
+## world pixels, and within this fraction of its scale and this many
+## radians of its turn, so the swap does not pop.
 const SWAP_TOLERANCE_PX := 0.5
 const SWAP_SCALE_TOLERANCE := 0.01
 ## A step may run this many frames longer or shorter than its length.
@@ -118,15 +119,23 @@ func check_pull_out(
 		+ " shape turns off and the screw finishes",
 	)
 	# The side view holds its end pose once the animation is done, and the
-	# hidden bench art sat at its home spot under the screw just before.
+	# hidden bench art sat at its home spot under the screw just before. By
+	# the swap frame the bench art may have begun its eased slide, so its
+	# position is compared from the frame before, and its scale and turn
+	# from the swap frame, where it shows.
 	var gap_px: float = after.side_position.distance_to(before.bench_position)
-	var scale_ratio: float = after.side_scale.x / before.bench_scale.x
+	var scale_ratio: float = after.bench_scale.x / after.side_scale.x
+	var turn_gap: float = absf(
+		angle_difference(after.bench_rotation, after.side_rotation)
+	)
 	expect.call(
 		gap_px < SWAP_TOLERANCE_PX
-		and absf(scale_ratio - 1.0) < SWAP_SCALE_TOLERANCE,
+		and absf(scale_ratio - 1.0) < SWAP_SCALE_TOLERANCE
+		and turn_gap < SWAP_SCALE_TOLERANCE,
 		"%s: no pop at the swap: the bench art starts where the side view"
 		% label
-		+ " ends (%.3f px apart, scale ratio %.4f)" % [gap_px, scale_ratio],
+		+ " ends (%.3f px apart, scale ratio %.4f, turned %.4f rad)"
+		% [gap_px, scale_ratio, turn_gap],
 	)
 	var rest := _find(Screw.Travel.RESTING, swap)
 	if not expect.call(rest > swap, "%s: reaches its rest spot" % label):
@@ -342,8 +351,10 @@ func _sample() -> void:
 		"bench_on_screw": _screw.bench_art.get_parent() == _screw,
 		"bench_position": _screw.bench_art.global_position,
 		"bench_scale": _screw.bench_art.global_scale,
+		"bench_rotation": _screw.bench_art.global_rotation,
 		"side_position": side_view.global_position,
 		"side_scale": side_view.global_scale,
+		"side_rotation": side_view.global_rotation,
 		"shape_disabled": _screw.hit_shape.disabled,
 		"glowing": (
 			is_instance_valid(_screw._glow_tween)
