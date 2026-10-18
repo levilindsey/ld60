@@ -1,12 +1,12 @@
 [gd_scene format=3 uid="uid://bukfeupi41tif"]
 
 [ext_resource type="Script" uid="uid://bqj50lqds4nhs" path="res://src/level/level.gd" id="1_la7um"]
+[ext_resource type="Texture2D" uid="uid://cx082esij4go3" path="res://assets/images/room.png" id="2_n4rap"]
 [ext_resource type="Script" uid="uid://3xax4i6teywv" path="res://src/level/camera_shaker.gd" id="2_xv147"]
 [ext_resource type="Script" uid="uid://bfo0vmq35oagd" path="res://src/level/tool_holder.gd" id="3_af42n"]
 [ext_resource type="Script" uid="uid://d8bmnco1ssr8" path="res://src/level/hand.gd" id="5_hand"]
 [ext_resource type="PackedScene" path="res://src/decals/decal_spawner.tscn" id="6_decals"]
 [ext_resource type="PackedScene" path="res://src/ui/ticket/ticket_card.tscn" id="7_ticket"]
-[ext_resource type="Texture2D" uid="uid://lmxtxt6qwc8n" path="res://assets/images/room!!!!!!.png" id="8_ob0n7"]
 [ext_resource type="PackedScene" path="res://src/ui/receipt/receipt.tscn" id="8_receipt"]
 [ext_resource type="Script" uid="uid://dvbr5nmpc61tu" path="res://src/level/parts_bin.gd" id="9_bin"]
 [ext_resource type="PackedScene" path="res://src/parts/part.tscn" id="10_part"]
@@ -27,9 +27,9 @@ radius = 34.058773
 script = ExtResource("1_la7um")
 
 [node name="Room!!!!!!" type="Sprite2D" parent="." unique_id=1576706779]
-position = Vector2(5.3750024, 2.2499912)
+position = Vector2(7, 2)
 scale = Vector2(0.36922747, 0.29375002)
-texture = ExtResource("8_ob0n7")
+texture = ExtResource("2_n4rap")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1488511100]
 unique_name_in_owner = true
@@ -116,7 +116,7 @@ unique_name_in_owner = true
 
 [node name="FlatHeadScrewDriverHolder" type="Area2D" parent="ToolHolders" unique_id=417891166]
 unique_name_in_owner = true
-position = Vector2(603, 298)
+position = Vector2(542, 310)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
@@ -128,7 +128,7 @@ shape = SubResource("CircleShape2D_giktf")
 metadata/_edit_lock_ = true
 
 [node name="RagHolder" type="Area2D" parent="ToolHolders" unique_id=2045496507]
-position = Vector2(289, 301)
+position = Vector2(-388, 328)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
@@ -140,7 +140,7 @@ shape = SubResource("CircleShape2D_giktf")
 metadata/_edit_lock_ = true
 
 [node name="AirBlowerHolder" type="Area2D" parent="ToolHolders" unique_id=1435836391]
-position = Vector2(450, 299)
+position = Vector2(425, 310)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
@@ -152,7 +152,7 @@ shape = SubResource("CircleShape2D_giktf")
 metadata/_edit_lock_ = true
 
 [node name="HammerHolder" type="Area2D" parent="ToolHolders" unique_id=1443814677]
-position = Vector2(368, 301)
+position = Vector2(-534, 317)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
@@ -164,7 +164,7 @@ shape = SubResource("CircleShape2D_giktf")
 metadata/_edit_lock_ = true
 
 [node name="PhillipsScrewDriverHolder" type="Area2D" parent="ToolHolders" unique_id=203465196]
-position = Vector2(527, 299)
+position = Vector2(488, 310)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
@@ -176,7 +176,7 @@ shape = SubResource("CircleShape2D_giktf")
 metadata/_edit_lock_ = true
 
 [node name="GlueHolder" type="Area2D" parent="ToolHolders" unique_id=737979922]
-position = Vector2(209, 301)
+position = Vector2(348, 264)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
@@ -184,6 +184,7 @@ script = ExtResource("3_af42n")
 type = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/GlueHolder" unique_id=226583405]
+position = Vector2(0, -2)
 shape = SubResource("CircleShape2D_giktf")
 
 [node name="Repairables" type="Node" parent="." unique_id=75239543]
@@ -195,7 +196,7 @@ position = Vector2(324, 206)
 
 [node name="ScrewSetAsideSpot" type="Node2D" parent="." unique_id=72004810]
 unique_name_in_owner = true
-position = Vector2(-403, 178)
+position = Vector2(-291, 151)
 
 [node name="Tools" type="Node" parent="." unique_id=1614121728]
 unique_name_in_owner = true
@@ -219,7 +220,7 @@ width = 4.0
 default_color = Color(0.9, 0.15, 0.1, 1)
 
 [node name="ManualDeskSpot" type="Marker2D" parent="." unique_id=2052140931]
-position = Vector2(-493, 261)
+position = Vector2(-460.00003, 188)
 scale = Vector2(0.45, 0.45)
 
 [node name="InstructionManual" parent="." unique_id=742015103 node_paths=PackedStringArray("desk_spot") instance=ExtResource("12_manual")]
