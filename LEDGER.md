@@ -18,6 +18,16 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
 
+- **LX58** · Hook up the new decal textures: tinted sets for dents,
+  cracks, scratches, rust, dust (two sets), grime (two sets) and glue;
+  sprite dirt points with set and color config; hammer dents and
+  cracks fitted onto parts. (LX24 follow-on.)
+  owner: Levi (Muse Code)
+  branch: mainline
+  next: DecalSet resources and spawner kinds, then the points.
+  brief: `docs/design/decals.md`, `docs/design/hammer.md`.
+  evidence: `assets/images/decals/`, `src/decals/`, `tests/decals/`.
+
 - **LX56** · Recurring itch deploys until Mon 2026-10-19 13:00 PDT:
   Muse cron job `90714525` (every 2 h at :17) pushes the working
   tree to `levilindsey/repair-shop:html5` via `scripts/deploy_itch.ps1`,
