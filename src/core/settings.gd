@@ -151,6 +151,18 @@ enum PhysicsLayer {
 @export var phillips_speed_max_rad_per_sec := 10.0
 ## The speed at the end of the gauge's sweep.
 @export var phillips_gauge_max_rad_per_sec := 14.0
+## Width of the green speed zone, in radians per second. The zone
+## slides counter-clockwise around the gauge, so its center keeps
+## climbing and wraps from the fast end back to the slow end.
+@export var phillips_zone_width_rad_per_sec := 3.0
+## Slowest and fastest rate the zone center climbs at, in radians
+## per second per second. It eases between fresh targets in this
+## range, so the pace never stays put for long.
+@export var phillips_zone_move_min_rad_per_sec := 0.8
+@export var phillips_zone_move_max_rad_per_sec := 2.8
+## Seconds between fresh zone-pace targets.
+@export var phillips_zone_retarget_min_sec := 1.2
+@export var phillips_zone_retarget_max_sec := 2.6
 ## Grip gained per second while the speed is in the band.
 @export var phillips_fill_rate := 0.35
 ## Grip lost per second while the speed is out of the band.
@@ -273,8 +285,8 @@ enum PhysicsLayer {
 ## Each twist drifts the tip by a random fraction of the screw's seat
 ## tolerance in this range. Keep the most under 1, so one twist can never
 ## unseat the tip.
-@export var flathead_slip_min := 0.2
-@export var flathead_slip_max := 0.6
+@export var flathead_slip_min := 0.35
+@export var flathead_slip_max := 0.85
 ## A touch drag moves the flathead's tip this many times as far as the
 ## finger (docs/design/flathead.md "Correcting"). Mouse motion is 1 to 1.
 @export var flathead_touch_gain := 2.0

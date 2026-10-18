@@ -10,10 +10,13 @@ a hold and release needle. The grip meter and the cam-out stay.
 
 Engage a Phillips screw and drag in circles around its head. A
 gauge beside the screw shows the circle speed as a needle, the
-target band in green, and the grip as a ring. Circle at a speed
-inside the band and the screw turns. Too slow or too fast and it
-does not turn, and the grip drains. An empty grip cams the bit
-out.
+target zone in green, and the grip as a ring. The green zone
+keeps sliding counter-clockwise around the gauge at an ever
+changing pace, like tracking the fish in Stardew Valley's
+fishing game: keep speeding the drag up and slowing it down so
+the needle stays in the green. Circle at a speed inside the
+zone and the screw turns. Too slow or too fast and it does not
+turn, and the grip drains. An empty grip cams the bit out.
 
 ## Rules
 
@@ -24,38 +27,47 @@ out.
   not count. The turning is averaged over 0.45 s and then
   smoothed over 0.5 s, so the needle has some weight.
   Dragging the wrong way reads as a negative speed.
-- **The band:** 2.5 to 10 radians per second, about half a turn to
-  one turn per second. Inside it the screw and the driver turn
-  with the drag and the slide follows the turn, like the
-  flathead. Outside it nothing turns. The band is sticky: once
-  in, the speed may stray 0.8 rad/s past either end before it
-  counts as out, so hovering on an edge does not flicker.
+- **The zone:** 3 radians per second wide. It starts centered on
+  6.25 rad/s, where the old fixed band sat, then its center
+  climbs at a pace that eases toward a fresh random target
+  between 0.8 and 2.8 rad/s per second, picked every 1.2 to
+  2.6 s. On the gauge, climbing speed reads as the green arc
+  sliding counter-clockwise; at the fast end it wraps back to
+  the slow end and keeps going. Inside the zone the screw and
+  the driver turn with the drag and the slide follows the turn,
+  like the flathead. Outside it nothing turns. The zone is
+  sticky: once in, the speed may stray 0.8 rad/s past either
+  end before it counts as out, so hovering on an edge does not
+  flicker.
 - **Grip meter:** starts at 0.4. It fills at 0.35/s while the
-  speed is in the band and drains at 0.28/s while it is out,
+  speed is in the zone and drains at 0.28/s while it is out,
   swinging between the two over 0.4 s, so a brief stray costs
   almost nothing. At 0 the bit cams out: the screw takes 1
   damage, the driver hops, input pauses for 0.5 s, the meter
   restarts at 0.4, and the turns so far are kept.
 - **Fair start:** nothing drains for the first 0.33 s while the
   gauge scales in.
-- **Done:** two full turns take the screw out. It then pulls
+- **Done:** three full turns take the screw out. It then pulls
   out to the bench like a flathead.
 - **Tutorial:** the first Phillips screw of the game never
   drains (`never_drains` on the screw).
 - **Install mode:** circle the other way. The grip starts at
-  0.6, and the loose turn (`LOOSE_TURN_RAD`) drives it home.
+  0.65, and the loose turn (`LOOSE_TURN_RAD`) drives it home.
 
 ## Screw styles (later)
 
-The band is fixed for now. A later pass can move it per screw:
-a clean screw gets a wide still band, a chewed one a band that
-jumps, a seized one a band that sinks as it frees up.
+Every screw's zone slides the same way for now. A later pass can
+vary the motion per screw: a clean screw gets a wide slow zone, a
+chewed one a zone that jumps, a seized one a zone that slows as
+it frees up.
 
 ## Feedback
 
-- The screw turns while the speed is in the band and stops
+- The screw turns while the speed is in the zone and stops
   while it is out.
-- The needle is green in the band and red out of it. The grip
+- The needle is green in the zone and red out of it. The gauge
+  sweep runs counter-clockwise, so faster circling swings the
+  needle up and to the left. The grip
   ring around the hub shifts from red to green as it fills.
 - Done: a pop from `Screw.remove()`. Cam-out: a scrape and
   sparks. Turning and creak loops wait for LX25.
@@ -66,8 +78,9 @@ jumps, a seized one a band that sinks as it frees up.
   registers as the hand's input owner, so every drag goes to it
   alone. It feeds `Screw.slide` from its turns like the flathead.
 - The gauge (`PhillipsGauge`, a child of the screw scene) draws
-  itself in `_draw()`: the band with `draw_arc()`, the grip ring,
-  and the speed needle with `draw_line()`.
+  itself in `_draw()`: the zone with `draw_arc()`, the grip ring,
+  and the speed needle with `draw_line()`. The screw moves the
+  zone in `_update_zone()`; the gauge only reads its ends.
 - The driver borrows the flathead driver's art for now. The
   screw's top-down head is `screwin around.png` and its
   perspective view is `screwwwzzzzzz.png`.
@@ -76,17 +89,23 @@ jumps, a seized one a band that sinks as it frees up.
 
 ## Tuning
 
-In the "Phillips" group in `settings.gd`: the band is 2.5 to 10
-  radians per second, the gauge tops out at 14, fill is 0.35/s,
-  drain is 0.28/s, the meter starts at 0.4 (0.65 to install), the
+In the "Phillips" group in `settings.gd`: the zone starts
+centered between `phillips_speed_min_rad_per_sec` (2.5) and
+`phillips_speed_max_rad_per_sec` (10), is
+`phillips_zone_width_rad_per_sec` (3) wide, and climbs at a pace
+easing between `phillips_zone_move_min_rad_per_sec` (0.8) and
+`phillips_zone_move_max_rad_per_sec` (2.8), retargeted every
+`phillips_zone_retarget_min_sec` to `phillips_zone_retarget_max_sec`
+(1.2 to 2.6 s). The gauge tops out at 14, fill is 0.35/s, drain
+is 0.28/s, the meter starts at 0.4 (0.65 to install), the
 cam-out pause is 0.5 s and the intro is 0.33 s. The smoothing
 is `phillips_speed_smoothing_sec` (0.5) for the needle and
 `phillips_meter_smoothing_sec` (0.4) for the grip, the sticky
-band grace is `phillips_band_grace_rad_per_sec` (0.8), and steps
+zone grace is `phillips_band_grace_rad_per_sec` (0.8), and steps
 under `phillips_min_segment_px` (4) do not count. Turns out is
 `turns_needed` on the screw (3). Each screw also has a
-`difficulty` (0.5 to 2): higher narrows its band and drains
-its grip faster.
+`difficulty` (0.5 to 2): higher narrows its zone, slides it
+faster and drains its grip faster.
 
 ## Later
 
@@ -94,4 +113,4 @@ its grip faster.
   drained.
 - A gauge built into the screwdriver's handle, like a torque
   driver.
-- Upgrades: a magnetic tip widens the band.
+- Upgrades: a magnetic tip widens the zone.

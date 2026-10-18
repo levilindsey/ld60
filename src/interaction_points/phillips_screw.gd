@@ -3,10 +3,13 @@ extends Screw
 ## A Phillips screw (docs/design/phillips.md). The player drags
 ## in circles. The circle speed comes from how fast the drag's
 ## direction turns, never from where the screw sits, so shaky
-## little circles count the same as neat big ones. Circling at a
-## speed inside the target band turns the screw. Too slow or too
-## fast does not turn it, and the grip drains. An empty grip
-## cams the bit out and the screw takes 1 damage.
+## little circles count the same as neat big ones. The green zone
+## on the gauge keeps sliding counter-clockwise at an ever
+## changing pace, so the player must keep speeding up and slowing
+## down to stay in it. Circling at a speed inside the zone turns
+## the screw. Too slow or too fast does not turn it, and the grip
+## drains. An empty grip cams the bit out and the screw takes 1
+## damage.
 
 
 ## Seconds of turning the speed is averaged over.
@@ -19,7 +22,7 @@ const _TURN_WINDOW_SEC := 0.45
 ## Full turns that take the screw out.
 @export var turns_needed := 3.0
 ## Scales how hard the screw is: 1 is normal. Higher narrows the
-## speed band and drains the grip faster.
+## green zone, slides it faster and drains the grip faster.
 @export_range(0.5, 2.0, 0.05) var difficulty := 1.0
 ## The first Phillips screw of the game need never cam out.
 @export var never_drains := false
@@ -39,6 +42,14 @@ var _has_last_heading := false
 var _active_sec := 0.0
 var _turn_samples: Array[Vector2] = []
 var _frame_correct_turn := 0.0
+## Where the green zone sits and how fast it is climbing, in
+## radians per second. The climb rate eases toward a fresh random
+## target every second or two.
+var _zone_center_rad_per_sec := 0.0
+var _zone_climb_rad_per_sec := 0.0
+var _zone_target_climb_rad_per_sec := 0.0
+var _zone_retarget_left_sec := 0.0
+var _zone_random := RandomNumberGenerator.new()
 var _is_in_band := false
 var _range_share := 0.0
 var _is_cam_out_paused := false
@@ -50,6 +61,16 @@ func _ready() -> void:
 	type = Type.PHILLIPS_SCREW
 	G.check(is_instance_valid(sparks))
 	G.check(is_instance_valid(gauge))
+	_zone_random.randomize()
+	# The zone starts where the fixed band used to sit.
+	_zone_center_rad_per_sec = (
+		(
+			G.settings.phillips_speed_min_rad_per_sec
+			+ G.settings.phillips_speed_max_rad_per_sec
+		)
+		/ 2.0
+	)
+	_pick_zone_target()
 
 
 func _physics_process(delta: float) -> void:
@@ -87,20 +108,26 @@ func is_in_range() -> bool:
 	return _is_in_band
 
 
-## The slow end of this screw's speed band.
+## The slow end of the green zone right now.
 func get_band_min() -> float:
-	return (
-		G.settings.phillips_speed_min_rad_per_sec
-		+ (difficulty - 1.0) * 0.75
-	)
+	return get_zone_center_rad_per_sec() - _get_zone_width() / 2.0
 
 
-## The fast end of this screw's speed band.
+## The fast end of the green zone right now.
 func get_band_max() -> float:
+	return get_zone_center_rad_per_sec() + _get_zone_width() / 2.0
+
+
+## The circle speed at the middle of the green zone.
+func get_zone_center_rad_per_sec() -> float:
+	return _zone_center_rad_per_sec
+
+
+## The zone width for this screw: the setting, narrowed by
+## difficulty.
+func _get_zone_width() -> float:
 	return maxf(
-		G.settings.phillips_speed_max_rad_per_sec
-		- (difficulty - 1.0) * 1.5,
-		get_band_min() + 1.0,
+		G.settings.phillips_zone_width_rad_per_sec / difficulty, 1.2
 	)
 
 
@@ -136,6 +163,7 @@ func _start_microgame() -> void:
 func _advance(delta: float) -> void:
 	_active_sec += delta
 	_update_circle_speed(delta)
+	_update_zone(delta)
 
 	if intro_left > 0.0:
 		intro_left -= delta
@@ -175,6 +203,48 @@ func _advance(delta: float) -> void:
 			return
 	if not never_drains and grip_meter <= 0.0:
 		_cam_out()
+
+
+## Slides the green zone counter-clockwise around the gauge: the
+## center climbs at a pace that eases toward a fresh random target
+## every second or two, and wraps from the fast end of the sweep
+## back to the slow end.
+func _update_zone(delta: float) -> void:
+	_zone_retarget_left_sec -= delta
+	if _zone_retarget_left_sec <= 0.0:
+		_pick_zone_target()
+	var blend := 1.0 - exp(-delta / 0.7)
+	_zone_climb_rad_per_sec += (
+		(_zone_target_climb_rad_per_sec - _zone_climb_rad_per_sec)
+		* blend
+	)
+	_zone_center_rad_per_sec += _zone_climb_rad_per_sec * delta
+	var width := _get_zone_width()
+	var low_center := width / 2.0
+	var high_center := maxf(
+		G.settings.phillips_gauge_max_rad_per_sec - width / 2.0,
+		low_center + 0.5,
+	)
+	var span := high_center - low_center
+	if _zone_center_rad_per_sec > high_center:
+		_zone_center_rad_per_sec = (
+			low_center
+			+ fmod(_zone_center_rad_per_sec - low_center, span)
+		)
+	elif _zone_center_rad_per_sec < low_center:
+		_zone_center_rad_per_sec = low_center
+
+
+## Picks the zone's next pace and how long to keep it.
+func _pick_zone_target() -> void:
+	_zone_target_climb_rad_per_sec = difficulty * _zone_random.randf_range(
+		G.settings.phillips_zone_move_min_rad_per_sec,
+		G.settings.phillips_zone_move_max_rad_per_sec,
+	)
+	_zone_retarget_left_sec = _zone_random.randf_range(
+		G.settings.phillips_zone_retarget_min_sec,
+		G.settings.phillips_zone_retarget_max_sec,
+	)
 
 
 ## Reads the drag's turning from recent pointer steps and

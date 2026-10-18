@@ -25,7 +25,7 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
   twist, so it is never sudden:
 
   ```
-  drift = sign * randf_range(0.2, 0.6) * seat_tolerance_px
+  drift = sign * randf_range(0.35, 0.85) * seat_tolerance_px
   ```
 
   - Each screw picks its drift direction at random. `sign` follows
@@ -33,7 +33,7 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
     the other way.
   - `seat_tolerance_px` is how far the tip can move from the center
     before it leaves the slot, about half the slot's length.
-- **One twist can never unseat it.** The largest drift is 0.6 of the
+- **One twist can never unseat it.** The largest drift is 0.85 of the
   tolerance, so it takes at least two twists the same way. A player who
   never corrects should still usually lose the tip before the screw is
   out, which is why drifts mostly keep going one way ("Tuning").
@@ -96,7 +96,7 @@ change: reset the twist count on unseat. LX6 kept the default.
 | `twist_angle_deg` | 90 | settings |
 | `pause_sec` | 0.35 | settings |
 | `telegraph_sec` | 0.15 | settings |
-| `slip_min`, `slip_max` | 0.2, 0.6 (keep `slip_max` under 1) | settings |
+| `slip_min`, `slip_max` | 0.35, 0.85 (keep `slip_max` under 1) | settings |
 | `flathead_touch_gain` | 2.0 | settings, "Flathead" group |
 | `seat_tolerance_px` | 9 | per screw |
 | `slip_bias` | 0.9 | per screw |
@@ -112,13 +112,13 @@ simulated screws using the drift formula above:
 
 | `slip_bias` | Median twists to unseat | Unseats on twist 2 | Unseats within 4 twists |
 |---|---|---|---|
-| 0.5 | 6 | 6.3% | 32.5% |
-| 0.8 | 4 | 8.5% | 57.7% |
-| 0.9 | 3 | 10.2% | 76.5% |
-| 1.0 | 3 | 12.5% | 99.7% |
+| 0.5 | 4 | 40.9% | 66.3% |
+| 0.8 | 2 | 55.7% | 82.6% |
+| 0.9 | 2 | 67.2% | 92.1% |
+| 1.0 | 2 | 82.2% | 100% |
 
-At 0.5 an idle player gets two of every three 4-twist screws out without
-correcting once, so the default is 0.9. Use 1.0 on the pet egg (the
+At 0.5 two of every three 4-twist screws still unseat under an idle player, so
+the default is 0.9, where nine in ten do. Use 1.0 on the pet egg (the
 tutorial), where one steady direction makes the lesson clear. For a
 screw that should change direction more often, lower `slip_bias` and
 raise `twists_needed`.

@@ -1,7 +1,8 @@
 extends "res://tests/probe_base.gd"
 ## The Phillips circular drag (LX17). Boots the game, swaps the
 ## test box for the Phillips box, and circles the driver around
-## its screws too slowly, too fast, and then at a good speed.
+## its screws too slowly, too fast, and then tracking the sliding
+## green zone.
 ##
 ## Run it with `tests/run.ps1 -Name phillips`, or from the repo
 ## root (PowerShell):
@@ -92,7 +93,13 @@ func _check_cam_outs() -> void:
 		_left.mode == InteractionPoint.Mode.ACTIVE,
 		"the driver engages the left screw",
 	)
-	await _drag_circle(_left.global_position, 1.2, 2.8, -1.0)
+	var zone_start := _left.get_zone_center_rad_per_sec()
+	await _drag_circle(_left.global_position, 1.2, 1.0, -1.0)
+	_expect(
+		_left.get_zone_center_rad_per_sec() > zone_start + 0.2,
+		"the green zone slides while the screw is engaged",
+	)
+	await _drag_circle(_left.global_position, 1.2, 1.8, -1.0)
 	_expect(
 		_left.health == _left.max_health - 1,
 		"circling too slowly cams the bit out",
@@ -113,25 +120,25 @@ func _check_cam_outs() -> void:
 
 func _check_removals() -> void:
 	await _press_at(_left.global_position)
-	await _drag_circle(_left.global_position, 5.0, 5.5, -1.0)
+	await _drag_circle(_left.global_position, 5.0, 7.0, -1.0, _left)
 	_expect(
 		await _wait_for_travel(_left, Screw.Travel.RESTING),
-		"a good circle speed removes the left screw",
+		"tracking the sliding zone removes the left screw",
 	)
 	await _press_at(_right.global_position)
 	# Circling around empty bench, away from the screw, still
 	# turns it. Only the drag's turning counts, not its center.
 	await _drag_circle(
-		_right.global_position + Vector2(70, 40), 5.0, 2.5, -1.0
+		_right.global_position + Vector2(70, 40), 5.0, 2.5, -1.0, _right
 	)
 	_expect(
 		_right.slide > 0.25,
 		"circling off-center still turns the screw",
 	)
-	await _drag_circle(_right.global_position, 5.0, 5.5, -1.0)
+	await _drag_circle(_right.global_position, 5.0, 5.5, -1.0, _right)
 	_expect(
 		await _wait_for_travel(_right, Screw.Travel.RESTING),
-		"a good circle speed removes the right screw",
+		"tracking the sliding zone removes the right screw",
 	)
 	for frame in 180:
 		if not _cover.is_on:
@@ -157,7 +164,7 @@ func _check_install() -> void:
 	if _hand.held != _driver:
 		await _grab_driver()
 	await _press_at(_left.global_position)
-	await _drag_circle(_left.global_position, 5.0, 2.0, 1.0)
+	await _drag_circle(_left.global_position, 5.0, 4.0, 1.0, _left)
 	_expect(
 		_left.mode == InteractionPoint.Mode.FINISHED
 		and _left.slide < 0.01,
@@ -166,17 +173,24 @@ func _check_install() -> void:
 
 
 ## Drags the pointer in circles around a center. `direction` is
-## -1 to take a screw out and 1 to drive it in.
+## -1 to take a screw out and 1 to drive it in. With a tracked
+## screw, the drag speed follows the middle of its sliding green
+## zone, the way a player chasing the zone would.
 func _drag_circle(
 	center: Vector2,
 	speed_rad_per_sec: float,
 	duration_sec: float,
 	direction: float,
+	tracked_screw: PhillipsScrew = null,
 ) -> void:
 	await _move_to(center + Vector2(_CIRCLE_RADIUS, 0))
 	var angle := 0.0
 	var steps := int(duration_sec / _STEP_SEC)
 	for step in steps:
+		if is_instance_valid(tracked_screw):
+			speed_rad_per_sec = (
+				tracked_screw.get_zone_center_rad_per_sec()
+			)
 		angle += direction * speed_rad_per_sec * _STEP_SEC
 		var point := (
 			center + Vector2(cos(angle), sin(angle)) * _CIRCLE_RADIUS

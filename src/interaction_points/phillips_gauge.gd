@@ -6,8 +6,10 @@ extends Node2D
 
 
 const _RADIUS := 34.0
-const _SWEEP_DEG := 240.0
-const _START_DEG := 150.0
+## The sweep runs counter-clockwise: zero speed sits up and to
+## the right, and faster speeds swing the needle up and left.
+const _SWEEP_DEG := -240.0
+const _START_DEG := 30.0
 
 
 func _process(_delta: float) -> void:
@@ -23,12 +25,19 @@ func _draw() -> void:
 	draw_arc(
 		center, _RADIUS, 0.0, TAU, 48, Color(1, 1, 1, 0.35), 2.0, true
 	)
-	# The target band.
+	# The green zone. The reversed sweep maps the fast end to the
+	# smaller angle, so the ends are ordered before drawing.
 	draw_arc(
 		center,
 		_RADIUS,
-		_speed_to_angle(screw.get_band_min()),
-		_speed_to_angle(screw.get_band_max()),
+		minf(
+			_speed_to_angle(screw.get_band_min()),
+			_speed_to_angle(screw.get_band_max())
+		),
+		maxf(
+			_speed_to_angle(screw.get_band_min()),
+			_speed_to_angle(screw.get_band_max())
+		),
 		24,
 		Color(0.4, 1.0, 0.45),
 		7.0,

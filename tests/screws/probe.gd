@@ -23,10 +23,10 @@ const _DRIFT_TABLE_SEED := 6060
 ## flathead.md "Tuning": slip_bias, the median twists to unseat, the
 ## percent that unseat on twist 2, the percent that unseat within 4.
 const _BIAS_TABLE := [
-	[0.5, 6, 6.3, 32.5],
-	[0.8, 4, 8.5, 57.7],
-	[0.9, 3, 10.2, 76.5],
-	[1.0, 3, 12.5, 99.7],
+	[0.5, 4, 40.9, 66.3],
+	[0.8, 2, 55.7, 82.6],
+	[0.9, 2, 67.2, 92.1],
+	[1.0, 2, 82.2, 100.0],
 ]
 ## The table rounds to a tenth of a percent, and the probe samples fewer
 ## screws than the table did.
@@ -657,9 +657,11 @@ func _start_fresh_level() -> bool:
 
 
 ## Three pushes to the end of the slot. In the pause each one stops at
-## the end and does not skid (LX47). The twist's drift then pushes the
-## tip past the end: each skid costs 1 health and shows the next head
-## frame. The third strips the screw.
+## the end and does not skid (LX47). The first then skids when the
+## player pushes it past the end during the twist. The other two skid
+## when the twist's drift pushes a tip held at the end past it. Each
+## skid costs 1 health and shows the next head frame. The third strips
+## the screw.
 func _check_yanks() -> void:
 	var screw := _screw_left
 	var decal_count := _get_decals().size()
@@ -671,7 +673,12 @@ func _check_yanks() -> void:
 	var skids := 0
 	for yank in 3:
 		_reset_sounds()
-		var drift_seed := _find_push_off_seed(screw)
+		# The first push-off is the player's during the twist, so its
+		# drift pulls the other way. The rest are the drift's own.
+		var drift_seed := _find_push_off_seed(
+			screw,
+			-1.0 if yank == 0 else 1.0,
+		)
 		if not _expect(
 			drift_seed >= 0,
 			"found a drift seed that pushes the tip off the slot's end",
@@ -725,6 +732,25 @@ func _check_yanks() -> void:
 					screw.seat_tolerance_px,
 					screw.health,
 				],
+			)
+			var twist_frames := 0
+			while (
+				screw._phase != FlatHeadScrew.Phase.TWIST
+				and screw.mode == InteractionPoint.Mode.ACTIVE
+				and twist_frames < _UNSEAT_TIMEOUT_FRAMES
+			):
+				twist_frames += 1
+				await get_tree().physics_frame
+			await _move_to(
+				_hand.pointer_position
+				+ screw.get_slot_axis() * _YANK_PX
+			)
+			_expect(
+				screw.mode == InteractionPoint.Mode.UNSTARTED
+				and screw.health == screw.max_health - 1
+				and _count("skid") == 1,
+				"LX47: a push during the twist slides the tip out"
+				+ " (health %d)" % screw.health,
 			)
 		var frames_waited := 0
 		while (
@@ -1017,10 +1043,14 @@ func _move_touch_to(world_point: Vector2) -> void:
 	await _physics_frames(2)
 
 
-## A seed whose first drift goes the way the probe pushes the tip, so
-## the twist pushes a tip held at the slot's end past it. Returns -1 if
-## none is found.
-func _find_push_off_seed(screw: FlatHeadScrew) -> int:
+## A seed whose first drift goes `wanted_sign`'s way along the slot.
+## A drift toward the pushed end pushes a tip held there past it. One
+## the other way leaves the push-off to the player. Returns -1 if none
+## is found.
+func _find_push_off_seed(
+	screw: FlatHeadScrew,
+	wanted_sign: float,
+) -> int:
 	for drift_seed in range(1, 10000):
 		var random := RandomNumberGenerator.new()
 		random.seed = drift_seed
@@ -1032,7 +1062,7 @@ func _find_push_off_seed(screw: FlatHeadScrew) -> int:
 			G.settings.flathead_slip_min,
 			G.settings.flathead_slip_max,
 		)
-		if drift > 0.0:
+		if drift * wanted_sign > 0.0:
 			return drift_seed
 	return -1
 
