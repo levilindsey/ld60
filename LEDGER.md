@@ -45,9 +45,10 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   screw's glow, the rest spots (placeholders from (-440, 80), which may
   overlap the parts drawer or the rack), and the bench art's draw order
   against a held tool, the set-aside cover and the other resting screws.
+  From LX14, LX18 and LX20: the rag drag feel and its reversal bonus,
+  the bulb aim and squeeze, the hammer ring timing, band width and
+  recoil, and the rack spots at (430, 80), (541, 120) and (460, 220).
   The sounds wait for LX25 (no streams yet), the screw art for LX24.
-- **LX14** · Canned air: spray cone, dust clumps, fans
-  (`docs/design/canned_air.md`).
 - **LX16** · First item end to end: the virtual pet egg
   (`docs/design/items.md`). It replaces the three test items in
   `settings.tres` `item_queue`.
@@ -56,20 +57,16 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   pull-out nodes (`screw_pullout.md` "Reuse"). Generalize
   `tests/screws/slide_recorder.gd` and `pull_out_recorder.gd` (typed to
   `FlatHeadScrew`), and put new checks in their own script (LX55).
-- **LX18** · Hammer: wind-up ring, strength bands, jog, realign, reseat
-  (`docs/design/hammer.md`).
 - **LX19** · Pliers for stripped screws (`docs/design/pliers.md`). They
   replace m1-screws' stand-in pry: a pried screw comes back as new, and
   one that strips going in is pried home with `Screw.install()`. The
   stand-in also snaps the rest of the slide in one frame (LX53). Since
   LX54 a screw pried out goes to the bench like a removed one.
-- **LX20** · Rag and solvent, sensitive surfaces
-  (`docs/design/solvent.md`). Smears pass their surface as
-  `RepairQuality.add_defect()`'s `source`, so a ruined smear replaces
-  the minor one.
 - **LX21** · Oil can: drops, pivots, squeaks, misuse
   (`docs/design/oil_can.md`).
 - **LX22** · Glue along cracks and clips (`docs/design/glue.md`).
+  Registered ahead: `Tool.Type.GLUE`, `InteractionPoint.Type.CRACK`
+  and the "Glue" settings group wait for the bottle and crack art.
 - **LX23** · Items 2 to 5: rotary phone, Walkman, CRT TV, ray gun
   (`docs/design/items.md` "The jam cut").
 - **LX24** · Art: screw states, decals, part states, effects, UI
@@ -159,9 +156,21 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 - **LX50** · Screw extras: a handle lean, a grippier flathead, a screw
   dish, security screws (`docs/design/m1_agents.md`, the m1-screws
   handoff).
+- **LX57** · Solvent bottle and soaking for the rag: wetness, drying,
+  drips (`docs/design/solvent.md` "Soaking (later, not built)"). The
+  rag wipes dry until a bottle prop lands.
 
 ## Done
 
+- **LX14** · Air blower bulb: tap puffs, dust clumps and fans
+  (`docs/design/canned_air.md`). Done in b96ebaa (2026-10-17). Levi
+  still to play it (LX41).
+- **LX18** · Hammer: wind-up ring, strength bands, jog, realign,
+  reseat (`docs/design/hammer.md`). Done in b96ebaa (2026-10-17).
+  Levi still to play it (LX41).
+- **LX20** · Rag and sensitive surfaces, dry until solvent lands
+  (`docs/design/solvent.md`). Done in b96ebaa (2026-10-17). Levi
+  still to play it (LX41).
 - **LX54** · Screws pull out to a rest spot on the bench after the last
   twist, and a press brings one back to sink into its hole before the
   install twists (`docs/design/screw_pullout.md`). Done in c0e493d to
