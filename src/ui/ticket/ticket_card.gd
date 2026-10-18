@@ -20,11 +20,11 @@ enum State {
 }
 
 
-const _FALL_DURATION_SEC := 1.6
+const _FALL_DURATION_SEC := 1.8
 ## How high above its desk spot the ticket starts falling.
 const _FALL_HEIGHT_PX := 700.0
 ## How far the ticket sways side to side as it falls.
-const _FALL_SWAY_PX := 90.0
+const _FALL_SWAY_PX := 125.0
 const _FALL_SWAY_CYCLES := 2.0
 ## How much the ticket rises at the ends of each swing, like a pendulum.
 const _FALL_SWING_LIFT_PX := 25.0
