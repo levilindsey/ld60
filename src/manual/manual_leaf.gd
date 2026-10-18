@@ -25,6 +25,10 @@ const _LIFT_FLARE := 0.15
 const _MAX_SHADE := 0.45
 
 
+## How far each resting page is shifted toward the spine.
+var spine_overlap := 0.0
+
+
 var _progress := 0.0
 var _bend_direction := 1.0
 
@@ -37,8 +41,10 @@ func _draw() -> void:
 	)
 
 	# Accumulate the bent strip's edge positions. x runs along the table
-	# (positive is right of the spine) and z is height above it.
-	var xs := PackedFloat32Array([0.0])
+	# (positive is right of the spine) and z is height above it. The hinge
+	# slides across the spine so each face lines up with its resting page.
+	var hinge_x := lerpf(-spine_overlap, spine_overlap, _progress)
+	var xs := PackedFloat32Array([hinge_x])
 	var zs := PackedFloat32Array([0.0])
 	for i in _SLICE_COUNT:
 		var u := (i + 0.5) / _SLICE_COUNT

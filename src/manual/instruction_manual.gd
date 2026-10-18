@@ -39,6 +39,9 @@ const _FLING_SPEED_PX_PER_SEC := 600.0
 ## Content for each inner page, in reading order. Each spread shows two
 ## pages: even indices on the left, odd indices on the right.
 @export var page_contents: Array[Texture2D] = []
+## How far each page (and the cover) slides toward the spine, so the page
+## outlines overlap there instead of leaving a gap.
+@export var spine_overlap := 4.0
 
 
 var state := State.CLOSED
@@ -54,6 +57,10 @@ var _drag_velocity_x := 0.0
 
 
 func _ready() -> void:
+	%LeftPage.position.x = -_PAGE_WIDTH / 2.0 + spine_overlap
+	%RightPage.position.x = _PAGE_WIDTH / 2.0 - spine_overlap
+	%Closed.position.x = -spine_overlap
+	%Leaf.spine_overlap = spine_overlap
 	_show_spread()
 	%ClickArea.input_event.connect(_on_click_area_input_event)
 	%CloseButton.input_event.connect(_on_close_button_input_event)
@@ -98,7 +105,6 @@ func close() -> void:
 
 func _on_cover_flipped() -> void:
 	%Closed.visible = false
-	%Gutter.visible = true
 	%Leaf.set_contents(null, _get_page_content(0))
 	%Leaf.visible = true
 	_leaf_bend_direction = 1.0
@@ -227,7 +233,6 @@ func _fold_first_page() -> void:
 
 func _on_first_page_folded() -> void:
 	%Leaf.visible = false
-	%Gutter.visible = false
 	%Closed.visible = true
 	%Closed.reset_physics_interpolation()
 	G.time.tween_property(
