@@ -53,6 +53,18 @@ func _ready() -> void:
 	_home_rotation = rotation
 	_home_scale = scale
 	_rest_scale = scale
+	DropShadow.attach(
+		self,
+		Vector2(150.0, 30.0),
+		Vector2(5.0, 58.0),
+		func() -> bool:
+			return (
+				not is_on
+				and is_instance_valid(G.level)
+				and is_instance_valid(G.level.hand)
+				and not G.level.hand.is_dragging_loose_layer(self)
+			),
+	)
 
 
 ## The points on this layer. Points inside the art don't count.
@@ -121,17 +133,11 @@ func is_ready_to_go_back() -> bool:
 	)
 
 
-## Called by a point on this layer when it finishes. The last fastener
-## out makes the layer lift off.
-func on_point_finished(point: InteractionPoint) -> void:
-	if (
-		point.role == InteractionPoint.Role.FASTENER
-		and is_on
-		and not is_moving
-		and not is_innermost()
-		and is_loose()
-	):
-		lift_off()
+## Called by a point on this layer when it finishes. The last
+## fastener out only makes the layer loose. It stays where it is
+## until the player drags it off the item.
+func on_point_finished(_point: InteractionPoint) -> void:
+	pass
 
 
 ## Lifts this loose layer off the item after a short delay and moves it
@@ -146,12 +152,49 @@ func lift_off() -> void:
 	_move_tween.tween_callback(_start_lift)
 
 
+## Where this layer sits on the item, in world pixels.
+func get_home_global_position() -> Vector2:
+	if _home_parent is CanvasItem:
+		return (_home_parent as CanvasItem).to_global(_home_position)
+	return _home_position
+
+
+## The player starts dragging this loose layer off the item. It
+## leaves the item's stack and becomes a loose piece on the bench,
+## staying exactly where it was drawn.
+func take_off_for_drag() -> void:
+	G.check(is_on and not is_innermost() and is_loose())
+	var spot := G.level.get_set_aside_spot()
+	var kept_global := global_position
+	var kept_rotation := global_rotation
+	is_on = false
+	is_moving = true
+	z_index = 10
+	_stop_outline()
+	reparent(spot)
+	global_position = kept_global
+	global_rotation = kept_rotation
+	scale = _home_scale
+	_rest_scale = _home_scale
+	reset_physics_interpolation()
+	if is_instance_valid(item):
+		item.on_layer_removed(self)
+
+
+## The player let go of this dragged layer somewhere on the bench.
+## It rests there until it is dragged again.
+func finish_drag() -> void:
+	is_moving = false
+	_rest_scale = scale
+
+
 ## Puts this set-aside layer back on the item. Its fasteners come back
 ## raised and loose, in install mode.
 func put_back() -> void:
 	G.check(not is_on)
 	is_on = true
 	is_moving = true
+	z_index = 0
 	_stop_outline()
 	reparent(_home_parent)
 	_home_parent.move_child(

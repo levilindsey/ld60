@@ -6,8 +6,41 @@ belts (LX31) and part orientation (LX32).
 
 ## What the player does
 
-Wiggle the broken part loose and toss it. Open the parts drawer,
-pick out a replacement and fit it into the empty spot.
+Wiggle the broken part loose and toss it. Open a parts drawer,
+drag out a replacement and fit it into the empty spot.
+
+## The diegetic drawers (current)
+
+Decision (Levi, 2026-10-18): the parts menu below is gone. Three
+diegetic drawers (`src/level/Drawer.tscn`, `Drawer`) stack
+vertically on the left side of the level, each a full-frame art
+canvas like the room, so the front face can align with the
+background art. Each drawer has an `AnimationPlayer` "open"
+animation that flips the front face to a top-down view, and a
+`%Mover` wrapper: the animation drives the sprites, so the slide
+to the center of the level tweens the wrapper.
+
+- A press on a shut drawer plays the open animation, then slides
+  the drawer to the center. Its stored parts appear at random
+  spots inside it. A press outside the open drawer hides the
+  parts, slides the drawer back and reverses the animation.
+- At the start of each repairable, the drawers are restocked: one
+  part per socket the item needs, plus decoys
+  (`Settings.decoy_part_count`), shuffled across the three
+  drawers, so the player hunts.
+- Parts are dragged, not held. Pressing a part in an open drawer
+  takes it out and the drawer shuts behind it. A loose part is
+  dragged around the bench, set down anywhere on it, and picked
+  up again. Releasing it over a socket fits the right part and
+  nopes the wrong one. Releasing it over a shut (or open) drawer
+  puts it away: the drawer opens halfway while the part rises
+  over its top edge, sinks down inside, and shuts again. A drawer
+  that is still shutting takes nothing; the part is set down.
+- When an item goes into the outbox, parts left out on the bench
+  are cleaned up into one drawer picked at random, with the same
+  rise-and-sink put-away.
+
+The menu description below is kept for the record.
 
 ## Where the bin lives
 

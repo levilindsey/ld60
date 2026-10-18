@@ -16,6 +16,8 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 
 ## In progress
 
+
+
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
 
@@ -103,6 +105,13 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 - **LX26** · Web export and itch.io upload (`scripts/export_web.ps1`).
   Check decal clipping in Firefox, Safari and the Pixel's Chrome; only
   Chrome and Edge are verified (`docs/design/decals.md` "Clipping").
+- **LX60** · Bench polish, stage 2 (stage 1 drag core landed;
+  the roll on set-down after a drag, the pick-up turn and
+  shape-matching drop shadows are done: tools pick a holder
+  treatment by enum, screws/parts cast silhouettes that follow
+  their rotation, ticket/manual have their authored shadows):
+  overlap-aware draw order inside each group (a piece rises
+  only once dragged clear of what covers it).
 
 ## Residuals (known, not fixed)
 
@@ -183,6 +192,11 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX61** · Diegetic parts drawers: three clip-masked art drawers
+  replace the parts menu; parts hide in them per item, drag out to
+  the bench, drag back to put away, leftovers cleaned up at the
+  outbox. Done in the working-tree landing (2026-10-18). Levi
+  still to play it and align the drawers with the room art (LX41).
 - **LX22** · Glue along cracks: squeeze, trace, dry, blobs
   (`docs/design/glue.md`). Done in 37959f3 (2026-10-17) with the
   placeholder bottle. Levi still to play it (LX41).

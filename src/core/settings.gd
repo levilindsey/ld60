@@ -45,8 +45,18 @@ enum PhysicsLayer {
 ## pointing-hand shape wherever the hand offers a grab.
 @export var grab_cursor_texture: Texture2D
 ## Where the grab cursor's hot spot sits, in the resized
-## texture's pixels: the palm.
-@export var grab_cursor_hotspot := Vector2(27.0, 35.0)
+## texture's pixels. Halfway between the palm and where the
+## pointing hand's fingertip sits, so the open hand renders a
+## little down-right of the pointer, roughly where the pointing
+## hand's body is, while the palm stays near what it grabs.
+@export var grab_cursor_hotspot := Vector2(24.0, 20.0)
+## The grabbed hand shown while the hand holds something. This
+## texture replaces the drag shape, so holding never falls back
+## to the system drag cursor, and the cursor is never hidden.
+@export var grabbed_cursor_texture: Texture2D
+## Where the grabbed cursor's hot spot sits: cheated halfway
+## toward the pointing hand's fingertip, like the grab cursor.
+@export var grabbed_cursor_hotspot := Vector2(24.0, 20.0)
 ## Seconds for a held tool to ease into the pointer instead of jumping.
 @export var tool_follow_ease_sec := 0.2
 ## Seconds a tool shakes when a point doesn't accept it.
@@ -65,6 +75,9 @@ enum PhysicsLayer {
 @export var set_aside_scale := 0.8
 ## Offset between set-aside layers stacked on the spot.
 @export var set_aside_stack_offset := Vector2(10.0, -10.0)
+## A dragged layer dropped within this many world pixels of its home
+## tweens into its exact place on the item.
+@export var layer_seat_snap_px := 64.0
 ## Seconds and pixels of the shake when an unfinished item is pressed.
 @export var item_shake_sec := 0.3
 @export var item_shake_px := 4.0
@@ -102,10 +115,29 @@ enum PhysicsLayer {
 ## item and the outbox. Sprite2D art gets this material. ColorRect and
 ## Polygon2D art gets the same rim drawn by OutlineHint instead.
 @export var outline_hint_material: ShaderMaterial
+## Opacity of the bench drop shadows (DropShadow). 0 turns them off.
+@export var drop_shadow_alpha := 0.45
 ## The burst of sparkles when an item is finished.
 @export var finish_sparkle_scene: PackedScene
 @export_group("")
 
+
+@export_group("Drawers")
+## Seconds an open drawer takes to slide to the center of the level,
+## and back to its slot.
+@export var drawer_move_sec := 0.35
+## Seconds a drawer takes to open halfway to take a part back.
+@export var drawer_half_open_sec := 0.15
+## Seconds a returned part takes to rise over the drawer's top edge,
+## and then to sink down into the drawer.
+@export var part_put_away_sec := 0.22
+## Wrong parts hidden alongside the parts an item needs, so the player
+## has to pick the right one out of the drawers.
+@export var decoy_part_count := 2
+## How close a press may land to a loose part's center and still
+## grab it, in world pixels.
+@export var part_grab_radius_px := 30.0
+@export_group("")
 
 @export_group("Logs")
 ## Logs with these categories won't be shown.
@@ -174,6 +206,10 @@ enum PhysicsLayer {
 @export var phillips_cam_out_pause_sec := 0.5
 ## Grace seconds at the start, while the gauge scales in.
 @export var phillips_intro_sec := 0.33
+## Dragging must add up to this much turning, in radians, before
+## the grip or the screw starts to move. Sitting with the driver
+## seated and not yet circling costs nothing until then.
+@export var phillips_start_drag_rad := 1.5
 ## Seconds the speed needle smooths over.
 @export var phillips_speed_smoothing_sec := 0.5
 ## Seconds the grip swings between filling and draining over.
@@ -271,11 +307,11 @@ enum PhysicsLayer {
 
 @export_group("Flathead")
 ## Seconds one twist takes to turn the screw (docs/design/flathead.md).
-@export var flathead_twist_duration_sec := 0.85
+@export var flathead_twist_duration_sec := 0.65
 ## Degrees one twist turns the screw and the driver while it comes out.
 @export var flathead_twist_angle_deg := 90.0
 ## Seconds between twists, with no drift. The window to recenter.
-@export var flathead_pause_sec := 0.35
+@export var flathead_pause_sec := 0.25
 ## Seconds after a re-engage with kept twists before the first
 ## twist starts. Much shorter than the pause, so picking a
 ## slipped screw back up resumes turning right away.
@@ -285,8 +321,8 @@ enum PhysicsLayer {
 ## Each twist drifts the tip by a random fraction of the screw's seat
 ## tolerance in this range. Keep the most under 1, so one twist can never
 ## unseat the tip.
-@export var flathead_slip_min := 0.35
-@export var flathead_slip_max := 0.85
+@export var flathead_slip_min := 0.5
+@export var flathead_slip_max := 0.95
 ## A touch drag moves the flathead's tip this many times as far as the
 ## finger (docs/design/flathead.md "Correcting"). Mouse motion is 1 to 1.
 @export var flathead_touch_gain := 2.0
@@ -302,6 +338,12 @@ enum PhysicsLayer {
 @export var screw_rest_row_size := 5
 ## Seconds a screw takes to slide from its hole to its rest spot, and back.
 @export var screw_travel_sec := 0.4
+## A dragged screw dropped within this many world pixels of its hole
+## tweens down into it, loose and ready to drive in.
+@export var screw_seat_snap_px := 48.0
+## How far above its hole a seating screw's arc peaks, in world
+## pixels, so it always comes down into place from above.
+@export var screw_seat_arc_px := 48.0
 @export_group("")
 
 

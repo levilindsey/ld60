@@ -7,7 +7,7 @@
 radius = 40.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_holder"]
-radius = 200.0
+radius = 114.188705
 
 [node name="Glue" type="Node2D" unique_id=1095026910 node_paths=PackedStringArray("art", "cursor_position", "grab_area", "interaction_area", "holder_area")]
 script = ExtResource("1_glue")
@@ -18,18 +18,21 @@ grab_area = NodePath("Wrapper/GrabArea")
 interaction_area = NodePath("Wrapper/InteractionArea")
 holder_area = NodePath("Wrapper/HolderArea")
 held_rotation_deg = -50.0
+holder_shadow = 0
 
 [node name="Wrapper" type="Node2D" parent="." unique_id=1053359982]
-scale = Vector2(0.2, 0.2)
+position = Vector2(2.5, 0)
+scale = Vector2(0.4, 0.4)
 
 [node name="CursorPosition" type="Marker2D" parent="Wrapper" unique_id=1337733744]
+position = Vector2(0, 49.999996)
 
 [node name="Art" type="Node2D" parent="Wrapper" unique_id=1105929718]
 scale = Vector2(0.99999994, 0.99999994)
 
 [node name="Sprite" type="Sprite2D" parent="Wrapper/Art" unique_id=1105925836]
-position = Vector2(-5.0000005, -75)
-scale = Vector2(0.5, 0.5)
+position = Vector2(90.00001, -50.00001)
+scale = Vector2(0.3205645, 0.32056454)
 texture = ExtResource("2_cd5ly")
 
 [node name="GrabArea" type="Area2D" parent="Wrapper" unique_id=324791401]
@@ -38,7 +41,7 @@ monitoring = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Wrapper/GrabArea" unique_id=1197257274]
 position = Vector2(-4.9999995, 0)
-polygon = PackedVector2Array(119.999985, 189.99998, 119.999985, -184.99998, 49.999996, -184.99998, 49.999996, -224.99998, 19.999998, -224.99998, 4.9999995, -319.99997, -14.999998, -224.99998, -44.999996, -224.99998, -44.999996, -184.99998, -119.999985, -184.99998, -119.999985, 189.99998)
+polygon = PackedVector2Array(89.99999, 189.99998, 102.75995, 30.501114, 94.99999, -64.99999, 74.99999, -169.99998, 59.999996, -174.99998, 55.28833, -198.55826, 34.999996, -209.99998, 24.999996, -234.99998, 24.999996, -264.99997, 9.999998, -309.99997, -0.46461487, -309.07077, -20, -269.99997, -29.999996, -234.99998, -34.999996, -214.99998, -46.397766, -211.02249, -49.999996, -174.99998, -94.99999, -164.99998, -109.874054, 4.8612823, -99.99999, 189.99998)
 
 [node name="InteractionArea" type="Area2D" parent="Wrapper" unique_id=454981902]
 position = Vector2(0, -305)
@@ -51,7 +54,7 @@ shape = SubResource("CircleShape2D_interaction")
 metadata/_edit_lock_ = true
 
 [node name="HolderArea" type="Area2D" parent="Wrapper" unique_id=150195283]
-position = Vector2(0, 189.99998)
+position = Vector2(-6, 190)
 collision_layer = 0
 collision_mask = 16
 monitorable = false

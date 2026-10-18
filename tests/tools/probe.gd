@@ -52,15 +52,154 @@ func _run() -> void:
 		and G.level.tools_by_type.has(Tool.Type.HAMMER),
 		"rag, air blower and hammer are on the rack",
 	)
+	_check_holder_shadows()
 	await _check_rag()
 	await _check_air_blower()
 	await _check_hammer()
 
 
-## Takes a tool off the rack by pressing its holder.
+## Each stored tool's shadow follows its holder treatment: the
+## glue's ellipse sits at its holder contact, the rag casts its
+## full shape, and the drivers cast only below their necks.
+func _check_holder_shadows() -> void:
+	var glue := G.level.tools_by_type[Tool.Type.GLUE] as Tool
+	var rag := G.level.tools_by_type[Tool.Type.RAG] as Tool
+	var driver := G.level.tools_by_type[
+		Tool.Type.FLAT_HEAD_SCREW_DRIVER
+	] as Tool
+	_expect(
+		glue.holder_shadow == Tool.HolderShadow.ELLIPSE_AT_HOLDER
+		and glue._drop_shadow.kind == DropShadow.Kind.ELLIPSE
+		and glue._drop_shadow.anchor == glue.holder_area,
+		"the stored glue casts an ellipse at its holder contact",
+	)
+	_expect(
+		rag.holder_shadow == Tool.HolderShadow.SILHOUETTE
+		and rag._drop_shadow.kind == DropShadow.Kind.SILHOUETTE
+		and not is_instance_valid(rag._drop_shadow.clip_holder)
+		and rag._drop_shadow.get_copy_count() > 0,
+		"the hanging rag casts its full shape (%d copies)"
+		% rag._drop_shadow.get_copy_count(),
+	)
+	_expect(
+		driver.holder_shadow
+		== Tool.HolderShadow.SILHOUETTE_BELOW_HOLDER
+		and driver._drop_shadow.kind == DropShadow.Kind.SILHOUETTE
+		and driver._drop_shadow.clip_holder
+		== driver._get_holder_shape()
+		and driver._drop_shadow.get_copy_count() > 0,
+		"the stored driver casts only below its neck (%d copies)"
+		% driver._drop_shadow.get_copy_count(),
+	)
+	var art_rect := _union_canvas_rect(driver)
+	var shadow_rect := Rect2()
+	var shadow_found := false
+	for pair in driver._drop_shadow._copies:
+		var copy_rect := _canvas_world_rect(pair[0] as CanvasItem)
+		shadow_rect = (
+			copy_rect if not shadow_found else shadow_rect.merge(copy_rect)
+		)
+		shadow_found = true
+	_expect(
+		shadow_found
+		and shadow_rect.position.x < art_rect.position.x - 1.0
+		and shadow_rect.end.x > art_rect.end.x + 1.0,
+		"the stored driver's shadow peeks out on both sides"
+		+ " (art %s, shadow %s)" % [art_rect, shadow_rect],
+	)
+
+
+## Narrows a sprite's full-canvas rect to its used
+## (non-transparent) part, where the art actually is.
+func _used_rect(texture: Texture2D, canvas_rect: Rect2) -> Rect2:
+	var image := texture.get_image()
+	if is_instance_valid(image) and not image.is_empty():
+		var used := image.get_used_rect()
+		if used.size.x > 0 and used.size.y > 0:
+			return Rect2(
+				canvas_rect.position + Vector2(used.position),
+				Vector2(used.size),
+			)
+	return canvas_rect
+
+
+## The world-space bounds of one drawn sprite or polygon.
+func _canvas_world_rect(item: CanvasItem) -> Rect2:
+	var local_points: Array[Vector2] = []
+	if item is Sprite2D:
+		var sprite := item as Sprite2D
+		var rect := sprite.get_rect()
+		if is_instance_valid(sprite.texture) and not sprite.region_enabled:
+			rect = _used_rect(sprite.texture, rect)
+		local_points = [
+			rect.position,
+			Vector2(rect.end.x, rect.position.y),
+			rect.end,
+			Vector2(rect.position.x, rect.end.y),
+		]
+	elif item is AnimatedSprite2D:
+		var animated := item as AnimatedSprite2D
+		var rect := Rect2()
+		if is_instance_valid(animated.sprite_frames):
+			var texture := animated.sprite_frames.get_frame_texture(
+				animated.animation,
+				animated.frame,
+			)
+			if is_instance_valid(texture):
+				var size := texture.get_size()
+				rect = (
+					Rect2(animated.offset - size * 0.5, size)
+					if animated.centered
+					else Rect2(animated.offset, size)
+				)
+				rect = _used_rect(texture, rect)
+		local_points = [
+			rect.position,
+			Vector2(rect.end.x, rect.position.y),
+			rect.end,
+			Vector2(rect.position.x, rect.end.y),
+		]
+	elif item is Polygon2D:
+		var polygon := item as Polygon2D
+		for point in polygon.polygon:
+			local_points.append(point + polygon.offset)
+	if local_points.is_empty():
+		return Rect2()
+	var transform := item.get_global_transform()
+	var result := Rect2(transform * local_points[0], Vector2.ZERO)
+	for index in range(1, local_points.size()):
+		result = result.expand(transform * local_points[index])
+	return result
+
+
+## The union of the world bounds of every visible sprite and
+## polygon under `root`.
+func _union_canvas_rect(root: Node) -> Rect2:
+	var result := Rect2()
+	var found := false
+	var pending: Array[Node] = [root]
+	while not pending.is_empty():
+		var node: Node = pending.pop_back()
+		pending.append_array(node.get_children())
+		if (
+			node is Sprite2D
+			or node is AnimatedSprite2D
+			or node is Polygon2D
+		):
+			var item := node as CanvasItem
+			if not item.is_visible_in_tree():
+				continue
+			var rect := _canvas_world_rect(item)
+			result = rect if not found else result.merge(rect)
+			found = true
+	return result
+
+
+## Takes a tool off the rack by pressing the tool itself.
 func _grab(type: Tool.Type) -> Tool:
-	await _press_at(G.level.get_tool_holder_position(type))
-	return G.level.tools_by_type[type]
+	var tool := G.level.tools_by_type[type] as Tool
+	await _grab_tool(tool)
+	return tool
 
 
 func _spawn_point(
@@ -129,7 +268,7 @@ func _check_rag() -> void:
 		_item.quality.get_defect_points_total() == points_before + 10,
 		"wiping a paper label costs a ruined smear",
 	)
-	await _press_at(G.level.get_tool_holder_position(Tool.Type.RAG))
+	await _put_tool_away(rag)
 	await _physics_frames(2)
 	_expect(
 		rag.mode == Tool.Mode.STORED and rag.hanging_sprite.visible,

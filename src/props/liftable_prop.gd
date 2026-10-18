@@ -185,6 +185,21 @@ func _set_lift(lift: float) -> void:
 
 
 ## Whether a press lands on the warped sprite as it's currently drawn.
+## True when a world position is on this prop as it is currently
+## drawn, so the hand can offer to pick it up or open it.
+func is_point_on_prop(global_point: Vector2) -> bool:
+	if (
+		not is_instance_valid(warped_sprite)
+		or not warped_sprite.is_visible_in_tree()
+	):
+		return false
+	var local_point := (
+		warped_sprite.get_global_transform().affine_inverse()
+		* global_point
+	)
+	return Geometry2D.is_point_in_polygon(local_point, _warped_corners)
+
+
 func _is_on_warped_sprite(event: InputEventMouse) -> bool:
 	var point := (
 		(warped_sprite.make_input_local(event) as InputEventMouse).position

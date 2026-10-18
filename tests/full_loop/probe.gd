@@ -18,7 +18,9 @@ const _DEMO_LEVEL_PATH := "res://src/level/zaven_demo/zaven_demo_level.tscn"
 # 16 s more.
 const _TIMEOUT_SEC := 120.0
 ## A spot on the bench with nothing to take.
-const _AWAY_POSITION := Vector2(-560.0, -300.0)
+## A spot over nothing. The top-left now holds the parts drawers,
+## so this sits at the top-right instead.
+const _AWAY_POSITION := Vector2(560.0, -300.0)
 ## On the closed booklet's right half, clear of the item.
 const _BOOKLET_POSITION := Vector2(120.0, -100.0)
 
@@ -113,6 +115,12 @@ func _run_booklet() -> void:
 	)
 	await _seconds(1.0)
 	_expect(manual.state == InstructionManual.State.IDLE, "the booklet opens")
+	await _move_to(manual.global_position + Vector2(120.0, 0.0))
+	_expect_cursor(
+		Input.MOUSE_MODE_VISIBLE,
+		Input.CURSOR_POINTING_HAND,
+		"empty hand over a page that can flip",
+	)
 	# A press outside the open booklet closes it, and is spent there.
 	await _press_at(_item.global_position)
 	_expect(
@@ -175,11 +183,23 @@ func _check_start() -> void:
 		Input.CURSOR_ARROW,
 		"empty hand over nothing",
 	)
+	var empty_holder_position := _holder_position + Vector2(28.0, 0.0)
+	await _move_to(empty_holder_position)
+	_expect_cursor(
+		Input.MOUSE_MODE_VISIBLE,
+		Input.CURSOR_ARROW,
+		"empty hand over empty holder space",
+	)
+	await _press_at(empty_holder_position)
+	_expect(
+		_hand.is_empty() and _tool.mode == Tool.Mode.STORED,
+		"pressing empty holder space does not take the driver",
+	)
 	await _move_to(_holder_position)
 	_expect_cursor(
 		Input.MOUSE_MODE_VISIBLE,
 		Input.CURSOR_POINTING_HAND,
-		"empty hand over the rack tool",
+		"empty hand over the tool itself",
 	)
 	await _move_to(_item.global_position)
 	_expect_cursor(
@@ -190,7 +210,7 @@ func _check_start() -> void:
 
 
 func _check_empty_hand_presses() -> void:
-	await _press_at(_screw_left.global_position)
+	await _press_tool_at(_tool, _screw_left.global_position)
 	_expect(
 		_screw_left.mode == InteractionPoint.Mode.UNSTARTED
 		and absf(_screw_left.rotation) > 0.001,
@@ -220,18 +240,18 @@ func _check_empty_hand_presses() -> void:
 
 
 func _check_take_driver() -> void:
-	await _press_at(_holder_position)
+	await _grab_tool(_tool)
 	_expect(
 		_hand.held == _tool and _tool.mode == Tool.Mode.HELD,
-		"1. take the driver from its holder",
+		"1. take the driver by pressing the tool itself",
 	)
 	_expect(
 		_tool.get_tip_position().distance_to(_holder_position) > 10.0,
 		"LX5: the driver glides into the hand instead of jumping",
 	)
 	_expect_cursor(
-		Input.MOUSE_MODE_HIDDEN,
-		Input.CURSOR_ARROW,
+		Input.MOUSE_MODE_VISIBLE,
+		Input.CURSOR_DRAG,
 		"holding a tool",
 	)
 	await _seconds(0.4)
@@ -245,7 +265,7 @@ func _check_nope() -> void:
 	var saved_tools := _screw_left.accepted_tools
 	var no_tools: Array[Tool.Type] = []
 	_screw_left.accepted_tools = no_tools
-	await _press_at(_screw_left.global_position)
+	await _press_tool_at(_tool, _screw_left.global_position)
 	var nope_icon: Node2D = _level.get_node("%NopeIcon")
 	_expect(nope_icon.visible, "a wrong tool shows the nope icon")
 	_expect(_tool._shake_offset != Vector2.ZERO, "a wrong tool shakes")
@@ -272,7 +292,7 @@ func _check_nope() -> void:
 
 
 func _check_take_cover_off() -> void:
-	await _press_at(_screw_left.global_position)
+	await _press_tool_at(_tool, _screw_left.global_position)
 	_expect(
 		_tool.mode == Tool.Mode.IN_USE
 		and _screw_left.mode == InteractionPoint.Mode.ACTIVE,
@@ -330,7 +350,7 @@ func _check_take_cover_off() -> void:
 		"the cover stays on while a screw holds it",
 	)
 
-	await _press_at(_screw_right.global_position)
+	await _press_tool_at(_tool, _screw_right.global_position)
 	# m1-screws: was `await _seconds(0.5)`.
 	await _drive(_screw_right, 10.0)
 	_expect(
@@ -387,7 +407,7 @@ func _check_take_cover_off() -> void:
 
 
 func _check_put_driver_back() -> void:
-	await _press_at(_holder_position)
+	await _put_tool_away(_tool)
 	_expect(
 		_tool.mode == Tool.Mode.STORED and _hand.is_empty(),
 		"the driver goes back to its holder",
@@ -463,12 +483,12 @@ func _check_put_cover_back() -> void:
 
 
 func _check_pause() -> void:
-	await _press_at(_holder_position)
+	await _grab_tool(_tool)
 	_expect(_hand.held == _tool, "take the driver again")
 	await _move_to(_item.global_position)
 	_expect_cursor(
-		Input.MOUSE_MODE_HIDDEN,
-		Input.CURSOR_ARROW,
+		Input.MOUSE_MODE_VISIBLE,
+		Input.CURSOR_DRAG,
 		"holding, before the pause",
 	)
 	G.state.transition(StateMain.State.PAUSE)
@@ -481,14 +501,14 @@ func _check_pause() -> void:
 	G.state.transition(StateMain.State.GAME)
 	await _physics_frames(2)
 	_expect_cursor(
-		Input.MOUSE_MODE_HIDDEN,
-		Input.CURSOR_ARROW,
+		Input.MOUSE_MODE_VISIBLE,
+		Input.CURSOR_DRAG,
 		"holding, after the pause",
 	)
 
 
 func _check_drive_screws_in() -> void:
-	await _press_at(_screw_left.global_position)
+	await _press_tool_at(_tool, _screw_left.global_position)
 	_expect(
 		_tool.mode == Tool.Mode.IN_USE,
 		"5. the driver engages the loose screw",
@@ -514,7 +534,7 @@ func _check_drive_screws_in() -> void:
 		not _events.has("finished"),
 		"not finished with one screw in",
 	)
-	await _press_at(_screw_right.global_position)
+	await _press_tool_at(_tool, _screw_right.global_position)
 	# m1-screws: was `await _seconds(0.5)`.
 	await _drive(_screw_right, 10.0)
 	_expect(
@@ -530,7 +550,7 @@ func _check_drive_screws_in() -> void:
 
 
 func _check_finished_item() -> void:
-	await _press_at(_holder_position)
+	await _put_tool_away(_tool)
 	_expect(
 		_tool.mode == Tool.Mode.STORED and _hand.is_empty(),
 		"the driver goes back after the job",
@@ -550,10 +570,10 @@ func _check_finished_item() -> void:
 
 
 func _check_level_exit() -> void:
-	await _press_at(_holder_position)
+	await _grab_tool(_tool)
 	_expect_cursor(
-		Input.MOUSE_MODE_HIDDEN,
-		Input.CURSOR_ARROW,
+		Input.MOUSE_MODE_VISIBLE,
+		Input.CURSOR_DRAG,
 		"holding, before the restart",
 	)
 	var hand := _hand

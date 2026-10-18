@@ -70,6 +70,18 @@ func _ready() -> void:
 			layer.item = self
 			layers.append(layer)
 	G.check(not layers.is_empty())
+	DropShadow.attach(
+		self,
+		Vector2(170.0, 32.0),
+		Vector2(5.0, 62.0),
+		func() -> bool:
+			return (
+				mode == Mode.UNDER_REPAIR
+				and is_instance_valid(G.level)
+				and is_instance_valid(G.level.hand)
+				and G.level.hand.held != self
+			),
+	)
 	# The repair clock only runs from landing to finished.
 	set_physics_process(false)
 
@@ -254,19 +266,11 @@ func on_point_finished(point: InteractionPoint) -> void:
 	_update_state()
 
 
-## Called by a layer when it reaches the set-aside spot.
+## Called by a layer when the player drags it off the item. A layer
+## with no fasteners is loose as soon as it is exposed, but it too
+## waits to be dragged off. Nothing on the item moves by itself.
 func on_layer_removed(layer: RepairLayer) -> void:
 	layer_removed.emit(layer)
-	# A layer with no fasteners is loose as soon as it is exposed, so it
-	# lifts right after the layer above it.
-	var exposed := get_exposed_layer()
-	if (
-		is_instance_valid(exposed)
-		and not exposed.is_moving
-		and not exposed.is_innermost()
-		and exposed.is_loose()
-	):
-		exposed.lift_off()
 	_update_state()
 
 

@@ -16,8 +16,8 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
 - **Start:** press with the tip over the screw. On touch, tap the screw
   ([tools.md](tools.md) "Routing a press"). The tool goes IN_USE.
 - **Twist cycle:** a twist turns the screw, and the tool with it, by
-  `twist_angle_deg` (90) over `twist_duration_sec` (0.85) with
-  ease-in-out. Then comes a pause of `pause_sec` (0.35) with no drift,
+  `twist_angle_deg` (90) over `twist_duration_sec` (0.65) with
+  ease-in-out. Then comes a pause of `pause_sec` (0.25) with no drift,
   which is the window to recenter.
 - **Drift:** the tip sits at `screw_center + slot_axis * offset`.
   `slot_axis` turns with the screw, and `offset` is a distance along
@@ -25,7 +25,7 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
   twist, so it is never sudden:
 
   ```
-  drift = sign * randf_range(0.35, 0.85) * seat_tolerance_px
+  drift = sign * randf_range(0.5, 0.95) * seat_tolerance_px
   ```
 
   - Each screw picks its drift direction at random. `sign` follows
@@ -33,7 +33,7 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
     the other way.
   - `seat_tolerance_px` is how far the tip can move from the center
     before it leaves the slot, about half the slot's length.
-- **One twist can never unseat it.** The largest drift is 0.85 of the
+- **One twist can never unseat it.** The largest drift is 0.95 of the
   tolerance, so it takes at least two twists the same way. A player who
   never corrects should still usually lose the tip before the screw is
   out, which is why drifts mostly keep going one way ("Tuning").
@@ -92,19 +92,19 @@ change: reset the twist count on unseat. LX6 kept the default.
 
 | Setting | Default | Where |
 |---|---|---|
-| `twist_duration_sec` | 0.85 | settings, "Flathead" group |
+| `twist_duration_sec` | 0.65 | settings, "Flathead" group |
 | `twist_angle_deg` | 90 | settings |
-| `pause_sec` | 0.35 | settings |
+| `pause_sec` | 0.25 | settings |
 | `telegraph_sec` | 0.15 | settings |
-| `slip_min`, `slip_max` | 0.35, 0.85 (keep `slip_max` under 1) | settings |
+| `slip_min`, `slip_max` | 0.5, 0.95 (keep `slip_max` under 1) | settings |
 | `flathead_touch_gain` | 2.0 | settings, "Flathead" group |
-| `seat_tolerance_px` | 9 | per screw |
+| `seat_tolerance_px` | 12 | per screw |
 | `slip_bias` | 0.9 | per screw |
 | `twists_needed` | 4 | per screw |
 | `difficulty` | 1 (0.5 to 2, tightens the slot) | per screw |
 | `resume_delay_sec` | 0.12 (first twist after a re-engage with kept twists) | settings |
 | `install_twists` | 2 | per screw |
-| slide height | about 6 px | first key of `RemoveScrew`, in the screw scene |
+| slide height | about 12 px | first key of `RemoveScrew`, in the screw scene |
 | `screw_travel_sec` | 0.4 | settings, "Screw rest" group |
 
 What `slip_bias` does to a player who never corrects, from a million
@@ -112,13 +112,13 @@ simulated screws using the drift formula above:
 
 | `slip_bias` | Median twists to unseat | Unseats on twist 2 | Unseats within 4 twists |
 |---|---|---|---|
-| 0.5 | 4 | 40.9% | 66.3% |
-| 0.8 | 2 | 55.7% | 82.6% |
-| 0.9 | 2 | 67.2% | 92.1% |
-| 1.0 | 2 | 82.2% | 100% |
+| 0.5 | 3 | 49.9% | 76.7% |
+| 0.8 | 2 | 68.1% | 90.1% |
+| 0.9 | 2 | 82.0% | 96.6% |
+| 1.0 | 2 | 100% | 100% |
 
-At 0.5 two of every three 4-twist screws still unseat under an idle player, so
-the default is 0.9, where nine in ten do. Use 1.0 on the pet egg (the
+At 0.5 three of every four 4-twist screws still unseat under an idle player, so
+the default is 0.9, where nineteen in twenty do. Use 1.0 on the pet egg (the
 tutorial), where one steady direction makes the lesson clear. For a
 screw that should change direction more often, lower `slip_bias` and
 raise `twists_needed`.

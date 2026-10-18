@@ -32,13 +32,21 @@ turn, and the grip drains. An empty grip cams the bit out.
   climbs at a pace that eases toward a fresh random target
   between 0.8 and 2.2 rad/s per second, picked every 1.2 to
   2.6 s. On the gauge, climbing speed reads as the green arc
-  sliding counter-clockwise; at the fast end it wraps back to
-  the slow end and keeps going. Inside the zone the screw and
+  sliding counter-clockwise around the dial's full circle:
+  zero sits at the bottom seam, and the arc travels up the
+  right side, over the top, down the left and through the seam
+  without ever jumping. It never reverses direction mid-game.
+  (Tightening mirrors the whole gauge, so there it slides
+  clockwise.) Inside the zone the screw and
   the driver turn with the drag and the slide follows the turn,
   like the flathead. Outside it nothing turns. The zone is
   sticky: once in, the speed may stray 0.8 rad/s past either
   end before it counts as out, so hovering on an edge does not
   flicker.
+- **Getting started:** the microgame only starts once the
+  drags add up to 1.5 radians of turning. Before that the grip
+  and the screw hold still: sitting with the driver seated,
+  lining up the first circle, costs nothing.
 - **Grip meter:** starts at 0.4. It fills at 0.35/s while the
   speed is in the zone and drains at 0.28/s while it is out,
   swinging between the two over 0.4 s, so a brief stray costs
@@ -47,7 +55,7 @@ turn, and the grip drains. An empty grip cams the bit out.
   restarts at 0.4, and the turns so far are kept.
 - **Fair start:** nothing drains for the first 0.33 s while the
   gauge scales in.
-- **Done:** three full turns take the screw out. It then pulls
+- **Done:** 4.8 full turns take the screw out (1.6x the old three). It then pulls
   out to the bench like a flathead.
 - **Tutorial:** the first Phillips screw of the game never
   drains (`never_drains` on the screw).
@@ -65,10 +73,16 @@ it frees up.
 
 - The screw turns while the speed is in the zone and stops
   while it is out.
-- The needle is green in the zone and red out of it. The gauge
-  sweep runs counter-clockwise, so faster circling swings the
-  needle up and to the left. The grip
+- The needle is green in the zone and red out of it. Coming out,
+  the gauge sweep runs the full circle counter-clockwise from
+  the seam at the bottom, so faster circling swings the needle
+  up the right side and over the top. Tightening mirrors it:
+  the drag circles clockwise, the screw turns clockwise, and the
+  gauge sweeps clockwise to match. The grip
   ring around the hub shifts from red to green as it fills.
+- The gauge's face tints as the ends approach: greener as the
+  screw nears done, redder as the grip nears empty. Whichever
+  is nearer wins, and before the first circle it stays plain.
 - Done: a pop from `Screw.remove()`. Cam-out: a scrape and
   sparks. Turning and creak loops wait for LX25.
 
@@ -80,7 +94,8 @@ it frees up.
 - The gauge (`PhillipsGauge`, a child of the screw scene) draws
   itself in `_draw()`: the zone with `draw_arc()`, the grip ring,
   and the speed needle with `draw_line()`. The screw moves the
-  zone in `_update_zone()`; the gauge only reads its ends.
+  zone in `_update_zone()`; the gauge only reads its center,
+  width, grip and turned share.
 - The driver borrows the flathead driver's art for now. The
   screw's top-down head is `screwin around.png` and its
   perspective view is `screwwwzzzzzz.png`.
@@ -98,12 +113,14 @@ easing between `phillips_zone_move_min_rad_per_sec` (0.8) and
 `phillips_zone_retarget_min_sec` to `phillips_zone_retarget_max_sec`
 (1.2 to 2.6 s). The gauge tops out at 14, fill is 0.35/s, drain
 is 0.28/s, the meter starts at 0.4 (0.65 to install), the
-cam-out pause is 0.5 s and the intro is 0.33 s. The smoothing
+cam-out pause is 0.5 s and the intro is 0.33 s; the microgame
+starts after `phillips_start_drag_rad` (1.5) of dragged turning.
+The smoothing
 is `phillips_speed_smoothing_sec` (0.5) for the needle and
 `phillips_meter_smoothing_sec` (0.4) for the grip, the sticky
 zone grace is `phillips_band_grace_rad_per_sec` (0.8), and steps
 under `phillips_min_segment_px` (4) do not count. Turns out is
-`turns_needed` on the screw (3). Each screw also has a
+`turns_needed` on the screw (4.8). Each screw also has a
 `difficulty` (0.5 to 2): higher narrows its zone, slides it
 faster and drains its grip faster.
 

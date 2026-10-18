@@ -1,15 +1,371 @@
+class_name Drawer
 extends Node2D
+## One diegetic parts drawer. It rests in a vertical stack on the
+## left side of the level showing its front face. A press plays the
+## "open" animation, which flips it to a top-down view, and then the
+## `%Mover` wrapper slides it to the center of the level. The
+## animation drives the sprites under `%Visual`, so the slide tweens
+## the wrapper instead. A press outside an open drawer slides it
+## back and reverses the animation.
+##
+## While the drawer is in its slot the sprites show through
+## `%ClippingSpace`, whose L-shaped mask hides the part of the art
+## that is still inside the desk (like the screws sliding out of
+## their holes). Once the open animation finishes, the drawer swaps
+## to the duplicate `%VisualUnclipped` group for the trip to the
+## center, and swaps back before the animation reverses. One
+## `AnimationPlayer` drives both groups, so they never drift apart.
+##
+## Parts live in the level, not in the drawer. The level shows this
+## drawer's stored parts once it is fully open and hides them again
+## as soon as it starts to close (the `opened` and `close_started`
+## signals).
 
 
-# Called when the node enters the scene tree for the first time.
+signal opened
+signal close_started
+signal closed
+
+enum State {
+	CLOSED,
+	OPENING,
+	OPEN,
+	CLOSING,
+	STORING,
+}
+
+const _OPEN_ANIMATION := &"open"
+## Where an opened drawer sits on the level, in world space.
+const _CENTER_GLOBAL_POSITION := Vector2(0.0, 0.0)
+## The open drawer's inside, in this scene's local space: the dark
+## box in the top-down art. Stored parts rest at random spots in it.
+const _INTERIOR_LOCAL := Rect2(-836.0, -51.0, 1158.0, 558.0)
+const _INTERIOR_MARGIN_PX := 40.0
+## The drawer's face on its canvas, used for press and drop checks.
+const _HIT_SIZE := Vector2(1234.0, 1247.0)
+## Halfway through the open animation, where a drawer pauses to
+## take a part back.
+const _HALF_OPEN_FRACTION := 0.5
+## How far above its top edge a returning part rises, in world
+## pixels, before it sinks back down inside.
+const _PUT_AWAY_CLEARANCE_PX := 50.0
+
+var state := State.CLOSED
+## This drawer's slot in the level's stack, counting from 0.
+var drawer_index := -1
+
+var _open_fraction := 0.0
+var _tween: Tween
+var _fraction_tween: Tween
+## Bumped by `reset_closed()`, so an open or close that was cut
+## short never resumes and moves the drawer later.
+var _generation := 0
+
+
 func _ready() -> void:
-	pass # Replace with function body.
+	_set_clipped(true)
+	_apply_open_fraction(0.0)
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
+## Shows the clipped sprite group in the slot, or the unclipped
+## duplicate once the drawer is out and on its way to the center.
+func _set_clipped(is_clipped: bool) -> void:
+	(%ClippingSpace as CanvasItem).visible = is_clipped
+	(%VisualUnclipped as CanvasItem).visible = not is_clipped
 
 
-func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
-	pass # Replace with function body.
+## True while the drawer is between poses. Presses wait it out, and
+## no part may be put away into a drawer that is still shutting.
+func is_busy() -> bool:
+	return state != State.CLOSED and state != State.OPEN
+
+
+## True when a dragged part may be put away into this drawer: it is
+## shut and idle, or already open in the center.
+func can_take_part() -> bool:
+	return state == State.CLOSED or state == State.OPEN
+
+
+## True when a world position lands on the drawer as it is drawn
+## now, shut in its slot or open in the center.
+func has_global_point(global_point: Vector2) -> bool:
+	return get_hit_global_rect().has_point(global_point)
+
+
+## The drawer's face in world space, following the wrapper.
+func get_hit_global_rect() -> Rect2:
+	var transform := (%HitArea as Area2D).global_transform
+	var half_size := _HIT_SIZE * 0.5
+	var corners := PackedVector2Array([
+		transform * Vector2(-half_size.x, -half_size.y),
+		transform * Vector2(half_size.x, -half_size.y),
+		transform * Vector2(half_size.x, half_size.y),
+		transform * Vector2(-half_size.x, half_size.y),
+	])
+	var rect := Rect2(corners[0], Vector2.ZERO)
+	for corner in corners:
+		rect = rect.expand(corner)
+	return rect
+
+
+## A random world position inside the open drawer, clear of its rim.
+func get_random_interior_global_position() -> Vector2:
+	var transform := (%Mover as Node2D).global_transform
+	var interior := _INTERIOR_LOCAL.grow(-_INTERIOR_MARGIN_PX)
+	var local_point := Vector2(
+		randf_range(interior.position.x, interior.end.x),
+		randf_range(interior.position.y, interior.end.y),
+	)
+	return transform * local_point
+
+
+## Plays the open animation, then slides the drawer to the center.
+## Stored parts appear once `opened` fires at the end.
+func open_drawer() -> void:
+	if state != State.CLOSED:
+		return
+	state = State.OPENING
+	var generation := _generation
+	_kill_tween()
+	# The half-open seeks freeze the player at speed 0. Restore the
+	# speed and restart it, so the full play always runs.
+	(%AnimationPlayer as AnimationPlayer).speed_scale = 1.0
+	(%AnimationPlayer as AnimationPlayer).stop()
+	(%AnimationPlayer as AnimationPlayer).play(_OPEN_ANIMATION)
+	await (%AnimationPlayer as AnimationPlayer).animation_finished
+	if generation != _generation:
+		return
+	# Out of the slot: the unclipped group makes the trip.
+	_set_clipped(false)
+	_kill_tween()
+	_tween = create_tween()
+	_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	_tween.tween_property(
+		%Mover,
+		"position",
+		_mover_center_position(),
+		G.settings.drawer_move_sec,
+	)
+	await _tween.finished
+	if generation != _generation:
+		return
+	state = State.OPEN
+	opened.emit()
+
+
+## Hides the stored parts, slides back to the slot, then reverses
+## the open animation.
+func close_drawer() -> void:
+	if state != State.OPEN:
+		return
+	state = State.CLOSING
+	var generation := _generation
+	close_started.emit()
+	_kill_tween()
+	_tween = create_tween()
+	_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	_tween.tween_property(
+		%Mover,
+		"position",
+		Vector2.ZERO,
+		G.settings.drawer_move_sec,
+	)
+	await _tween.finished
+	if generation != _generation:
+		return
+	# Back in the slot: the clipped group slides it home.
+	_set_clipped(true)
+	(%AnimationPlayer as AnimationPlayer).speed_scale = 1.0
+	(%AnimationPlayer as AnimationPlayer).play_backwards(_OPEN_ANIMATION)
+	await (%AnimationPlayer as AnimationPlayer).animation_finished
+	if generation != _generation:
+		return
+	state = State.CLOSED
+	closed.emit()
+
+
+## Snaps the drawer shut with no animation. The level calls this
+## before it restocks the drawers for the next item.
+func reset_closed() -> void:
+	_generation += 1
+	_kill_tween()
+	(%AnimationPlayer as AnimationPlayer).stop()
+	state = State.CLOSED
+	_set_clipped(true)
+	(%Mover as Node2D).position = Vector2.ZERO
+	_apply_open_fraction(0.0)
+
+
+## Takes a dragged part back in. A shut drawer opens halfway while
+## the part rises over its top edge, the part sinks down inside,
+## and then the drawer shuts again. An already open drawer just
+## takes the part into itself.
+func take_part(part: Part) -> void:
+	if not can_take_part() or part.is_returning:
+		return
+	part.is_returning = true
+	part.z_index = 16
+	if state == State.OPEN:
+		await _sink_part(part)
+		_store_part(part)
+		part.global_position = get_random_interior_global_position()
+		part.is_returning = false
+		return
+	state = State.STORING
+	_tween_open_fraction(_HALF_OPEN_FRACTION)
+	await _sink_part(part)
+	_store_part(part)
+	await _tween_open_fraction(0.0)
+	state = State.CLOSED
+	closed.emit()
+
+
+## Puts every loose part left out on the bench away into this
+## drawer, the way `take_part()` does, but the drawer opens halfway
+## only once for the whole batch.
+func store_parts(parts: Array[Part]) -> void:
+	if state != State.CLOSED:
+		for part in parts:
+			_store_part(part)
+		return
+	var loose: Array[Part] = []
+	for part in parts:
+		if is_instance_valid(part) and not part.is_returning:
+			part.is_returning = true
+			part.z_index = 16
+			loose.append(part)
+	if loose.is_empty():
+		return
+	state = State.STORING
+	_tween_open_fraction(_HALF_OPEN_FRACTION)
+	var top_y := get_hit_global_rect().position.y
+	var up_tween := create_tween()
+	up_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	up_tween.set_parallel()
+	for index in loose.size():
+		up_tween.tween_property(
+			loose[index],
+			"global_position",
+			Vector2(
+				loose[index].global_position.x,
+				top_y - _PUT_AWAY_CLEARANCE_PX,
+			),
+			G.settings.part_put_away_sec,
+		).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT).set_delay(
+			index * 0.06
+		)
+	await up_tween.finished
+	var down_tween := create_tween()
+	down_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	down_tween.set_parallel()
+	for index in loose.size():
+		down_tween.tween_property(
+			loose[index],
+			"global_position",
+			get_random_interior_global_position(),
+			G.settings.part_put_away_sec,
+		).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN).set_delay(
+			index * 0.06
+		)
+	await down_tween.finished
+	for part in loose:
+		_store_part(part)
+	await _tween_open_fraction(0.0)
+	state = State.CLOSED
+	closed.emit()
+
+
+## Moves one part up over the drawer's top edge and then down
+## inside. The drawer's own half-open tween runs alongside; it is
+## never awaited here, because awaiting a tween that already
+## finished never resumes.
+func _sink_part(part: Part) -> void:
+	var top_y := get_hit_global_rect().position.y
+	var up_tween := part.create_tween()
+	up_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	up_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	up_tween.tween_property(
+		part,
+		"global_position",
+		Vector2(
+			part.global_position.x,
+			top_y - _PUT_AWAY_CLEARANCE_PX,
+		),
+		G.settings.part_put_away_sec,
+	)
+	await up_tween.finished
+	var down_tween := part.create_tween()
+	down_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	down_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	down_tween.tween_property(
+		part,
+		"global_position",
+		get_random_interior_global_position(),
+		G.settings.part_put_away_sec,
+	)
+	await down_tween.finished
+
+
+## Files a part away inside this drawer and hides it until the
+## drawer opens again.
+func _store_part(part: Part) -> void:
+	part.is_stored = true
+	part.is_returning = false
+	part.drawer_index = drawer_index
+	part.z_index = 10
+	part.hide()
+
+
+## The wrapper's local position when the drawer sits in the center
+## of the level. The wrapper inherits this drawer's scale, so the
+## world offset is divided back down.
+func _mover_center_position() -> Vector2:
+	var mover := %Mover as Node2D
+	var world_offset := _CENTER_GLOBAL_POSITION - mover.global_position
+	var scale := global_transform.get_scale()
+	return mover.position + Vector2(
+		world_offset.x / scale.x,
+		world_offset.y / scale.y,
+	)
+
+
+## Tweens the open animation to a fraction of its length and holds
+## it there. Returns the tween.
+func _tween_open_fraction(to_fraction: float) -> Tween:
+	if is_instance_valid(_fraction_tween):
+		_fraction_tween.kill()
+	_fraction_tween = create_tween()
+	_fraction_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_fraction_tween.tween_method(
+		_apply_open_fraction,
+		_open_fraction,
+		to_fraction,
+		G.settings.drawer_half_open_sec,
+	)
+	return _fraction_tween
+
+
+func _apply_open_fraction(fraction: float) -> void:
+	# A fraction left over from a put-away must never freeze a
+	# drawer that has moved on to a full open or close.
+	if state != State.STORING and state != State.CLOSED:
+		return
+	_open_fraction = fraction
+	var player := %AnimationPlayer as AnimationPlayer
+	if player.current_animation != _OPEN_ANIMATION:
+		player.play(_OPEN_ANIMATION)
+	player.seek(
+		fraction * player.get_animation(_OPEN_ANIMATION).length,
+		true,
+	)
+	# Freeze the pose here until a full play restores the speed.
+	player.speed_scale = 0.0
+
+
+func _kill_tween() -> void:
+	if is_instance_valid(_tween):
+		_tween.kill()
+	if is_instance_valid(_fraction_tween):
+		_fraction_tween.kill()

@@ -64,10 +64,11 @@ func _physics_process(_delta: float) -> void:
 		place_engaged_tool()
 
 
-## The engaged tool is a puppet: this places it every frame. Microgames
-## override it to move the tool their own way.
+## The engaged tool is a puppet: this places it every frame, working
+## end on the point. Microgames override it to move the tool their
+## own way.
 func place_engaged_tool() -> void:
-	engaged_tool.place_tip(global_position)
+	engaged_tool.place_work_end(global_position)
 
 
 ## The layer this point belongs to, or null.

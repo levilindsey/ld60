@@ -4,9 +4,10 @@ extends Screw
 ## in circles. The circle speed comes from how fast the drag's
 ## direction turns, never from where the screw sits, so shaky
 ## little circles count the same as neat big ones. The green zone
-## on the gauge keeps sliding counter-clockwise at an ever
-## changing pace, so the player must keep speeding up and slowing
-## down to stay in it. Circling at a speed inside the zone turns
+## on the gauge keeps sliding the one way at an ever changing
+## pace, wrapping at the end of the sweep, so the player must
+## keep speeding up and slowing down to stay in it. Circling at a
+## speed inside the zone turns
 ## the screw. Too slow or too fast does not turn it, and the grip
 ## drains. An empty grip cams the bit out and the screw takes 1
 ## damage.
@@ -20,7 +21,7 @@ const _TURN_WINDOW_SEC := 0.45
 ## The speed gauge beside the screw.
 @export var gauge: PhillipsGauge
 ## Full turns that take the screw out.
-@export var turns_needed := 3.0
+@export var turns_needed := 4.8
 ## Scales how hard the screw is: 1 is normal. Higher narrows the
 ## green zone, slides it faster and drains the grip faster.
 @export_range(0.5, 2.0, 0.05) var difficulty := 1.0
@@ -42,9 +43,16 @@ var _has_last_heading := false
 var _active_sec := 0.0
 var _turn_samples: Array[Vector2] = []
 var _frame_correct_turn := 0.0
+## Turning dragged so far this engage, either way, in radians.
+## The microgame only starts once it passes the start threshold:
+## before that the grip and the screw hold still.
+var _drag_total_rad := 0.0
+var _has_started_dragging := false
 ## Where the green zone sits and how fast it is climbing, in
 ## radians per second. The climb rate eases toward a fresh random
-## target every second or two.
+## target every second or two. The zone only ever climbs: at the
+## fast end it wraps back to the slow end and keeps climbing, so
+## it never reverses direction mid-game.
 var _zone_center_rad_per_sec := 0.0
 var _zone_climb_rad_per_sec := 0.0
 var _zone_target_climb_rad_per_sec := 0.0
@@ -79,9 +87,9 @@ func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 
 
-## The driver's tip sits on the head while it turns.
+## The driver's working end sits on the head while it turns.
 func place_engaged_tool() -> void:
-	engaged_tool.place_tip(head.global_position)
+	engaged_tool.place_work_end(head.global_position)
 
 
 ## Lets go of the driver and gives the pointer back to the hand.
@@ -101,6 +109,28 @@ func set_install_mode() -> void:
 	pressure_rad_per_sec = 0.0
 
 
+## True once the player has dragged around past the start
+## threshold this engage, so the grip and the screw may move.
+func has_started_dragging() -> bool:
+	return _has_started_dragging
+
+
+## How far the screw has turned toward done, from 0 to 1.
+func get_success_share() -> float:
+	return clampf(_turned_rad / _get_total_rad(), 0.0, 1.0)
+
+
+## How close the grip is to empty, from 0 (at its starting fill)
+## to 1 (about to cam out).
+func get_failure_share() -> float:
+	var start := (
+		G.settings.phillips_install_meter_start
+		if is_install_mode
+		else G.settings.phillips_meter_start
+	)
+	return clampf((start - grip_meter) / maxf(start, 0.01), 0.0, 1.0)
+
+
 ## True while the circle speed counts as in the target band.
 ## The band is sticky: once in, the speed may stray a grace
 ## past either end before it counts as out.
@@ -108,19 +138,16 @@ func is_in_range() -> bool:
 	return _is_in_band
 
 
-## The slow end of the green zone right now.
-func get_band_min() -> float:
-	return get_zone_center_rad_per_sec() - _get_zone_width() / 2.0
-
-
-## The fast end of the green zone right now.
-func get_band_max() -> float:
-	return get_zone_center_rad_per_sec() + _get_zone_width() / 2.0
-
-
-## The circle speed at the middle of the green zone.
+## The circle speed at the middle of the green zone. The zone is
+## cyclic: it can straddle the dial's seam, where the fast end
+## wraps into the slow end.
 func get_zone_center_rad_per_sec() -> float:
 	return _zone_center_rad_per_sec
+
+
+## The green zone's width for this screw, in radians per second.
+func get_zone_width_rad_per_sec() -> float:
+	return _get_zone_width()
 
 
 ## The zone width for this screw: the setting, narrowed by
@@ -143,8 +170,12 @@ func on_pointer_pressed(_global_position: Vector2) -> void:
 
 
 func _start_microgame() -> void:
-	_turned_rad = 0.0
+	# The turns so far are kept: camming out and re-engaging picks
+	# up where the screw left off. A fresh screw starts at 0, and
+	# set_install_mode() zeroes it for the drive home.
 	_turn_samples.clear()
+	_drag_total_rad = 0.0
+	_has_started_dragging = false
 	_active_sec = 0.0
 	pressure_rad_per_sec = 0.0
 	_has_last_pointer_position = false
@@ -168,6 +199,14 @@ func _advance(delta: float) -> void:
 	if intro_left > 0.0:
 		intro_left -= delta
 		return
+
+	if not _has_started_dragging:
+		# Not circling yet: the grip and the screw hold still.
+		_has_started_dragging = (
+			_drag_total_rad >= G.settings.phillips_start_drag_rad
+		)
+		if not _has_started_dragging:
+			return
 
 	_update_band()
 	# The grip swings between filling and draining over a few
@@ -205,10 +244,12 @@ func _advance(delta: float) -> void:
 		_cam_out()
 
 
-## Slides the green zone counter-clockwise around the gauge: the
-## center climbs at a pace that eases toward a fresh random target
-## every second or two, and wraps from the fast end of the sweep
-## back to the slow end.
+## Slides the green zone around the gauge: the center climbs at a
+## pace that eases toward a fresh random target every second or
+## two, around the dial's full circle and through its seam at the
+## bottom. It never turns around, so on the gauge it keeps moving
+## the one rotational way the mode calls for (counter-clockwise
+## coming out, clockwise tightening, through the gauge's mirror).
 func _update_zone(delta: float) -> void:
 	_zone_retarget_left_sec -= delta
 	if _zone_retarget_left_sec <= 0.0:
@@ -218,21 +259,14 @@ func _update_zone(delta: float) -> void:
 		(_zone_target_climb_rad_per_sec - _zone_climb_rad_per_sec)
 		* blend
 	)
-	_zone_center_rad_per_sec += _zone_climb_rad_per_sec * delta
-	var width := _get_zone_width()
-	var low_center := width / 2.0
-	var high_center := maxf(
-		G.settings.phillips_gauge_max_rad_per_sec - width / 2.0,
-		low_center + 0.5,
+	# The speed dial is a full circle, so the center wraps around
+	# its seam and the zone travels the whole circumference
+	# without ever jumping.
+	_zone_center_rad_per_sec = wrapf(
+		_zone_center_rad_per_sec + _zone_climb_rad_per_sec * delta,
+		0.0,
+		maxf(G.settings.phillips_gauge_max_rad_per_sec, 0.01),
 	)
-	var span := high_center - low_center
-	if _zone_center_rad_per_sec > high_center:
-		_zone_center_rad_per_sec = (
-			low_center
-			+ fmod(_zone_center_rad_per_sec - low_center, span)
-		)
-	elif _zone_center_rad_per_sec < low_center:
-		_zone_center_rad_per_sec = low_center
 
 
 ## Picks the zone's next pace and how long to keep it.
@@ -266,6 +300,7 @@ func _update_circle_speed(delta: float) -> void:
 			if _has_last_heading:
 				var turn := wrapf(heading - _last_heading, -PI, PI)
 				_turn_samples.append(Vector2(_active_sec, turn))
+				_drag_total_rad += absf(turn)
 				_frame_correct_turn = (
 					turn if is_install_mode else -turn
 				)
@@ -288,30 +323,49 @@ func _update_circle_speed(delta: float) -> void:
 	pressure_rad_per_sec += (correct_rate - pressure_rad_per_sec) * blend
 
 
+## Signed distance from the zone's center to a speed, around the
+## dial's cycle, where the fast end wraps into the slow end.
+func _zone_distance(speed_rad_per_sec: float) -> float:
+	var cycle := maxf(G.settings.phillips_gauge_max_rad_per_sec, 0.01)
+	return wrapf(
+		speed_rad_per_sec - _zone_center_rad_per_sec,
+		-cycle / 2.0,
+		cycle / 2.0,
+	)
+
+
+## True while a speed sits inside the zone, plus an extra half
+## width of slack. Circling the wrong way never counts, and
+## neither does circling faster than the dial's top: that is
+## past the seam, not around it.
+func _is_speed_in_zone(
+	speed_rad_per_sec: float,
+	extra_half_width: float,
+) -> bool:
+	if speed_rad_per_sec < 0.0:
+		return false
+	if speed_rad_per_sec > maxf(
+		G.settings.phillips_gauge_max_rad_per_sec, 0.01
+	):
+		return false
+	return (
+		absf(_zone_distance(speed_rad_per_sec))
+		<= _get_zone_width() / 2.0 + extra_half_width
+	)
+
+
 ## True while the speed sits inside the band's own edges.
 func _is_in_true_band() -> bool:
-	return (
-		pressure_rad_per_sec >= get_band_min()
-		and pressure_rad_per_sec <= get_band_max()
-	)
+	return _is_speed_in_zone(pressure_rad_per_sec, 0.0)
 
 
 ## Enters the band at its edges and only leaves it a grace past
 ## them, so hovering on an edge does not flicker.
 func _update_band() -> void:
-	var low := get_band_min()
-	var high := get_band_max()
-	if _is_in_band:
-		var grace := G.settings.phillips_band_grace_rad_per_sec
-		_is_in_band = (
-			pressure_rad_per_sec >= low - grace
-			and pressure_rad_per_sec <= high + grace
-		)
-	else:
-		_is_in_band = (
-			pressure_rad_per_sec >= low
-			and pressure_rad_per_sec <= high
-		)
+	var grace := (
+		G.settings.phillips_band_grace_rad_per_sec if _is_in_band else 0.0
+	)
+	_is_in_band = _is_speed_in_zone(pressure_rad_per_sec, grace)
 
 
 ## Turns the head and feeds the slide from how far it has turned.

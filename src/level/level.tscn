@@ -6,25 +6,22 @@
 [ext_resource type="Script" uid="uid://bfo0vmq35oagd" path="res://src/level/tool_holder.gd" id="3_af42n"]
 [ext_resource type="Script" uid="uid://d8bmnco1ssr8" path="res://src/level/hand.gd" id="5_hand"]
 [ext_resource type="PackedScene" path="res://src/decals/decal_spawner.tscn" id="6_decals"]
-[ext_resource type="PackedScene" path="res://src/ui/ticket/ticket_card.tscn" id="7_ticket"]
+[ext_resource type="PackedScene" uid="uid://dinrtvteq5ayd" path="res://src/ui/ticket/ticket_card.tscn" id="7_ticket"]
 [ext_resource type="PackedScene" path="res://src/ui/receipt/receipt.tscn" id="8_receipt"]
-[ext_resource type="Script" uid="uid://dvbr5nmpc61tu" path="res://src/level/parts_bin.gd" id="9_bin"]
 [ext_resource type="PackedScene" path="res://src/parts/part.tscn" id="10_part"]
-[ext_resource type="PackedScene" uid="uid://day4xku4ip812" path="res://src/ui/parts_menu/parts_menu.tscn" id="11_menu"]
 [ext_resource type="PackedScene" path="res://src/manual/instruction_manual.tscn" id="12_manual"]
 [ext_resource type="Texture2D" uid="uid://doc4jnkrixmjs" path="res://assets/images/manual_page0000.png" id="13_page0"]
 [ext_resource type="Texture2D" uid="uid://bl6bxtj82jtcy" path="res://assets/images/manual_page0001.png" id="14_page1"]
 [ext_resource type="Texture2D" uid="uid://bik16fm0enfxo" path="res://assets/images/manual_page0002.png" id="15_page2"]
 [ext_resource type="Texture2D" uid="uid://b5jej1flts5qt" path="res://assets/images/manual_page0003.png" id="16_page3"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_drawer"]
-size = Vector2(320, 84)
+[ext_resource type="PackedScene" uid="uid://dmb7ltq7tuwvv" path="res://src/level/drawer.tscn" id="17_drawer"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 34.058773
 
 [node name="Level" type="Node2D" unique_id=894130576]
 script = ExtResource("1_la7um")
+part_scene = ExtResource("10_part")
 
 [node name="Room!!!!!!" type="Sprite2D" parent="." unique_id=1576706779]
 position = Vector2(7, 2)
@@ -81,35 +78,23 @@ vertical_alignment = 1
 unique_name_in_owner = true
 position = Vector2(-880, 105)
 
-[node name="PartsBin" type="Node2D" parent="." unique_id=1921520139]
+[node name="Drawers" type="Node2D" parent="." unique_id=1921520139]
 unique_name_in_owner = true
-position = Vector2(-444, -58)
-script = ExtResource("9_bin")
-part_scene = ExtResource("10_part")
 
-[node name="Drawer" type="Area2D" parent="PartsBin" unique_id=1803287111]
-collision_layer = 64
-collision_mask = 0
-monitoring = false
+[node name="DrawerBottom" parent="Drawers" unique_id=1921520142 instance=ExtResource("17_drawer")]
+z_index = 15
+position = Vector2(-513, 27)
+scale = Vector2(0.16, 0.16)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PartsBin/Drawer" unique_id=1375930704]
-shape = SubResource("RectangleShape2D_drawer")
+[node name="DrawerMiddle" parent="Drawers" unique_id=1921520141 instance=ExtResource("17_drawer")]
+z_index = 15
+position = Vector2(-513, -121)
+scale = Vector2(0.16, 0.16)
 
-[node name="Art" type="Polygon2D" parent="PartsBin" unique_id=712229947]
-unique_name_in_owner = true
-color = Color(0.35, 0.25, 0.15, 0.9)
-polygon = PackedVector2Array(-160, -42, 160, -42, 160, 42, -160, 42)
-
-[node name="Label" type="Label" parent="PartsBin" unique_id=1114875006]
-unique_name_in_owner = true
-offset_left = -160.0
-offset_top = -18.0
-offset_right = 160.0
-offset_bottom = 18.0
-theme_override_font_sizes/font_size = 28
-text = "PARTS"
-horizontal_alignment = 1
-vertical_alignment = 1
+[node name="DrawerTop" parent="Drawers" unique_id=1921520140 instance=ExtResource("17_drawer")]
+z_index = 15
+position = Vector2(-513, -269)
+scale = Vector2(0.16, 0.16)
 
 [node name="ToolHolders" type="Node" parent="." unique_id=433542721]
 unique_name_in_owner = true
@@ -242,9 +227,6 @@ resting_draw_before = NodePath("../Repairables")
 
 [node name="FlowOverlays" type="CanvasLayer" parent="." unique_id=937127538]
 layer = 100
-
-[node name="PartsMenu" parent="FlowOverlays" unique_id=120604193 instance=ExtResource("11_menu")]
-unique_name_in_owner = true
 
 [node name="Receipt" parent="FlowOverlays" unique_id=1906733515 instance=ExtResource("8_receipt")]
 unique_name_in_owner = true

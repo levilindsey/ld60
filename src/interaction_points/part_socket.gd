@@ -49,6 +49,11 @@ func has_tuggable_part() -> bool:
 	return has_broken_part and mode != Mode.FINISHED
 
 
+## True while the player is mid-tug on the broken part.
+func is_tugging() -> bool:
+	return _is_wiggling
+
+
 ## The empty hand pressed the socket. A broken part starts wiggling.
 ## An empty socket just rattles.
 func on_poked() -> void:

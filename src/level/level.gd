@@ -28,6 +28,25 @@ var _resting_screws: Array = []
 
 var _outbox_outline_hint: OutlineHint
 
+## Every loose part spawned for the item on the bench: stored in a
+## drawer, resting on the bench, or on its way back into a drawer.
+## Installed parts leave the list by flag, not by removal. It is
+## untyped so a freed part never lands in a typed variable.
+var _drawer_parts: Array = []
+
+## The scene a drawer part comes from.
+@export var part_scene: PackedScene
+
+## The workbench surface, in this level's local coordinates: loose
+## pieces (screws, lids, parts) may be placed anywhere inside it and
+## nowhere else. A drag that leaves it drops the piece at the edge.
+@export var bench_polygon: PackedVector2Array = PackedVector2Array([
+	Vector2(-620.0, -90.0),
+	Vector2(620.0, -90.0),
+	Vector2(620.0, 340.0),
+	Vector2(-620.0, 340.0),
+])
+
 
 func _enter_tree() -> void:
 	if not is_instance_valid(G.main):
@@ -56,6 +75,13 @@ func _ready() -> void:
 	# the player render at the top-left of the screen given our
 	# follow logic in _physics_process.
 	%Camera2D.anchor_mode = Camera2D.ANCHOR_MODE_DRAG_CENTER
+
+	var drawers := get_drawers()
+	for index in drawers.size():
+		var drawer := drawers[index]
+		drawer.drawer_index = index
+		drawer.opened.connect(_on_drawer_opened.bind(drawer))
+		drawer.close_started.connect(_on_drawer_close_started.bind(drawer))
 
 	%Receipt.closed.connect(_on_receipt_closed)
 
@@ -97,6 +123,8 @@ func spawn_tool(type: Tool.Type) -> void:
 	var tool_scene := G.settings.get_tool_scene_from_type(type)
 	G.check(is_instance_valid(tool_scene))
 	var tool: Tool = tool_scene.instantiate()
+	# Tools are their own draw group, above every loose piece.
+	tool.z_index = 20
 	%Tools.add_child(tool)
 	tool.global_position = %ItemSpawnPosition.global_position
 	tools_by_type[type] = tool
@@ -191,14 +219,171 @@ func get_tool_holder_position(type: Tool.Type) -> Vector2:
 	return holder.get_shape_position()
 
 
-## The parts drawer in the upper-left.
-func get_parts_bin() -> PartsBin:
-	return %PartsBin
+## The parts drawers stacked on the left side, top first.
+func get_drawers() -> Array[Drawer]:
+	var drawers: Array[Drawer] = []
+	for child in %Drawers.get_children():
+		if child is Drawer:
+			drawers.append(child as Drawer)
+	return drawers
 
 
-## The parts menu overlay.
-func get_parts_menu() -> PartsMenu:
-	return %PartsMenu
+## The drawer sitting open in the center, or null.
+func get_open_drawer() -> Drawer:
+	for drawer in get_drawers():
+		if drawer.state == Drawer.State.OPEN:
+			return drawer
+	return null
+
+
+## True while any drawer is between poses.
+func are_drawers_busy() -> bool:
+	for drawer in get_drawers():
+		if drawer.is_busy():
+			return true
+	return false
+
+
+## The drawer a world position lands on, open or shut, or null.
+func get_drawer_at(global_point: Vector2) -> Drawer:
+	for drawer in get_drawers():
+		if drawer.has_global_point(global_point):
+			return drawer
+	return null
+
+
+## The stored part showing in an open drawer at a world position,
+## or null. Parts are small, so a press near the center counts.
+func get_drawer_part_at(drawer: Drawer, global_point: Vector2) -> Part:
+	var part := _get_part_at(global_point)
+	if (
+		is_instance_valid(part)
+		and part.is_stored
+		and part.drawer_index == drawer.drawer_index
+	):
+		return part
+	return null
+
+
+## The loose part resting on the bench at a world position, or
+## null. A part being put away cannot be grabbed again.
+func get_loose_part_at(global_point: Vector2) -> Part:
+	var part := _get_part_at(global_point)
+	if (
+		is_instance_valid(part)
+		and not part.is_stored
+		and not part.is_installed
+		and not part.is_returning
+	):
+		return part
+	return null
+
+
+## The parts stored in a drawer, visible or not.
+func get_parts_in_drawer(drawer: Drawer) -> Array[Part]:
+	var parts: Array[Part] = []
+	for entry: Variant in _drawer_parts:
+		if not is_instance_valid(entry):
+			continue
+		var part := entry as Part
+		if part.is_stored and part.drawer_index == drawer.drawer_index:
+			parts.append(part)
+	return parts
+
+
+## Restocks the drawers for an item that just landed: the old loose
+## parts go away, and a fresh set is hidden at random across the
+## drawers. The set holds one part per socket the item needs, plus
+## decoys, shuffled so hunting takes opening more than one drawer.
+func restock_parts(item: Repairable) -> void:
+	for drawer in get_drawers():
+		drawer.reset_closed()
+	for entry: Variant in _drawer_parts:
+		if is_instance_valid(entry):
+			(entry as Part).queue_free()
+	_drawer_parts.clear()
+	if not is_instance_valid(item):
+		return
+	G.check(is_instance_valid(part_scene))
+
+	var part_types: Array[Part.Type] = []
+	for layer in item.layers:
+		for point in layer.get_points():
+			if point is PartSocket:
+				part_types.append(
+					(point as PartSocket).accepted_part
+				)
+	# Decoys are kinds the item does not need, when it leaves any.
+	var decoy_types: Array[Part.Type] = []
+	for part_type in [
+		Part.Type.GEAR,
+		Part.Type.TUBE,
+		Part.Type.SPRING,
+	]:
+		if not part_types.has(part_type):
+			decoy_types.append(part_type)
+	if decoy_types.is_empty():
+		decoy_types = part_types.duplicate()
+	for _decoy in maxi(G.settings.decoy_part_count, 0):
+		if not decoy_types.is_empty():
+			part_types.append(
+				decoy_types[randi_range(0, decoy_types.size() - 1)]
+			)
+	part_types.shuffle()
+
+	var drawers := get_drawers()
+	if drawers.is_empty():
+		return
+	for part_type in part_types:
+		var part := part_scene.instantiate() as Part
+		G.check(is_instance_valid(part))
+		add_child(part)
+		part.setup(part_type)
+		part.is_stored = true
+		part.drawer_index = randi_range(0, drawers.size() - 1)
+		part.hide()
+		_drawer_parts.append(part)
+
+
+## Puts every part left out on the bench away into one drawer,
+## picked at random. The level calls this when an item goes into
+## the outbox, so the bench is tidy for the next one.
+func cleanup_loose_parts() -> void:
+	var loose: Array[Part] = []
+	for entry: Variant in _drawer_parts:
+		if not is_instance_valid(entry):
+			continue
+		var part := entry as Part
+		if (
+			not part.is_stored
+			and not part.is_installed
+			and not part.is_returning
+		):
+			loose.append(part)
+	if loose.is_empty():
+		return
+	var drawers := get_drawers()
+	if drawers.is_empty():
+		return
+	drawers[randi_range(0, drawers.size() - 1)].store_parts(loose)
+
+
+## The loose part nearest a world position within grab range, or
+## null.
+func _get_part_at(global_point: Vector2) -> Part:
+	var best: Part = null
+	var best_distance := G.settings.part_grab_radius_px
+	for entry: Variant in _drawer_parts:
+		if not is_instance_valid(entry):
+			continue
+		var part := entry as Part
+		if part.is_installed or not part.is_visible_in_tree():
+			continue
+		var distance := part.global_position.distance_to(global_point)
+		if distance <= best_distance:
+			best_distance = distance
+			best = part
+	return best
 
 
 ## Where layers wait while they are off the item.
@@ -213,6 +398,47 @@ func get_set_aside_layers() -> Array[RepairLayer]:
 		if child is RepairLayer:
 			layers.append(child as RepairLayer)
 	return layers
+
+
+## True when a world position is on the workbench surface where
+## loose pieces may be placed.
+func is_inside_bench(global_point: Vector2) -> bool:
+	return Geometry2D.is_point_in_polygon(
+		to_local(global_point),
+		bench_polygon,
+	)
+
+
+## The closest point inside the workbench to a world position, for
+## dropping a piece that was dragged beyond the bench.
+func clamp_to_bench(global_point: Vector2) -> Vector2:
+	var local_point := to_local(global_point)
+	if Geometry2D.is_point_in_polygon(local_point, bench_polygon):
+		return global_point
+	var closest := local_point
+	var closest_distance := INF
+	for index in bench_polygon.size():
+		var from_point := bench_polygon[index]
+		var to_point := bench_polygon[
+			(index + 1) % bench_polygon.size()
+		]
+		var candidate := Geometry2D.get_closest_point_to_segment(
+			local_point,
+			from_point,
+			to_point,
+		)
+		var distance := local_point.distance_squared_to(candidate)
+		if distance < closest_distance:
+			closest_distance = distance
+			closest = candidate
+	return to_global(closest)
+
+
+## Notes a screw as resting loose on the bench, wherever the player
+## left it, so presses can find it.
+func register_resting_screw(screw: Screw) -> void:
+	if not _resting_screws.has(screw):
+		_resting_screws.append(screw)
 
 
 ## Gives `screw` the first free rest spot on the bench, or the one it
@@ -298,6 +524,7 @@ func _spawn_next_item() -> void:
 ## the next item arrives.
 func _send_to_outbox(item: Repairable) -> void:
 	set_outbox_outline_shown(false)
+	cleanup_loose_parts()
 	active_repairable = null
 	%TicketCard.hide_card()
 	item.departed.connect(_on_item_departed.bind(item), CONNECT_ONE_SHOT)
@@ -308,6 +535,7 @@ func _send_to_outbox(item: Repairable) -> void:
 
 
 func _on_item_landed(item: Repairable) -> void:
+	restock_parts(item)
 	shake_camera(
 		G.settings.item_landing_shake_px,
 		G.settings.item_landing_shake_sec,
@@ -326,6 +554,24 @@ func _on_item_departed(item: Repairable) -> void:
 	var tween := create_tween()
 	tween.tween_interval(G.settings.next_item_delay_sec)
 	tween.tween_callback(_spawn_next_item)
+
+
+## A drawer finished opening in the center: its stored parts
+## appear at random spots inside it.
+func _on_drawer_opened(drawer: Drawer) -> void:
+	for part in get_parts_in_drawer(drawer):
+		part.global_position = (
+			drawer.get_random_interior_global_position()
+		)
+		part.z_index = 16
+		part.show()
+
+
+## A drawer started to close: its stored parts disappear before
+## the wrapper slides back and the animation reverses.
+func _on_drawer_close_started(drawer: Drawer) -> void:
+	for part in get_parts_in_drawer(drawer):
+		part.hide()
 
 
 func _on_defect_added(

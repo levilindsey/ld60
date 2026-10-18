@@ -25,7 +25,7 @@ const _DANGER_SHAKE_PX := 1.5
 
 ## How far the tip can move along the slot from the center before it skids
 ## out, about half the slot's length.
-@export var seat_tolerance_px := 9.0
+@export var seat_tolerance_px := 12.0
 ## The chance that a twist drifts the tip this screw's way. The other
 ## twists drift it the other way (flathead.md "Tuning").
 @export_range(0.0, 1.0) var slip_bias := 0.9
@@ -91,12 +91,12 @@ func _physics_process(delta: float) -> void:
 	super(delta)
 
 
-## Turns the driver with the head and puts its tip on the slot.
+## Turns the driver with the head and puts its working end on the slot.
 func place_engaged_tool() -> void:
 	var driver := engaged_tool as FlatHeadScrewDriver
 	if _is_turning_tool and is_instance_valid(driver):
 		driver.set_twist_rotation(head.rotation - _engage_head_rotation)
-	engaged_tool.place_tip(get_tip_position() + _get_danger_shake())
+	engaged_tool.place_work_end(get_tip_position() + _get_danger_shake())
 
 
 ## Lets go of the driver and gives the pointer back to the hand.

@@ -342,3 +342,17 @@ func _get_page_content(page_index: int) -> Texture2D:
 
 func _get_local_x(event: InputEventMouse) -> float:
 	return (make_input_local(event) as InputEventMouse).position.x
+
+
+## True while the book is open and a world point is over a page
+## that can still turn: the right page needs a spread after this
+## one, the left page needs one before it.
+func is_point_over_flippable_page(global_point: Vector2) -> bool:
+	if state != State.IDLE:
+		return false
+	var shape_node := %ClickAreaShape as CollisionShape2D
+	var local := shape_node.to_local(global_point)
+	var size := (shape_node.shape as RectangleShape2D).size
+	if not Rect2(-size / 2.0, size).has_point(local):
+		return false
+	return _has_next_spread() if local.x >= 0.0 else spread_index > 0

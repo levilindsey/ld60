@@ -80,17 +80,42 @@ func close_app() -> void:
 ## The default cursor everywhere is the pointing hand: it replaces
 ## the arrow shape, so menus and overlays show it too. The open hand
 ## replaces the pointing-hand shape, which the bench hand and the
-## parts menu slots ask for over things that can be grabbed.
+## parts menu slots ask for over things that can be grabbed. The
+## grabbed hand replaces the drag shape, which the bench hand asks
+## for while it holds something.
 func _set_up_cursors() -> void:
+	# One scale for every cursor, so the hands keep the relative
+	# sizes they were drawn at. The tallest texture sets the scale
+	# and lands at _CURSOR_HEIGHT_PX; the rest come out under it.
+	var textures: Array[Texture2D] = [
+		settings.point_cursor_texture,
+		settings.grab_cursor_texture,
+		settings.grabbed_cursor_texture,
+	]
+	var scale_factor := 1.0
+	var tallest := 0
+	for texture in textures:
+		if is_instance_valid(texture):
+			tallest = maxi(tallest, texture.get_height())
+	if tallest > 0:
+		scale_factor = float(_CURSOR_HEIGHT_PX) / tallest
 	_register_cursor(
 		settings.point_cursor_texture,
 		Input.CURSOR_ARROW,
 		settings.point_cursor_hotspot,
+		scale_factor,
 	)
 	_register_cursor(
 		settings.grab_cursor_texture,
 		Input.CURSOR_POINTING_HAND,
 		settings.grab_cursor_hotspot,
+		scale_factor,
+	)
+	_register_cursor(
+		settings.grabbed_cursor_texture,
+		Input.CURSOR_DRAG,
+		settings.grabbed_cursor_hotspot,
+		scale_factor,
 	)
 
 
@@ -98,23 +123,30 @@ func _register_cursor(
 	texture: Texture2D,
 	shape: Input.CursorShape,
 	hotspot: Vector2,
+	scale_factor: float,
 ) -> void:
 	if not is_instance_valid(texture):
 		return
-	Input.set_custom_mouse_cursor(
-		_resized_cursor(texture), shape, hotspot
+	var resized := _resized_cursor(texture, scale_factor)
+	# Hotspots are authored for a _CURSOR_HEIGHT_PX-tall cursor, so
+	# they shrink with the texture they belong to.
+	var resized_hotspot := (
+		hotspot * resized.get_height() / _CURSOR_HEIGHT_PX
 	)
+	Input.set_custom_mouse_cursor(resized, shape, resized_hotspot)
 
 
-func _resized_cursor(texture: Texture2D) -> Texture2D:
-	var image := texture.get_image()
-	if image.get_height() <= _CURSOR_HEIGHT_PX:
+func _resized_cursor(
+	texture: Texture2D,
+	scale_factor: float,
+) -> Texture2D:
+	if is_equal_approx(scale_factor, 1.0):
 		return texture
-	var scale_factor := float(_CURSOR_HEIGHT_PX) / image.get_height()
+	var image := texture.get_image()
 	var size := Vector2(image.get_size()) * scale_factor
 	image.resize(
 		maxi(1, roundi(size.x)),
-		_CURSOR_HEIGHT_PX,
+		maxi(1, roundi(size.y)),
 		Image.INTERPOLATE_LANCZOS,
 	)
 	return ImageTexture.create_from_image(image)

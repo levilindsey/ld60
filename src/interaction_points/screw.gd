@@ -8,11 +8,13 @@ extends InteractionPoint
 ## the oil can frees it. A screw shows how far in it is by turning its
 ## head and sliding its art up out of its hole (`slide`). It never scales.
 ##
-## Once it is all the way out, it pulls itself out of the hole and slides
-## off to a rest spot on the bench. When its layer is back on, a press
-## sends it back to sink into its hole, loose and ready to be driven in
-## (docs/design/screw_pullout.md). The root stays at the hole with the
-## hole art and the clip mask. Only the art and the hit shape move.
+## Once it is all the way out, it pulls itself out of the hole and
+## comes to rest on the bench where it landed. The player drags it
+## around the bench. When its layer is back on, dragging it close to
+## its hole seats it: it arcs down into the hole, loose and ready to
+## be driven in (docs/design/screw_pullout.md). The root stays at
+## the hole with the hole art and the clip mask. Only the art and
+## the hit shape move.
 ##
 ## Each screw type runs its own microgame. It overrides
 ## `_start_microgame()`, feeds `slide` as it turns the head, and calls
@@ -64,6 +66,14 @@ const _PLACEHOLDER_FRAME_TINTS: Array[Color] = [
 ]
 ## Seconds from the grind to the stand-in pry.
 const _PRY_DELAY_SEC := 0.3
+## Seconds a picked-up screw takes to turn in the fingers.
+const _PICKUP_TURN_SEC := 0.25
+## The most a picked-up screw turns either way, in radians.
+const _PICKUP_MAX_TURN_RAD := PI / 4.0
+## How long a screw rolls when set down after a drag, and how far.
+const _ROLL_SEC := 0.55
+const _ROLL_MIN_PX := 8.0
+const _ROLL_MAX_PX := 16.0
 
 ## The screw head's art, seen from the top. The twists turn it. If it is an
 ## `AnimatedSprite2D`, its frames are the `HeadFrame` states in order.
@@ -123,6 +133,8 @@ var slide := 0.0:
 		_update_slide_position()
 ## Where the screw is on its trip from its hole to the bench and back.
 var travel := Travel.HOME
+## True while the hand is carrying this screw across the bench.
+var is_carried := false
 
 ## The head's angle when the screw is all the way in.
 var _home_head_rotation := 0.0
@@ -150,6 +162,15 @@ var _is_seize_warned := false
 var _pry_tween: Tween
 var _travel_tween: Tween
 var _rest_pulse_tween: Tween
+var _pickup_tween: Tween
+var _roll_tween: Tween
+## The roll taken when the screw is set down after a drag: where
+## it started, and how far and how much it turned.
+var _roll_from_position := Vector2.ZERO
+var _roll_from_rotation := 0.0
+var _roll_direction := 1.0
+var _roll_distance_px := 0.0
+var _roll_angle_rad := 0.0
 var _outlined_bench_art: Sprite2D
 var _bench_material_before_outline: Material
 
@@ -184,6 +205,14 @@ func _ready() -> void:
 	_bench_art_home_rotation = bench_art.rotation
 	bench_art.hide()
 	animation_player.animation_finished.connect(_on_animation_finished)
+	DropShadow.attach_silhouette(
+		bench_art,
+		[],
+		Vector2(0.0, 5.0),
+		func() -> bool:
+			return travel == Travel.RESTING and not is_carried,
+		0.8,
+	)
 	health = max_health
 	_update_head_frame()
 	_update_rust()
@@ -339,6 +368,29 @@ func has_rest_point(global_point: Vector2) -> bool:
 	)
 
 
+## The player picked this resting screw up to drag it. It turns a
+## little in the fingers: a random delta within 45 degrees either
+## way from how it lies.
+func on_picked_up() -> void:
+	_stop_roll()
+	if is_instance_valid(_pickup_tween):
+		_pickup_tween.kill()
+	var target_rotation := (
+		bench_art.rotation
+		+ randf_range(-_PICKUP_MAX_TURN_RAD, _PICKUP_MAX_TURN_RAD)
+	)
+	_rest_rotation = target_rotation
+	_pickup_tween = create_tween()
+	_pickup_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_pickup_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_pickup_tween.tween_property(
+		bench_art,
+		"rotation",
+		target_rotation,
+		_PICKUP_TURN_SEC,
+	)
+
+
 ## Sends the resting screw back over its hole, where it sinks in, loose
 ## and ready to be driven in.
 func come_back() -> void:
@@ -348,6 +400,9 @@ func come_back() -> void:
 		G.level.free_screw_rest_spot(self)
 	_stop_outline()
 	_stop_rest_pulse()
+	_stop_roll()
+	if is_instance_valid(_pickup_tween):
+		_pickup_tween.kill()
 	travel = Travel.RETURNING
 	_travel_from = bench_art.global_position
 	_start_travel(_reach_hole, _bench_art_home_rotation)
@@ -500,24 +555,26 @@ func _on_animation_finished(animation_name: StringName) -> void:
 		_settle_in_hole()
 
 
-## Out of the hole: the unclipped art takes over from the clipped one and
-## slides off to the screw's rest spot. Only now do the layer and the item
-## hear that the screw is out.
+## Out of the hole: the unclipped art takes over from the clipped one
+## and the screw comes to rest right where the pull-out left it. It
+## does not slide off by itself. The player drags it wherever they
+## want it on the bench (docs/design/screw_pullout.md). Only now do
+## the layer and the item hear that the screw is out.
 func _leave_hole() -> void:
-	travel = Travel.LEAVING
 	clip_space.hide()
 	hit_shape.set_deferred("disabled", true)
 	bench_art.show()
 	bench_art.reparent(_get_bench_parent())
 	bench_art.rotation = _bench_art_home_rotation
 	bench_art.scale = _bench_art_home_scale
+	bench_art.z_index = 10
 	bench_art.reset_physics_interpolation()
-	_rest_rotation = randf_range(0.0, TAU)
-	_travel_from = bench_art.global_position
-	_travel_to = _travel_from
+	_rest_rotation = bench_art.rotation
+	travel = Travel.RESTING
 	if is_instance_valid(G.level):
-		_travel_to = G.level.take_screw_rest_spot(self)
-	_start_travel(_reach_rest_spot, _rest_rotation)
+		G.level.register_resting_screw(self)
+	if is_install_mode:
+		_start_outline()
 	finish()
 
 
@@ -527,6 +584,43 @@ func _reach_rest_spot() -> void:
 		_start_outline()
 
 
+## The screw was just set down on the table after a drag. It rolls
+## a short way, turning as it goes. The roll pivots near the head
+## end, so the head travels less than the pointy end. It does not
+## roll when the unscrew microgame finishes: only a set-down after
+## being carried counts.
+func on_set_down() -> void:
+	_roll_from_position = bench_art.global_position
+	_roll_from_rotation = bench_art.rotation
+	_roll_direction = 1.0 if randf() < 0.5 else -1.0
+	_roll_distance_px = randf_range(_ROLL_MIN_PX, _ROLL_MAX_PX)
+	_roll_angle_rad = _roll_direction * _roll_distance_px / 14.0
+	_roll_tween = create_tween()
+	_roll_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_roll_tween.tween_method(_apply_roll, 0.0, 1.0, _ROLL_SEC)
+
+
+## Stops a set-down roll where it is.
+func _stop_roll() -> void:
+	if is_instance_valid(_roll_tween):
+		_roll_tween.kill()
+
+
+## Puts the rolling screw `weight` of the way through its roll.
+func _apply_roll(weight: float) -> void:
+	var eased := 1.0 - pow(1.0 - weight, 3.0)
+	var head_pivot := _roll_from_position + Vector2(0.0, -10.0)
+	bench_art.global_position = (
+		head_pivot
+		+ (_roll_from_position - head_pivot).rotated(
+			_roll_angle_rad * eased,
+		)
+		+ Vector2(_roll_direction * _roll_distance_px * eased, 0.0)
+	)
+	bench_art.rotation = _roll_from_rotation + _roll_angle_rad * eased
+	_rest_rotation = bench_art.rotation
+
+
 ## Over the hole: the clipped art takes over again and sinks into the
 ## hole, turned back like a loose screw.
 func _reach_hole() -> void:
@@ -534,6 +628,7 @@ func _reach_hole() -> void:
 	bench_art.position = _bench_art_home_position
 	bench_art.rotation = _bench_art_home_rotation
 	bench_art.scale = _bench_art_home_scale
+	bench_art.z_index = 0
 	bench_art.hide()
 	head.rotation = _home_head_rotation - LOOSE_TURN_RAD
 	clip_space.show()
@@ -575,12 +670,22 @@ func _start_travel(on_done: Callable, to_rotation: float) -> void:
 	_travel_tween.chain().tween_callback(on_done)
 
 
-## Puts the bench art `weight` of the way along its trip. A trip back ends
-## over the hole, even if the screw moved since it began.
+## Puts the bench art `weight` of the way along its trip. A trip back
+## ends over the hole, even if the screw moved since it began, and
+## arcs up and over it so the screw always comes down into its hole
+## from above, never sliding in sideways.
 func _place_bench_art(weight: float) -> void:
 	var to_position := _travel_to
 	if travel == Travel.RETURNING:
 		to_position = to_global(_bench_art_home_position)
+		var arc := Vector2.UP * G.settings.screw_seat_arc_px
+		bench_art.global_position = _travel_from.bezier_interpolate(
+			_travel_from + arc,
+			to_position + arc,
+			to_position,
+			weight,
+		)
+		return
 	bench_art.global_position = _travel_from.lerp(to_position, weight)
 
 

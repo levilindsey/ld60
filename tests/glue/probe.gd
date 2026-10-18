@@ -50,7 +50,7 @@ func _run() -> void:
 	await _physics_frames(2)
 	_expect(_crack.get_sample_count() > 10, "the crack has samples")
 
-	await _press_at(G.level.get_tool_holder_position(Tool.Type.GLUE))
+	await _grab_tool(G.level.tools_by_type[Tool.Type.GLUE])
 	_expect(
 		_hand.held == G.level.tools_by_type[Tool.Type.GLUE],
 		"the hand holds the glue bottle",
