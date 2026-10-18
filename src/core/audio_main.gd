@@ -174,11 +174,12 @@ func fade_out(stream_player: AudioStreamPlayer) -> void:
 
 ## Plays a sound after a delay, running the timer on AudioMain itself
 ## so the sound fires even if the originating node (e.g. an entity on
-## death) has been queue_freed in the interim.
+## death) has been queue_freed in the interim. The delay holds while the
+## game is paused.
 func play_sound_delayed(
 		sound_name: StringName,
 		delay_sec: float,
 		force_restart := true) -> void:
 	if delay_sec > 0.0:
-		await get_tree().create_timer(delay_sec, true).timeout
+		await get_tree().create_timer(delay_sec, false).timeout
 	play_sound(sound_name, force_restart)
