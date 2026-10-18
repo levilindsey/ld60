@@ -1,73 +1,70 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://loo6ls40aw13"]
 
-[ext_resource type="Script" path="res://src/tools/air_blower.gd" id="1_blower"]
+[ext_resource type="Script" uid="uid://d1jl7m3xiy1dt" path="res://src/tools/air_blower.gd" id="1_blower"]
 [ext_resource type="Texture2D" uid="uid://dukut3bwj2d67" path="res://assets/images/air blower bulb thingy.png" id="2_plump"]
 [ext_resource type="Texture2D" uid="uid://dur0rmxr2p4hr" path="res://assets/images/squishhhh.png" id="3_squeezed"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_grab"]
-radius = 400.0
-
 [sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
-radius = 40.0
+radius = 52.201527
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_holder"]
 radius = 200.0
 
-[node name="AirBlower" type="Node2D" node_paths=PackedStringArray("plump_sprite", "squeezed_sprite", "cone_visual", "cursor_position", "grab_area", "interaction_area", "holder_area")]
+[node name="AirBlower" type="Node2D" unique_id=1842233991 node_paths=PackedStringArray("plump_sprite", "squeezed_sprite", "cone_visual", "cursor_position", "grab_area", "interaction_area", "holder_area")]
 script = ExtResource("1_blower")
 plump_sprite = NodePath("Wrapper/Art/PlumpSprite")
 squeezed_sprite = NodePath("Wrapper/Art/SqueezedSprite")
 cone_visual = NodePath("ConeVisual")
+type = 2
 cursor_position = NodePath("Wrapper/CursorPosition")
 grab_area = NodePath("Wrapper/GrabArea")
 interaction_area = NodePath("Wrapper/InteractionArea")
 holder_area = NodePath("Wrapper/HolderArea")
-type = 2
 
-[node name="Wrapper" type="Node2D" parent="."]
-scale = Vector2(0.2, 0.2)
+[node name="Wrapper" type="Node2D" parent="." unique_id=1276337428]
+scale = Vector2(0.11, 0.11)
 
-[node name="CursorPosition" type="Marker2D" parent="Wrapper"]
+[node name="CursorPosition" type="Marker2D" parent="Wrapper" unique_id=304451181]
 
-[node name="GrabArea" type="Area2D" parent="Wrapper"]
+[node name="GrabArea" type="Area2D" parent="Wrapper" unique_id=2019879173]
 collision_mask = 0
 monitoring = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/GrabArea"]
-position = Vector2(500, -575)
-shape = SubResource("CircleShape2D_grab")
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Wrapper/GrabArea" unique_id=1185728208]
+polygon = PackedVector2Array(-144.99998, -849.99994, 69.99999, -909.99994, 89.99999, -849.99994, 219.99998, -749.99994, 294.99997, -514.99994, 289.99997, -274.99997, 189.99998, -74.99999, 74.99999, 0, 74.99999, 589.99994, 44.999996, 924.99994, -54.999996, 924.99994, -69.99999, -4.9999995, -149.99998, -99.99999, -279.99997, -419.99997, -264.99997, -649.99994, -144.99998, -809.99994)
 
-[node name="InteractionArea" type="Area2D" parent="Wrapper"]
+[node name="InteractionArea" type="Area2D" parent="Wrapper" unique_id=1196995063]
+position = Vector2(0, 935)
 collision_layer = 0
 collision_mask = 4
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/InteractionArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/InteractionArea" unique_id=571474531]
 shape = SubResource("CircleShape2D_interaction")
+metadata/_edit_lock_ = true
 
-[node name="HolderArea" type="Area2D" parent="Wrapper"]
+[node name="HolderArea" type="Area2D" parent="Wrapper" unique_id=50070263]
 collision_layer = 0
 collision_mask = 16
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/HolderArea"]
-position = Vector2(0, -600)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Wrapper/HolderArea" unique_id=1486146727]
 shape = SubResource("CircleShape2D_holder")
+metadata/_edit_lock_ = true
 
-[node name="Art" type="Node2D" parent="Wrapper"]
+[node name="Art" type="Node2D" parent="Wrapper" unique_id=598327994]
+position = Vector2(-30.000002, -114.99998)
+rotation = -0.710349
+scale = Vector2(0.6999998, 0.6999998)
 
-[node name="PlumpSprite" type="Sprite2D" parent="Wrapper/Art"]
-position = Vector2(994, -1150)
-scale = Vector2(0.7, 0.7)
+[node name="PlumpSprite" type="Sprite2D" parent="Wrapper/Art" unique_id=310003821]
 texture = ExtResource("2_plump")
 
-[node name="SqueezedSprite" type="Sprite2D" parent="Wrapper/Art"]
+[node name="SqueezedSprite" type="Sprite2D" parent="Wrapper/Art" unique_id=1193908240]
 visible = false
-position = Vector2(994, -1150)
-scale = Vector2(0.7, 0.7)
 texture = ExtResource("3_squeezed")
 
-[node name="ConeVisual" type="Polygon2D" parent="."]
+[node name="ConeVisual" type="Polygon2D" parent="." unique_id=889137414]
 visible = false
 z_index = 50
 color = Color(1, 1, 1, 0.35)
