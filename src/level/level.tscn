@@ -15,6 +15,7 @@
 [ext_resource type="Texture2D" uid="uid://bik16fm0enfxo" path="res://assets/images/manual_page0002.png" id="15_page2"]
 [ext_resource type="Texture2D" uid="uid://b5jej1flts5qt" path="res://assets/images/manual_page0003.png" id="16_page3"]
 [ext_resource type="PackedScene" uid="uid://dmb7ltq7tuwvv" path="res://src/level/drawer.tscn" id="17_drawer"]
+[ext_resource type="PackedScene" path="res://src/props/radio.tscn" id="18_radio"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 34.058773
@@ -27,6 +28,10 @@ part_scene = ExtResource("10_part")
 position = Vector2(7, 2)
 scale = Vector2(0.36922747, 0.29375002)
 texture = ExtResource("2_n4rap")
+
+[node name="Radio" parent="." unique_id=675782899 instance=ExtResource("18_radio")]
+position = Vector2(-290, 145)
+scale = Vector2(0.06, 0.06)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1488511100]
 unique_name_in_owner = true

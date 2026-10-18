@@ -548,6 +548,7 @@ func _on_item_landed(item: Repairable) -> void:
 ## the last item, the next one arrives a moment later. The game is won
 ## when the last receipt closes.
 func _on_item_departed(item: Repairable) -> void:
+	G.session.fixed_item_count += 1
 	%Receipt.open(item.item_name, item.quality)
 	if _is_queue_finished():
 		return

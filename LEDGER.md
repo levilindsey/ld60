@@ -115,6 +115,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Residuals (known, not fixed)
 
+- **LX62** · `level.tscn` loads `res://src/level/drawer.tscn`, but the
+  file is `Drawer.tscn` (ef836b1). Windows hides it; a case-sensitive
+  export (web) may fail to load it. Rename one to match.
 - **LX59** · `full_loop`, `full_loop_booklet`, `item_flow`, `screws`
   and `parts` probes fail at HEAD 2d0096b (checked 2026-10-18 on a
   clean worktree, so not LX58 fallout): the Phillips-in-test-box and
@@ -130,8 +133,8 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   rejects over 100 MB). Levi: leave them for now (2026-10-17). Since
   then: a 20 MB `window.kra-autosave.kra` (cb47839, deleted in 2d71113)
   a 9.6 MB `room!!!!!!.png5857331650.tmp` (2d71113), and
-  `screwwwzzzzzzflat.png~` (4e44a86). Ignoring `*~`,
-  `*autosave*` and `*.tmp` in `.gitignore` would stop new ones.
+  `screwwwzzzzzzflat.png~` (4e44a86). `.gitignore` now skips `*~`
+  and `*.kra-autosave.kra`; lowercase `*.tmp` is still not ignored.
 - **LX36** · Decals have no cap per part, so repeated unseats pile up,
   and a part that draws nothing (a plain `Node2D`) shows its decals
   unclipped, with no warning (`src/decals/decal_spawner.gd`).

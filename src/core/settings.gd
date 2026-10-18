@@ -269,6 +269,14 @@ enum PhysicsLayer {
 @export var hammer_surface_damage_charge := 0.55
 @export_group("")
 
+@export_group("Radio")
+## Once an item is fixed, the radio's chance to start glitching each
+## second is one over this.
+@export var radio_glitch_chance_window_sec := 300.0
+## After the radio is fixed, how long before it can glitch again.
+@export var radio_glitch_cooldown_sec := 300.0
+@export_group("")
+
 @export_group("Glue")
 ## Planned (LX22). Coverage gained per second on a crack sample.
 @export var glue_flow_rate := 2.0

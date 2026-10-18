@@ -44,6 +44,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm frustrated 8.wav" id="43_frust8"]
 [ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm frustrated 9.wav" id="44_frust9"]
 [ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm frustrated_b.wav" id="45_frust1"]
+[ext_resource type="AudioStream" uid="uid://byhonrp2iy8i8" path="res://assets/audio/music/buy_something_radio_edit.ogg" id="46_main_theme"]
 
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_hmm"]
 streams_count = 4
@@ -141,6 +142,7 @@ bus = &"Music"
 
 [node name="MainTheme" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("46_main_theme")
 bus = &"Music"
 
 [node name="Humming" type="AudioStreamPlayer" parent="."]

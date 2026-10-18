@@ -13,6 +13,10 @@ enum WindPhase {
 	RECOILING,
 }
 
+## Props outside the item that the hammer can hit, like the radio. Each
+## needs `is_struck_at(global_point) -> bool` and `on_struck(charge)`.
+const STRIKABLE_PROPS_GROUP := &"strikable_props"
+
 ## The hammer art. It turns around the striking face.
 @export var art: Node2D
 
@@ -24,6 +28,7 @@ var _wind_sec := 0.0
 var _locked_point := Vector2.ZERO
 var _locked_target: StrikablePoint
 var _locked_surface: Surface
+var _locked_prop: Node2D
 var _art_home_rotation := 0.0
 var _swing_tween: Tween
 
@@ -90,11 +95,17 @@ func on_effect_pressed(global_point: Vector2) -> void:
 	_locked_point = global_point
 	_locked_target = null
 	_locked_surface = null
+	_locked_prop = null
 	if is_instance_valid(G.level):
 		var point := G.level.hand.find_point(global_point)
 		_locked_target = point as StrikablePoint
 		if not is_instance_valid(_locked_target):
 			_locked_surface = G.level.hand.find_surface(global_point)
+		if (
+			not is_instance_valid(_locked_target)
+			and not is_instance_valid(_locked_surface)
+		):
+			_locked_prop = _find_strikable_prop(global_point)
 		G.level.hand.set_input_owner(self)
 	_phase = WindPhase.WINDING
 	_wind_sec = 0.0
@@ -138,6 +149,8 @@ func _strike() -> void:
 			G.level.shake_camera(5.0, 0.15)
 		else:
 			G.audio.play_sound(&"click")
+	elif is_instance_valid(_locked_prop):
+		_locked_prop.on_struck(charge)
 	else:
 		G.audio.play_sound(&"thud", true)
 	_phase = WindPhase.HOLDING
@@ -173,6 +186,7 @@ func _finish_swing() -> void:
 	charge = 0.0
 	_locked_target = null
 	_locked_surface = null
+	_locked_prop = null
 	queue_redraw()
 	if is_instance_valid(G.level):
 		G.level.hand.clear_input_owner(self)
@@ -193,3 +207,10 @@ func _cancel_swing() -> void:
 	queue_redraw()
 	if is_instance_valid(G.level):
 		G.level.hand.clear_input_owner(self)
+
+
+func _find_strikable_prop(global_point: Vector2) -> Node2D:
+	for prop in get_tree().get_nodes_in_group(STRIKABLE_PROPS_GROUP):
+		if prop.is_struck_at(global_point):
+			return prop
+	return null
