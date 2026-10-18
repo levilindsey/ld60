@@ -50,7 +50,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   recoil, and the rack spots at (430, 80), (541, 120) and (460, 220).
   From LX17: circling a Phillips screw with a mouse and a finger,
   the band at 3 to 7 rad/s, the gauge at (100, -100) from the head,
-  and the Phillips holder at (460, 40).
+  and the Phillips holder at (460, 40). From LX22: tracing glue
+  along a crack, the flood point, the 3 s dry, and the glue
+  holder at (209, 301).
   The sounds wait for LX25 (no streams yet), the screw art for LX24.
 - **LX16** · First item end to end: the virtual pet egg
   (`docs/design/items.md`). It replaces the three test items in
@@ -62,9 +64,6 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   LX54 a screw pried out goes to the bench like a removed one.
 - **LX21** · Oil can: drops, pivots, squeaks, misuse
   (`docs/design/oil_can.md`).
-- **LX22** · Glue along cracks and clips (`docs/design/glue.md`).
-  Registered ahead: `Tool.Type.GLUE`, `InteractionPoint.Type.CRACK`
-  and the "Glue" settings group wait for the bottle and crack art.
 - **LX23** · Items 2 to 5: rotary phone, Walkman, CRT TV, ray gun
   (`docs/design/items.md` "The jam cut").
 - **LX24** · Art: screw states, decals, part states, effects, UI
@@ -80,6 +79,10 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   (cb47839) and `screweeeeeeeeddddddd.png` is in `flat_head_screw.tscn`;
   the other four (one in `gui/`) are not used yet. With new screw art,
   pose the bench art like `RemoveScrew`'s last key (`screw_pullout.md`).
+  Also: the real glue bottle for `glue_bottle_placeholder.png`, a
+  crack decal for the drawn `Crack` line, and the grime and dust
+  sprites for the placeholder blobs (`grime_spot.tscn`,
+  `dust_clump.tscn`).
 - **LX25** · Sounds: collect each design doc's "Feedback" list and add
   the streams to `src/core/audio_main.tscn`. Levi's cleaned foley is in
   `assets/audio/foley_cleaned/`; the flathead's scrape wants a rising
@@ -160,6 +163,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX22** · Glue along cracks: squeeze, trace, dry, blobs
+  (`docs/design/glue.md`). Done in 37959f3 (2026-10-17) with the
+  placeholder bottle. Levi still to play it (LX41).
 - **LX17** · Phillips circular drag: circle speed in the band
   turns the screw, an empty grip cams out (`docs/design/
   phillips.md`). Done in a71ec36 (2026-10-17). Levi still to
