@@ -130,8 +130,8 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   rejects over 100 MB). Levi: leave them for now (2026-10-17). Since
   then: a 20 MB `window.kra-autosave.kra` (cb47839, deleted in 2d71113)
   a 9.6 MB `room!!!!!!.png5857331650.tmp` (2d71113), and
-  `screwwwzzzzzzflat.png~` (4e44a86). `.gitignore` now skips `*~`
-  and `*.kra-autosave.kra`; lowercase `*.tmp` is still not ignored.
+  `screwwwzzzzzzflat.png~` (4e44a86). `.gitignore` now skips `*~`,
+  `*.kra-autosave.kra` and `*.tmp`; the files already committed stay.
 - **LX36** · Decals have no cap per part, so repeated unseats pile up,
   and a part that draws nothing (a plain `Node2D`) shows its decals
   unclipped, with no warning (`src/decals/decal_spawner.gd`).

@@ -13,6 +13,7 @@
 # Krita backup and autosave files
 *~
 *.kra-autosave.kra
+*.tmp
 
 # OS metadata
 .DS_Store
