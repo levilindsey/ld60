@@ -64,6 +64,7 @@ func _run() -> void:
 	await _check_arrival()
 	if not is_instance_valid(_item):
 		return
+	await _check_ticket_dismiss()
 	await _check_unfinished_press()
 	await _check_finish()
 	await _check_drag_and_return()
@@ -182,15 +183,40 @@ func _check_arrival() -> void:
 		"the repair clock starts at the landing (%.2f s)"
 		% _item.quality.repair_time_sec,
 	)
-	var name_label: Label = ticket.get_node("%NameLabel")
 	var complaint_label: Label = ticket.get_node("%ComplaintLabel")
-	var slide: Control = ticket.get_node("%Slide")
 	_expect(
-		ticket.visible
-		and name_label.text == _item.item_name
-		and complaint_label.text == _item.ticket
-		and is_zero_approx(slide.position.x),
-		"1. the ticket slides in with the name and the complaint",
+		ticket.visible and complaint_label.text == _item.ticket,
+		"1. the ticket flutters in with the complaint",
+	)
+
+
+func _check_ticket_dismiss() -> void:
+	var ticket: TicketCard = _level.get_node("%TicketCard")
+	var is_resting := await _wait_until(
+		func() -> bool: return ticket.state == TicketCard.State.RESTING,
+		3.0,
+	)
+	if not _expect(is_resting, "the ticket comes to rest"):
+		return
+	await _press_at(ticket.global_position)
+	var is_open := await _wait_until(
+		func() -> bool: return ticket.state == TicketCard.State.OPEN,
+		2.0,
+	)
+	if not _expect(is_open, "tapping the ticket lifts it"):
+		return
+	await _press_at(_home() + Vector2(-420.0, -260.0))
+	_expect(
+		not is_instance_valid(_item._shake_tween),
+		"the outside tap is spent on the ticket, not the item",
+	)
+	var is_resting_again := await _wait_until(
+		func() -> bool: return ticket.state == TicketCard.State.RESTING,
+		2.0,
+	)
+	_expect(
+		is_resting_again,
+		"tapping outside sets the ticket back down",
 	)
 
 

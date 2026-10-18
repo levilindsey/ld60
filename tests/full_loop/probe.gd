@@ -113,11 +113,22 @@ func _run_booklet() -> void:
 	)
 	await _seconds(1.0)
 	_expect(manual.state == InstructionManual.State.IDLE, "the booklet opens")
-	# A press on the item under the booklet goes to the item.
+	# A press outside the open booklet closes it, and is spent there.
+	await _press_at(_item.global_position)
+	_expect(
+		manual.state == InstructionManual.State.CLOSING,
+		"a press outside the booklet closes it",
+	)
+	await _seconds(1.2)
+	_expect(
+		manual.state == InstructionManual.State.CLOSED,
+		"the booklet finishes closing",
+	)
+	# With the booklet closed, a press on the item goes to the item.
 	await _press_at(_item.global_position)
 	_expect(
 		(_item.get_node("Layers") as Node2D).position != Vector2.ZERO,
-		"a press on the item over the booklet shakes the item",
+		"a press on the item past the closed booklet shakes the item",
 	)
 
 

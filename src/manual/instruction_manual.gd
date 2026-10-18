@@ -2,7 +2,7 @@ class_name InstructionManual
 extends LiftableProp
 ## An in-world instruction manual. Starts closed on the desk; tapping the
 ## cover lifts it and flips it open. Once open, pages turn by swiping (or
-## tapping) a page.
+## tapping) a page, and a tap anywhere outside the book closes it.
 ##
 ## Page turns use a single bending ManualLeaf hinged at the spine. Leaf
 ## progress 0 means the leaf lies over the right page; 1 means it lies over
@@ -108,7 +108,7 @@ func _on_lifted() -> void:
 		1.0,
 		0.0,
 		_COVER_FLIP_DURATION_SEC,
-		"ease_in",
+		"ease_in_out",
 		0.0,
 		TimeType.APP_PHYSICS,
 		_on_cover_flipped,
@@ -144,7 +144,10 @@ func _handle_press(event: InputEventMouseButton) -> bool:
 			return true
 		State.IDLE:
 			if not _is_on_shape(%ClickAreaShape, event):
-				return false
+				# Open and tapped outside: close the book. The tap is
+				# spent, so it doesn't also press the bench behind.
+				close()
+				return true
 			var x := _get_local_x(event)
 			_start_drag(x >= 0.0, x)
 			return true
@@ -253,7 +256,7 @@ func _on_first_page_folded() -> void:
 		0.0,
 		1.0,
 		_COVER_FLIP_DURATION_SEC,
-		"ease_out",
+		"ease_in_out",
 		0.0,
 		TimeType.APP_PHYSICS,
 		_on_cover_closed,

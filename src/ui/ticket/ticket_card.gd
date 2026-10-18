@@ -4,7 +4,8 @@ extends LiftableProp
 ## item on the bench (docs/design/outbox.md).
 ##
 ## When an item arrives, the ticket flutters down onto the desk beside it.
-## Tapping it lifts it up to read, and its close button sets it back down.
+## Tapping it lifts it up to read. Its close button, or a tap anywhere
+## outside it, sets it back down.
 ## The card's paper and text render into a SubViewport, so the whole card
 ## can be drawn in perspective while it rests.
 
@@ -94,6 +95,11 @@ func _handle_press(event: InputEventMouseButton) -> bool:
 		return true
 	if state == State.AWAY or state == State.LEAVING:
 		return false
+	if state == State.OPEN and not _is_on_warped_sprite(event):
+		# Open and tapped outside: set the ticket back down. The tap
+		# is spent, so it doesn't also press the bench behind.
+		_lower()
+		return true
 	if not _is_on_warped_sprite(event):
 		return false
 	if state == State.RESTING:
