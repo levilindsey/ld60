@@ -43,7 +43,7 @@ func _physics_process(delta: float) -> void:
 	var share := clampf(_wind_sec / G.settings.hammer_charge_sec, 0.0, 1.0)
 	charge = smoothstep(0.0, 1.0, share)
 	var windup := deg_to_rad(G.settings.hammer_max_windup_deg) * charge
-	art.rotation = _art_home_rotation - windup
+	art.rotation = _art_home_rotation + windup
 	art.scale = Vector2.ONE * (1.0 + 0.15 * charge)
 	if charge >= 1.0:
 		# The held full swing trembles.
@@ -122,7 +122,7 @@ func _swing() -> void:
 	_swing_tween.tween_property(
 		art,
 		"rotation",
-		_art_home_rotation + deg_to_rad(8.0),
+		_art_home_rotation - deg_to_rad(8.0),
 		G.settings.hammer_swing_sec,
 	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	_swing_tween.tween_callback(_strike)
