@@ -91,6 +91,10 @@ func _check_cancel() -> void:
 		is_instance_valid(G.settings.grab_cursor_texture),
 		"the grab cursor texture is set",
 	)
+	_expect(
+		is_instance_valid(G.settings.point_cursor_texture),
+		"the default point cursor texture is set",
+	)
 	await _press_at(Vector2(460.0, 290.0))
 	_expect(
 		await _wait_until(

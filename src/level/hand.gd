@@ -54,7 +54,6 @@ var _drag_previous_pointer := Vector2.ZERO
 func _ready() -> void:
 	pointer_screen_position = get_viewport().get_mouse_position()
 	%NopeIcon.visible = false
-	_set_up_grab_cursor()
 	_update_cursor()
 
 
@@ -392,10 +391,10 @@ func _track_pointer(event: InputEventMouse) -> void:
 	is_touch = event.device == InputEvent.DEVICE_ID_EMULATION
 
 
-## Arrow when empty, an open hand when empty and over something it
-## can grab, a drag hand while an item is held, hidden while a tool
-## is held. The open hand is the pointing-hand shape with the grab
-## texture from `_set_up_grab_cursor()` drawn in its place.
+## The pointing hand when empty, an open hand when empty and over
+## something it can grab, a drag hand while an item is held, hidden
+## while a tool is held. The arrow shape carries the point texture
+## and the pointing-hand shape the grab one (Main._set_up_cursors).
 func _update_cursor() -> void:
 	if not is_inside_tree() or not _is_level_running():
 		return
@@ -416,22 +415,6 @@ func _update_cursor() -> void:
 ## swapped for the full game, when there is no G.level yet.
 func _is_level_running() -> bool:
 	return is_instance_valid(G.level) and G.level.is_ancestor_of(self)
-
-
-## Godot has no open-hand shape. The pointing-hand shape stands in
-## for it, with this texture drawn in its place. The parts menu's
-## slots ask for the same shape, so they show the open hand too.
-func _set_up_grab_cursor() -> void:
-	if not is_instance_valid(G.settings):
-		return
-	var texture := G.settings.grab_cursor_texture
-	if not is_instance_valid(texture):
-		return
-	Input.set_custom_mouse_cursor(
-		texture,
-		Input.CURSOR_POINTING_HAND,
-		G.settings.grab_cursor_hotspot,
-	)
 
 
 func _apply_cursor(

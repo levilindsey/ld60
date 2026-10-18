@@ -2,6 +2,10 @@ class_name Main
 extends Node2D
 
 
+## How tall the pointer cursors are drawn, in pixels. The source
+## art is much larger than any OS pointer.
+const _CURSOR_HEIGHT_PX := 56
+
 @export var settings: Settings
 
 
@@ -14,6 +18,7 @@ func _enter_tree() -> void:
 	)
 
 	Scaffolder.set_up()
+	_set_up_cursors()
 
 
 func _ready() -> void:
@@ -70,6 +75,49 @@ func close_app() -> void:
 		G.utils.open_screenshot_folder()
 	G.print("Main.close_app", ScaffolderLog.CATEGORY_CORE_SYSTEMS)
 	get_tree().call_deferred("quit")
+
+
+## The default cursor everywhere is the pointing hand: it replaces
+## the arrow shape, so menus and overlays show it too. The open hand
+## replaces the pointing-hand shape, which the bench hand and the
+## parts menu slots ask for over things that can be grabbed.
+func _set_up_cursors() -> void:
+	_register_cursor(
+		settings.point_cursor_texture,
+		Input.CURSOR_ARROW,
+		settings.point_cursor_hotspot,
+	)
+	_register_cursor(
+		settings.grab_cursor_texture,
+		Input.CURSOR_POINTING_HAND,
+		settings.grab_cursor_hotspot,
+	)
+
+
+func _register_cursor(
+	texture: Texture2D,
+	shape: Input.CursorShape,
+	hotspot: Vector2,
+) -> void:
+	if not is_instance_valid(texture):
+		return
+	Input.set_custom_mouse_cursor(
+		_resized_cursor(texture), shape, hotspot
+	)
+
+
+func _resized_cursor(texture: Texture2D) -> Texture2D:
+	var image := texture.get_image()
+	if image.get_height() <= _CURSOR_HEIGHT_PX:
+		return texture
+	var scale_factor := float(_CURSOR_HEIGHT_PX) / image.get_height()
+	var size := Vector2(image.get_size()) * scale_factor
+	image.resize(
+		maxi(1, roundi(size.x)),
+		_CURSOR_HEIGHT_PX,
+		Image.INTERPOLATE_LANCZOS,
+	)
+	return ImageTexture.create_from_image(image)
 
 
 func _move_window() -> void:
