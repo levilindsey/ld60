@@ -18,6 +18,16 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
 
+- **LX56** · Recurring itch deploys until Mon 2026-10-19 13:00 PDT:
+  Muse cron job `90714525` (every 2 h at :17) pushes the working
+  tree to `levilindsey/repair-shop:html5` via `scripts/deploy_itch.ps1`,
+  gated on `scripts/check.ps1 -Tests` and skipped when the tree is
+  unchanged (`build/last-itch-push.txt`); it deletes itself after the
+  deadline. Stop early with `cron_delete 90714525`. Still Levi's, on
+  the itch Edit game page: Kind of project = HTML and "This file will
+  be played in the browser" (1280x720) on the html5 upload - without
+  those the page shows a broken download button instead of the game.
+
 ## Next
 
 - **LX41** · Play M1 by hand, with a mouse and on a touch screen: the
