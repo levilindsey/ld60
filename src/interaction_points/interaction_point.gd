@@ -8,6 +8,7 @@ extends Area2D
 
 enum Type {
 	FLAT_HEAD_SCREW,
+	PART_SOCKET,
 }
 
 enum Mode {

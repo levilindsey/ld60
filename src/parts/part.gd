@@ -1,0 +1,166 @@
+class_name Part
+extends Node2D
+## A replacement part from the parts drawer. The hand holds it like a
+## tool: it follows the pointer, a press tries to fit it, and putting
+## it back is a press on the drawer (docs/design/parts_bin.md).
+
+
+enum Type {
+	GEAR,
+	TUBE,
+	SPRING,
+}
+
+## Seconds the part takes to snap into a socket or fly home.
+const _FIT_SEC := 0.15
+const _FLY_HOME_SEC := 0.3
+## How many times the part jerks in the "nope" shake.
+const _NOPE_SHAKE_STEPS := 4
+
+@export var type := Type.GEAR
+
+## True once the part sits in its socket. An installed part no longer
+## follows the pointer.
+var is_installed := false
+
+var _is_flying := false
+var _shake_tween: Tween
+
+
+func _physics_process(_delta: float) -> void:
+	if is_installed or _is_flying:
+		return
+	if is_instance_valid(G.level) and G.level.hand.held == self:
+		global_position = G.level.hand.pointer_position
+
+
+## Sets the part's kind and rebuilds its placeholder art.
+func setup(part_type: Type) -> void:
+	type = part_type
+	%Art.polygon = get_polygon(part_type)
+	%Art.color = get_color(part_type)
+
+
+## The wrong socket, or a press that fits nowhere. No penalty.
+func nope() -> void:
+	G.audio.play_sound("clunk")
+	G.level.hand.show_nope(global_position)
+	if is_instance_valid(_shake_tween):
+		_shake_tween.kill()
+	_shake_tween = create_tween()
+	_shake_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	var step_sec := G.settings.nope_shake_sec / (_NOPE_SHAKE_STEPS + 1)
+	for step in _NOPE_SHAKE_STEPS:
+		var direction := 1.0 if step % 2 == 0 else -1.0
+		_shake_tween.tween_property(
+			%Art,
+			"position",
+			Vector2(direction * G.settings.nope_shake_px, 0.0),
+			step_sec,
+		)
+	_shake_tween.tween_property(%Art, "position", Vector2.ZERO, step_sec)
+
+
+## Leaves the hand and snaps into a socket. The socket hears about it
+## when the part lands.
+func install_into(socket: PartSocket) -> void:
+	is_installed = true
+	var from_global_position := global_position
+	G.level.hand.release()
+	reparent(socket)
+	global_position = from_global_position
+	reset_physics_interpolation()
+	G.audio.play_sound("snap")
+	var tween := create_tween()
+	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(
+		self, "global_position", socket.global_position, _FIT_SEC
+	)
+	tween.parallel().tween_property(self, "rotation", 0.0, _FIT_SEC)
+	tween.tween_callback(socket.on_part_installed)
+
+
+## Leaves the hand and flies back to the drawer, then frees itself.
+func fly_home(home_global_position: Vector2) -> void:
+	_is_flying = true
+	G.level.hand.release()
+	G.audio.play_sound("whoosh")
+	var tween := create_tween()
+	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_property(
+		self, "global_position", home_global_position, _FLY_HOME_SEC
+	)
+	tween.parallel().tween_property(
+		self, "modulate:a", 0.0, _FLY_HOME_SEC
+	)
+	tween.tween_callback(queue_free)
+
+
+static func get_display_name(part_type: Type) -> String:
+	match part_type:
+		Type.GEAR:
+			return "Gear"
+		Type.TUBE:
+			return "Tube"
+		Type.SPRING:
+			return "Spring"
+		_:
+			G.fatal()
+			return ""
+
+
+static func get_color(part_type: Type) -> Color:
+	match part_type:
+		Type.GEAR:
+			return Color(0.85, 0.65, 0.2)
+		Type.TUBE:
+			return Color(0.45, 0.65, 0.85)
+		Type.SPRING:
+			return Color(0.55, 0.8, 0.5)
+		_:
+			G.fatal()
+			return Color.WHITE
+
+
+## A simple shape per kind, about 40 px across. Real art replaces
+## these polygons later (LX24).
+static func get_polygon(part_type: Type) -> PackedVector2Array:
+	match part_type:
+		Type.GEAR:
+			var points := PackedVector2Array()
+			for index in 16:
+				var angle := TAU * index / 16.0
+				var radius := 19.0 if index % 2 == 0 else 13.5
+				points.append(Vector2.from_angle(angle) * radius)
+			return points
+		Type.TUBE:
+			return PackedVector2Array(
+				[
+					Vector2(-20, -9),
+					Vector2(20, -9),
+					Vector2(20, 9),
+					Vector2(-20, 9),
+				]
+			)
+		Type.SPRING:
+			return PackedVector2Array(
+				[
+					Vector2(-20, 4),
+					Vector2(-12, -8),
+					Vector2(-4, 4),
+					Vector2(4, -8),
+					Vector2(12, 4),
+					Vector2(20, -8),
+					Vector2(20, 2),
+					Vector2(12, 14),
+					Vector2(4, 2),
+					Vector2(-4, 14),
+					Vector2(-12, 2),
+					Vector2(-20, 14),
+				]
+			)
+		_:
+			G.fatal()
+			return PackedVector2Array()

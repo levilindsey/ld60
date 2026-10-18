@@ -146,6 +146,16 @@ func get_tool_holder_position(type: Tool.Type) -> Vector2:
 	return holder.get_shape_position()
 
 
+## The parts drawer under the ticket.
+func get_parts_bin() -> PartsBin:
+	return %PartsBin
+
+
+## The parts menu overlay.
+func get_parts_menu() -> PartsMenu:
+	return %PartsMenu
+
+
 ## Where layers wait while they are off the item.
 func get_set_aside_spot() -> Node2D:
 	return %SetAsideSpot

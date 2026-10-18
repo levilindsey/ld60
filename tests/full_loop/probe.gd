@@ -31,6 +31,7 @@ var _level: Level
 var _tool: Tool
 var _item: Repairable
 var _inside: RepairLayer
+var _socket: PartSocket
 var _cover: RepairLayer
 var _screw_left: Screw
 var _screw_right: Screw
@@ -126,6 +127,7 @@ func _collect_nodes() -> void:
 	_tool = _level.tools_by_type[Tool.Type.FLAT_HEAD_SCREW_DRIVER]
 	_item = _level.active_repairable
 	_inside = _item.get_node("Layers/Inside")
+	_socket = _inside.get_node("Socket")
 	_cover = _item.get_node("Layers/Cover")
 	_screw_left = _cover.get_node("ScrewLeft")
 	_screw_right = _cover.get_node("ScrewRight")
@@ -345,6 +347,9 @@ func _check_take_cover_off() -> void:
 		_item.get_exposed_layer() == _inside,
 		"the inside is exposed",
 	)
+	# LX15: the gear swap under the cover has to happen first. The
+	# drawer flow itself is checked by tests/parts.
+	_socket.finish()
 	_expect(
 		_cover.is_ready_to_go_back() and is_instance_valid(_cover._glow_tween),
 		"the cover glows, ready to go back",

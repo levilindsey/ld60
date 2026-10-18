@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://cg17ymgfrol22" path="res://src/interaction_points/flat_head_screw.tscn" id="2_208r4"]
 [ext_resource type="Script" path="res://src/repairables/repair_layer.gd" id="3_layer"]
 [ext_resource type="Script" path="res://src/repairables/surface.gd" id="4_surface"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/part_socket.tscn" id="5_socket"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_case"]
 size = Vector2(96, 96)
@@ -14,7 +15,7 @@ size = Vector2(100, 100)
 [node name="TestScrewRepairable" type="Node2D" unique_id=1685354276]
 script = ExtResource("1_0ufjt")
 item_name = "Test box"
-ticket = "It rattles. Open it up and close it again."
+ticket = "It rattles. Open it up, swap the gear, close it again."
 
 [node name="DropArea" type="Area2D" parent="."]
 unique_name_in_owner = true
@@ -39,6 +40,9 @@ offset_right = 46.0
 offset_bottom = 46.0
 mouse_filter = 2
 color = Color(0.22, 0.2, 0.18, 1)
+
+[node name="Socket" parent="Layers/Inside" instance=ExtResource("5_socket")]
+position = Vector2(0, 8)
 
 [node name="Cover" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
 script = ExtResource("3_layer")

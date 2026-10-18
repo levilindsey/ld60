@@ -6,31 +6,56 @@ belts (LX31) and part orientation (LX32).
 
 ## What the player does
 
-Wiggle the broken part loose and toss it. Open the parts bin, pick
-out a replacement and drop it into the empty spot.
+Wiggle the broken part loose and toss it. Open the parts drawer,
+pick out a replacement and fit it into the empty spot.
 
-## Where the bin lives (LX6)
+## Where the bin lives
 
-- **Chosen: a drawer.** A shallow drawer peeks up from the bottom
-  edge of the screen, under the desk front. Pressing it slides it up
-  (one tween), drawn above the item. Taking a part closes it again, so
-  the item is in view when the part goes in. Nothing else moves.
-- **Alternative: pan.** The bin sits at the right edge, partly off
-  screen. Pressing it pans the camera about 300 px to the right. The
-  item stays in view on the left, so the part can go straight onto it,
-  and the camera pans back once the part is placed or dropped. This
-  needs the background art extended about 300 px to the right. Held
-  things still follow the cursor, since they use world positions.
+Decision (Levi, 2026-10-17, superseding the LX6 bottom-drawer and
+pan plans below): the drawer space sits in the upper-left of the
+screen, below the ticket space. The left edge becomes one column:
+the ticket, then the drawer, then the outbox.
 
-Either way, the bin is one still picture full of bits.
+Earlier plans, kept for the record:
+
+- **Bottom drawer (was LX6).** A shallow drawer peeks up from the
+  bottom edge of the screen, under the desk front. Pressing it slides
+  it up (one tween), drawn above the item.
+- **Pan.** The bin sits at the right edge, partly off screen.
+  Pressing it pans the camera about 300 px to the right. This needs
+  the background art extended about 300 px to the right.
+
+## The drawer and the menu
+
+- The drawer space is a fixed rectangle aligned with the ticket's
+  left edge, with its top below the tallest ticket. The ticket's
+  height varies with its text, so the drawer never moves to make
+  room. It is an Area2D in the world, on a new PARTS physics layer,
+  like the outbox and the tool holders, so the hand finds it with
+  the same point query as the rack.
+- Pressing the drawer with an empty hand opens the parts menu. The
+  menu is a Control overlay in the level's CanvasLayer. Its backdrop
+  stays translucent, so the item remains visible underneath.
+- On open, a copy of each available part animates out of the drawer
+  space into its menu slot (about 0.3 s, lightly staggered). The
+  copies are UI controls, not live parts. Pressing one animates the
+  others back into the drawer, fades the menu out, and spawns the
+  real part in the hand at the cursor.
+- Pressing the drawer again, or pressing outside the slots, cancels
+  with no part taken. The menu never pauses the game.
+- The drawer is dual-use. Holding a part, pressing the drawer
+  returns the part instead of opening the menu. Holding a tool,
+  pressing it puts the tool away first, like the rack. While a
+  microgame owns input, pressing it does nothing. The drawer's look
+  changes while a part is held, so the second meaning is visible.
 
 ## Taking a part
 
-- The bin art is one image. Every part drawn on it is a hotspot: an
-  Area2D with a polygon roughly around the drawing, on a new PARTS
-  physics layer, with a `part_type`.
-- Pressing a hotspot spawns that part's scene in the hand, under the
-  cursor. The picture doesn't change, so the supply never runs out.
+- The menu shows every available part type, labelled, plus new
+  screws for reassembly. Slots are finger-sized, which is the main
+  reason for the menu over tapping parts inside the drawer art.
+- Taking a part never depletes the menu. The supply does not run
+  out.
 - Any part can be taken. Only the right one fits.
 
 ## Getting the old part out: wiggle
@@ -40,9 +65,9 @@ Either way, the bin is one still picture full of bits.
 - A swing counts when the drag reverses after moving at least 12 px.
   After `swings_needed` (4 to 6) the part pops out and flies off into
   the trash with a spin.
-- **Yank:** dragging faster than about 2500 px/s, or further than 60
-  px, pulls it out at once but scratches or cracks the socket: a decal
-  and a yanked part defect (-8).
+- **Yank:** dragging further than 60 px from the press point pulls
+  it out at once: a yanked part defect (-8). (A fast-drag yank, at
+  about 2500 px/s, is not built yet.)
 - Code: a `Wiggle` helper (a `RefCounted`, shared with the pliers).
   Feed it the drag deltas; it reports swings, the rocking angle and
   yanks.
@@ -52,18 +77,28 @@ Either way, the bin is one still picture full of bits.
 - A `PartSocket` is a point (role REPAIR) with an `accepted_part`
   (`Part.Type`) and the states BROKEN, EMPTY and INSTALLED. The broken
   part starts in it.
-- **A part released over an empty socket:**
-  - the right part snaps in (a 0.15 s tween and a click) and the socket
-    is done. A powered part lights up (a tube glows).
-  - a wrong part bounces off 30 px with a "nope" and stays in the hand.
-    No penalty.
-- **A part released anywhere else** flies back into the bin.
+- Parts are tap-driven, like tools. The held part follows the
+  cursor, and a press tries to use it. Releasing the button does
+  nothing, so lifting a finger never drops the part.
+- **A press over an empty socket:**
+  - the right part snaps in (a 0.15 s tween and a click) and the
+    socket is done. A powered part lights up (a tube glows).
+  - a wrong part bounces off 30 px with a "nope" and stays in the
+    hand. No penalty.
+- **A press over the drawer** returns the part. **A press anywhere
+  else** nopes and keeps the part in the hand. This replaces the
+  earlier "released anywhere else flies back into the bin" rule.
 
 ## Building it
 
 - `Part` (Node2D): a `type`, a sprite and an area. The hand holds it
   like a tool.
-- `PartsBin`: the art, the hotspots, and the open and close tween.
+- `PartsBin`: the drawer art and its Area2D in the level, plus the
+  menu overlay scene in the level's CanvasLayer. Menu slots are
+  Controls showing each part's art and name. Selecting a slot spawns
+  the part's scene in the hand.
+- The hand gains a press rule for the drawer and for a held part,
+  next to the rack rule in tools.md "Routing a press".
 - New screws for reassembly come from here too ([screws.md](screws.md)).
 
 ## Later: orientation (LX32)

@@ -65,7 +65,9 @@ that finishes it.
 - `src/repairables/` - `repairable.gd`, `repair_layer.gd`,
   `surface.gd`, plus a script and scene per item.
 - `src/interaction_points/` - `interaction_point.gd`, `screw.gd`
-  (`Screw`), plus a script and scene per point.
+  (`Screw`), `part_socket.gd`, plus a script and scene per point.
+- `src/parts/` - `part.gd` (drawer parts the hand holds like tools),
+  `wiggle.gd` (shared swing counter).
 - `src/manual/` - Zaven's page-turning `InstructionManual`.
 - `src/ui/hud/` - `hud.gd`/`hud.tscn`: title/pause/credits overlays.
 - `src/ui/super_hud/` - Top-level HUD host with `debug_console`.
@@ -184,6 +186,7 @@ missing. Add new actions there too.
 4. `table`
 5. `tool_holders`
 6. `surfaces`
+7. `parts`
 
 `Settings.PhysicsLayer` mirrors these as bit flags; keep the two in
 sync.

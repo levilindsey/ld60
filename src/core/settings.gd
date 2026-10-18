@@ -10,6 +10,7 @@ enum PhysicsLayer {
 	TABLE = 1 << 3,
 	TOOL_HOLDERS = 1 << 4,
 	SURFACES = 1 << 5,
+	PARTS = 1 << 6,
 }
 
 # --- General configuration ---

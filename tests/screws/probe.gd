@@ -770,6 +770,10 @@ func _check_install_after_strip() -> void:
 ## Puts the driver back, puts the set-aside cover back on and takes the
 ## driver again.
 func _put_cover_back() -> void:
+	# LX15: the gear swap under the cover has to happen first, or the
+	# cover will not go back and the item cannot finish. The drawer
+	# flow itself is checked by tests/parts.
+	_finish_socket()
 	await _press_at(_holder_position)
 	await _press_at(_cover.global_position)
 	await _seconds(0.6)
@@ -783,6 +787,14 @@ func _put_cover_back() -> void:
 	await _press_at(_holder_position)
 	await _seconds(0.4)
 	_expect(_hand.held == _tool, "take the driver again")
+
+
+## Finishes the test item's part socket directly, once.
+func _finish_socket() -> void:
+	for layer in _item.layers:
+		for point in layer.get_points():
+			if point is PartSocket and point.mode != InteractionPoint.Mode.FINISHED:
+				point.finish()
 
 
 ## Where the screw sits at home, in world pixels.

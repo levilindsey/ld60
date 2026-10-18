@@ -25,6 +25,7 @@ G="*res://src/core/global.gd"
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
 
 [input]
 
@@ -106,6 +107,7 @@ pause={
 2d_physics/layer_4="table"
 2d_physics/layer_5="tool_holders"
 2d_physics/layer_6="surfaces"
+2d_physics/layer_7="parts"
 
 [physics]
 
@@ -115,5 +117,6 @@ common/physics_interpolation=true
 
 [rendering]
 
+environment/defaults/default_clear_color=Color(0, 0, 0, 1)
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

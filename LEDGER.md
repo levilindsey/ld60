@@ -28,6 +28,13 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   - evidence: `.claude/probes/LX54/` (frames), new checks in `tests/screws/`
   - next: the agent finishes the probes and the new checks, then reports
   - brief: `docs/design/screw_pullout.md`
+- **LX15** · Parts drawer and part swap: drawer below the ticket,
+  parts menu, wiggle-out, sockets (`docs/design/parts_bin.md`).
+  - owner: claude (Levi session), since 2026-10-17
+  - branch: `main` (working tree)
+  - evidence: `tests/parts/` (18 checks; the full suite is green)
+  - next: Levi plays it (menu feel, drawer look with real art);
+    sounds wait for LX25, part art for LX24
 
 ## Next
 
@@ -45,8 +52,6 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   wait for LX25 (no streams yet), the screw art for LX24.
 - **LX14** · Canned air: spray cone, dust clumps, fans
   (`docs/design/canned_air.md`).
-- **LX15** · Parts bin and part swap: hotspots, sockets, wiggle-out
-  (`docs/design/parts_bin.md`).
 - **LX16** · First item end to end: the virtual pet egg
   (`docs/design/items.md`). It replaces the three test items in
   `settings.tres` `item_queue`.

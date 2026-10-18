@@ -234,7 +234,9 @@ func _handle_press(global_point: Vector2) -> bool:
 		return true
 	return (
 		_press_set_aside_layer(global_point)
+		or _press_drawer(global_point)
 		or _press_rack(global_point)
+		or _press_with_part(global_point)
 		or _press_with_tool(global_point)
 		or _press_with_empty_hand(global_point)
 	)
@@ -246,6 +248,40 @@ func _press_set_aside_layer(global_point: Vector2) -> bool:
 	if not is_instance_valid(layer):
 		return false
 	layer.put_back()
+	return true
+
+
+## Over the parts drawer: holding a part returns it. Holding a tool
+## puts it away first. Empty-handed, the parts menu opens.
+func _press_drawer(global_point: Vector2) -> bool:
+	var bin := _find_parts_bin(global_point)
+	if not is_instance_valid(bin):
+		return false
+	if held is Part:
+		bin.take_back(held as Part)
+		return true
+	if held is Repairable:
+		return false
+	var held_tool := get_held_tool()
+	if is_instance_valid(held_tool):
+		if held_tool.mode == Tool.Mode.IN_USE:
+			# A point has the tool. Let it finish first.
+			return true
+		held_tool.put_away()
+	bin.open_menu()
+	return true
+
+
+## Holding a part: a press over a socket tries to fit it. Any other
+## press nopes and keeps the part. The drawer press comes first.
+func _press_with_part(global_point: Vector2) -> bool:
+	var part := held as Part
+	if not is_instance_valid(part):
+		return false
+	var socket := _find_socket(global_point)
+	if is_instance_valid(socket):
+		return socket.try_fit(part)
+	part.nope()
 	return true
 
 
@@ -282,7 +318,6 @@ func _press_with_tool(global_point: Vector2) -> bool:
 	return true
 
 
-## 5. Holding a part: nothing yet, the part drops on release.
 ## 6. Empty hand over a point: poke it.
 ## 7. Empty hand over the item: drag it if finished, or shake it.
 func _press_with_empty_hand(global_point: Vector2) -> bool:
@@ -384,6 +419,8 @@ func _can_take(global_point: Vector2) -> bool:
 		return false
 	if is_instance_valid(_find_ready_layer(global_point)):
 		return true
+	if is_instance_valid(_find_parts_bin(global_point)):
+		return true
 	if is_instance_valid(_find_rack_tool(global_point)):
 		return true
 	var item := _find_item(global_point)
@@ -419,6 +456,33 @@ func _find_rack_tool(global_point: Vector2) -> Tool:
 			or (area is ToolHolder and tool == held)
 		):
 			return tool
+	return null
+
+
+## The parts drawer under a world position, or null.
+func _find_parts_bin(global_point: Vector2) -> PartsBin:
+	for area in _query(global_point, Settings.PhysicsLayer.PARTS):
+		var node: Node = area
+		while is_instance_valid(node):
+			if node is PartsBin:
+				return node as PartsBin
+			node = node.get_parent()
+	return null
+
+
+## The first socket under a world position on an exposed layer, or
+## null. Finished sockets still count: pressing one nopes.
+func _find_socket(global_point: Vector2) -> PartSocket:
+	for area in _query(
+		global_point, Settings.PhysicsLayer.INTERACTION_POINTS
+	):
+		var socket := area as PartSocket
+		if (
+			is_instance_valid(socket)
+			and socket.is_visible_in_tree()
+			and socket.is_exposed()
+		):
+			return socket
 	return null
 
 
