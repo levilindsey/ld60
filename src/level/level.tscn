@@ -8,15 +8,15 @@
 [ext_resource type="PackedScene" path="res://src/ui/ticket/ticket_card.tscn" id="7_ticket"]
 [ext_resource type="Texture2D" uid="uid://lmxtxt6qwc8n" path="res://assets/images/room!!!!!!.png" id="8_ob0n7"]
 [ext_resource type="PackedScene" path="res://src/ui/receipt/receipt.tscn" id="8_receipt"]
-[ext_resource type="Script" path="res://src/level/parts_bin.gd" id="9_bin"]
+[ext_resource type="Script" uid="uid://dvbr5nmpc61tu" path="res://src/level/parts_bin.gd" id="9_bin"]
 [ext_resource type="PackedScene" path="res://src/parts/part.tscn" id="10_part"]
 [ext_resource type="PackedScene" path="res://src/ui/parts_menu/parts_menu.tscn" id="11_menu"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
-radius = 34.058773
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_drawer"]
 size = Vector2(320, 84)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
+radius = 34.058773
 
 [node name="Level" type="Node2D" unique_id=894130576]
 script = ExtResource("1_la7um")
@@ -76,32 +76,31 @@ vertical_alignment = 1
 unique_name_in_owner = true
 position = Vector2(-880, 105)
 
-[node name="PartsBin" type="Node2D" parent="."]
+[node name="PartsBin" type="Node2D" parent="." unique_id=1921520139]
 unique_name_in_owner = true
 position = Vector2(-444, -58)
 script = ExtResource("9_bin")
 part_scene = ExtResource("10_part")
 
-[node name="Drawer" type="Area2D" parent="PartsBin"]
+[node name="Drawer" type="Area2D" parent="PartsBin" unique_id=1803287111]
 collision_layer = 64
 collision_mask = 0
 monitoring = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PartsBin/Drawer"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PartsBin/Drawer" unique_id=1375930704]
 shape = SubResource("RectangleShape2D_drawer")
 
-[node name="Art" type="Polygon2D" parent="PartsBin"]
+[node name="Art" type="Polygon2D" parent="PartsBin" unique_id=712229947]
 unique_name_in_owner = true
 color = Color(0.35, 0.25, 0.15, 0.9)
 polygon = PackedVector2Array(-160, -42, 160, -42, 160, 42, -160, 42)
 
-[node name="Label" type="Label" parent="PartsBin"]
+[node name="Label" type="Label" parent="PartsBin" unique_id=1114875006]
 unique_name_in_owner = true
 offset_left = -160.0
 offset_top = -18.0
 offset_right = 160.0
 offset_bottom = 18.0
-mouse_filter = 2
 theme_override_font_sizes/font_size = 28
 text = "PARTS"
 horizontal_alignment = 1
@@ -157,7 +156,7 @@ layer = 100
 [node name="TicketCard" parent="FlowOverlays" unique_id=1682604079 instance=ExtResource("7_ticket")]
 unique_name_in_owner = true
 
-[node name="PartsMenu" parent="FlowOverlays" instance=ExtResource("11_menu")]
+[node name="PartsMenu" parent="FlowOverlays" unique_id=120604193 instance=ExtResource("11_menu")]
 unique_name_in_owner = true
 
 [node name="Receipt" parent="FlowOverlays" unique_id=1906733515 instance=ExtResource("8_receipt")]
