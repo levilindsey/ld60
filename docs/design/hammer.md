@@ -51,7 +51,10 @@ and crack PLASTIC or GLASS.
   `cursor_position` on the striking face, which is how HELD already
   works. A small crosshair is drawn at the strike point above
   everything, because the head covers the target.
-- **Press:** locks the strike point and starts the wind-up. A strength
+- **Press:** locks the strike point and starts the wind-up. The
+  strike point is the hammer's `InteractionArea` position when the
+  press triggers, not the cursor, and the smack lands where the
+  working end is as the swing lands. A strength
   ring around the crosshair fills over `charge_sec` (1.2) with
   ease-in-out. Over a target, the ring shows the target's band in
   green. Over a bare surface, it shows in red where damage starts. The
@@ -75,7 +78,10 @@ later ones get narrow middle bands.
   shadow under it grows and fades.
 - **Swing:** a fast ease-in (about 0.08 s) down to the strike point.
 - **Impact:** the hit-stop, sparks or a dust puff, and the target's
-  reaction.
+  reaction. A hit that dents or cracks the piece also squishes it:
+  a quick squash by `hammer_squish_amount` (0.12 of its height,
+  spreading half as much sideways) that springs back over
+  `hammer_squish_recover_sec` (0.3), like the radio's bonk.
 - **Recoil:** bounce up about 10 degrees and settle (0.2 s). Then the
   follow offset eases the hammer back under the cursor.
 

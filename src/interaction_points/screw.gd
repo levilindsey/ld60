@@ -70,10 +70,23 @@ const _PRY_DELAY_SEC := 0.3
 const _PICKUP_TURN_SEC := 0.25
 ## The most a picked-up screw turns either way, in radians.
 const _PICKUP_MAX_TURN_RAD := PI / 4.0
-## How long a screw rolls when set down after a drag, and how far.
+## How long a screw rolls when set down after a drag, and how far
+## the pointy end sweeps while it pivots on its head.
 const _ROLL_SEC := 0.55
-const _ROLL_MIN_PX := 8.0
-const _ROLL_MAX_PX := 16.0
+const _ROLL_TIP_MIN_PX := 10.0
+const _ROLL_TIP_MAX_PX := 18.0
+## Release speed (px/s) above which a set-down roll follows the
+## drag's motion instead of falling either way.
+const _ROLL_FLING_MIN_SPEED := 60.0
+## The head's centre, the tip, and the head's radius in the bench
+## art's own texture pixels, measured from the art (both screw
+## kinds share the drawing): the wide head is at the top, the
+## pointy end at the bottom. The art's world scale turns these
+## into pixels on the bench (head about 24 px across, shaft
+## about 11, head to tip about 41).
+const _HEAD_LOCAL := Vector2(19.0, -264.0)
+const _TIP_LOCAL := Vector2(19.0, 1005.0)
+const _HEAD_RADIUS_LOCAL := 376.0
 
 ## The screw head's art, seen from the top. The twists turn it. If it is an
 ## `AnimatedSprite2D`, its frames are the `HeadFrame` states in order.
@@ -169,11 +182,12 @@ var _rest_pulse_tween: Tween
 var _pickup_tween: Tween
 var _roll_tween: Tween
 ## The roll taken when the screw is set down after a drag: where
-## it started, and how far and how much it turned.
+## it started, where its head started, how far the head drifts
+## as it rolls on its rim, and the yaw of the roll.
 var _roll_from_position := Vector2.ZERO
 var _roll_from_rotation := 0.0
-var _roll_direction := 1.0
-var _roll_distance_px := 0.0
+var _roll_head_start := Vector2.ZERO
+var _roll_head_drift := Vector2.ZERO
 var _roll_angle_rad := 0.0
 var _outlined_bench_art: Sprite2D
 var _bench_material_before_outline: Material
@@ -648,17 +662,41 @@ func _reach_rest_spot() -> void:
 		_start_outline()
 
 
-## The screw was just set down on the table after a drag. It rolls
-## a short way, turning as it goes. The roll pivots near the head
-## end, so the head travels less than the pointy end. It does not
-## roll when the unscrew microgame finishes: only a set-down after
-## being carried counts.
-func on_set_down() -> void:
+## The screw was just set down on the table after a drag. It
+## rolls a short way: the heavy, wide head stays nearly planted
+## and the screw yaws around it, so the pointy end sweeps an arc
+## while the head only drifts as far as rolling on its rim
+## carries it (yaw times head radius). The yaw is sized from a
+## tip sweep and the real head-to-tip length, at whatever angle
+## the screw starts from, and a fast release tips the fall
+## toward the drag's motion. It does not roll when the unscrew
+## microgame finishes: only a set-down after being carried
+## counts.
+func on_set_down(release_velocity := Vector2.ZERO) -> void:
 	_roll_from_position = bench_art.global_position
 	_roll_from_rotation = bench_art.rotation
-	_roll_direction = 1.0 if randf() < 0.5 else -1.0
-	_roll_distance_px = randf_range(_ROLL_MIN_PX, _ROLL_MAX_PX)
-	_roll_angle_rad = _roll_direction * _roll_distance_px / 14.0
+	_roll_head_start = bench_art.to_global(_HEAD_LOCAL)
+	var tip_start := bench_art.to_global(_TIP_LOCAL)
+	var axis := tip_start - _roll_head_start
+	var head_radius := bench_art.to_global(
+		_HEAD_LOCAL + Vector2(_HEAD_RADIUS_LOCAL, 0.0),
+	).distance_to(_roll_head_start)
+	var direction := 1.0 if randf() < 0.5 else -1.0
+	if release_velocity.length() > _ROLL_FLING_MIN_SPEED:
+		# The tip swings toward the drag's motion.
+		var swing := Vector2(-axis.y, axis.x).normalized()
+		if not is_zero_approx(swing.dot(release_velocity)):
+			direction = signf(swing.dot(release_velocity))
+	_roll_angle_rad = (
+		direction
+		* randf_range(_ROLL_TIP_MIN_PX, _ROLL_TIP_MAX_PX)
+		/ maxf(axis.length(), 1.0)
+	)
+	_roll_head_drift = (
+		Vector2(-axis.y, axis.x).normalized()
+		* _roll_angle_rad
+		* head_radius
+	)
 	_roll_tween = create_tween()
 	_roll_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	_roll_tween.tween_method(_apply_roll, 0.0, 1.0, _ROLL_SEC)
@@ -670,16 +708,17 @@ func _stop_roll() -> void:
 		_roll_tween.kill()
 
 
-## Puts the rolling screw `weight` of the way through its roll.
+## Puts the rolling screw `weight` of the way through its roll:
+## the body turns about its head while the head drifts on its
+## rim, both eased out together.
 func _apply_roll(weight: float) -> void:
 	var eased := 1.0 - pow(1.0 - weight, 3.0)
-	var head_pivot := _roll_from_position + Vector2(0.0, -10.0)
+	var head_now := _roll_head_start + _roll_head_drift * eased
 	bench_art.global_position = (
-		head_pivot
-		+ (_roll_from_position - head_pivot).rotated(
+		head_now
+		+ (_roll_from_position - _roll_head_start).rotated(
 			_roll_angle_rad * eased,
 		)
-		+ Vector2(_roll_direction * _roll_distance_px * eased, 0.0)
 	)
 	bench_art.rotation = _roll_from_rotation + _roll_angle_rad * eased
 	_rest_rotation = bench_art.rotation

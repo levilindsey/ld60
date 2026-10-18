@@ -104,6 +104,18 @@ scale = Vector2(0.16, 0.16)
 [node name="ToolHolders" type="Node" parent="." unique_id=433542721]
 unique_name_in_owner = true
 
+[node name="GlueHolder" type="Area2D" parent="ToolHolders" unique_id=737979922]
+position = Vector2(611, 289)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("3_af42n")
+type = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/GlueHolder" unique_id=226583405]
+position = Vector2(0, -2)
+shape = SubResource("CircleShape2D_giktf")
+
 [node name="FlatHeadScrewDriverHolder" type="Area2D" parent="ToolHolders" unique_id=417891166]
 unique_name_in_owner = true
 position = Vector2(422, 307)
@@ -164,18 +176,6 @@ type = 5
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/PhillipsScrewDriverHolder" unique_id=207696165]
 shape = SubResource("CircleShape2D_giktf")
 metadata/_edit_lock_ = true
-
-[node name="GlueHolder" type="Area2D" parent="ToolHolders" unique_id=737979922]
-position = Vector2(611, 289)
-collision_layer = 16
-collision_mask = 0
-monitoring = false
-script = ExtResource("3_af42n")
-type = 4
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ToolHolders/GlueHolder" unique_id=226583405]
-position = Vector2(0, -2)
-shape = SubResource("CircleShape2D_giktf")
 
 [node name="Repairables" type="Node" parent="." unique_id=75239543]
 unique_name_in_owner = true
@@ -241,4 +241,4 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="WorkableArea" unique_id=638619667]
-polygon = PackedVector2Array(463, 132, 517, 286, 390, 288, 374, 306, -374, 305, -393, 282, -541, 286, -478, 135)
+polygon = PackedVector2Array(526, 132, 531, 251, 374, 271, 364, 296, -361, 292, -381, 258, -506, 264, -455, 137)

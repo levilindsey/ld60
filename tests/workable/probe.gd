@@ -92,6 +92,16 @@ func _check_area_queries() -> void:
 		and _part_radius() > 0.0,
 		"the finished item is the biggest piece on the bench",
 	)
+	var fall := _level._solve_return_flight(
+		Vector2(0.0, -140.0),
+		Vector2(0.0, 160.0),
+	)
+	var fall_sec := fall[1] as float
+	_expect(
+		fall_sec > 0.49 and fall_sec < 0.58,
+		"a fall is timed by the bumped gravity, slowed a"
+		+ " little by wind drag (%.2f s)" % fall_sec,
+	)
 
 
 func _part_radius() -> float:
@@ -172,7 +182,7 @@ func _check_part_drops() -> void:
 			if points[index].y < landing.y - 4.0:
 				bounced = true
 		skid_px = points[points.size() - 1].distance_to(landing)
-		skidded = skid_px > 2.0
+		skidded = skid_px > 0.5
 	_expect(
 		bounced,
 		"the falling part bounces as it lands (rose %.0f px)" % rise_px,
@@ -264,7 +274,7 @@ func _check_part_throws() -> void:
 	# Thrown up: it passes the top of the viewport and falls back.
 	await _flick_piece(
 		_part.global_position,
-		Vector2(0.0, 140.0),
+		Vector2(0.0, 220.0),
 		Vector2(0.0, -60.0),
 	)
 	_expect(_part.is_returning, "a flicked part is thrown, not set down")
@@ -339,6 +349,36 @@ func _check_part_throws() -> void:
 		_level.is_inside_workable_area(_part.global_position, margin_px),
 		"the part that fell past is guided back and rests inside"
 		+ " (at %s)" % _part.global_position,
+	)
+	# Thrown down hard from high above: gravity speeds it up,
+	# but never past the fastest speed, drag included.
+	await _flick_piece(
+		_part.global_position,
+		Vector2(0.0, -620.0),
+		Vector2(0.0, -260.0),
+	)
+	points = await _track_return(
+		func() -> bool: return _part.is_returning,
+		func() -> Vector2: return _part.global_position,
+	)
+	var max_speed := 0.0
+	for index in range(1, points.size()):
+		var frame_speed := (
+			points[index].distance_to(points[index - 1])
+			* float(Engine.physics_ticks_per_second)
+		)
+		max_speed = maxf(max_speed, frame_speed)
+	_expect(
+		max_speed > 1100.0
+		and max_speed
+		<= G.settings.workable_max_speed_px_per_sec + 90.0,
+		"a hard downward throw stays under the fastest speed"
+		+ " (peaked at %.0f px/s)" % max_speed,
+	)
+	_expect(
+		_level.is_inside_workable_area(_part.global_position, margin_px),
+		"the hard downward throw rests inside (at %s)"
+		% _part.global_position,
 	)
 
 

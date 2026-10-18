@@ -52,10 +52,13 @@ RotaryPhone (Repairable)           item_name, ticket, par_time_sec
 ## Taking it apart
 
 - When every FASTENER on the exposed layer is out, the layer is loose.
-  It stays where it is. The player drags it off the item and puts it
-  down anywhere inside the workbench (the level's bench polygon);
-  it can be dragged around again from there. Nothing on the item
-  moves by itself.
+  It stays where it is. The player drags it off the item; coming off,
+  it turns by a slight random angle. Like a loose part, it can be
+  carried anywhere and set down on the bench, and a drop outside the
+  workable area flies back in under gravity and comes to rest inside
+  it — but a drawer never takes it. Grabbed again once it can go back
+  on, it first turns back to its original rotation. Nothing on the
+  item moves by itself.
 - A layer with no fasteners is loose as soon as it is exposed, and
   likewise waits to be dragged off.
 - The innermost layer is never removed.

@@ -283,7 +283,9 @@ func take_part(part: Part) -> void:
 	if not can_take_part() or part.is_returning:
 		return
 	part.is_returning = true
-	part.z_index = 16
+	# Behind the drawer, so its face covers the part as it
+	# sinks back inside.
+	part.z_index = 10
 	if state == State.OPEN:
 		await _sink_part(part)
 		_store_part(part)
@@ -311,7 +313,7 @@ func store_parts(parts: Array[Part]) -> void:
 	for part in parts:
 		if is_instance_valid(part) and not part.is_returning:
 			part.is_returning = true
-			part.z_index = 16
+			part.z_index = 10
 			loose.append(part)
 	if loose.is_empty():
 		return

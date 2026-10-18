@@ -3,9 +3,11 @@ extends "res://tests/probe_base.gd"
 ## where it lands instead of sliding to a row, and screws and the
 ## cover are dragged around the bench by hand. Nothing moves by
 ## itself. A screw may be dragged outside the workable area, and
-## a drop out there flies back in and rests inside it. A layer
-## still drops at the bench's edge, and a piece dropped close to
-## home at the right step seats itself.
+## a drop out there flies back in and rests inside it. The cover
+## is dragged the same way (but a drawer never takes it), it turns
+## by a slight angle as it comes off and straightens when grabbed
+## to go back on, and a piece dropped close to home at the right
+## step seats itself.
 ##
 ## Run it with `tests/run.ps1 -Name bench_drag`, or from the repo
 ## root (PowerShell):
@@ -200,6 +202,8 @@ func _check_screw_rest_and_drag() -> void:
 		"the dropped screw is still resting, not seated",
 	)
 	var dropped_position := _screw.bench_art.global_position
+	var head_start := _screw.bench_art.to_global(Screw._HEAD_LOCAL)
+	var tip_start := _screw.bench_art.to_global(Screw._TIP_LOCAL)
 	var in_fades := await _sample_shadow_fades(
 		screw_shadow,
 		func() -> bool: return screw_shadow._fade >= 0.99,
@@ -219,6 +223,17 @@ func _check_screw_rest_and_drag() -> void:
 		% _screw.bench_art.global_position.distance_to(
 			dropped_position,
 		),
+	)
+	var head_travel := head_start.distance_to(
+		_screw.bench_art.to_global(Screw._HEAD_LOCAL)
+	)
+	var tip_travel := tip_start.distance_to(
+		_screw.bench_art.to_global(Screw._TIP_LOCAL)
+	)
+	_expect(
+		tip_travel > 4.0 and head_travel < tip_travel * 0.5,
+		"the roll pivots on the head, not the tip"
+		+ " (head %.1f px, tip %.1f px)" % [head_travel, tip_travel],
 	)
 
 
@@ -295,12 +310,24 @@ func _check_cover_drag() -> void:
 		"found a clear patch of cover to grab",
 	):
 		return
+	var home_rotation := _cover.global_rotation
 	await _press_down(grab_point)
 	await _move_to(Vector2(360.0, 60.0))
 	await _release_at(Vector2(360.0, 60.0))
 	_expect(
 		not _cover.is_on,
 		"dragging the loose cover takes it off the item",
+	)
+	await _seconds(0.6)
+	_expect(
+		absf(
+			wrapf(
+				_cover.global_rotation - home_rotation, -PI, PI
+			),
+		) <= deg_to_rad(20.0) + 0.01,
+		"dragged off, the cover turns by a slight angle"
+		+ " (turned %.1f deg)"
+		% rad_to_deg(_cover.global_rotation - home_rotation),
 	)
 	# Dropping it by its home before the inside is done seats
 	# nothing: it just rests there.
@@ -311,6 +338,41 @@ func _check_cover_drag() -> void:
 	_expect(
 		not _cover.is_on,
 		"the cover stays loose until the work under it is done",
+	)
+	# A drawer never takes it: carried over one and let go, it
+	# flies back to the bench like any drop outside the workable
+	# area, instead of going inside.
+	var drawer := _level.get_drawers()[1]
+	await _press_down(_cover.global_position)
+	await _move_to(drawer.global_position)
+	_expect(
+		_cover.global_position.distance_to(drawer.global_position)
+		< 60.0,
+		"the cover may be carried over a drawer"
+		+ " (carried to %s)" % _cover.global_position,
+	)
+	await _release_at(drawer.global_position)
+	_expect(
+		_cover.is_returning and _cover.visible,
+		"dropped over a drawer, the cover flies back out of it",
+	)
+	var is_back := false
+	for frame in 300:
+		if not _cover.is_returning:
+			is_back = true
+			break
+		await get_tree().physics_frame
+	_expect(
+		is_back,
+		"the cover comes to rest after flying back from the drawer",
+	)
+	# Too big for any spot to keep its whole art inside, so the
+	# guarantee is its middle back on the bench, still loose.
+	_expect(
+		not _cover.is_on
+		and _level.is_inside_workable_area(_cover.global_position),
+		"the cover rests loose inside the workable area"
+		+ " (at %s)" % _cover.global_position,
 	)
 	# Finish the inside directly, the way the parts probe finishes
 	# its socket, then drop the cover home and the screw in.
@@ -323,6 +385,25 @@ func _check_cover_drag() -> void:
 			):
 				point.finish()
 	await _press_down(_cover.global_position)
+	var is_straight := false
+	for frame in 240:
+		if (
+			absf(
+				wrapf(
+					_cover.global_rotation - home_rotation,
+					-PI,
+					PI,
+				),
+			) < 0.02
+		):
+			is_straight = true
+			break
+		await get_tree().physics_frame
+	_expect(
+		is_straight,
+		"grabbed to go back on, the cover turns back to its"
+		+ " first rotation",
+	)
 	await _move_to(_cover.get_home_global_position())
 	await _release_at(_cover.get_home_global_position())
 	await _seconds(0.8)

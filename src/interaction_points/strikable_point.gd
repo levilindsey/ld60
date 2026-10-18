@@ -82,3 +82,9 @@ func add_hammer_defect(defect: RepairQuality.Defect) -> void:
 			)
 		_:
 			pass
+	if defect in [
+		RepairQuality.Defect.DENT_SMALL,
+		RepairQuality.Defect.DENT_LARGE,
+		RepairQuality.Defect.CRACK,
+	]:
+		layer.squish()

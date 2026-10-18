@@ -82,7 +82,8 @@ func start_bench_return() -> void:
 ## The part has come to rest inside the workable area.
 func finish_bench_return() -> void:
 	is_returning = false
-	z_index = 10
+	# A part that is out stays in front of the drawers.
+	z_index = 16
 
 
 ## Sets the part's kind and rebuilds its placeholder art.

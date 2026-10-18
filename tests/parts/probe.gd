@@ -170,6 +170,18 @@ func _check_outside_press_closes() -> void:
 	await _shot("2_drawer_open")
 	for part in _level.get_parts_in_drawer(drawer):
 		_expect(part.visible, "an open drawer shows its parts")
+	_expect(
+		await _wait_until(
+			func() -> bool: return _drawer_parts_opaque(drawer)
+		),
+		"an open drawer's parts fade in",
+	)
+	var contents_rect := _contents_global_rect(drawer)
+	for part in _level.get_parts_in_drawer(drawer):
+		_expect(
+			contents_rect.has_point(part.global_position),
+			"an open drawer's parts rest inside its contents area",
+		)
 	if not _level.get_parts_in_drawer(drawer).is_empty():
 		var part := _level.get_parts_in_drawer(drawer)[0]
 		await _move_to(part.global_position)
@@ -333,6 +345,10 @@ func _check_grab_right_part() -> void:
 		await _wait_until(func() -> bool: return not part.is_returning),
 		"a part let go by the drawer comes to rest on the bench",
 	)
+	_expect(
+		not part.z_as_relative and part.z_index > drawer.z_index,
+		"a part out of a drawer renders in front of the drawers",
+	)
 	await _shot("3_part_out")
 
 
@@ -392,6 +408,12 @@ func _check_wrong_part() -> void:
 	# Drag it back over a shut drawer: it is put away.
 	var target := _level.get_drawers()[0]
 	await _drag(part.global_position, target.global_position)
+	_expect(
+		part.is_returning
+		and not part.z_as_relative
+		and part.z_index < target.z_index,
+		"a part going back into a drawer renders behind it",
+	)
 	_expect(
 		await _wait_until(func() -> bool: return part.is_stored),
 		"a part dragged over a shut drawer is put away",
@@ -508,6 +530,32 @@ func _find_socket() -> PartSocket:
 			if point is PartSocket:
 				return point as PartSocket
 	return null
+
+
+func _drawer_parts_opaque(drawer: Drawer) -> bool:
+	for part in _level.get_parts_in_drawer(drawer):
+		if part.modulate.a < 0.99:
+			return false
+	return true
+
+
+func _contents_global_rect(drawer: Drawer) -> Rect2:
+	var shape_node := (
+		(drawer.get_node("%ContentsArea") as Area2D)
+		.get_node("CollisionShape2D") as CollisionShape2D
+	)
+	var shape := shape_node.shape as RectangleShape2D
+	var half_size := shape.size * 0.5
+	var rect := Rect2(
+		shape_node.global_transform * -half_size, Vector2.ZERO
+	)
+	for corner in [
+		half_size,
+		Vector2(half_size.x, -half_size.y),
+		Vector2(-half_size.x, half_size.y),
+	]:
+		rect = rect.expand(shape_node.global_transform * corner)
+	return rect
 
 
 func _wait_until(

@@ -166,8 +166,8 @@ func _check_arrival() -> void:
 		% [_landed_position, _landed_rotation, _landed_mode],
 	)
 	_expect(
-		_largest_shake_before_landing_px == 0.0,
-		"the camera is still until the item lands",
+		_largest_shake_before_landing_px > 0.5,
+		"the camera shakes as the item bounces in, before it settles",
 	)
 	await _shot("1_landed")
 	await _seconds(0.45)

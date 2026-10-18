@@ -88,24 +88,26 @@ func is_effect_tool() -> bool:
 	return true
 
 
-## A press locks the strike point and starts the wind up.
-func on_effect_pressed(global_point: Vector2) -> void:
+## A press locks the strike point and starts the wind up. The
+## strike point is the hammer's working end, not the cursor: the
+## smack lands where the face is when the press triggers.
+func on_effect_pressed(_global_point: Vector2) -> void:
 	if _phase != WindPhase.READY:
 		return
-	_locked_point = global_point
+	_locked_point = get_work_end_position()
 	_locked_target = null
 	_locked_surface = null
 	_locked_prop = null
 	if is_instance_valid(G.level):
-		var point := G.level.hand.find_point(global_point)
+		var point := G.level.hand.find_point(_locked_point)
 		_locked_target = point as StrikablePoint
 		if not is_instance_valid(_locked_target):
-			_locked_surface = G.level.hand.find_surface(global_point)
+			_locked_surface = G.level.hand.find_surface(_locked_point)
 		if (
 			not is_instance_valid(_locked_target)
 			and not is_instance_valid(_locked_surface)
 		):
-			_locked_prop = _find_strikable_prop(global_point)
+			_locked_prop = _find_strikable_prop(_locked_point)
 		G.level.hand.set_input_owner(self)
 	_phase = WindPhase.WINDING
 	_wind_sec = 0.0
@@ -140,6 +142,8 @@ func _swing() -> void:
 
 
 func _strike() -> void:
+	# The smack lands where the working end is as the swing lands.
+	_locked_point = get_work_end_position()
 	if is_instance_valid(_locked_target):
 		_locked_target.on_struck(charge)
 	elif is_instance_valid(_locked_surface):

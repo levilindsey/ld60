@@ -9,6 +9,15 @@ func _process(_delta: float) -> void:
 	queue_redraw()
 
 
+## Where the crosshair sits, in this node's drawing space: the
+## hammer's working end, not the hammer's origin.
+func get_center() -> Vector2:
+	var hammer := get_parent() as Hammer
+	if not is_instance_valid(hammer):
+		return Vector2.ZERO
+	return to_local(hammer.get_work_end_position())
+
+
 func _draw() -> void:
 	var hammer := get_parent() as Hammer
 	if not is_instance_valid(hammer) or not hammer.is_winding():
@@ -17,7 +26,7 @@ func _draw() -> void:
 	if is_instance_valid(G.level) and G.level.hand.is_touch:
 		radius = G.settings.hammer_reticle_radius_touch_px
 	var start := -PI * 0.5
-	var center := Vector2.ZERO
+	var center := get_center()
 	draw_line(
 		center + Vector2(-8, 0), center + Vector2(8, 0), Color.WHITE, 2.0
 	)

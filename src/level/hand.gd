@@ -103,15 +103,16 @@ func _physics_process(delta: float) -> void:
 
 
 ## Keeps the smoothed pointer speed of the current drag. It
-## only builds while a loose part, a resting screw or the
-## finished item is being dragged, and it only counts as a
-## throw when the speed stays past the threshold for a few
-## frames in a row, so one jump of the pointer is a drag,
-## never a throw.
+## only builds while a loose part, a resting screw, a loose
+## layer or the finished item is being dragged, and it only
+## counts as a throw when the speed stays past the threshold
+## for a few frames in a row, so one jump of the pointer is a
+## drag, never a throw.
 func _track_drag_velocity(delta: float) -> void:
 	var is_dragging := (
 		is_instance_valid(_loose_part)
 		or is_instance_valid(_loose_screw)
+		or is_instance_valid(_loose_layer)
 		or held is Repairable
 	)
 	if not is_dragging or delta <= 0.0:
@@ -376,15 +377,24 @@ func _press_resting_screw(global_point: Vector2) -> bool:
 
 ## 3. Over a layer lying loose on the bench: start dragging it,
 ## empty handed. Dropped close to home once it is ready, it tweens
-## back on. With anything in the hand the press does nothing.
+## back on. Grabbed once it can go back, it first turns back to
+## the rotation it has on the item. With anything in the hand the
+## press does nothing.
 func _press_set_aside_layer(global_point: Vector2) -> bool:
 	var layer := _find_loose_layer(global_point)
 	if not is_instance_valid(layer):
 		return false
+	if layer.is_returning:
+		# On its way back in. The press is used, but the layer
+		# cannot be picked up until it rests.
+		return true
 	if is_empty() and not is_instance_valid(_loose_layer):
+		var is_ready := layer.is_ready_to_go_back()
 		_loose_layer = layer
 		_loose_drag_offset = layer.global_position - global_point
 		layer.is_moving = true
+		if is_ready:
+			layer.straighten_to_home()
 	return true
 
 
@@ -436,6 +446,7 @@ func _press_drawer_modal(global_point: Vector2) -> bool:
 				_loose_drag_offset = part.global_position - global_point
 				part.is_stored = false
 				part.drawer_index = -1
+				part.modulate.a = 1.0
 				drawer.close_drawer()
 				G.audio.play_sound(&"click")
 			return true
@@ -572,7 +583,7 @@ func _handle_release(global_point: Vector2) -> bool:
 		_drop_loose_screw(release_velocity)
 		return true
 	if is_instance_valid(_loose_layer):
-		_drop_loose_layer()
+		_drop_loose_layer(release_velocity)
 		return true
 	if held is Repairable:
 		var item := held as Repairable
@@ -582,11 +593,10 @@ func _handle_release(global_point: Vector2) -> bool:
 	return false
 
 
-## Follows the pointer with the loose piece being dragged. Parts
-## and screws may be carried anywhere, outside the workable area
-## too. They are only set down on release, and a release outside
-## the workable area sends them back in. A layer still drops at
-## the bench's edge at once, instead of being carried off it.
+## Follows the pointer with the loose piece being dragged. Parts,
+## screws and layers may be carried anywhere, outside the workable
+## area too. They are only set down on release, and a release
+## outside the workable area sends them back in.
 func _drag_loose_piece() -> void:
 	if is_instance_valid(_loose_part):
 		# A part may be carried anywhere, over the drawers too. It
@@ -602,12 +612,10 @@ func _drag_loose_piece() -> void:
 			pointer_position + _loose_drag_offset
 		)
 	elif is_instance_valid(_loose_layer):
-		if not G.level.is_inside_bench(pointer_position):
-			_loose_layer.global_position = G.level.clamp_to_bench(
-				pointer_position + _loose_drag_offset,
-			)
-			_drop_loose_layer()
-			return
+		# A layer may be carried anywhere too, over the drawers
+		# included: it is never put away into one. It is only
+		# set down on release, and a release outside the
+		# workable area sends it back in.
 		_loose_layer.global_position = (
 			pointer_position + _loose_drag_offset
 		)
@@ -635,7 +643,7 @@ func _drop_loose_screw(release_velocity := Vector2.ZERO) -> void:
 	if G.level.try_return_screw(screw, release_velocity):
 		return
 	# Set down on the table after a drag: it rolls a little.
-	screw.on_set_down()
+	screw.on_set_down(release_velocity)
 
 
 ## True while this layer is being dragged across the bench.
@@ -697,13 +705,17 @@ func _set_down_part(
 ) -> void:
 	if G.level.try_return_part(part, release_velocity):
 		return
-	part.z_index = 10
+	# A part that is out stays in front of the drawers.
+	part.z_index = 16
 
 
 ## Lets go of a dragged layer. Dropped close to home once it is
-## ready to go back, it tweens into its exact place. Anywhere else
-## on the bench it rests where it fell.
-func _drop_loose_layer() -> void:
+## ready to go back, it tweens into its exact place. Dropped
+## outside the workable area, it flies back in and comes to rest
+## inside it, the way a part does; a fast release throws it.
+## Anywhere else on the bench it rests where it fell. A drawer
+## never takes a layer.
+func _drop_loose_layer(release_velocity := Vector2.ZERO) -> void:
 	var layer := _loose_layer
 	_loose_layer = null
 	if not is_instance_valid(layer):
@@ -716,6 +728,8 @@ func _drop_loose_layer() -> void:
 		) <= G.settings.layer_seat_snap_px
 	):
 		layer.put_back()
+		return
+	G.level.try_return_layer(layer, release_velocity)
 
 
 ## Moves the dragged item with the pointer and tilts it with the sideways
