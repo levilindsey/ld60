@@ -44,6 +44,7 @@ var _motion_tween_id := -1
 
 func _ready() -> void:
 	%Display.texture = %ContentViewport.get_texture()
+	%DisplayShadow.texture = %Display.texture
 	super()
 	visible = false
 

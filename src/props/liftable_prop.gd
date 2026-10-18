@@ -33,6 +33,8 @@ const _LIFT_DURATION_SEC := 0.3
 ## the prop and see presses first. Lifting moves it back to its own place
 ## and z_index.
 @export var resting_draw_before: Node
+## Optional shadow, shown only while the prop rests on the desk.
+@export var shadow: CanvasItem
 
 
 var _open_position := Vector2.ZERO
@@ -127,6 +129,8 @@ func _set_resting_order(is_resting: bool) -> void:
 
 ## 0 rests at `desk_spot`; 1 is the open pose.
 func _set_lift(lift: float) -> void:
+	if is_instance_valid(shadow):
+		shadow.visible = is_zero_approx(lift)
 	global_position = desk_spot.global_position.lerp(_open_position, lift)
 	global_rotation = lerp_angle(
 		desk_spot.global_rotation,

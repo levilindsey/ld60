@@ -20,11 +20,12 @@ shader_parameter/top_right = Vector2(120, -160)
 shader_parameter/bottom_right = Vector2(120, 160)
 shader_parameter/bottom_left = Vector2(-120, 160)
 
-[node name="InstructionManual" type="Node2D" node_paths=PackedStringArray("warped_sprite", "close_button")]
+[node name="InstructionManual" type="Node2D" node_paths=PackedStringArray("warped_sprite", "close_button", "shadow")]
 z_index = 90
 script = ExtResource("1_manual")
 warped_sprite = NodePath("Closed/Cover")
 close_button = NodePath("CloseButton")
+shadow = NodePath("Closed/CoverShadow")
 
 [node name="Spine" type="Sprite2D" parent="."]
 unique_name_in_owner = true
@@ -71,6 +72,12 @@ outline = ExtResource("4_outline_left")
 
 [node name="Closed" type="Node2D" parent="."]
 unique_name_in_owner = true
+
+[node name="CoverShadow" type="Sprite2D" parent="Closed"]
+self_modulate = Color(0, 0, 0, 0.4)
+material = SubResource("ShaderMaterial_cover")
+position = Vector2(128, 12)
+texture = ExtResource("6_cover")
 
 [node name="Cover" type="Sprite2D" parent="Closed"]
 unique_name_in_owner = true

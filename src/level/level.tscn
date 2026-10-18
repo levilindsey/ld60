@@ -229,7 +229,7 @@ desk_spot = NodePath("../ManualDeskSpot")
 desk_corners = PackedVector2Array(-162.7, -33.3, 22.3, -69.4, 206.5, 42.3, -39.9, 124.2)
 
 [node name="TicketDeskSpot" type="Marker2D" parent="." unique_id=1326991672]
-position = Vector2(425, 177)
+position = Vector2(395, 153)
 scale = Vector2(0.3, 0.3)
 
 [node name="TicketCard" parent="." unique_id=1682604079 node_paths=PackedStringArray("desk_spot", "resting_draw_before") instance=ExtResource("7_ticket")]
