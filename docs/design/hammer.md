@@ -84,8 +84,9 @@ later ones get narrow middle bands.
 - `Hammer extends Tool`, an effect tool. It registers as the hand's
   input owner from the press until the recoil ends. Built for
   LX18 with `StuckPart`, `BentPart` and `SeatPart` on one
-  `StrikablePoint` base. Dent and crack decals wait for LX24.
-  Bare surfaces take defects without decals for now.
+  `StrikablePoint` base. Dent and crack decals landed in LX58:
+  an over hard hit stamps a fitted dent or crack on the part
+  (see [decals.md](decals.md) "Fitted spawns").
 - On impact it calls `on_struck(global_position, charge)` on the
   topmost target under the strike point: a point if there is one, else
   a surface.

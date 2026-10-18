@@ -1,6 +1,9 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/interaction_points/dust_clump.gd" id="1_dust"]
+[ext_resource type="Resource" path="res://src/decals/dust_decal_set.tres" id="2_set"]
+[ext_resource type="Resource" path="res://src/decals/dust_2_decal_set.tres" id="3_set2"]
+[ext_resource type="Texture2D" uid="uid://ln81ths5i0g2" path="res://assets/images/decals/dust0000.png" id="4_art"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dust"]
 radius = 14.0
@@ -11,11 +14,12 @@ collision_mask = 0
 monitoring = false
 script = ExtResource("1_dust")
 art = NodePath("Art")
+first_set = ExtResource("2_set")
+second_set = ExtResource("3_set2")
 accepted_tools = Array[int]([2])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_dust")
 
-[node name="Art" type="Polygon2D" parent="."]
-color = Color(0.75, 0.72, 0.65, 0.95)
-polygon = PackedVector2Array(-13, -4, -7, -11, 4, -12, 12, -6, 13, 3, 7, 10, -4, 12, -11, 6)
+[node name="Art" type="Sprite2D" parent="."]
+texture = ExtResource("4_art")

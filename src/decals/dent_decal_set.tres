@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="DecalSet" format=3]
+
+[ext_resource type="Script" uid="uid://dc7g3y14j3ldu" path="res://src/decals/decal_set.gd" id="1_decal_set"]
+[ext_resource type="Texture2D" uid="uid://bii5kxdc5yw6l" path="res://assets/images/decals/dents0000.png" id="2_dent"]
+[ext_resource type="Texture2D" uid="uid://2ac4jxoy74j7" path="res://assets/images/decals/dents0001.png" id="3_dent"]
+[ext_resource type="Texture2D" uid="uid://bra2f0ebkwg5j" path="res://assets/images/decals/dents0002.png" id="4_dent"]
+[ext_resource type="Texture2D" uid="uid://cvofddrx5i1eb" path="res://assets/images/decals/dents0003.png" id="5_dent"]
+[ext_resource type="Material" path="res://src/decals/multiply_material.tres" id="6_multiply"]
+
+[resource]
+script = ExtResource("1_decal_set")
+textures = Array[Texture2D]([ExtResource("2_dent"), ExtResource("3_dent"), ExtResource("4_dent"), ExtResource("5_dent")])
+can_flip_horizontally = true
+can_flip_vertically = true
+tint = Color(0.6, 0.6, 0.62, 0.95)
+blend_material = ExtResource("6_multiply")

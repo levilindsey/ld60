@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="DecalSet" format=3]
+
+[ext_resource type="Script" uid="uid://dc7g3y14j3ldu" path="res://src/decals/decal_set.gd" id="1_decal_set"]
+[ext_resource type="Texture2D" uid="uid://c13bdxxdj86kr" path="res://assets/images/decals/grime20000.png" id="2_grime"]
+[ext_resource type="Texture2D" uid="uid://b3ygmxajwg3g7" path="res://assets/images/decals/grime20001.png" id="3_grime"]
+[ext_resource type="Texture2D" uid="uid://bxlqh3jdrshmh" path="res://assets/images/decals/grime20002.png" id="4_grime"]
+[ext_resource type="Texture2D" uid="uid://3gsaufnqcf5e" path="res://assets/images/decals/grime20003.png" id="5_grime"]
+[ext_resource type="Material" path="res://src/decals/multiply_material.tres" id="6_multiply"]
+
+[resource]
+script = ExtResource("1_decal_set")
+textures = Array[Texture2D]([ExtResource("2_grime"), ExtResource("3_grime"), ExtResource("4_grime"), ExtResource("5_grime")])
+can_flip_horizontally = true
+can_flip_vertically = true
+tint = Color(0.3, 0.26, 0.2, 0.92)
+blend_material = ExtResource("6_multiply")

@@ -203,13 +203,13 @@ func get_parts_menu() -> PartsMenu:
 
 ## Where layers wait while they are off the item.
 func get_set_aside_spot() -> Node2D:
-	return %SetAsideSpot
+	return %PartSetAsideSpot
 
 
 ## The layers at the set-aside spot, bottom of the stack first.
 func get_set_aside_layers() -> Array[RepairLayer]:
 	var layers: Array[RepairLayer] = []
-	for child in %SetAsideSpot.get_children():
+	for child in %PartSetAsideSpot.get_children():
 		if child is RepairLayer:
 			layers.append(child as RepairLayer)
 	return layers

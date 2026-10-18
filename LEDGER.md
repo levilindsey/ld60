@@ -9,9 +9,10 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 - **LX47** · Flathead calls from the m1-screws handoff
   (`docs/design/m1_agents.md`), my picks in brackets: 2 install twists of
   101.25 degrees from a 22.5 degree tilt [keep]; the ratchet only between
-  twists [keep]. Decided by Levi (2026-10-17): only a twist's drift
-  unseats, never the player's push; touch drags move the tip at
-  `flathead_touch_gain` 2.0, the mouse 1 to 1.
+  twists [keep]. Decided by Levi (2026-10-17, rev. 2026-10-18): the
+  tip unseats only while the screw is turning, by its drift or the
+  player's push; at rest the push stops at the slot's end. Touch
+  drags move the tip at `flathead_touch_gain` 2.0, the mouse 1 to 1.
 
 ## In progress
 
@@ -24,9 +25,11 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   cracks fitted onto parts. (LX24 follow-on.)
   owner: Levi (Muse Code)
   branch: mainline
-  next: DecalSet resources and spawner kinds, then the points.
+  next: Levi to review and commit the working tree, then move this
+    to Done. Implemented, uncommitted on purpose (no commit ask).
   brief: `docs/design/decals.md`, `docs/design/hammer.md`.
-  evidence: `assets/images/decals/`, `src/decals/`, `tests/decals/`.
+  evidence: `src/decals/`, `src/interaction_points/dirt_spot.gd`,
+    `tests/decals/` (43 checks pass; tools/phillips/glue/audio too).
 
 - **LX56** · Recurring itch deploys until Mon 2026-10-19 13:00 PDT:
   Muse cron job `90714525` (every 2 h at :17) pushes the working
@@ -102,6 +105,13 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   Chrome and Edge are verified (`docs/design/decals.md` "Clipping").
 
 ## Residuals (known, not fixed)
+
+- **LX59** · `full_loop`, `full_loop_booklet`, `item_flow`, `screws`
+  and `parts` probes fail at HEAD 2d0096b (checked 2026-10-18 on a
+  clean worktree, so not LX58 fallout): the Phillips-in-test-box and
+  tuning commits (10927f5, 2d0096b) moved the game, and the probe
+  updates are still uncommitted in the main tree
+  (`tests/screws/probe.gd`). Owner: whoever lands the tuning.
 
 - **LX27** · Source art is huge (3508x2480 PNGs, 0.6 to 2.2 MB each, drawn
   at about 0.2 scale): downscale it or cap the import size before the

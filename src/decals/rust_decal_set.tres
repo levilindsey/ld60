@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DecalSet" format=3]
+
+[ext_resource type="Script" uid="uid://dc7g3y14j3ldu" path="res://src/decals/decal_set.gd" id="1_decal_set"]
+[ext_resource type="Texture2D" uid="uid://qdbc8clbtt8t" path="res://assets/images/decals/rust0000.png" id="2_rust"]
+[ext_resource type="Texture2D" uid="uid://b4ia25umlhh6y" path="res://assets/images/decals/rust0001.png" id="3_rust"]
+[ext_resource type="Texture2D" uid="uid://d4e41hhfp3nxd" path="res://assets/images/decals/rust0002.png" id="4_rust"]
+[ext_resource type="Texture2D" uid="uid://ba31eal27hytb" path="res://assets/images/decals/rust0003.png" id="5_rust"]
+[ext_resource type="Material" path="res://src/decals/multiply_material.tres" id="6_multiply"]
+
+[resource]
+script = ExtResource("1_decal_set")
+textures = Array[Texture2D]([ExtResource("2_rust"), ExtResource("3_rust"), ExtResource("4_rust"), ExtResource("5_rust")])
+scale_range = Vector2(0.85, 1.2)
+can_flip_horizontally = true
+can_flip_vertically = true
+tint = Color(0.5, 0.24, 0.11, 0.95)
+blend_material = ExtResource("6_multiply")

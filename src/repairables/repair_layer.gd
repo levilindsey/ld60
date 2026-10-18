@@ -196,6 +196,29 @@ func pulse() -> void:
 	_pulse_tween.tween_property(self, "scale", _rest_scale, _PULSE_SEC * 0.5)
 
 
+## Stamps a decal on this layer's art and returns it (null if it
+## can't). The size shrinks and the position nudges so the decal
+## fits inside the art: `DecalSpawner.fit_size()` and
+## `fit_position()` do the math, and the art's clipping cuts
+## whatever still hangs over. Runtime damage (hammer dents and
+## cracks) lands through here.
+func spawn_decal(
+	kind: DecalSpawner.Kind,
+	world_position: Vector2,
+	size: float,
+	direction := Vector2.RIGHT,
+) -> Sprite2D:
+	if not is_instance_valid(art) or not is_instance_valid(G.level):
+		return null
+	var fitted_size := DecalSpawner.fit_size(art, size)
+	var fitted_position := DecalSpawner.fit_position(
+		art, world_position, fitted_size
+	)
+	return G.level.spawn_decal(
+		kind, art, fitted_position, fitted_size, direction
+	)
+
+
 ## True when a world position is on this layer's art.
 func has_point(global_point: Vector2) -> bool:
 	if not is_instance_valid(art) or not art.is_visible_in_tree():

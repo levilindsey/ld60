@@ -5,6 +5,9 @@
 [ext_resource type="Script" path="res://src/repairables/repair_layer.gd" id="3_layer"]
 [ext_resource type="Script" path="res://src/repairables/surface.gd" id="4_surface"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/crack.tscn" id="5_crack"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/dust_clump.tscn" id="6_dust"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/grime_spot.tscn" id="7_grime"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/rust_spot.tscn" id="8_rust"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_case"]
 size = Vector2(96, 96)
@@ -45,6 +48,19 @@ color = Color(0.22, 0.2, 0.18, 1)
 position = Vector2(-40, 5)
 scale = Vector2(0.7, 0.7)
 is_required = false
+
+[node name="Dust" parent="Layers/Inside" instance=ExtResource("6_dust")]
+position = Vector2(18, -30)
+texture_set = 1
+is_required = false
+
+[node name="Grime" parent="Layers/Inside" instance=ExtResource("7_grime")]
+position = Vector2(-28, 30)
+texture_set = 1
+is_required = false
+
+[node name="Rust" parent="Layers/Inside" instance=ExtResource("8_rust")]
+position = Vector2(30, 28)
 
 [node name="Cover" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
 script = ExtResource("3_layer")

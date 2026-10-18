@@ -1,6 +1,9 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/interaction_points/grime_spot.gd" id="1_grime"]
+[ext_resource type="Resource" path="res://src/decals/grime_decal_set.tres" id="2_set"]
+[ext_resource type="Resource" path="res://src/decals/grime_2_decal_set.tres" id="3_set2"]
+[ext_resource type="Texture2D" uid="uid://dujjt3iwbtd6e" path="res://assets/images/decals/grime0000.png" id="4_art"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_grime"]
 radius = 16.0
@@ -11,11 +14,12 @@ collision_mask = 0
 monitoring = false
 script = ExtResource("1_grime")
 art = NodePath("Art")
+first_set = ExtResource("2_set")
+second_set = ExtResource("3_set2")
 accepted_tools = Array[int]([1])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_grime")
 
-[node name="Art" type="Polygon2D" parent="."]
-color = Color(0.23, 0.18, 0.12, 0.9)
-polygon = PackedVector2Array(-14, -5, -8, -13, 3, -14, 12, -8, 15, 2, 9, 11, -3, 14, -12, 8)
+[node name="Art" type="Sprite2D" parent="."]
+texture = ExtResource("4_art")

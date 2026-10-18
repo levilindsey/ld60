@@ -6,6 +6,9 @@ extends InteractionPoint
 ## dries, then it is a seam.
 
 
+## Visible size of the blob a flooded sample leaves, in pixels.
+const _BLOB_SIZE_PX := 30.0
+
 ## The crack's path. Its curve is the line to trace.
 @export var path: Path2D
 
@@ -137,7 +140,10 @@ func _spawn_blob(at_position: Vector2) -> void:
 	var layer := get_layer()
 	if is_instance_valid(layer) and is_instance_valid(layer.art):
 		G.level.spawn_decal(
-			DecalSpawner.Kind.GLUE_BLOB, layer.art, at_position, 16.0
+			DecalSpawner.Kind.GLUE_BLOB,
+			layer.art,
+			at_position,
+			_BLOB_SIZE_PX,
 		)
 	var item := get_item()
 	if is_instance_valid(item):

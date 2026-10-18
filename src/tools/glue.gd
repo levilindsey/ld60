@@ -7,6 +7,8 @@ extends Tool
 
 ## How often an off-target squeeze blobs, in seconds.
 const _OFF_TARGET_BLOB_SEC := 0.5
+## Visible size of an off-target blob, in pixels.
+const _BLOB_SIZE_PX := 30.0
 
 ## The bottle art. It squashes a little while squeezing.
 @export var art: Node2D
@@ -92,7 +94,7 @@ func _blob_on_surface(at_position: Vector2) -> void:
 	if not is_instance_valid(layer) or not is_instance_valid(layer.art):
 		return
 	G.level.spawn_decal(
-		DecalSpawner.Kind.GLUE_BLOB, layer.art, at_position, 16.0
+		DecalSpawner.Kind.GLUE_BLOB, layer.art, at_position, _BLOB_SIZE_PX
 	)
 	if is_instance_valid(layer.item):
 		layer.item.quality.add_defect(

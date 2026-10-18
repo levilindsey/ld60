@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="DecalSet" format=3]
+
+[ext_resource type="Script" uid="uid://dc7g3y14j3ldu" path="res://src/decals/decal_set.gd" id="1_decal_set"]
+[ext_resource type="Texture2D" uid="uid://buaelqvtrwany" path="res://assets/images/decals/scratches0000.png" id="2_scratch"]
+[ext_resource type="Texture2D" uid="uid://dfv0cj5vsoygk" path="res://assets/images/decals/scratches0001.png" id="3_scratch"]
+[ext_resource type="Texture2D" uid="uid://fqw3ats0l2do" path="res://assets/images/decals/scratches0002.png" id="4_scratch"]
+[ext_resource type="Texture2D" uid="uid://vg3u6jysusy8" path="res://assets/images/decals/scratches0003.png" id="5_scratch"]
+
+[resource]
+script = ExtResource("1_decal_set")
+textures = Array[Texture2D]([ExtResource("2_scratch"), ExtResource("3_scratch"), ExtResource("4_scratch"), ExtResource("5_scratch")])
+scale_range = Vector2(0.8, 1.2)
+has_random_rotation = false
+can_flip_horizontally = true
+can_flip_vertically = false
+tint = Color(0.88, 0.88, 0.9, 0.9)

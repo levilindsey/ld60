@@ -17,6 +17,7 @@ enum Type {
 	SEAT_PART,
 	CRACK,
 	PHILLIPS_SCREW,
+	RUST_SPOT,
 }
 
 enum Mode {

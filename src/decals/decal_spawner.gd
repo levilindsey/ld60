@@ -19,10 +19,35 @@ extends Node
 enum Kind {
 	SKID,
 	GLUE_BLOB,
+	DENT,
+	CRACK,
+	SCRATCH,
+	RUST,
+	DUST,
+	DUST_2,
+	GRIME,
+	GRIME_2,
 }
+
+## The longest side a fitted decal may span, as a share of the part's
+## longest side. See `fit_size()`.
+const _MAX_PART_SHARE := 0.95
+## A fitted decal's center stays this share of its size inside the
+## part's edge. See `fit_position()`.
+const _FIT_INSET_SHARE := 0.35
 
 @export var skid_set: DecalSet
 @export var glue_blob_set: DecalSet
+@export var dent_set: DecalSet
+@export var crack_set: DecalSet
+@export var scratch_set: DecalSet
+@export var rust_set: DecalSet
+@export var dust_set: DecalSet
+@export var dust_2_set: DecalSet
+@export var grime_set: DecalSet
+@export var grime_2_set: DecalSet
+
+static var _visible_rects: Dictionary = {}
 
 ## Picks the texture, rotation, scale and flips. A test can set its seed.
 var random := RandomNumberGenerator.new()
@@ -57,9 +82,9 @@ func get_set(kind: Kind) -> DecalSet:
 ##   clips nothing, so its decals show in full.
 ## - `global_position` is where the decal's center goes, in world pixels.
 ##   It may be over the part's edge. The part clips what hangs over.
-## - `size` is the length of the decal's longer side in world pixels,
-##   whatever the part's scale or rotation. The set's `scale_range` varies
-##   it a little.
+## - `size` is the length of the visible art's longer side in world
+##   pixels, whatever the part's scale or rotation. The set's
+##   `scale_range` varies it a little.
 ## - `direction` is the world direction of the damage, such as the way a
 ##   screwdriver slipped. Only sets that align to the direction use it.
 func spawn(
@@ -76,18 +101,26 @@ func spawn(
 	var texture: Texture2D = decal_set.textures[
 		random.randi() % decal_set.textures.size()
 	]
-	var longer_side := maxf(texture.get_width(), texture.get_height())
+	# The textures carry a wide transparent margin, so `size` is the
+	# longer side of the visible art, not of the whole picture.
+	var visible_rect := get_visible_rect(texture)
+	var longer_side := maxf(visible_rect.size.x, visible_rect.size.y)
 
 	var decal := Sprite2D.new()
 	decal.texture = texture
+	if visible_rect.size.x > 0.0 and visible_rect.size.y > 0.0:
+		decal.region_enabled = true
+		decal.region_rect = visible_rect
 	decal.flip_h = decal_set.can_flip_horizontally and random.randf() < 0.5
 	decal.flip_v = decal_set.can_flip_vertically and random.randf() < 0.5
 	decal.modulate = decal_set.tint
 	decal.material = decal_set.blend_material
 
-	var world_rotation := random.randf() * TAU
+	var world_rotation := part.get_global_transform().get_rotation()
 	if decal_set.is_aligned_to_direction and not direction.is_zero_approx():
 		world_rotation = direction.angle()
+	elif decal_set.has_random_rotation:
+		world_rotation = random.randf() * TAU
 	var world_scale := (
 		size
 		* random.randf_range(decal_set.scale_range.x, decal_set.scale_range.y)
@@ -108,6 +141,80 @@ func spawn(
 	# Physics interpolation is on, so don't slide in from the origin.
 	decal.reset_physics_interpolation()
 	return decal
+
+
+## The rect of a texture's visible art, in texture pixels. The decal
+## textures are drawn small in the middle of a big transparent
+## picture, so this is much smaller than the texture. A texture whose
+## image cannot be read gives its full rect.
+static func get_visible_rect(texture: Texture2D) -> Rect2:
+	if _visible_rects.has(texture):
+		return _visible_rects[texture]
+	var rect := Rect2(Vector2.ZERO, texture.get_size())
+	var image := texture.get_image()
+	if image != null and not image.is_empty():
+		if image.is_compressed():
+			image.decompress()
+		var used := image.get_used_rect()
+		if used.size.x > 0 and used.size.y > 0:
+			rect = Rect2(used)
+	_visible_rects[texture] = rect
+	return rect
+
+
+## The rect a part draws in, in the part's own pixels: a `Control`'s
+## size, a `Sprite2D`'s rect, or the bounds of a `Polygon2D`'s points.
+## Anything else gives an empty rect, and the fit helpers below then
+## leave their input alone.
+static func get_part_rect(part: CanvasItem) -> Rect2:
+	if part is Control:
+		return Rect2(Vector2.ZERO, (part as Control).size)
+	if part is Sprite2D:
+		return (part as Sprite2D).get_rect()
+	if part is Polygon2D:
+		var polygon := (part as Polygon2D).polygon
+		if polygon.is_empty():
+			return Rect2()
+		var rect := Rect2(polygon[0], Vector2.ZERO)
+		for point in polygon:
+			rect = rect.expand(point)
+		return rect
+	return Rect2()
+
+
+## Shrinks `size` so a decal of that visible size fits on `part`: at
+## most `_MAX_PART_SHARE` of the part's longest side.
+static func fit_size(part: CanvasItem, size: float) -> float:
+	var rect := get_part_rect(part)
+	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return size
+	return minf(size, maxf(rect.size.x, rect.size.y) * _MAX_PART_SHARE)
+
+
+## Nudges a world position so a decal of `size` centered there stays
+## inside `part`'s rect, with a margin. A part too small for the
+## margin centers the decal instead. The spawner's clipping is still
+## the safety net for a spun decal's corners.
+static func fit_position(
+	part: CanvasItem, world_position: Vector2, size: float
+) -> Vector2:
+	var rect := get_part_rect(part)
+	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return world_position
+	var transform := part.get_global_transform()
+	var local := transform.affine_inverse() * world_position
+	var inset := size * _FIT_INSET_SHARE
+	local.x = _fit_axis(local.x, rect.position.x, rect.end.x, inset)
+	local.y = _fit_axis(local.y, rect.position.y, rect.end.y, inset)
+	return transform * local
+
+
+static func _fit_axis(
+	value: float, low: float, high: float, inset: float
+) -> float:
+	if low + inset > high - inset:
+		return (low + high) * 0.5
+	return clampf(value, low + inset, high - inset)
 
 
 func _is_spawn_valid(

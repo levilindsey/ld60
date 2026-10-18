@@ -22,6 +22,11 @@ enum Type {
 	STICKER,
 }
 
+## Visible size of the decal a hard hit leaves, in pixels.
+const _DENT_SMALL_SIZE_PX := 30.0
+const _DENT_LARGE_SIZE_PX := 44.0
+const _CRACK_SIZE_PX := 52.0
+
 @export var type := Type.PLASTIC
 
 ## Pixels the rag has wiped over this surface.
@@ -109,5 +114,23 @@ func _add_defect(
 	at_position: Vector2,
 ) -> void:
 	var layer := get_layer()
-	if is_instance_valid(layer) and is_instance_valid(layer.item):
+	if not is_instance_valid(layer):
+		return
+	if is_instance_valid(layer.item):
 		layer.item.quality.add_defect(defect, at_position, self)
+	# Hammer damage shows: a fitted dent or crack on the part.
+	match defect:
+		RepairQuality.Defect.DENT_SMALL:
+			layer.spawn_decal(
+				DecalSpawner.Kind.DENT, at_position, _DENT_SMALL_SIZE_PX
+			)
+		RepairQuality.Defect.DENT_LARGE:
+			layer.spawn_decal(
+				DecalSpawner.Kind.DENT, at_position, _DENT_LARGE_SIZE_PX
+			)
+		RepairQuality.Defect.CRACK:
+			layer.spawn_decal(
+				DecalSpawner.Kind.CRACK, at_position, _CRACK_SIZE_PX
+			)
+		_:
+			pass

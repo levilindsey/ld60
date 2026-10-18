@@ -19,6 +19,25 @@ tinted freely.
   and disappear at 0.
 - **Variety:** each spawn picks a random texture from its set, a random
   rotation, a scale from a range, a random flip and an optional tint.
+- **The textures (LX58):** the art in `assets/images/decals/` is white
+  on transparent, 500x500 with the mark in the middle, so `size` means
+  the visible mark's longer side (the spawner reads the alpha bounds).
+  Color comes from each set's `tint`: dents gray, cracks dark gray,
+  rust rust-colored, all in `src/decals/*_decal_set.tres`. Dents, rust
+  and grime multiply (`multiply_material.tres`); the rest blend
+  normally. Scratches and glue are drawn vertically (scratches thick
+  end down), so their sets set `has_random_rotation = false` and no
+  vertical flip: they keep their drawn orientation on the part.
+- **Fitted spawns:** `RepairLayer.spawn_decal()` shrinks a decal to at
+  most 95% of the part's longest side and nudges its center inside
+  the part's rect before spawning. Hammer dents and cracks land this
+  way (`Surface`, `StrikablePoint`); clipping handles the corners of
+  a spun decal.
+- **Dirt points:** `DustClump`, `GrimeSpot` and `RustSpot` share the
+  `DirtSpot` base: a random texture from a `DecalSet`, an
+  `art_size_px`, and a color configuration (the set's tint times the
+  point's own `tint`). `texture_set` picks the first or second set:
+  two dusts and two grimes exist. Rust stays and never needs work.
 - **Clipping:** the part's `clip_children` is `CLIP_CHILDREN_AND_DRAW`
   (the spawner sets it the first time a part gets a decal), so decals
   only draw where the part is opaque. **Checked 2026-10-17: it works in
@@ -53,8 +72,9 @@ tinted freely.
   `direction`. Don't name a class `Decal`: Godot already has a 3D node
   with that name.
 - **Texture size:** decals are small on screen, so keep their source
-  images small too (64 to 256 px). The current source art is 3508x2480
-  and drawn at about 0.2 scale (LX27).
+  images small too (64 to 256 px). The LX58 decal art is 500x500 with
+  a wide transparent margin (LX27 covers shrinking it). Other source
+  art is 3508x2480 and drawn at about 0.2 scale (LX27).
 
 ## The art list (LX24)
 
