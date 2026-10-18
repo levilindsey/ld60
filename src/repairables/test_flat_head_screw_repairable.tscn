@@ -2,40 +2,41 @@
 
 [ext_resource type="Script" uid="uid://dikerfeo68jor" path="res://src/repairables/test_flat_head_screw_repairable.gd" id="1_0ufjt"]
 [ext_resource type="PackedScene" uid="uid://cg17ymgfrol22" path="res://src/interaction_points/flat_head_screw.tscn" id="2_208r4"]
-[ext_resource type="Script" path="res://src/repairables/repair_layer.gd" id="3_layer"]
-[ext_resource type="Script" path="res://src/repairables/surface.gd" id="4_surface"]
+[ext_resource type="Script" uid="uid://bexc8yuqwibs5" path="res://src/repairables/repair_layer.gd" id="3_layer"]
+[ext_resource type="Script" uid="uid://be84jbhspe8mj" path="res://src/repairables/surface.gd" id="4_surface"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/part_socket.tscn" id="5_socket"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/grime_spot.tscn" id="6_grime"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/dust_clump.tscn" id="7_dust"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_case"]
-size = Vector2(96, 96)
+[ext_resource type="PackedScene" path="res://src/interaction_points/phillips_screw.tscn" id="8_aj7g0"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_drop"]
 size = Vector2(100, 100)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_case"]
+size = Vector2(96, 96)
 
 [node name="TestScrewRepairable" type="Node2D" unique_id=1685354276]
 script = ExtResource("1_0ufjt")
 item_name = "Test box"
 ticket = "It rattles. Open it up, swap the gear, close it again."
 
-[node name="DropArea" type="Area2D" parent="."]
+[node name="DropArea" type="Area2D" parent="." unique_id=1715486403]
 unique_name_in_owner = true
 collision_layer = 2
 collision_mask = 0
 monitoring = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea" unique_id=708048262]
 shape = SubResource("RectangleShape2D_drop")
 
 [node name="Layers" type="Node2D" parent="." unique_id=36167144]
 unique_name_in_owner = true
 
-[node name="Inside" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+[node name="Inside" type="Node2D" parent="Layers" unique_id=1783116652 node_paths=PackedStringArray("art")]
 script = ExtResource("3_layer")
 art = NodePath("Art")
 
-[node name="Art" type="ColorRect" parent="Layers/Inside"]
+[node name="Art" type="ColorRect" parent="Layers/Inside" unique_id=937204884]
 offset_left = -46.0
 offset_top = -46.0
 offset_right = 46.0
@@ -43,22 +44,22 @@ offset_bottom = 46.0
 mouse_filter = 2
 color = Color(0.22, 0.2, 0.18, 1)
 
-[node name="Socket" parent="Layers/Inside" instance=ExtResource("5_socket")]
+[node name="Socket" parent="Layers/Inside" unique_id=1781963158 instance=ExtResource("5_socket")]
 position = Vector2(0, 8)
 
-[node name="Grime" parent="Layers/Inside" instance=ExtResource("6_grime")]
+[node name="Grime" parent="Layers/Inside" unique_id=914435836 instance=ExtResource("6_grime")]
 position = Vector2(-30, -30)
 is_required = false
 
-[node name="Dust" parent="Layers/Inside" instance=ExtResource("7_dust")]
+[node name="Dust" parent="Layers/Inside" unique_id=2103275901 instance=ExtResource("7_dust")]
 position = Vector2(30, -30)
 is_required = false
 
-[node name="Cover" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+[node name="Cover" type="Node2D" parent="Layers" unique_id=2076810840 node_paths=PackedStringArray("art")]
 script = ExtResource("3_layer")
 art = NodePath("Art")
 
-[node name="Art" type="ColorRect" parent="Layers/Cover"]
+[node name="Art" type="ColorRect" parent="Layers/Cover" unique_id=1717812278]
 offset_left = -50.0
 offset_top = -50.0
 offset_right = 50.0
@@ -66,17 +67,17 @@ offset_bottom = 50.0
 mouse_filter = 2
 color = Color(0.43137255, 0.8666667, 0.44313726, 1)
 
-[node name="CaseSurface" type="Area2D" parent="Layers/Cover"]
+[node name="CaseSurface" type="Area2D" parent="Layers/Cover" unique_id=348291153]
 collision_layer = 32
 collision_mask = 0
 monitoring = false
 script = ExtResource("4_surface")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Layers/Cover/CaseSurface"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layers/Cover/CaseSurface" unique_id=1241601882]
 shape = SubResource("RectangleShape2D_case")
 
-[node name="ScrewLeft" parent="Layers/Cover" instance=ExtResource("2_208r4")]
+[node name="ScrewLeft" parent="Layers/Cover" unique_id=1431611738 instance=ExtResource("2_208r4")]
 position = Vector2(-30, -30)
 
-[node name="ScrewRight" parent="Layers/Cover" instance=ExtResource("2_208r4")]
+[node name="ScrewRight" parent="Layers/Cover" unique_id=268084832 instance=ExtResource("8_aj7g0")]
 position = Vector2(30, 30)
