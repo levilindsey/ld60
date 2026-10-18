@@ -1,29 +1,11 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://src/ui/ticket/ticket_card.gd" id="1_ticket"]
 [ext_resource type="FontFile" path="res://assets/fonts/special_elite/SpecialElite-Regular.ttf" id="3_elite"]
 [ext_resource type="FontFile" path="res://assets/fonts/reenie_beanie/ReenieBeanie.ttf" id="4_handwriting"]
 [ext_resource type="Shader" path="res://assets/shaders/perspective_quad.gdshader" id="5_perspective"]
 [ext_resource type="PackedScene" path="res://src/props/prop_close_button.tscn" id="6_close"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_paper"]
-content_margin_left = 18.0
-content_margin_top = 14.0
-content_margin_right = 18.0
-content_margin_bottom = 16.0
-bg_color = Color(0.98, 0.93, 0.74, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.4, 0.3, 0.18, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-shadow_color = Color(0, 0, 0, 0.35)
-shadow_size = 2
-shadow_offset = Vector2(5, 5)
+[ext_resource type="Texture2D" path="res://assets/images/repairticket.png" id="7_paper"]
 
 [sub_resource type="Theme" id="Theme_paper"]
 default_font = ExtResource("3_elite")
@@ -54,30 +36,40 @@ size_2d_override = Vector2i(360, 300)
 size_2d_override_stretch = true
 render_target_update_mode = 3
 
-[node name="Paper" type="PanelContainer" parent="ContentViewport"]
+[node name="Paper" type="Control" parent="ContentViewport"]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 4.0
-offset_top = 4.0
-offset_right = -10.0
-offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme = SubResource("Theme_paper")
-theme_override_styles/panel = SubResource("StyleBoxFlat_paper")
+
+[node name="Background" type="TextureRect" parent="ContentViewport/Paper"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_paper")
+expand_mode = 1
 
 [node name="Contents" type="VBoxContainer" parent="ContentViewport/Paper"]
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 64.0
+offset_right = -24.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/separation = 6
-
-[node name="CaptionLabel" type="Label" parent="ContentViewport/Paper/Contents"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.38, 0.22, 1)
-theme_override_font_sizes/font_size = 16
-text = "REPAIR TICKET"
 
 [node name="NameLabel" type="Label" parent="ContentViewport/Paper/Contents"]
 unique_name_in_owner = true
@@ -85,12 +77,6 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Item"
 autowrap_mode = 3
-
-[node name="Divider" type="ColorRect" parent="ContentViewport/Paper/Contents"]
-custom_minimum_size = Vector2(0, 3)
-layout_mode = 2
-mouse_filter = 2
-color = Color(0.4, 0.3, 0.18, 0.6)
 
 [node name="ComplaintLabel" type="Label" parent="ContentViewport/Paper/Contents"]
 unique_name_in_owner = true
