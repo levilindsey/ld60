@@ -126,6 +126,15 @@ func _check_rag() -> void:
 	)
 
 
+## The press point that puts the blower's nozzle 60 px from a
+## target, up the puff direction from it.
+func _aim_press(blower: AirBlower, target: Vector2) -> Vector2:
+	var nozzle_offset: Vector2 = (
+		blower.get_nozzle_position() - blower.get_tip_position()
+	)
+	return target - blower.get_nozzle_direction() * 60.0 - nozzle_offset
+
+
 func _check_air_blower() -> void:
 	var dust := _spawn_point(
 		_DUST_SCENE_PATH, Vector2(30, -25)
@@ -138,7 +147,7 @@ func _check_air_blower() -> void:
 	_expect(blower.plump_sprite.visible, "the bulb starts plump")
 	# Let the held turn settle, so the aim uses the final direction.
 	await _seconds(0.5)
-	var aim := dust.global_position - blower.get_nozzle_direction() * 60.0
+	var aim := _aim_press(blower, dust.global_position)
 	await _press_down(aim)
 	_expect(blower.squeezed_sprite.visible, "a tap squeezes the bulb")
 	await _release_at(aim)
@@ -150,7 +159,7 @@ func _check_air_blower() -> void:
 		dust.mode == InteractionPoint.Mode.FINISHED,
 		"puffs blow the dust away",
 	)
-	var fan_aim := fan.global_position - blower.get_nozzle_direction() * 60.0
+	var fan_aim := _aim_press(blower, fan.global_position)
 	for puff in 3:
 		await _press_at(fan_aim)
 		await _seconds(0.25)

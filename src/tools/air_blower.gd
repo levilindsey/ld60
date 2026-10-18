@@ -57,13 +57,19 @@ func get_nozzle_direction() -> Vector2:
 	return _NOZZLE_DIRECTION.rotated(global_rotation)
 
 
+## Where the nozzle is in the world. The puff and its drawn cone
+## both start here, at the interaction area.
+func get_nozzle_position() -> Vector2:
+	return interaction_area.global_position
+
+
 func _puff() -> void:
 	if not is_instance_valid(G.level):
 		return
 	var item := G.level.active_repairable
 	if not is_instance_valid(item):
 		return
-	var nozzle := get_tip_position()
+	var nozzle := get_nozzle_position()
 	var direction := get_nozzle_direction()
 	var length := G.settings.air_cone_length_px
 	var half_angle := deg_to_rad(G.settings.air_cone_half_angle_deg)
