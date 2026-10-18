@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dqblthd0h4nek"
+path="res://.godot/imported/hmm grumpy.wav-13128b883e39b06ea024d715f275ded2.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/hmm grumpy.wav"
+dest_files=["res://.godot/imported/hmm grumpy.wav-13128b883e39b06ea024d715f275ded2.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

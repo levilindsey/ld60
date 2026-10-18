@@ -119,6 +119,7 @@ func open() -> void:
 	if state != State.CLOSED:
 		return
 	G.print("Opening instruction manual", ScaffolderLog.CATEGORY_INTERACTION)
+	_play_sound(&"page_flip")
 	state = State.LIFTING
 	_tween_lift(0.0, 1.0, _on_lifted)
 
@@ -128,6 +129,7 @@ func close() -> void:
 	if state != State.IDLE:
 		return
 	G.print("Closing instruction manual", ScaffolderLog.CATEGORY_INTERACTION)
+	_play_sound(&"pages_flip")
 	state = State.CLOSING
 	_pop_out_close_button()
 	_turn_back_to_first_spread()
@@ -226,6 +228,7 @@ func _release_drag(x: float) -> void:
 	var target_progress := _drag_start_progress
 	if is_completing:
 		target_progress = 1.0 if _is_turning_forward else 0.0
+		_play_sound(&"page_flip", true)
 	state = State.SETTLING
 	_tween_leaf_progress(
 		_leaf_progress,
@@ -371,6 +374,12 @@ func _set_cover_corners(corners: PackedVector2Array) -> void:
 	material.set_shader_parameter("top_right", corners[1])
 	material.set_shader_parameter("bottom_right", corners[2])
 	material.set_shader_parameter("bottom_left", corners[3])
+
+
+func _play_sound(sound_name: StringName, force_restart := false) -> void:
+	# The manual can be run on its own, before AudioMain exists.
+	if is_instance_valid(G.audio):
+		G.audio.play_sound(sound_name, force_restart)
 
 
 func _get_drag_progress(x: float) -> float:

@@ -347,6 +347,7 @@ func _update_state() -> void:
 func _play_finish_payoff() -> void:
 	set_physics_process(false)
 	G.audio.play_sound(&"ding")
+	G.audio.play_sound_delayed(&"hmm_appreciative", 0.35)
 	if is_instance_valid(G.settings.finish_sparkle_scene):
 		var sparkle: CPUParticles2D = (
 			G.settings.finish_sparkle_scene.instantiate()

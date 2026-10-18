@@ -87,6 +87,7 @@ func win() -> void:
 		return
 	G.print("Game won", ScaffolderLog.CATEGORY_GAME_STATE)
 	has_won = true
+	G.audio.play_sound(&"sigh_relief")
 	G.state.transition(StateMain.State.CREDITS)
 
 
@@ -311,6 +312,7 @@ func _on_item_landed(item: Repairable) -> void:
 		G.settings.item_landing_shake_sec,
 	)
 	%TicketCard.show_item(item.item_name, item.ticket)
+	G.audio.play_sound_delayed(&"hmm_curious", 0.45)
 
 
 ## The item slid off the screen: its receipt opens and, unless that was
@@ -330,6 +332,7 @@ func _on_defect_added(
 	points: int,
 	world_position: Vector2,
 ) -> void:
+	G.audio.play_sound(&"hmm_grumpy")
 	DefectPopup.spawn(self, points, world_position)
 
 

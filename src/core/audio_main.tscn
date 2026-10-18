@@ -1,11 +1,10 @@
-[gd_scene load_steps=15 format=3 uid="uid://diqnxd2kabxfk"]
+[gd_scene load_steps=43 format=3 uid="uid://diqnxd2kabxfk"]
 
 [ext_resource type="Script" uid="uid://b5hrwox1n2lt0" path="res://src/core/audio_main.gd" id="1_tdp82"]
 [ext_resource type="AudioStream" uid="uid://boxpn3wxfkxio" path="res://assets/audio/foley_cleaned/click.wav" id="2_click"]
 [ext_resource type="AudioStream" uid="uid://cgy2wr77bgnt2" path="res://assets/audio/foley_cleaned/wood tap_b.wav" id="3_clunk"]
 [ext_resource type="AudioStream" uid="uid://hu4gkjsbex18" path="res://assets/audio/foley_cleaned/part drop 4.wav" id="4_thud"]
 [ext_resource type="AudioStream" uid="uid://c1lbq31leivcb" path="res://assets/audio/foley_cleaned/Hammer light metal 2_a.wav" id="5_ding"]
-[ext_resource type="AudioStream" uid="uid://dm68jna87f1yn" path="res://assets/audio/foley_cleaned/loose screw_a.wav" id="6_hmm"]
 [ext_resource type="AudioStream" uid="uid://bp142r33ukg74" path="res://assets/audio/foley_cleaned/drawer openclose 3_b.wav" id="7_creak"]
 [ext_resource type="AudioStream" uid="uid://dlp54vv5fe75e" path="res://assets/audio/foley_cleaned/rattle snap on_a.wav" id="8_ratchet"]
 [ext_resource type="AudioStream" uid="uid://dxra0c1lh1kw3" path="res://assets/audio/foley_cleaned/pliers scrape.wav" id="9_scrape"]
@@ -14,6 +13,92 @@
 [ext_resource type="AudioStream" uid="uid://wm4lqvpkt0v3" path="res://assets/audio/foley_cleaned/unscrew 2.wav" id="12_grind"]
 [ext_resource type="AudioStream" uid="uid://bh4jnm0ryemsc" path="res://assets/audio/foley_cleaned/air puff.wav" id="13_whoosh"]
 [ext_resource type="AudioStream" uid="uid://bga4bllx1ealr" path="res://assets/audio/foley_cleaned/parts together 2_b.wav" id="14_snap"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/humming.wav" id="15_humming"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm questioning.wav" id="16_hmm_q"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm questioning 2.wav" id="17_hmm_q2"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm questioning 3.wav" id="18_hmm_q3"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm questioning 4.wav" id="19_hmm_q4"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm curious_b.wav" id="20_hmm_curious"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm thoughtful.wav" id="21_hmm_thought"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm thoughtful 2.wav" id="22_hmm_thought2"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm appreciative.wav" id="23_hmm_appr"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm contented.wav" id="24_hmm_content"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm grumpy.wav" id="25_hmm_grumpy"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm grumpy 2.wav" id="26_hmm_grumpy2"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/sigh of relief.wav" id="27_sigh_relief"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/sigh 2.wav" id="28_sigh2"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/page flip 3_a.wav" id="29_page_flip_a"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/page flip 5_a.wav" id="30_page_flip_b"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/page flip 6.wav" id="31_page_flip_c"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/many pages flipping.wav" id="32_pages_flip"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/card land and pickup_a.wav" id="33_card_land"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/card land and pickup_b.wav" id="34_card_pickup_a"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/card pickup 2_a.wav" id="35_card_pickup_b"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/scrawling 3.wav" id="36_scrawling"]
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_hmm"]
+streams_count = 4
+playback_mode = 0
+stream_0/stream = ExtResource("16_hmm_q")
+stream_0/weight = 1.0
+stream_1/stream = ExtResource("17_hmm_q2")
+stream_1/weight = 1.0
+stream_2/stream = ExtResource("18_hmm_q3")
+stream_2/weight = 1.0
+stream_3/stream = ExtResource("19_hmm_q4")
+stream_3/weight = 1.0
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_curious"]
+streams_count = 3
+playback_mode = 0
+stream_0/stream = ExtResource("20_hmm_curious")
+stream_0/weight = 1.0
+stream_1/stream = ExtResource("21_hmm_thought")
+stream_1/weight = 1.0
+stream_2/stream = ExtResource("22_hmm_thought2")
+stream_2/weight = 1.0
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_appr"]
+streams_count = 2
+playback_mode = 0
+stream_0/stream = ExtResource("23_hmm_appr")
+stream_0/weight = 1.0
+stream_1/stream = ExtResource("24_hmm_content")
+stream_1/weight = 1.0
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_grumpy"]
+streams_count = 2
+playback_mode = 0
+stream_0/stream = ExtResource("25_hmm_grumpy")
+stream_0/weight = 1.0
+stream_1/stream = ExtResource("26_hmm_grumpy2")
+stream_1/weight = 1.0
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_sigh"]
+streams_count = 2
+playback_mode = 0
+stream_0/stream = ExtResource("27_sigh_relief")
+stream_0/weight = 1.0
+stream_1/stream = ExtResource("28_sigh2")
+stream_1/weight = 0.5
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_page"]
+streams_count = 3
+playback_mode = 0
+stream_0/stream = ExtResource("29_page_flip_a")
+stream_0/weight = 1.0
+stream_1/stream = ExtResource("30_page_flip_b")
+stream_1/weight = 1.0
+stream_2/stream = ExtResource("31_page_flip_c")
+stream_2/weight = 1.0
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_card"]
+streams_count = 2
+playback_mode = 0
+stream_0/stream = ExtResource("34_card_pickup_a")
+stream_0/weight = 1.0
+stream_1/stream = ExtResource("35_card_pickup_b")
+stream_1/weight = 1.0
 
 [node name="AudioMain" type="Node2D"]
 process_mode = 3
@@ -25,6 +110,8 @@ bus = &"Music"
 
 [node name="MainTheme" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("15_humming")
+volume_db = -14.0
 bus = &"Music"
 
 [node name="EndTheme" type="AudioStreamPlayer" parent="."]
@@ -53,7 +140,59 @@ bus = &"SFX"
 
 [node name="Hmm" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
-stream = ExtResource("6_hmm")
+stream = SubResource("AudioStreamRandomizer_hmm")
+volume_db = -4.0
+bus = &"SFX"
+
+[node name="HmmCurious" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_curious")
+volume_db = -5.0
+bus = &"SFX"
+
+[node name="HmmAppreciative" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_appr")
+volume_db = -5.0
+bus = &"SFX"
+
+[node name="HmmGrumpy" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_grumpy")
+volume_db = -5.0
+bus = &"SFX"
+
+[node name="SighRelief" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_sigh")
+volume_db = -6.0
+bus = &"SFX"
+
+[node name="PageFlip" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_page")
+volume_db = -2.0
+bus = &"SFX"
+
+[node name="PagesFlip" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("32_pages_flip")
+volume_db = -2.0
+bus = &"SFX"
+
+[node name="CardLand" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("33_card_land")
+bus = &"SFX"
+
+[node name="CardPickup" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_card")
+bus = &"SFX"
+
+[node name="Scrawling" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("36_scrawling")
 bus = &"SFX"
 
 [node name="Creak" type="AudioStreamPlayer" parent="."]

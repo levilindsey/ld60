@@ -28,6 +28,7 @@ func show_item(item_name: String, complaint: String) -> void:
 	%NameLabel.text = item_name
 	%ComplaintLabel.text = complaint
 	visible = true
+	G.audio.play_sound(&"card_land")
 	_slide_to(0.0)
 
 
@@ -35,6 +36,7 @@ func show_item(item_name: String, complaint: String) -> void:
 func hide_card() -> void:
 	if not visible:
 		return
+	G.audio.play_sound(&"card_pickup")
 	_slide_to(slide_distance_px)
 	_tween.tween_callback(hide)
 

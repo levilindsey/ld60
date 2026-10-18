@@ -73,7 +73,7 @@ func open(item_name: String, quality: RepairQuality) -> void:
 	visible = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	%Slide.position.x = slide_distance_px
-	_play_sound(&"whoosh")
+	_play_sound(&"scrawling")
 
 	var star_count := quality.get_stars()
 	var star_phase_sec := star_count * star_interval_sec
