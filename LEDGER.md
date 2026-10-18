@@ -22,10 +22,11 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   twist; a press brings one back to sink into its hole before the install
   twists (Levi's `RemoveScrew` and clip space, 4e44a86).
   - owner: claude 194d3b69 (coordinator), agent `screw-pullout`
-  - branch: `lx54-pullout`, in the agent's worktree under
-    `.claude/worktrees/`; last commit: none yet
+  - branch: `lx54-pullout`, worktree
+    `.claude/worktrees/agent-a890b2f6c313d03a6`; last commit: `aff4ab4`
+    (WIP, unpushed)
   - evidence: `.claude/probes/LX54/` (frames), new checks in `tests/screws/`
-  - next: the agent builds it from the brief
+  - next: the agent finishes the probes and the new checks, then reports
   - brief: `docs/design/screw_pullout.md`
 
 ## Next
