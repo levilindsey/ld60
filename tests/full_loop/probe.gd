@@ -276,9 +276,12 @@ func _check_take_cover_off() -> void:
 		_tool.mode == Tool.Mode.IN_USE and _hand.held == _tool,
 		"a rack press waits while the driver is in use",
 	)
+	# The head art sits above the screw's node, so the tip is held
+	# on the slot, not on the node.
 	_expect(
-		_tool.get_tip_position().distance_to(_screw_left.global_position)
-		< 1.0,
+		_tool.get_tip_position().distance_to(
+			(_screw_left as FlatHeadScrew).get_tip_position()
+		) < 1.0,
 		"IN_USE: the point holds the driver, not the pointer",
 	)
 	# m1-screws: tap back over the screw, then keep the tip centered
