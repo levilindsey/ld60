@@ -169,13 +169,13 @@ polygon = PackedVector2Array(-5, 6, 5, 6, 3, 20, 2, 32, -1, 32, -3, 20)
 
 [node name="Hole" type="Sprite2D" parent="." unique_id=102901982]
 modulate = Color(0.12156863, 0.12156863, 0.12156863, 1)
-position = Vector2(0, 6.0000005)
+position = Vector2(0, -1)
 scale = Vector2(0.094, 0.094)
 texture = ExtResource("2_w7024")
 
 [node name="ClippingSpace" type="Sprite2D" parent="." unique_id=1821905139]
 clip_children = 1
-position = Vector2(0, -33.2)
+position = Vector2(0, -40.2)
 scale = Vector2(0.094, 0.094)
 texture = ExtResource("3_vqoce")
 
@@ -203,7 +203,7 @@ polygon = PackedVector2Array(-10, -4, -4, -10, 6, -9, 11, -2, 8, 7, 0, 11, -8, 8
 
 [node name="UnclippedAnglePerspective" type="Sprite2D" parent="." unique_id=1147643259]
 visible = false
-position = Vector2(0, -15.1)
+position = Vector2(0, -22.1)
 scale = Vector2(0.032, 0.032)
 texture = ExtResource("4_t7xyj")
 

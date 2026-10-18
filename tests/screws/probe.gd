@@ -114,6 +114,7 @@ func _run() -> void:
 	_collect_nodes()
 	get_tree().physics_frame.connect(_track_scale)
 
+	_check_hole_positions()
 	await _check_correcting()
 	await _check_never_correcting()
 	await _check_install()
@@ -289,6 +290,24 @@ func _collect_nodes() -> void:
 		)
 		screw.installed.connect(
 			func() -> void: _events.append("%s:installed" % prefix)
+		)
+
+
+## The hole and the clip space sit 7 px above where they used to,
+## so the screw art sits higher over its hole.
+func _check_hole_positions() -> void:
+	for screw: FlatHeadScrew in [_screw_left, _screw_right]:
+		var hole := screw.get_node("Hole") as Node2D
+		_expect(
+			hole.position.is_equal_approx(Vector2(0.0, -1.0)),
+			"%s: the hole sits at (0, -1), got %s"
+			% [screw.name, hole.position],
+		)
+		var clip_position := (screw.clip_space as Node2D).position
+		_expect(
+			clip_position.is_equal_approx(Vector2(0.0, -40.2)),
+			"%s: the clip space sits at (0, -40.2), got %s"
+			% [screw.name, clip_position],
 		)
 
 
