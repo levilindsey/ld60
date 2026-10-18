@@ -330,8 +330,24 @@ func _check_fetch_hints() -> void:
 
 func _check_install_hints() -> void:
 	_expect(
-		_tracker.get_current_step().kind
-		== RepairStep.Kind.INSTALL_PART,
+		await _wait_until(
+			func() -> bool:
+				return is_instance_valid(
+					_level.get_loose_part_of_type(
+						_socket.accepted_part,
+					),
+				),
+		),
+		"the fitting part comes to rest loose on the bench",
+	)
+	_expect(
+		await _wait_until(
+			func() -> bool:
+				return (
+					_tracker.get_current_step().kind
+					== RepairStep.Kind.INSTALL_PART
+				),
+		),
 		"a loose fitting part moves to the fitting step",
 	)
 	var part := _level.get_loose_part_of_type(_socket.accepted_part)

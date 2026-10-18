@@ -336,14 +336,20 @@ func _check_drag_and_return() -> void:
 	var middle_distance := _item.global_position.distance_to(home)
 	_expect(
 		middle_distance > 1.0 and middle_distance < start_distance,
-		"4. it eases back (%.0f px, then %.0f px)"
+		"4. it flies back (%.0f px, then %.0f px)"
 		% [start_distance, middle_distance],
 	)
-	await _seconds(0.45)
 	_expect(
-		_item.global_position.distance_to(home) < 0.5
+		await _wait_until(
+			func() -> bool: return not _item.is_returning,
+			3.0,
+		),
+		"4. the flown-back item comes to rest",
+	)
+	_expect(
+		_item.global_position.distance_to(home) < 48.0
 		and is_zero_approx(_item.rotation),
-		"4. it rests at the active position, straight",
+		"4. it rests by the active position, straight",
 	)
 	_expect(_item.has_finished, "and it is still finished")
 

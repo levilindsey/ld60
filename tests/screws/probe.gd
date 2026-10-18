@@ -21,12 +21,13 @@ const _SIMULATED_SCREWS := 100000
 const _SIMULATED_MAX_TWISTS := 1000
 const _DRIFT_TABLE_SEED := 6060
 ## flathead.md "Tuning": slip_bias, the median twists to unseat, the
-## percent that unseat on twist 2, the percent that unseat within 4.
+## percent that unseat on twist 1, the percent that unseat on twist 2,
+## the percent that unseat within 4.
 const _BIAS_TABLE := [
-	[0.5, 3, 49.9, 76.7],
-	[0.8, 2, 68.1, 90.1],
-	[0.9, 2, 82.0, 96.6],
-	[1.0, 2, 100.0, 100.0],
+	[0.5, 2, 24.9, 37.8, 87.1],
+	[0.8, 2, 25.1, 50.9, 94.7],
+	[0.9, 2, 25.1, 61.4, 98.3],
+	[1.0, 2, 25.0, 75.0, 100.0],
 ]
 ## The table rounds to a tenth of a percent, and the probe samples fewer
 ## screws than the table did.
@@ -182,6 +183,7 @@ func _check_drift_table() -> void:
 			if total * 2 >= _SIMULATED_SCREWS:
 				median = twist
 				break
+		var on_twist_1 := 100.0 * counts[1] / _SIMULATED_SCREWS
 		var on_twist_2 := 100.0 * counts[2] / _SIMULATED_SCREWS
 		var within_4 := (
 			100.0
@@ -189,26 +191,28 @@ func _check_drift_table() -> void:
 			/ _SIMULATED_SCREWS
 		)
 		var want_median: int = row[1]
-		var want_on_twist_2: float = row[2]
-		var want_within_4: float = row[3]
+		var want_on_twist_1: float = row[2]
+		var want_on_twist_2: float = row[3]
+		var want_within_4: float = row[4]
 		_expect(
-			counts[1] == 0
-			and median == want_median
+			median == want_median
+			and absf(on_twist_1 - want_on_twist_1) < _TABLE_TOLERANCE_PERCENT
 			and absf(on_twist_2 - want_on_twist_2) < _TABLE_TOLERANCE_PERCENT
 			and absf(within_4 - want_within_4) < _TABLE_TOLERANCE_PERCENT,
 			(
 				"flathead.md table, slip_bias %.1f: median %d (want %d), on"
-				+ " twist 2 %.1f%% (want %.1f), within 4 %.1f%% (want %.1f),"
-				+ " on twist 1 %d"
+				+ " twist 1 %.1f%% (want %.1f), on twist 2 %.1f%% (want %.1f),"
+				+ " within 4 %.1f%% (want %.1f)"
 			) % [
 				bias,
 				median,
 				want_median,
+				on_twist_1,
+				want_on_twist_1,
 				on_twist_2,
 				want_on_twist_2,
 				within_4,
 				want_within_4,
-				counts[1],
 			],
 		)
 	print(

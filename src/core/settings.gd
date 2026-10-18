@@ -227,8 +227,11 @@ enum PhysicsLayer {
 @export var phillips_meter_start := 1.0
 @export var phillips_install_meter_start := 1.0
 ## Grip level where the gauge face starts reddening. Above this
-## the face stays plain; at empty it is fully red.
-@export var phillips_failure_tint_start := 0.4
+## the face stays plain.
+@export var phillips_failure_tint_start := 0.55
+## Grip level where the gauge face reaches its fullest red, a
+## little before the meter empties and the bit slips out.
+@export var phillips_failure_tint_full := 0.15
 ## Seconds input pauses after a cam-out.
 @export var phillips_cam_out_pause_sec := 0.5
 ## Grace seconds at the start, while the gauge scales in.
@@ -351,10 +354,10 @@ enum PhysicsLayer {
 ## Seconds before a twist that the creak and the handle squash warn of it.
 @export var flathead_telegraph_sec := 0.15
 ## Each twist drifts the tip by a random fraction of the screw's seat
-## tolerance in this range. Keep the most under 1, so one twist can never
-## unseat the tip.
-@export var flathead_slip_min := 0.5
-@export var flathead_slip_max := 0.95
+## tolerance in this range. The most is over 1, so one twist can unseat
+## a tip the player does not correct during the twist.
+@export var flathead_slip_min := 0.85
+@export var flathead_slip_max := 1.05
 ## A touch drag moves the flathead's tip this many times as far as the
 ## finger (docs/design/flathead.md "Correcting"). Mouse motion is 1 to 1.
 @export var flathead_touch_gain := 2.0
@@ -394,6 +397,18 @@ enum PhysicsLayer {
 ## per pixel per second of skid, divided by the radius. A
 ## smaller piece spins faster in its skid than a bigger one.
 @export var workable_spin_factor := 1.0
+## Smoothed cursor speed, in pixels per second, that a drag
+## must pass on release for the piece to be thrown with the
+## cursor's motion instead of falling or flicking in from
+## rest. The throw keeps the smoothed speed, capped at the
+## most below.
+@export var workable_throw_min_speed_px_per_sec := 500.0
+@export var workable_throw_max_speed_px_per_sec := 1500.0
+## Seconds the cursor's speed is smoothed over before a
+## release reads it. A single jump of the pointer, the way a
+## test pushes one, never reads as a throw: the speed has to
+## hold up across the frames before the release.
+@export var workable_cursor_smoothing_sec := 0.07
 @export_group("")
 
 @export_group("Screw rest")

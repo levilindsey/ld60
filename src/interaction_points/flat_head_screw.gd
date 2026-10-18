@@ -78,7 +78,8 @@ func _ready() -> void:
 	super._ready()
 	seat_tolerance_px /= maxf(difficulty, 0.05)
 	G.check(is_instance_valid(sparks))
-	G.check(G.settings.flathead_slip_max < 1.0)
+	G.check(G.settings.flathead_slip_min > 0.0)
+	G.check(G.settings.flathead_slip_max > 1.0)
 	G.check(G.settings.flathead_touch_gain >= 1.0)
 	_random.randomize()
 	_drift_sign = 1.0 if _random.randf() < 0.5 else -1.0

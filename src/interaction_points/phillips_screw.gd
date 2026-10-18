@@ -128,13 +128,20 @@ func has_started_dragging() -> bool:
 
 
 ## How far into the gauge's low-end warning the grip is, from
-## 0 (above the warning level) to 1 (empty).
+## 0 (above the warning level) to 1 (at the full-warning level,
+## reached a little before the meter empties).
 func get_failure_share() -> float:
 	var warning_start := maxf(
 		G.settings.phillips_failure_tint_start, 0.01
 	)
+	var warning_full := clampf(
+		G.settings.phillips_failure_tint_full, 0.0, warning_start
+	)
 	return clampf(
-		(warning_start - grip_meter) / warning_start, 0.0, 1.0
+		(warning_start - grip_meter)
+		/ maxf(warning_start - warning_full, 0.01),
+		0.0,
+		1.0,
 	)
 
 

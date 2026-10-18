@@ -55,6 +55,7 @@ var state := State.CLOSED
 var drawer_index := -1
 
 var _open_fraction := 0.0
+var _is_clipped := true
 var _hint_hint: OutlineHint
 var _is_hint_active := false
 var _tween: Tween
@@ -72,6 +73,7 @@ func _ready() -> void:
 ## Shows the clipped sprite group in the slot, or the unclipped
 ## duplicate once the drawer is out and on its way to the center.
 func _set_clipped(is_clipped: bool) -> void:
+	_is_clipped = is_clipped
 	(%ClippingSpace as CanvasItem).visible = is_clipped
 	(%VisualUnclipped as CanvasItem).visible = not is_clipped
 
@@ -205,14 +207,27 @@ func open_drawer() -> void:
 
 
 ## Hides the stored parts, turns back and slides to the slot
-## together, swaps to the clipped group, then slides home.
+## together, swaps to the clipped group, then slides home. Called
+## while the drawer is still opening, it reverses the opening
+## from wherever it has got to.
 func close_drawer() -> void:
-	if state != State.OPEN:
+	if state != State.OPEN and state != State.OPENING:
 		return
 	state = State.CLOSING
 	var generation := _generation
 	close_started.emit()
 	_kill_tween()
+	if _is_clipped:
+		# Still in the slot: the opening never got the drawer
+		# out. Just slide it home.
+		await _tween_open_fraction(
+			0.0, G.settings.drawer_slide_sec
+		).finished
+		if generation != _generation:
+			return
+		state = State.CLOSED
+		closed.emit()
+		return
 	_tween = create_tween()
 	_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	_tween.set_parallel()

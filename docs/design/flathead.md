@@ -25,7 +25,7 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
   twist, so it is never sudden:
 
   ```
-  drift = sign * randf_range(0.5, 0.95) * seat_tolerance_px
+  drift = sign * randf_range(0.85, 1.05) * seat_tolerance_px
   ```
 
   - Each screw picks its drift direction at random. `sign` follows
@@ -33,10 +33,12 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
     the other way.
   - `seat_tolerance_px` is how far the tip can move from the center
     before it leaves the slot, about half the slot's length.
-- **One twist can never unseat it.** The largest drift is 0.95 of the
-  tolerance, so it takes at least two twists the same way. A player who
-  never corrects should still usually lose the tip before the screw is
-  out, which is why drifts mostly keep going one way ("Tuning").
+- **One twist can unseat it.** The largest drift is 1.05 of the
+  tolerance, so about a quarter of twists cross the end of the slot on
+  their own. Recentering in the pause is not enough: the player has to
+  correct during the twist too. A player who never corrects should
+  still usually lose the tip before the screw is out, which is why
+  drifts mostly keep going one way ("Tuning").
 - **Correcting:** mouse motion along the slot moves the tip,
   `offset += event.relative.dot(slot_axis)`. At rest (the pause) it
   stops at the slot's ends (`-seat_tolerance_px` to
@@ -96,7 +98,7 @@ change: reset the twist count on unseat. LX6 kept the default.
 | `twist_angle_deg` | 90 | settings |
 | `pause_sec` | 0.25 | settings |
 | `telegraph_sec` | 0.15 | settings |
-| `slip_min`, `slip_max` | 0.5, 0.95 (keep `slip_max` under 1) | settings |
+| `slip_min`, `slip_max` | 0.85, 1.05 (`slip_max` over 1, so one twist can unseat) | settings |
 | `flathead_touch_gain` | 2.0 | settings, "Flathead" group |
 | `seat_tolerance_px` | 12 | per screw |
 | `slip_bias` | 0.9 | per screw |
@@ -110,15 +112,16 @@ change: reset the twist count on unseat. LX6 kept the default.
 What `slip_bias` does to a player who never corrects, from a million
 simulated screws using the drift formula above:
 
-| `slip_bias` | Median twists to unseat | Unseats on twist 2 | Unseats within 4 twists |
-|---|---|---|---|
-| 0.5 | 3 | 49.9% | 76.7% |
-| 0.8 | 2 | 68.1% | 90.1% |
-| 0.9 | 2 | 82.0% | 96.6% |
-| 1.0 | 2 | 100% | 100% |
+| `slip_bias` | Median twists to unseat | Unseats on twist 1 | Unseats on twist 2 | Unseats within 4 twists |
+|---|---|---|---|---|
+| 0.5 | 2 | 24.9% | 37.8% | 87.1% |
+| 0.8 | 2 | 25.1% | 50.9% | 94.7% |
+| 0.9 | 2 | 25.1% | 61.4% | 98.3% |
+| 1.0 | 2 | 25.0% | 75.0% | 100% |
 
-At 0.5 three of every four 4-twist screws still unseat under an idle player, so
-the default is 0.9, where nineteen in twenty do. Use 1.0 on the pet egg (the
+At 0.5 about seven of every eight 4-twist screws still unseat under an idle player, so
+the default is 0.9, where nearly all do. The twist-1 share is the same
+at every bias: it only depends on how much of the drift range passes 1. Use 1.0 on the pet egg (the
 tutorial), where one steady direction makes the lesson clear. For a
 screw that should change direction more often, lower `slip_bias` and
 raise `twists_needed`.

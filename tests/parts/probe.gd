@@ -1,7 +1,8 @@
 extends "res://tests/probe_base.gd"
 ## The diegetic parts drawers. Boots the game and plays the swap
 ## loop with pushed presses and drags: the drawers are stocked for
-## the item, an outside press closes an open drawer, the broken
+## the item, an outside press closes an open drawer, pressing
+## another drawer switches to it (even mid-opening), the broken
 ## gear wiggles out, a part dragged out of a drawer shuts it behind
 ## itself, the wrong part will not fit, the right one will, a part
 ## dragged back over a drawer is put away, and a part left out is
@@ -70,6 +71,7 @@ func _run() -> void:
 		return
 
 	await _check_outside_press_closes()
+	await _check_drawer_switch()
 	await _check_wiggle_out()
 	await _check_grab_right_part()
 	await _check_right_part_fits()
@@ -118,10 +120,10 @@ func _drag_cover_off() -> void:
 func _check_outside_press_closes() -> void:
 	var drawer := _level.get_drawers()[0]
 	var clipping_space := drawer.get_node(
-		"Mover/Scaler/ClippingSpace"
+		"Mover/Scaler/Offset/ClippingSpace"
 	) as CanvasItem
 	var unclipped := drawer.get_node(
-		"Mover/Scaler/VisualUnclipped"
+		"Mover/Scaler/Offset/VisualUnclipped"
 	) as CanvasItem
 	_expect(
 		clipping_space.visible and not unclipped.visible,
@@ -189,6 +191,67 @@ func _check_outside_press_closes() -> void:
 	)
 	for part in _level.get_parts_in_drawer(drawer):
 		_expect(not part.visible, "a closed drawer hides its parts")
+
+
+## Pressing another shut drawer while one is open shuts the open
+## one and opens the pressed one. The same switch works while the
+## first drawer is still opening: it reverses shut first.
+func _check_drawer_switch() -> void:
+	var drawers := _level.get_drawers()
+	var first := drawers[0]
+	var second := drawers[1]
+	var third := drawers[2]
+	await _open_drawer(first)
+	await _press_at(second.global_position)
+	_expect(
+		await _wait_until(
+			func() -> bool: return first.state == Drawer.State.CLOSED
+		),
+		"pressing another drawer shuts the open one",
+	)
+	_expect(
+		await _wait_until(
+			func() -> bool: return second.state == Drawer.State.OPEN
+		),
+		"the pressed drawer opens in its place",
+	)
+	for part in _level.get_parts_in_drawer(second):
+		_expect(part.visible, "the switched-to drawer shows its parts")
+	await _press_at(Vector2(460.0, 290.0))
+	_expect(
+		await _wait_until(
+			func() -> bool: return second.state == Drawer.State.CLOSED
+		),
+		"the switched drawer still closes on an outside press",
+	)
+	await _press_at(first.global_position)
+	_expect(
+		await _wait_until(
+			func() -> bool: return first.state == Drawer.State.OPENING,
+			30,
+		),
+		"the first drawer starts opening again",
+	)
+	await _press_at(third.global_position)
+	_expect(
+		await _wait_until(
+			func() -> bool: return first.state == Drawer.State.CLOSED
+		),
+		"pressing a third drawer reverses the opening one shut",
+	)
+	_expect(
+		await _wait_until(
+			func() -> bool: return third.state == Drawer.State.OPEN
+		),
+		"the third drawer opens after the reversal",
+	)
+	await _press_at(Vector2(460.0, 290.0))
+	_expect(
+		await _wait_until(
+			func() -> bool: return third.state == Drawer.State.CLOSED
+		),
+		"the last drawer closes on an outside press",
+	)
 
 
 func _check_wiggle_out() -> void:
@@ -266,6 +329,10 @@ func _check_grab_right_part() -> void:
 		),
 		"taking a part out shuts the drawer behind it",
 	)
+	_expect(
+		await _wait_until(func() -> bool: return not part.is_returning),
+		"a part let go by the drawer comes to rest on the bench",
+	)
 	await _shot("3_part_out")
 
 
@@ -309,6 +376,10 @@ func _check_wrong_part() -> void:
 		),
 		"the decoy's drawer shut behind it",
 	)
+	_expect(
+		await _wait_until(func() -> bool: return not part.is_returning),
+		"the decoy dropped above the bench comes to rest inside it",
+	)
 	await _drag(part.global_position, _socket.global_position)
 	_expect(
 		_socket.mode == InteractionPoint.Mode.FINISHED,
@@ -346,6 +417,10 @@ func _check_cleanup() -> void:
 		"the cleanup part's drawer shut behind it",
 	)
 	_expect(not part.is_stored, "the cleanup part is out on the bench")
+	_expect(
+		await _wait_until(func() -> bool: return not part.is_returning),
+		"the cleanup part comes to rest before it can be tidied",
+	)
 	var shadow: DropShadow = null
 	for sibling in part.get_parent().get_children():
 		if sibling is DropShadow and (sibling as DropShadow)._host == part:
@@ -415,9 +490,10 @@ func _find_loose_part(part_type: Part.Type) -> Part:
 
 func _find_loose_position(part_type: Part.Type) -> Vector2:
 	# The level only answers part lookups by position, so scan the
-	# bench grid for the loose part of this kind.
-	for x in range(-600, 601, 20):
-		for y in range(-80, 341, 20):
+	# view grid for the loose part of this kind. A part let go in
+	# the open drawer can rest above the bench, so scan past it.
+	for x in range(-620, 621, 20):
+		for y in range(-340, 341, 20):
 			var part := _level.get_loose_part_at(
 				Vector2(float(x), float(y))
 			)
