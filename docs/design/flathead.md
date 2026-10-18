@@ -60,8 +60,8 @@ change: reset the twist count on unseat. LX6 kept the default.
 - **Danger:** as `abs(offset)` nears the tolerance, a scraping sound
   rises in pitch and the tip shakes a little.
 - **Turning:** a ratchet tick per twist, and the screw turns with the
-  tool. It rotates and never scales ([screws.md](screws.md)
-  "Removal").
+  tool. It rotates and never scales, and it slides up the screen as it
+  turns out ([screws.md](screws.md) "Removal").
 - **Unseat:** a skid sound, sparks at the tip, and the tool hops.
 - **Done:** a pop as the screw comes out.
 
@@ -93,6 +93,7 @@ change: reset the twist count on unseat. LX6 kept the default.
 | `slip_bias` | 0.9 | per screw |
 | `twists_needed` | 4 | per screw |
 | `install_twists` | 2 | per screw |
+| `screw_slide_px` | 6 | settings, "Screw slide" group |
 
 What `slip_bias` does to a player who never corrects, from a million
 simulated screws using the drift formula above:

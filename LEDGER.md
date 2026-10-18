@@ -18,17 +18,16 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
 
-- **LX53** · Screws slide up the screen as they turn out and back down as
-  they turn in, eased with each twist (Levi, 2026-10-17). In the base
-  `Screw` as a 0-to-1 fraction, the distance a setting (6 px).
-  - owner: claude agent `screw-slide` (Sonnet) of session 194d3b69
-    (Levi), since 2026-10-17, launched after 2bfe51e
-  - branch: `screw-slide`, worktree
-    `.claude/worktrees/agent-a87c69930ac49f448`; last commit: none yet
-  - evidence: new checks in `tests/screws/probe.gd` on that branch
-  - next: the agent builds and tests it, then the coordinator merges it
-  - brief: this entry; no scaling, nothing slides in the pause, an
-    unseat keeps the height
+- **LX54** · Screws pull out to a rest spot on the bench after the last
+  twist; a press brings one back to sink into its hole before the install
+  twists (Levi's `RemoveScrew` and clip space, 4e44a86).
+  - owner: claude 194d3b69 (coordinator), agent `screw-pullout`
+  - branch: `lx54-pullout`, worktree
+    `.claude/worktrees/agent-a890b2f6c313d03a6`; last commit: `aff4ab4`
+    (WIP, unpushed)
+  - evidence: `.claude/probes/LX54/` (frames), new checks in `tests/screws/`
+  - next: the agent finishes the probes and the new checks, then reports
+  - brief: `docs/design/screw_pullout.md`
 
 ## Next
 
@@ -41,8 +40,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   its tilt, the drag cursor shown while an item is held, the ticket's
   look, the outbox at the left edge. From m1-screws: correcting the tip
   with a mouse and with a finger, and the touch drags on the Pixel
-  (LX47). The sounds wait for LX25 (no streams yet), the screw art for
-  LX24.
+  (LX47). From LX53: the slide's size (`screw_slide_px`, 6 px), and
+  pressing a raised screw, whose hit shape moves up with it. The sounds
+  wait for LX25 (no streams yet), the screw art for LX24.
 - **LX14** · Canned air: spray cone, dust clumps, fans
   (`docs/design/canned_air.md`).
 - **LX15** · Parts bin and part swap: hotspots, sockets, wiggle-out
@@ -50,12 +50,16 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 - **LX16** · First item end to end: the virtual pet egg
   (`docs/design/items.md`). It replaces the three test items in
   `settings.tres` `item_queue`.
-- **LX17** · Phillips pressure gauge (`docs/design/phillips.md`).
+- **LX17** · Phillips pressure gauge (`docs/design/phillips.md`). Feed
+  `Screw.slide` from its turn like the flathead, generalize
+  `tests/screws/slide_recorder.gd` (typed to `FlatHeadScrew`), and put
+  new checks in their own script: `tests/screws/probe.gd` is 933 lines.
 - **LX18** · Hammer: wind-up ring, strength bands, jog, realign, reseat
   (`docs/design/hammer.md`).
 - **LX19** · Pliers for stripped screws (`docs/design/pliers.md`). They
   replace m1-screws' stand-in pry: a pried screw comes back as new, and
-  one that strips going in is pried home with `Screw.install()`.
+  one that strips going in is pried home with `Screw.install()`. The
+  stand-in also snaps the rest of the slide in one frame (LX53).
 - **LX20** · Rag and solvent, sensitive surfaces
   (`docs/design/solvent.md`). Smears pass their surface as
   `RepairQuality.add_defect()`'s `source`, so a ruined smear replaces
@@ -91,9 +95,11 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   web build (`assets/images/`).
 - **LX37** · 2b3fa3a committed Krita and PNG backups (`*.kra~`,
   `radio.png~`) and a 69 MB `.kra` (GitHub warns over 50 MB and
-  rejects over 100 MB). Levi: leave them for now (2026-10-17). cb47839
-  added a 20 MB `window.kra-autosave.kra`; ignoring `*~` and
-  `*autosave*` in `.gitignore` would stop new ones.
+  rejects over 100 MB). Levi: leave them for now (2026-10-17). Since
+  then: a 20 MB `window.kra-autosave.kra` (cb47839, deleted in 2d71113)
+  a 9.6 MB `room!!!!!!.png5857331650.tmp` (2d71113), and
+  `screwwwzzzzzzflat.png~` (4e44a86). Ignoring `*~`,
+  `*autosave*` and `*.tmp` in `.gitignore` would stop new ones.
 - **LX36** · Decals have no cap per part, so repeated unseats pile up,
   and a part that draws nothing (a plain `Node2D`) shows its decals
   unclipped, with no warning (`src/decals/decal_spawner.gd`).
@@ -148,6 +154,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX53** · Screws slide up the screen as they turn out and back down as
+  they turn in (`Screw.slide`, `screw_slide_px`). Done in 3c4522f to
+  4deac21 (2026-10-17).
 - **LX51** · The screws test checks the driver's "twisting" frames instead
   of its turn (d0f4255). Done in 31153a3 (2026-10-17).
 - **LX42** · AI workflow stage B: `tests/` and `tests/run.ps1`, the `src/`
