@@ -19,9 +19,6 @@ const _THROW_SUSTAIN_FRAMES := 3
 ## shape changes. Godot calls it InputEvent::DEVICE_ID_INTERNAL but
 ## doesn't expose it to scripts.
 const _DEVICE_ID_INTERNAL := -2
-## How long a drawer switch waits, in physics frames, for the
-## open drawer to shut before it opens the pressed one anyway.
-const _DRAWER_SWITCH_TIMEOUT_FRAMES := 600
 
 ## The tool, part or item in the hand, or null.
 var held: Node2D
@@ -459,29 +456,16 @@ func _press_drawer_modal(global_point: Vector2) -> bool:
 				return true
 			held_tool.put_away()
 		G.audio.play_sound(&"whoosh")
-		_switch_drawer(drawer, target)
+		# Both animate at once: the opener's slide out of its
+		# slot staggers it past the closer's trip home, so the
+		# two never meaningfully cross in the center.
+		drawer.close_drawer()
+		target.open_drawer()
 		return true
 	if drawer.has_global_point(global_point):
 		return true
 	drawer.close_drawer()
 	return true
-
-
-## Shuts the open drawer and opens another in its place, one
-## after the other so the two never cross in the center.
-func _switch_drawer(current: Drawer, target: Drawer) -> void:
-	current.close_drawer()
-	# A drawer snapped shut by a restock also counts as shut, so
-	# wait on the state, not on the close finishing.
-	var frames := 0
-	while (
-		current.state != Drawer.State.CLOSED
-		and frames < _DRAWER_SWITCH_TIMEOUT_FRAMES
-	):
-		await get_tree().physics_frame
-		frames += 1
-	if target.state == Drawer.State.CLOSED:
-		target.open_drawer()
 
 
 ## Over a part resting on the bench: start dragging it, empty

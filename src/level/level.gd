@@ -70,6 +70,10 @@ var _outbox_outline_hint: OutlineHint
 ## untyped so a freed part never lands in a typed variable.
 var _drawer_parts: Array = []
 
+## The fade tween currently running on each drawer's stored
+## parts, keyed by the drawer, so a new fade kills the old one.
+var _part_fade_tweens: Dictionary = {}
+
 ## Pieces on their way back to the workable area after a
 ## drop outside it, one dictionary per piece. See
 ## `start_bench_return()`. Untyped so a freed piece never
@@ -431,6 +435,10 @@ func get_part_of_type_in_drawer(
 func restock_parts(item: Repairable) -> void:
 	for drawer in get_drawers():
 		drawer.reset_closed()
+		var fade := _part_fade_tweens.get(drawer) as Tween
+		if is_instance_valid(fade):
+			fade.kill()
+	_part_fade_tweens.clear()
 	for entry: Variant in _drawer_parts:
 		if is_instance_valid(entry):
 			(entry as Part).queue_free()
@@ -1506,21 +1514,53 @@ func _on_item_departed(item: Repairable) -> void:
 
 
 ## A drawer finished opening in the center: its stored parts
-## appear at random spots inside it.
+## fade in at random spots inside it.
 func _on_drawer_opened(drawer: Drawer) -> void:
 	for part in get_parts_in_drawer(drawer):
 		part.global_position = (
 			drawer.get_random_interior_global_position()
 		)
 		part.z_index = 16
-		part.show()
+	_fade_drawer_parts(drawer, true)
 
 
-## A drawer started to close: its stored parts disappear before
+## A drawer started to close: its stored parts fade out before
 ## the wrapper slides back and the animation reverses.
 func _on_drawer_close_started(drawer: Drawer) -> void:
-	for part in get_parts_in_drawer(drawer):
-		part.hide()
+	_fade_drawer_parts(drawer, false)
+
+
+## Fades a drawer's stored parts in, or out and then hidden.
+## The fade that ends hidden restores full opacity, so a part
+## taken out or put away never keeps a leftover fade.
+func _fade_drawer_parts(drawer: Drawer, is_fading_in: bool) -> void:
+	var parts := get_parts_in_drawer(drawer)
+	var old := _part_fade_tweens.get(drawer) as Tween
+	if is_instance_valid(old):
+		old.kill()
+	var tween := create_tween()
+	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	tween.set_parallel()
+	_part_fade_tweens[drawer] = tween
+	for part in parts:
+		if is_fading_in:
+			part.modulate.a = 0.0
+			part.show()
+		tween.tween_property(
+			part,
+			"modulate:a",
+			1.0 if is_fading_in else 0.0,
+			G.settings.part_fade_sec,
+		)
+	if is_fading_in:
+		return
+	tween.chain().tween_callback(
+		func() -> void:
+			for part in parts:
+				if is_instance_valid(part):
+					part.hide()
+					part.modulate.a = 1.0
+	)
 
 
 func _on_defect_added(

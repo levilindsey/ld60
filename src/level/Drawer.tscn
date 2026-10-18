@@ -502,6 +502,9 @@ _data = {
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_60exv"]
 size = Vector2(1252.9995, 1098.9996)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_k3btg"]
+size = Vector2(1082.2218, 858.571)
+
 [node name="Drawer" type="Node2D" unique_id=601572013]
 script = ExtResource("1_xw6od")
 
@@ -553,7 +556,6 @@ texture = ExtResource("3_bcngq")
 
 [node name="VisualUnclipped" type="Node2D" parent="Mover/Scaler/Offset" unique_id=2100000005]
 unique_name_in_owner = true
-visible = false
 
 [node name="SidePivot" type="Node2D" parent="Mover/Scaler/Offset/VisualUnclipped" unique_id=-2094967176]
 position = Vector2(-121, 457.00003)
@@ -592,3 +594,15 @@ monitoring = false
 position = Vector2(3.500001, -0.5000133)
 scale = Vector2(1.0000002, 1.0000002)
 shape = SubResource("RectangleShape2D_60exv")
+
+[node name="ContentsArea" type="Area2D" parent="Mover/Scaler" unique_id=1161632034]
+unique_name_in_owner = true
+scale = Vector2(1.0000001, 1.0000001)
+collision_layer = 64
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Mover/Scaler/ContentsArea" unique_id=478425232]
+position = Vector2(-35.555534, -1030.7141)
+scale = Vector2(1.0000002, 1.0000002)
+shape = SubResource("RectangleShape2D_k3btg")

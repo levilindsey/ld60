@@ -153,6 +153,9 @@ enum PhysicsLayer {
 ## Seconds a returned part takes to rise over the drawer's top edge,
 ## and then to sink down into the drawer.
 @export var part_put_away_sec := 0.22
+## Seconds a drawer's stored parts take to fade in as it finishes
+## opening, and back out as it starts to close.
+@export var part_fade_sec := 0.25
 ## Wrong parts hidden alongside the parts an item needs, so the player
 ## has to pick the right one out of the drawers.
 @export var decoy_part_count := 2
