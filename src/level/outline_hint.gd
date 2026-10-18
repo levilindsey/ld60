@@ -27,6 +27,13 @@ var polygon := PackedVector2Array():
 		polygon = value
 		queue_redraw()
 
+## Scales the shared colors' alpha. Below 1 draws a fainter rim than
+## the usual hint (the tool holders use this).
+var alpha_scale := 1.0:
+	set(value):
+		alpha_scale = value
+		queue_redraw()
+
 var _is_active := false
 
 
@@ -146,7 +153,7 @@ func _draw() -> void:
 			color_outer,
 			pow(depth, gradient_power),
 		)
-		color.a *= strength
+		color.a *= strength * alpha_scale
 		if color.a <= 0.001:
 			continue
 		var scaled_points := _expanded_polygon(

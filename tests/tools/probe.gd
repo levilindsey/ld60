@@ -81,6 +81,16 @@ func _check_rag() -> void:
 	var rag_tool := await _grab(Tool.Type.RAG)
 	var rag := rag_tool as Rag
 	_expect(_hand.held == rag, "the hand holds the rag")
+	var rag_holder := G.level.get_tool_holder(Tool.Type.RAG)
+	_expect(
+		is_instance_valid(rag_holder) and rag_holder.is_outline_shown(),
+		"the rag holder outline shows while the rag is held",
+	)
+	_expect(
+		is_instance_valid(rag_holder)
+		and rag_holder.outline_polygon.size() >= 3,
+		"the rag holder carries an outline polygon",
+	)
 	_expect(
 		rag.held_sprite.visible and not rag.hanging_sprite.visible,
 		"held rag shows the bunched sprite",
@@ -120,9 +130,14 @@ func _check_rag() -> void:
 		"wiping a paper label costs a ruined smear",
 	)
 	await _press_at(G.level.get_tool_holder_position(Tool.Type.RAG))
+	await _physics_frames(2)
 	_expect(
 		rag.mode == Tool.Mode.STORED and rag.hanging_sprite.visible,
 		"stored rag shows the hanging sprite",
+	)
+	_expect(
+		is_instance_valid(rag_holder) and not rag_holder.is_outline_shown(),
+		"the rag holder outline hides once the rag is stored",
 	)
 
 
