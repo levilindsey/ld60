@@ -16,7 +16,7 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
 - **Start:** press with the tip over the screw. On touch, tap the screw
   ([tools.md](tools.md) "Routing a press"). The tool goes IN_USE.
 - **Twist cycle:** a twist turns the screw, and the tool with it, by
-  `twist_angle_deg` (90) over `twist_duration_sec` (1.0) with
+  `twist_angle_deg` (90) over `twist_duration_sec` (0.85) with
   ease-in-out. Then comes a pause of `pause_sec` (0.35) with no drift,
   which is the window to recenter.
 - **Drift:** the tip sits at `screw_center + slot_axis * offset`.
@@ -38,16 +38,17 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
   never corrects should still usually lose the tip before the screw is
   out, which is why drifts mostly keep going one way ("Tuning").
 - **Correcting:** mouse motion along the slot moves the tip,
-  `offset += event.relative.dot(slot_axis)`, stopped at the slot's
-  ends (`-seat_tolerance_px` to `seat_tolerance_px`). Motion across
-  the slot is ignored. On touch, the player drags a finger, and the
-  motion is multiplied by `flathead_touch_gain` (2.0), so a finger
-  travels half as far as the tip. The mouse stays 1 to 1 (LX47,
-  Levi 2026-10-17).
-- **Unseat:** only during a twist, when its drift pushes
-  `abs(offset) > seat_tolerance_px`, the tip skids out. The player's
-  own push stops at the end and can never skid it, in the pause or in
-  a twist (LX47, Levi 2026-10-17). The screw takes 1 damage, a skid
+  `offset += event.relative.dot(slot_axis)`. At rest (the pause) it
+  stops at the slot's ends (`-seat_tolerance_px` to
+  `seat_tolerance_px`). While the screw is turning it may be pushed
+  past the end. Motion across the slot is ignored. On touch, the
+  player drags a finger, and the motion is multiplied by
+  `flathead_touch_gain` (2.0), so a finger travels half as far as
+  the tip. The mouse stays 1 to 1 (LX47, Levi 2026-10-17).
+- **Unseat:** only during a twist, when the drift or the player's
+  push takes `abs(offset) > seat_tolerance_px`, the tip skids out.
+  At rest the player's push stops at the end and can never skid it
+  (LX47, Levi 2026-10-17). The screw takes 1 damage, a skid
   scratch decal appears where the tip left, and the tool returns to
   HELD, with the follow offset easing it back under the cursor.
   Twists done so far are kept. Press again to re-engage.

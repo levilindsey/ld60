@@ -496,7 +496,7 @@ func _check_never_correcting() -> void:
 		)
 	_expect(
 		decals.size() == decal_count + 1
-		and absf(decal_distance - 21.0) < 0.5,
+		and absf(decal_distance - (screw.seat_tolerance_px + 9.0)) < 0.5,
 		"a skid decal on the cover past the end of the slot (%d new, %.1f"
 		% [decals.size() - decal_count, decal_distance]
 		+ " px from the head)",
@@ -505,7 +505,8 @@ func _check_never_correcting() -> void:
 		screw.head.global_position
 	)
 	_expect(
-		screw.sparks.emitting and absf(sparks_distance - 12.0) < 0.5,
+		screw.sparks.emitting
+		and absf(sparks_distance - screw.seat_tolerance_px) < 0.5,
 		"sparks at the end of the slot (%.1f px from the head)"
 		% sparks_distance,
 	)

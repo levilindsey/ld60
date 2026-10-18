@@ -145,30 +145,30 @@ enum PhysicsLayer {
 @export_group("Phillips")
 ## Slowest circle speed that still turns the screw, in radians
 ## per second. About half a turn per second.
-@export var phillips_speed_min_rad_per_sec := 3.0
+@export var phillips_speed_min_rad_per_sec := 2.5
 ## Fastest circle speed that still turns the screw. Circling
 ## faster cams the bit out.
-@export var phillips_speed_max_rad_per_sec := 7.0
+@export var phillips_speed_max_rad_per_sec := 10.0
 ## The speed at the end of the gauge's sweep.
-@export var phillips_gauge_max_rad_per_sec := 10.0
+@export var phillips_gauge_max_rad_per_sec := 14.0
 ## Grip gained per second while the speed is in the band.
-@export var phillips_fill_rate := 0.25
+@export var phillips_fill_rate := 0.35
 ## Grip lost per second while the speed is out of the band.
-@export var phillips_drain_rate := 0.375
+@export var phillips_drain_rate := 0.28
 ## Grip a removal starts with, and an install starts with.
-@export var phillips_meter_start := 0.3
-@export var phillips_install_meter_start := 0.6
+@export var phillips_meter_start := 0.4
+@export var phillips_install_meter_start := 0.65
 ## Seconds input pauses after a cam-out.
 @export var phillips_cam_out_pause_sec := 0.5
 ## Grace seconds at the start, while the gauge scales in.
 @export var phillips_intro_sec := 0.33
 ## Seconds the speed needle smooths over.
-@export var phillips_speed_smoothing_sec := 0.35
+@export var phillips_speed_smoothing_sec := 0.5
 ## Seconds the grip swings between filling and draining over.
-@export var phillips_meter_smoothing_sec := 0.25
+@export var phillips_meter_smoothing_sec := 0.4
 ## How far past the band's edges the speed may stray, once in it, in
 ## radians per second.
-@export var phillips_band_grace_rad_per_sec := 1.0
+@export var phillips_band_grace_rad_per_sec := 0.8
 ## Pointer steps shorter than this don't count toward the turning.
 @export var phillips_min_segment_px := 4.0
 @export_group("")
@@ -259,7 +259,7 @@ enum PhysicsLayer {
 
 @export_group("Flathead")
 ## Seconds one twist takes to turn the screw (docs/design/flathead.md).
-@export var flathead_twist_duration_sec := 1.0
+@export var flathead_twist_duration_sec := 0.85
 ## Degrees one twist turns the screw and the driver while it comes out.
 @export var flathead_twist_angle_deg := 90.0
 ## Seconds between twists, with no drift. The window to recenter.
@@ -278,11 +278,10 @@ enum PhysicsLayer {
 
 @export_group("Screw rest")
 ## Where a pulled-out screw waits on the bench while its layer is off
-## (docs/design/screw_pullout.md). The first removed screw rests at the
-## first position, and each next one a step along the row. A full row
-## starts a new one a row step away.
-@export var screw_rest_first_position := Vector2(-440.0, 80.0)
-@export var screw_rest_step := Vector2(36.0, 0.0)
+## (docs/design/screw_pullout.md). The first removed screw rests at
+## the level's `%ScrewSetAsideSpot` marker, and each next one a step
+## along the row. A full row starts a new one a row step away.
+@export var screw_rest_step := Vector2(26.0, 0.0)
 @export var screw_rest_row_step := Vector2(0.0, 56.0)
 @export var screw_rest_row_size := 5
 ## Seconds a screw takes to slide from its hole to its rest spot, and back.

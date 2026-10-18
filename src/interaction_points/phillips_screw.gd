@@ -124,11 +124,13 @@ func _advance(delta: float) -> void:
 	_update_band()
 	# The grip swings between filling and draining over a few
 	# tenths of a second, so a brief stray costs almost nothing.
+	# Only the true band fills it. The sticky band above only
+	# keeps the screw turning through a stray.
 	var meter_blend := 1.0 - exp(
 		-delta / maxf(G.settings.phillips_meter_smoothing_sec, 0.01)
 	)
 	_range_share += (
-		(1.0 if _is_in_band else 0.0) - _range_share
+		(1.0 if _is_in_true_band() else 0.0) - _range_share
 	) * meter_blend
 	if never_drains:
 		grip_meter = minf(
@@ -192,6 +194,15 @@ func _update_circle_speed(delta: float) -> void:
 		-delta / maxf(G.settings.phillips_speed_smoothing_sec, 0.01)
 	)
 	pressure_rad_per_sec += (correct_rate - pressure_rad_per_sec) * blend
+
+
+## True while the speed sits inside the band's own edges.
+func _is_in_true_band() -> bool:
+	return (
+		pressure_rad_per_sec >= G.settings.phillips_speed_min_rad_per_sec
+		and pressure_rad_per_sec
+		<= G.settings.phillips_speed_max_rad_per_sec
+	)
 
 
 ## Enters the band at its edges and only leaves it a grace past

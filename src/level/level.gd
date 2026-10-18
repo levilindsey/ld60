@@ -241,10 +241,11 @@ func free_screw_rest_spot(screw: Screw) -> void:
 
 
 ## The world position of rest spot number `index`, counting from 0.
+## The row starts at the `%ScrewSetAsideSpot` marker.
 func get_screw_rest_position(index: int) -> Vector2:
 	var row_size := maxi(G.settings.screw_rest_row_size, 1)
 	return (
-		G.settings.screw_rest_first_position
+		(%ScrewSetAsideSpot as Node2D).global_position
 		+ G.settings.screw_rest_step * (index % row_size)
 		+ G.settings.screw_rest_row_step * floori(float(index) / row_size)
 	)

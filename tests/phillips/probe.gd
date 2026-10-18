@@ -92,7 +92,7 @@ func _check_cam_outs() -> void:
 		_left.mode == InteractionPoint.Mode.ACTIVE,
 		"the driver engages the left screw",
 	)
-	await _drag_circle(_left.global_position, 1.2, 1.6, -1.0)
+	await _drag_circle(_left.global_position, 1.2, 2.8, -1.0)
 	_expect(
 		_left.health == _left.max_health - 1,
 		"circling too slowly cams the bit out",
@@ -103,7 +103,7 @@ func _check_cam_outs() -> void:
 	)
 	await _seconds(0.7)
 	await _press_at(_left.global_position)
-	await _drag_circle(_left.global_position, 11.0, 1.6, -1.0)
+	await _drag_circle(_left.global_position, 16.0, 3.4, -1.0)
 	_expect(
 		_left.health == _left.max_health - 2,
 		"circling too fast cams the bit out",
