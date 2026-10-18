@@ -98,14 +98,12 @@ func close() -> void:
 	G.print("Closing instruction manual", ScaffolderLog.CATEGORY_INTERACTION)
 	_play_sound(&"pages_flip")
 	state = State.CLOSING
-	close_button.pop_out()
 	_turn_back_to_first_spread()
 
 
 func _on_lifted() -> void:
 	state = State.OPENING
 	%RightPage.visible = true
-	close_button.pop_in()
 	G.time.tween_property(
 		%Closed,
 		"scale:x",
@@ -137,9 +135,6 @@ func _on_left_page_unfolded() -> void:
 
 
 func _handle_press(event: InputEventMouseButton) -> bool:
-	if close_button.is_pressed_by(event):
-		close()
-		return true
 	match state:
 		State.CLOSED:
 			if not _is_on_warped_sprite(event):

@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://d0cwcbqrcvhhb" path="res://src/ui/ticket/ticket_card.gd" id="1_ticket"]
 [ext_resource type="FontFile" uid="uid://dpjyugfnnu6wc" path="res://assets/fonts/reenie_beanie/ReenieBeanie.ttf" id="4_handwriting"]
 [ext_resource type="Shader" uid="uid://thfeaa7qcy2v" path="res://assets/shaders/perspective_quad.gdshader" id="5_perspective"]
-[ext_resource type="PackedScene" path="res://src/props/prop_close_button.tscn" id="6_close"]
+
 [ext_resource type="Texture2D" uid="uid://ciwpguv1cbffl" path="res://assets/images/repairticket.png" id="7_paper"]
 
 [sub_resource type="Theme" id="Theme_paper"]
@@ -16,12 +16,12 @@ shader_parameter/top_right = Vector2(360, -300)
 shader_parameter/bottom_right = Vector2(360, 300)
 shader_parameter/bottom_left = Vector2(-360, 300)
 
-[node name="TicketCard" type="Node2D" unique_id=1676508802 node_paths=PackedStringArray("warped_sprite", "close_button", "shadow")]
+[node name="TicketCard" type="Node2D" unique_id=1676508802 node_paths=PackedStringArray("warped_sprite", "shadow")]
 visible = false
 z_index = 95
 script = ExtResource("1_ticket")
 warped_sprite = NodePath("Display")
-close_button = NodePath("CloseButton")
+
 shadow = NodePath("DisplayShadow")
 
 [node name="ContentViewport" type="SubViewport" parent="." unique_id=966013137]
@@ -89,5 +89,3 @@ unique_name_in_owner = true
 material = SubResource("ShaderMaterial_display")
 scale = Vector2(0.5, 0.5)
 
-[node name="CloseButton" parent="." unique_id=80817236 instance=ExtResource("6_close")]
-position = Vector2(186, -156)

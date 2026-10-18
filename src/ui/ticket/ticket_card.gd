@@ -4,8 +4,8 @@ extends LiftableProp
 ## item on the bench (docs/design/outbox.md).
 ##
 ## When an item arrives, the ticket flutters down onto the desk beside it.
-## Tapping it lifts it up to read. Its close button, or a tap anywhere
-## outside it, sets it back down.
+## Tapping it lifts it up to read. A tap anywhere outside it sets it
+## back down.
 ## The card's paper and text render into a SubViewport, so the whole card
 ## can be drawn in perspective while it rests.
 
@@ -54,7 +54,6 @@ func _ready() -> void:
 func show_item(complaint: String) -> void:
 	%ComplaintLabel.text = complaint
 	_stop_motion()
-	close_button.hide()
 	_is_leave_requested = false
 	modulate.a = 1.0
 	visible = true
@@ -90,10 +89,6 @@ func hide_card() -> void:
 
 
 func _handle_press(event: InputEventMouseButton) -> bool:
-	if close_button.is_pressed_by(event):
-		if state == State.OPEN:
-			_lower()
-		return true
 	if state == State.AWAY or state == State.LEAVING:
 		return false
 	if state == State.OPEN and not _is_on_warped_sprite(event):
@@ -128,13 +123,10 @@ func _on_lifted() -> void:
 		_lower()
 		return
 	state = State.OPEN
-	close_button.pop_in()
 
 
 func _lower() -> void:
 	state = State.LOWERING
-	if close_button.visible:
-		close_button.pop_out()
 	_play_sound(&"card_land")
 	_tween_lift(1.0, 0.0, _on_lowered)
 
