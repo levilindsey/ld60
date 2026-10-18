@@ -61,10 +61,12 @@ Earlier plans, kept for the record:
 ## Getting the old part out: wiggle
 
 - Press the old part with an empty hand and drag side to side. The
-  part rocks up to about 10 degrees with the drag.
+  part rocks up to about 10 degrees with the drag, shifts sideways
+  with the rock, and slides a tiny bit out with each counted swing
+  (up to 8 px in all). Letting go settles it back into place.
 - A swing counts when the drag reverses after moving at least 12 px.
-  After `swings_needed` (4 to 6) the part pops out and flies off into
-  the trash with a spin.
+  After `swings_needed` (6 by default) the part pops out and flies
+  off into the trash with a spin.
 - **Yank:** dragging further than 60 px from the press point pulls
   it out at once: a yanked part defect (-8). (A fast-drag yank, at
   about 2500 px/s, is not built yet.)

@@ -88,6 +88,8 @@ func _build_slot(part_type: Part.Type) -> Control:
 	slot.size = _SLOT_SIZE
 	slot.pivot_offset = _SLOT_SIZE * 0.5
 	slot.mouse_filter = Control.MOUSE_FILTER_STOP
+	# The pointing-hand shape shows the open-hand grab texture the
+	# hand registers for it (Hand._set_up_grab_cursor).
 	slot.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 	var background := ColorRect.new()

@@ -80,6 +80,17 @@ func _check_cancel() -> void:
 	)
 	await _seconds(0.6)
 	await _shot("2_menu")
+	var slots := _level.get_parts_menu().get_node("%Slots")
+	_expect(
+		slots.get_child_count() > 0
+		and (slots.get_child(0) as Control).mouse_default_cursor_shape
+		== Control.CURSOR_POINTING_HAND,
+		"the drawer part slots show the open hand",
+	)
+	_expect(
+		is_instance_valid(G.settings.grab_cursor_texture),
+		"the grab cursor texture is set",
+	)
 	await _press_at(Vector2(460.0, 290.0))
 	_expect(
 		await _wait_until(
@@ -91,8 +102,30 @@ func _check_cancel() -> void:
 
 
 func _check_wiggle_out() -> void:
+	await _move_to(_socket.global_position)
+	_expect_cursor(
+		Input.MOUSE_MODE_VISIBLE,
+		Input.CURSOR_POINTING_HAND,
+		"empty hand over the broken part to tug out",
+	)
+	var broken_part := _socket.get_node("BrokenPart") as Node2D
 	await _press_down(_socket.global_position)
-	for swing in 5:
+	await _move_to(_socket.global_position + Vector2(25.0, 0.0))
+	_expect(
+		absf(broken_part.rotation) > 0.01
+		and absf(broken_part.position.x) > 0.1,
+		"the broken part rocks and shifts with the drag",
+	)
+	await _move_to(_socket.global_position + Vector2(-25.0, 0.0))
+	_expect(
+		broken_part.position.y < -0.5,
+		"the broken part slides a tiny bit out per swing",
+	)
+	_expect(
+		_socket.has_broken_part,
+		"one swing does not free the broken part",
+	)
+	for swing in 6:
 		var offset := 25.0 if swing % 2 == 0 else -25.0
 		await _move_to(_socket.global_position + Vector2(offset, 0.0))
 	await _release_at(_socket.global_position)

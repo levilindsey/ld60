@@ -54,6 +54,7 @@ var _drag_previous_pointer := Vector2.ZERO
 func _ready() -> void:
 	pointer_screen_position = get_viewport().get_mouse_position()
 	%NopeIcon.visible = false
+	_set_up_grab_cursor()
 	_update_cursor()
 
 
@@ -391,8 +392,10 @@ func _track_pointer(event: InputEventMouse) -> void:
 	is_touch = event.device == InputEvent.DEVICE_ID_EMULATION
 
 
-## Arrow when empty, a grab hand when empty and over something it can
-## take, a drag hand while an item is held, hidden while a tool is held.
+## Arrow when empty, an open hand when empty and over something it
+## can grab, a drag hand while an item is held, hidden while a tool
+## is held. The open hand is the pointing-hand shape with the grab
+## texture from `_set_up_grab_cursor()` drawn in its place.
 func _update_cursor() -> void:
 	if not is_inside_tree() or not _is_level_running():
 		return
@@ -415,6 +418,22 @@ func _is_level_running() -> bool:
 	return is_instance_valid(G.level) and G.level.is_ancestor_of(self)
 
 
+## Godot has no open-hand shape. The pointing-hand shape stands in
+## for it, with this texture drawn in its place. The parts menu's
+## slots ask for the same shape, so they show the open hand too.
+func _set_up_grab_cursor() -> void:
+	if not is_instance_valid(G.settings):
+		return
+	var texture := G.settings.grab_cursor_texture
+	if not is_instance_valid(texture):
+		return
+	Input.set_custom_mouse_cursor(
+		texture,
+		Input.CURSOR_POINTING_HAND,
+		G.settings.grab_cursor_hotspot,
+	)
+
+
 func _apply_cursor(
 	to_mouse_mode: Input.MouseMode,
 	to_cursor_shape: Input.CursorShape,
@@ -429,7 +448,13 @@ func _apply_cursor(
 
 func _can_take(global_point: Vector2) -> bool:
 	if is_instance_valid(input_owner):
-		return false
+		# A broken part being wiggled out still shows the open hand.
+		# Every other running microgame takes the arrow instead.
+		var owner_socket := input_owner as PartSocket
+		return (
+			is_instance_valid(owner_socket)
+			and owner_socket.has_tuggable_part()
+		)
 	var screw := G.level.get_resting_screw_at(global_point)
 	if is_instance_valid(screw) and screw.can_come_back():
 		return true
@@ -438,6 +463,9 @@ func _can_take(global_point: Vector2) -> bool:
 	if is_instance_valid(_find_parts_bin(global_point)):
 		return true
 	if is_instance_valid(_find_rack_tool(global_point)):
+		return true
+	var socket := _find_socket(global_point)
+	if is_instance_valid(socket) and socket.has_tuggable_part():
 		return true
 	var item := _find_item(global_point)
 	return is_instance_valid(item) and item.has_finished
