@@ -105,7 +105,8 @@ that finishes it.
    (arrive, ticket, repair, outbox, receipt: `docs/design/outbox.md`).
 
 **Running a level directly** (F6 / "Run Current Scene"): `Level`
-sees no `G.main`, skips its own setup, and calls
+sees no `G.main`, frees its children before they enter the tree,
+skips its own setup, and calls
 `G.boot_from_level()`. That records the level's path in
 `G.level_scene_override_path` and swaps to `main.tscn`, which boots
 normally but skips TITLE and loads that level instead of

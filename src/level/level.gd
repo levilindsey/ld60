@@ -31,7 +31,12 @@ var _outbox_outline_hint: OutlineHint
 
 func _enter_tree() -> void:
 	if not is_instance_valid(G.main):
-		# This level scene was run directly. Boot the full game into it.
+		# This level scene was run directly. Drop its children before
+		# they enter the tree, since they expect a booted game. Then
+		# boot the full game into this level.
+		for child in get_children():
+			remove_child(child)
+			child.free()
 		G.boot_from_level(self)
 		return
 	G.level = self
