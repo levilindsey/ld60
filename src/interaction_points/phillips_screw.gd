@@ -1,14 +1,16 @@
 class_name PhillipsScrew
 extends Screw
 ## A Phillips screw (docs/design/phillips.md). The player drags
-## in circles around the head. Circling at a speed inside the
-## target band turns the screw. Too slow or too fast does not
-## turn it, and the grip drains. An empty grip cams the bit out
-## and the screw takes 1 damage.
+## in circles. The circle speed comes from how fast the drag's
+## direction turns, never from where the screw sits, so shaky
+## little circles count the same as neat big ones. Circling at a
+## speed inside the target band turns the screw. Too slow or too
+## fast does not turn it, and the grip drains. An empty grip
+## cams the bit out and the screw takes 1 damage.
 
 
-## Seconds of circling the speed is averaged over.
-const _SPEED_WINDOW_SEC := 0.3
+## Seconds of turning the speed is averaged over.
+const _TURN_WINDOW_SEC := 0.45
 
 ## Sparks at the head when the bit cams out.
 @export var sparks: CPUParticles2D
@@ -27,11 +29,15 @@ var pressure_rad_per_sec := 0.0
 var intro_left := 0.0
 
 var _turned_rad := 0.0
-var _pending_angle := 0.0
-var _last_pointer_angle := 0.0
-var _has_last_pointer_angle := false
+var _last_pointer_position := Vector2.ZERO
+var _has_last_pointer_position := false
+var _last_heading := 0.0
+var _has_last_heading := false
 var _active_sec := 0.0
-var _samples: Array[Vector2] = []
+var _turn_samples: Array[Vector2] = []
+var _frame_correct_turn := 0.0
+var _is_in_band := false
+var _range_share := 0.0
 var _is_cam_out_paused := false
 var _pause_tween: Tween
 
@@ -71,13 +77,11 @@ func set_install_mode() -> void:
 	pressure_rad_per_sec = 0.0
 
 
-## True while the circle speed sits in the target band.
+## True while the circle speed counts as in the target band.
+## The band is sticky: once in, the speed may stray a grace
+## past either end before it counts as out.
 func is_in_range() -> bool:
-	return (
-		pressure_rad_per_sec >= G.settings.phillips_speed_min_rad_per_sec
-		and pressure_rad_per_sec
-		<= G.settings.phillips_speed_max_rad_per_sec
-	)
+	return _is_in_band
 
 
 ## True while the gauge should draw itself.
@@ -85,38 +89,21 @@ func is_gauge_shown() -> bool:
 	return mode == Mode.ACTIVE
 
 
-## The hand calls this on every pointer motion while this screw
-## owns the pointer. Motion around the head builds the circle
-## speed. Motion in the wrong direction counts against it.
-func on_pointer_moved(_global_position: Vector2) -> void:
-	if not is_instance_valid(G.level):
-		return
-	var pointer := G.level.hand.pointer_position
-	var offset := pointer - head.global_position
-	if offset.length() < 4.0:
-		_has_last_pointer_angle = false
-		return
-	var angle := offset.angle()
-	if _has_last_pointer_angle:
-		_pending_angle += wrapf(
-			angle - _last_pointer_angle, -PI, PI
-		)
-	_last_pointer_angle = angle
-	_has_last_pointer_angle = true
-
-
 ## A finger can land anywhere, so circling counts from the press.
 func on_pointer_pressed(_global_position: Vector2) -> void:
-	_has_last_pointer_angle = false
+	_has_last_pointer_position = false
+	_has_last_heading = false
 
 
 func _start_microgame() -> void:
 	_turned_rad = 0.0
-	_pending_angle = 0.0
-	_samples.clear()
+	_turn_samples.clear()
 	_active_sec = 0.0
 	pressure_rad_per_sec = 0.0
-	_has_last_pointer_angle = false
+	_has_last_pointer_position = false
+	_has_last_heading = false
+	_is_in_band = false
+	_range_share = 0.0
 	intro_left = G.settings.phillips_intro_sec
 	grip_meter = (
 		G.settings.phillips_install_meter_start
@@ -128,40 +115,101 @@ func _start_microgame() -> void:
 
 func _advance(delta: float) -> void:
 	_active_sec += delta
-	# The dragged angle this frame, signed for the turning way.
-	var correct_angle := (
-		-_pending_angle if not is_install_mode else _pending_angle
-	)
-	_pending_angle = 0.0
-	_samples.append(Vector2(_active_sec, correct_angle))
-	while (
-		not _samples.is_empty()
-		and _samples[0].x < _active_sec - _SPEED_WINDOW_SEC
-	):
-		_samples.pop_front()
-	var window_angle := 0.0
-	for sample in _samples:
-		window_angle += sample.y
-	pressure_rad_per_sec = window_angle / _SPEED_WINDOW_SEC
+	_update_circle_speed(delta)
 
 	if intro_left > 0.0:
 		intro_left -= delta
 		return
 
-	if is_in_range():
+	_update_band()
+	# The grip swings between filling and draining over a few
+	# tenths of a second, so a brief stray costs almost nothing.
+	var meter_blend := 1.0 - exp(
+		-delta / maxf(G.settings.phillips_meter_smoothing_sec, 0.01)
+	)
+	_range_share += (
+		(1.0 if _is_in_band else 0.0) - _range_share
+	) * meter_blend
+	if never_drains:
 		grip_meter = minf(
-			grip_meter + G.settings.phillips_fill_rate * delta, 1.0
+			grip_meter
+			+ G.settings.phillips_fill_rate * _range_share * delta,
+			1.0,
 		)
-		if correct_angle > 0.0:
-			_turned_rad += correct_angle
-			_apply_turn()
-			if _turned_rad >= _get_total_rad():
-				_complete()
-				return
-	elif not never_drains:
-		grip_meter -= G.settings.phillips_drain_rate * delta
-		if grip_meter <= 0.0:
-			_cam_out()
+	else:
+		grip_meter += (
+			G.settings.phillips_fill_rate * _range_share
+			- G.settings.phillips_drain_rate * (1.0 - _range_share)
+		) * delta
+		grip_meter = clampf(grip_meter, 0.0, 1.0)
+
+	if _is_in_band and _frame_correct_turn > 0.0:
+		_turned_rad += _frame_correct_turn
+		_apply_turn()
+		if _turned_rad >= _get_total_rad():
+			_complete()
+			return
+	if not never_drains and grip_meter <= 0.0:
+		_cam_out()
+
+
+## Reads the drag's turning from recent pointer steps and
+## smooths it into `pressure_rad_per_sec`. A step only counts
+## once it is long enough to have a trustworthy direction.
+## Turning the wrong way reads as a negative speed.
+func _update_circle_speed(delta: float) -> void:
+	_frame_correct_turn = 0.0
+	if not is_instance_valid(G.level):
+		return
+	var pointer := G.level.hand.pointer_position
+	if not _has_last_pointer_position:
+		_last_pointer_position = pointer
+		_has_last_pointer_position = true
+	else:
+		var step := pointer - _last_pointer_position
+		if step.length() >= G.settings.phillips_min_segment_px:
+			var heading := step.angle()
+			if _has_last_heading:
+				var turn := wrapf(heading - _last_heading, -PI, PI)
+				_turn_samples.append(Vector2(_active_sec, turn))
+				_frame_correct_turn = (
+					turn if is_install_mode else -turn
+				)
+			_last_heading = heading
+			_has_last_heading = true
+			_last_pointer_position = pointer
+	while (
+		not _turn_samples.is_empty()
+		and _turn_samples[0].x < _active_sec - _TURN_WINDOW_SEC
+	):
+		_turn_samples.pop_front()
+	var window_turn := 0.0
+	for sample in _turn_samples:
+		window_turn += sample.y
+	var raw_rate := window_turn / _TURN_WINDOW_SEC
+	var correct_rate := raw_rate if is_install_mode else -raw_rate
+	var blend := 1.0 - exp(
+		-delta / maxf(G.settings.phillips_speed_smoothing_sec, 0.01)
+	)
+	pressure_rad_per_sec += (correct_rate - pressure_rad_per_sec) * blend
+
+
+## Enters the band at its edges and only leaves it a grace past
+## them, so hovering on an edge does not flicker.
+func _update_band() -> void:
+	var low := G.settings.phillips_speed_min_rad_per_sec
+	var high := G.settings.phillips_speed_max_rad_per_sec
+	if _is_in_band:
+		var grace := G.settings.phillips_band_grace_rad_per_sec
+		_is_in_band = (
+			pressure_rad_per_sec >= low - grace
+			and pressure_rad_per_sec <= high + grace
+		)
+	else:
+		_is_in_band = (
+			pressure_rad_per_sec >= low
+			and pressure_rad_per_sec <= high
+		)
 
 
 ## Turns the head and feeds the slide from how far it has turned.

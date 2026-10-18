@@ -17,18 +17,25 @@ out.
 
 ## Rules
 
-- **Circling:** the dragged angle around the head is averaged
-  over 0.3 s. That speed, in the turning direction, is the
-  pressure. Dragging the wrong way counts as no speed.
+- **Circling:** the speed is how fast the drag's direction
+  turns, read from recent pointer steps and never from where
+  the screw sits. Any circle, neat or shaky, anywhere, turns
+  its heading at the circle's own rate. Steps under 4 px do
+  not count. The turning is averaged over 0.45 s and then
+  smoothed over 0.35 s, so the needle has some weight.
+  Dragging the wrong way reads as a negative speed.
 - **The band:** 3 to 7 radians per second, about half a turn to
   one turn per second. Inside it the screw and the driver turn
   with the drag and the slide follows the turn, like the
-  flathead. Outside it nothing turns.
+  flathead. Outside it nothing turns. The band is sticky: once
+  in, the speed may stray 1 rad/s past either end before it
+  counts as out, so hovering on an edge does not flicker.
 - **Grip meter:** starts at 0.3. It fills at 0.25/s while the
-  speed is in the band and drains at 0.375/s while it is out. At
-  0 the bit cams out: the screw takes 1 damage, the driver hops,
-  input pauses for 0.5 s, the meter restarts at 0.3, and the
-  turns so far are kept.
+  speed is in the band and drains at 0.375/s while it is out,
+  swinging between the two over 0.25 s, so a brief stray costs
+  almost nothing. At 0 the bit cams out: the screw takes 1
+  damage, the driver hops, input pauses for 0.5 s, the meter
+  restarts at 0.3, and the turns so far are kept.
 - **Fair start:** nothing drains for the first 0.33 s while the
   gauge scales in.
 - **Done:** two full turns take the screw out. It then pulls
@@ -72,7 +79,11 @@ jumps, a seized one a band that sinks as it frees up.
 In the "Phillips" group in `settings.gd`: the band is 3 to 7
 radians per second, the gauge tops out at 10, fill is 0.25/s,
 drain is 0.375/s, the meter starts at 0.3 (0.6 to install), the
-cam-out pause is 0.5 s and the intro is 0.33 s. Turns out is
+cam-out pause is 0.5 s and the intro is 0.33 s. The smoothing
+is `phillips_speed_smoothing_sec` (0.35) for the needle and
+`phillips_meter_smoothing_sec` (0.25) for the grip, the sticky
+band grace is `phillips_band_grace_rad_per_sec` (1), and steps
+under `phillips_min_segment_px` (4) do not count. Turns out is
 `turns_needed` on the screw (2).
 
 ## Later

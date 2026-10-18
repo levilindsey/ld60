@@ -119,6 +119,15 @@ func _check_removals() -> void:
 		"a good circle speed removes the left screw",
 	)
 	await _press_at(_right.global_position)
+	# Circling around empty bench, away from the screw, still
+	# turns it. Only the drag's turning counts, not its center.
+	await _drag_circle(
+		_right.global_position + Vector2(70, 40), 5.0, 2.0, -1.0
+	)
+	_expect(
+		_right.slide > 0.25,
+		"circling off-center still turns the screw",
+	)
 	await _drag_circle(_right.global_position, 5.0, 4.0, -1.0)
 	_expect(
 		await _wait_for_travel(_right, Screw.Travel.RESTING),
