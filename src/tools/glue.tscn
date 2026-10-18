@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ccdw1u28lthc5"]
 
 [ext_resource type="Script" uid="uid://dq2batu75vvva" path="res://src/tools/glue.gd" id="1_glue"]
-[ext_resource type="Texture2D" uid="uid://762ryxytnd5" path="res://assets/images/glue_bottle_placeholder.png" id="2_bottle"]
+[ext_resource type="Texture2D" uid="uid://dlm5vy4hum1ny" path="res://assets/images/heyguysithinkifoundaglue.png" id="2_cd5ly"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
 radius = 40.0
@@ -30,7 +30,7 @@ scale = Vector2(0.99999994, 0.99999994)
 [node name="Sprite" type="Sprite2D" parent="Wrapper/Art" unique_id=1105925836]
 position = Vector2(-5.0000005, -75)
 scale = Vector2(0.5, 0.5)
-texture = ExtResource("2_bottle")
+texture = ExtResource("2_cd5ly")
 
 [node name="GrabArea" type="Area2D" parent="Wrapper" unique_id=324791401]
 collision_mask = 0
