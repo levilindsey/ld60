@@ -162,6 +162,15 @@ enum PhysicsLayer {
 @export var phillips_cam_out_pause_sec := 0.5
 ## Grace seconds at the start, while the gauge scales in.
 @export var phillips_intro_sec := 0.33
+## Seconds the speed needle smooths over.
+@export var phillips_speed_smoothing_sec := 0.35
+## Seconds the grip swings between filling and draining over.
+@export var phillips_meter_smoothing_sec := 0.25
+## How far past the band's edges the speed may stray, once in it, in
+## radians per second.
+@export var phillips_band_grace_rad_per_sec := 1.0
+## Pointer steps shorter than this don't count toward the turning.
+@export var phillips_min_segment_px := 4.0
 @export_group("")
 
 @export_group("Rag")
