@@ -23,10 +23,10 @@ const _DRIFT_TABLE_SEED := 6060
 ## flathead.md "Tuning": slip_bias, the median twists to unseat, the
 ## percent that unseat on twist 2, the percent that unseat within 4.
 const _BIAS_TABLE := [
-	[0.5, 4, 40.9, 66.3],
-	[0.8, 2, 55.7, 82.6],
-	[0.9, 2, 67.2, 92.1],
-	[1.0, 2, 82.2, 100.0],
+	[0.5, 3, 49.9, 76.7],
+	[0.8, 2, 68.1, 90.1],
+	[0.9, 2, 82.0, 96.6],
+	[1.0, 2, 100.0, 100.0],
 ]
 ## The table rounds to a tenth of a percent, and the probe samples fewer
 ## screws than the table did.
@@ -337,7 +337,7 @@ func _check_hole_positions() -> void:
 ## A player who corrects every frame: the tip stays seated and the screw
 ## comes out in its four twists.
 func _check_correcting() -> void:
-	await _press_at(_holder_position)
+	await _grab_tool(_tool)
 	await _seconds(0.4)
 	_expect(
 		_hand.held == _tool and _tool.mode == Tool.Mode.HELD,
@@ -349,7 +349,7 @@ func _check_correcting() -> void:
 	var tilt := deg_to_rad(_TILTED_SCREW_DEG)
 	_screw_left.rotation = tilt
 	_screw_left.make_upright()
-	await _press_at(_screw_left.global_position)
+	await _press_tool_at(_tool, _screw_left.global_position)
 	_expect(
 		_tool.mode == Tool.Mode.IN_USE
 		and _screw_left.mode == InteractionPoint.Mode.ACTIVE
@@ -453,7 +453,7 @@ func _check_never_correcting() -> void:
 	var points := _item.quality.get_defect_points_total()
 	_defects.clear()
 	_reset_sounds()
-	await _press_at(screw.global_position)
+	await _press_tool_at(_tool, screw.global_position)
 	_expect(
 		screw.mode == InteractionPoint.Mode.ACTIVE
 		and _tool.mode == Tool.Mode.IN_USE,
@@ -548,7 +548,7 @@ func _check_never_correcting() -> void:
 	_reset_sounds()
 	# A press at the top of the raised hit shape misses the shape at home.
 	var edge_point := _get_top_edge_point(screw)
-	await _press_at(edge_point)
+	await _press_tool_at(_tool, edge_point)
 	_expect(
 		screw.mode == InteractionPoint.Mode.ACTIVE
 		and _tool.mode == Tool.Mode.IN_USE,
@@ -651,7 +651,7 @@ func _start_fresh_level() -> bool:
 	if not _expect(await _wait_for_landing(), "the fresh item lands"):
 		return false
 	_collect_nodes()
-	await _press_at(_holder_position)
+	await _grab_tool(_tool)
 	await _seconds(0.4)
 	return _expect(_hand.held == _tool, "take the driver in the fresh level")
 
@@ -685,7 +685,7 @@ func _check_yanks() -> void:
 		):
 			return
 		screw._random.seed = drift_seed
-		await _press_at(screw.global_position)
+		await _press_tool_at(_tool, screw.global_position)
 		if yank == 0:
 			await _move_touch_to(
 				_hand.pointer_position
@@ -810,7 +810,7 @@ func _check_yanks() -> void:
 ## in the hand.
 func _check_stripped_press() -> void:
 	_reset_sounds()
-	await _press_at(_screw_left.global_position)
+	await _press_tool_at(_tool, _screw_left.global_position)
 	var nope_icon: Node2D = _level.get_node("%NopeIcon")
 	_expect(
 		_count("grind") == 1 and _count("clunk") == 1 and nope_icon.visible,
@@ -838,7 +838,7 @@ func _check_pry() -> void:
 		CONNECT_ONE_SHOT,
 	)
 	_pull_out.watch(_screw_left)
-	await _press_at(_screw_left.global_position)
+	await _press_tool_at(_tool, _screw_left.global_position)
 	_expect(
 		_screw_left.mode == InteractionPoint.Mode.ACTIVE
 		and _tool.mode == Tool.Mode.HELD
@@ -882,7 +882,7 @@ func _check_seized() -> void:
 	for attempt in 3:
 		_reset_sounds()
 		var points := _item.quality.get_defect_points_total()
-		await _press_at(screw.global_position)
+		await _press_tool_at(_tool, screw.global_position)
 		healths.append(screw.health)
 		point_steps.append(_item.quality.get_defect_points_total() - points)
 		is_each_grind = (
@@ -909,7 +909,7 @@ func _check_seized() -> void:
 		and not screw.rust_streak.visible,
 		"unseize() frees the screw and hides the rust",
 	)
-	await _press_at(screw.global_position)
+	await _press_tool_at(_tool, screw.global_position)
 	_expect(
 		screw.mode == InteractionPoint.Mode.ACTIVE
 		and _tool.mode == Tool.Mode.IN_USE,
@@ -966,7 +966,7 @@ func _put_cover_back() -> void:
 	# cover will not go back and the item cannot finish. The drawer
 	# flow itself is checked by tests/parts.
 	_finish_socket()
-	await _press_at(_holder_position)
+	await _put_tool_away(_tool)
 	await _press_at(_cover.global_position)
 	await _seconds(0.6)
 	_expect(
@@ -976,7 +976,7 @@ func _put_cover_back() -> void:
 		and _screw_right.can_come_back(),
 		"the cover goes back on, and its screws wait on the bench to come back",
 	)
-	await _press_at(_holder_position)
+	await _grab_tool(_tool)
 	await _seconds(0.4)
 	_expect(_hand.held == _tool, "take the driver again")
 	for screw: FlatHeadScrew in [_screw_left, _screw_right]:
@@ -1028,7 +1028,7 @@ func _drive_install(screw: FlatHeadScrew) -> void:
 		and rise > SlideRecorder.MIN_SLIDE_PX,
 		"%s comes back loose and raised (%.2f px up)" % [screw.name, rise],
 	)
-	await _press_at(_get_top_edge_point(screw))
+	await _press_tool_at(_tool, _get_top_edge_point(screw))
 	await _drive(screw, 10.0)
 	await _physics_frames(1)
 	_slide.check(_expect, "%s in" % screw.name, 1.0)

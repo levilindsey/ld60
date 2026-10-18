@@ -45,8 +45,18 @@ enum PhysicsLayer {
 ## pointing-hand shape wherever the hand offers a grab.
 @export var grab_cursor_texture: Texture2D
 ## Where the grab cursor's hot spot sits, in the resized
-## texture's pixels: the palm.
-@export var grab_cursor_hotspot := Vector2(27.0, 35.0)
+## texture's pixels. Halfway between the palm and where the
+## pointing hand's fingertip sits, so the open hand renders a
+## little down-right of the pointer, roughly where the pointing
+## hand's body is, while the palm stays near what it grabs.
+@export var grab_cursor_hotspot := Vector2(24.0, 20.0)
+## The grabbed hand shown while the hand holds something. This
+## texture replaces the drag shape, so holding never falls back
+## to the system drag cursor, and the cursor is never hidden.
+@export var grabbed_cursor_texture: Texture2D
+## Where the grabbed cursor's hot spot sits: cheated halfway
+## toward the pointing hand's fingertip, like the grab cursor.
+@export var grabbed_cursor_hotspot := Vector2(24.0, 20.0)
 ## Seconds for a held tool to ease into the pointer instead of jumping.
 @export var tool_follow_ease_sec := 0.2
 ## Seconds a tool shakes when a point doesn't accept it.
@@ -65,6 +75,9 @@ enum PhysicsLayer {
 @export var set_aside_scale := 0.8
 ## Offset between set-aside layers stacked on the spot.
 @export var set_aside_stack_offset := Vector2(10.0, -10.0)
+## A dragged layer dropped within this many world pixels of its home
+## tweens into its exact place on the item.
+@export var layer_seat_snap_px := 64.0
 ## Seconds and pixels of the shake when an unfinished item is pressed.
 @export var item_shake_sec := 0.3
 @export var item_shake_px := 4.0
@@ -73,12 +86,17 @@ enum PhysicsLayer {
 @export_group("")
 
 @export_group("Item flow")
-## Seconds an item takes to drop in from above and land.
-@export var item_arrival_sec := 0.6
+## Seconds an item takes to drop in from above, land and finish
+## bouncing.
+@export var item_arrival_sec := 0.9
+## How high an arriving item's first bounce goes. Each later bounce is
+## lower.
+@export var item_arrival_bounce_px := 60.0
 ## The most an arriving item is turned, in degrees. It straightens as it
 ## lands.
 @export var item_arrival_angle_max_deg := 8.0
-## The camera shake when an item lands.
+## The camera shake when an arriving item first hits the bench. Each
+## later bounce shakes less.
 @export var item_landing_shake_px := 7.0
 @export var item_landing_shake_sec := 0.15
 ## Seconds an item takes to ease back when it is dropped away from the
@@ -102,10 +120,46 @@ enum PhysicsLayer {
 ## item and the outbox. Sprite2D art gets this material. ColorRect and
 ## Polygon2D art gets the same rim drawn by OutlineHint instead.
 @export var outline_hint_material: ShaderMaterial
+## Opacity of the bench drop shadows (DropShadow). 0 turns them off.
+@export var drop_shadow_alpha := 0.45
 ## The burst of sparkles when an item is finished.
 @export var finish_sparkle_scene: PackedScene
 @export_group("")
 
+
+@export_group("Hints")
+## Seconds without a correct interaction on the current repair
+## step before the hint tracker outlines what to touch next. Any
+## correct interaction restarts the count. See RepairSequence.
+@export var hint_delay_sec := 7.0
+## Seconds without a correct interaction before the tracker also
+## outlines the stored tool the highlighted point needs, on top of
+## the point itself. Counted from the same last correct
+## interaction as `hint_delay_sec`, so it is the longer delay.
+@export var hint_tool_delay_sec := 16.0
+@export_group("")
+
+@export_group("Drawers")
+## Seconds an open drawer takes to slide to the center of the level,
+## and back to its slot. The turn to the top-down view takes the
+## same trip, so the two stay in step.
+@export var drawer_move_sec := 0.35
+## Seconds the drawer takes to slide out of its slot, before it
+## turns and travels. The same slide runs in reverse at the end of
+## a close, and out to the same point to take a part back.
+@export var drawer_slide_sec := 0.3
+## Seconds a drawer takes to open halfway to take a part back.
+@export var drawer_half_open_sec := 0.15
+## Seconds a returned part takes to rise over the drawer's top edge,
+## and then to sink down into the drawer.
+@export var part_put_away_sec := 0.22
+## Wrong parts hidden alongside the parts an item needs, so the player
+## has to pick the right one out of the drawers.
+@export var decoy_part_count := 2
+## How close a press may land to a loose part's center and still
+## grab it, in world pixels.
+@export var part_grab_radius_px := 30.0
+@export_group("")
 
 @export_group("Logs")
 ## Logs with these categories won't be shown.
@@ -167,20 +221,26 @@ enum PhysicsLayer {
 @export var phillips_fill_rate := 0.35
 ## Grip lost per second while the speed is out of the band.
 @export var phillips_drain_rate := 0.28
-## Grip a removal starts with, and an install starts with.
-@export var phillips_meter_start := 0.4
-@export var phillips_install_meter_start := 0.65
+## Grip a removal starts with, and an install starts with. It
+## starts full: the meter is only the time left before the bit
+## strips or slips out, never progress toward done.
+@export var phillips_meter_start := 1.0
+@export var phillips_install_meter_start := 1.0
+## Grip level where the gauge face starts reddening. Above this
+## the face stays plain; at empty it is fully red.
+@export var phillips_failure_tint_start := 0.4
 ## Seconds input pauses after a cam-out.
 @export var phillips_cam_out_pause_sec := 0.5
 ## Grace seconds at the start, while the gauge scales in.
 @export var phillips_intro_sec := 0.33
+## Dragging must add up to this much turning, in radians, before
+## the grip or the screw starts to move. Sitting with the driver
+## seated and not yet circling costs nothing until then.
+@export var phillips_start_drag_rad := 1.5
 ## Seconds the speed needle smooths over.
-@export var phillips_speed_smoothing_sec := 0.5
+@export var phillips_speed_smoothing_sec := 0.65
 ## Seconds the grip swings between filling and draining over.
 @export var phillips_meter_smoothing_sec := 0.4
-## How far past the band's edges the speed may stray, once in it, in
-## radians per second.
-@export var phillips_band_grace_rad_per_sec := 0.8
 ## Pointer steps shorter than this don't count toward the turning.
 @export var phillips_min_segment_px := 4.0
 @export_group("")
@@ -233,6 +293,14 @@ enum PhysicsLayer {
 @export var hammer_surface_damage_charge := 0.55
 @export_group("")
 
+@export_group("Radio")
+## Once an item is fixed, the radio's chance to start glitching each
+## second is one over this.
+@export var radio_glitch_chance_window_sec := 300.0
+## After the radio is fixed, how long before it can glitch again.
+@export var radio_glitch_cooldown_sec := 300.0
+@export_group("")
+
 @export_group("Glue")
 ## Planned (LX22). Coverage gained per second on a crack sample.
 @export var glue_flow_rate := 2.0
@@ -271,11 +339,11 @@ enum PhysicsLayer {
 
 @export_group("Flathead")
 ## Seconds one twist takes to turn the screw (docs/design/flathead.md).
-@export var flathead_twist_duration_sec := 0.85
+@export var flathead_twist_duration_sec := 0.65
 ## Degrees one twist turns the screw and the driver while it comes out.
 @export var flathead_twist_angle_deg := 90.0
 ## Seconds between twists, with no drift. The window to recenter.
-@export var flathead_pause_sec := 0.35
+@export var flathead_pause_sec := 0.25
 ## Seconds after a re-engage with kept twists before the first
 ## twist starts. Much shorter than the pause, so picking a
 ## slipped screw back up resumes turning right away.
@@ -285,11 +353,47 @@ enum PhysicsLayer {
 ## Each twist drifts the tip by a random fraction of the screw's seat
 ## tolerance in this range. Keep the most under 1, so one twist can never
 ## unseat the tip.
-@export var flathead_slip_min := 0.35
-@export var flathead_slip_max := 0.85
+@export var flathead_slip_min := 0.5
+@export var flathead_slip_max := 0.95
 ## A touch drag moves the flathead's tip this many times as far as the
 ## finger (docs/design/flathead.md "Correcting"). Mouse motion is 1 to 1.
 @export var flathead_touch_gain := 2.0
+@export_group("")
+
+@export_group("Workable area")
+## Extra inset inside the `%WorkableArea` polygon, on top of each
+## piece's own radius, that a returned piece aims for. It keeps
+## the whole piece clear of the edge when it comes to rest.
+@export var workable_edge_padding_px := 6.0
+## Highest sideways drift, in pixels per second, of a piece that
+## is dropped above the workable area and falls straight down
+## under `default_gravity_acceleration`. A wider sideways gap
+## stretches the fall instead of speeding the drift up.
+@export var workable_fall_max_drift_px_per_sec := 700.0
+## Lowest and highest arc peak, in pixels above the landing
+## point, of a flick that brings a piece in from below or from
+## the side. The peak grows with the distance to travel between
+## these two.
+@export var workable_flick_peak_min_px := 36.0
+@export var workable_flick_peak_max_px := 160.0
+## A landing slower than this, in pixels per second downward,
+## does not bounce. It only skids.
+@export var workable_bounce_min_speed_px_per_sec := 160.0
+## Bounce kept from a landing, before the piece's size takes
+## its share. The kept share is this minus the piece's radius
+## in pixels times `workable_bounce_size_falloff`, clamped so
+## even the biggest piece keeps a little bounce.
+@export var workable_bounce_restitution := 0.42
+@export var workable_bounce_size_falloff := 0.004
+## Skid slowdown, in pixels per second squared, for a piece
+## whose radius is 20 pixels. It scales with the square root
+## of the radius, so a big piece stops in a shorter skid than
+## a small one at the same landing speed.
+@export var workable_skid_deceleration := 650.0
+## Share of the skid speed kept as spin, as a turn per second
+## per pixel per second of skid, divided by the radius. A
+## smaller piece spins faster in its skid than a bigger one.
+@export var workable_spin_factor := 1.0
 @export_group("")
 
 @export_group("Screw rest")
@@ -302,6 +406,12 @@ enum PhysicsLayer {
 @export var screw_rest_row_size := 5
 ## Seconds a screw takes to slide from its hole to its rest spot, and back.
 @export var screw_travel_sec := 0.4
+## A dragged screw dropped within this many world pixels of its hole
+## tweens down into it, loose and ready to drive in.
+@export var screw_seat_snap_px := 48.0
+## How far above its hole a seating screw's arc peaks, in world
+## pixels, so it always comes down into place from above.
+@export var screw_seat_arc_px := 48.0
 @export_group("")
 
 

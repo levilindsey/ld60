@@ -52,13 +52,12 @@ RotaryPhone (Repairable)           item_name, ticket, par_time_sec
 ## Taking it apart
 
 - When every FASTENER on the exposed layer is out, the layer is loose.
-  It lifts off by itself after 0.3 s and tweens to the set-aside spot
-  (`%SetAsideSpot` in `level.tscn`), shrinking a little and turning
-  to a fresh random angle within 20 degrees of how it sits on the
-  item. Putting it back tweens it back to its home turn. Several
-  set-aside layers stack there with a small offset.
-- A layer with no fasteners is loose as soon as it is exposed, so it
-  lifts right after the layer above it.
+  It stays where it is. The player drags it off the item and puts it
+  down anywhere inside the workbench (the level's bench polygon);
+  it can be dragged around again from there. Nothing on the item
+  moves by itself.
+- A layer with no fasteners is loose as soon as it is exposed, and
+  likewise waits to be dragged off.
 - The innermost layer is never removed.
 
 ## Fixing
@@ -71,8 +70,8 @@ RotaryPhone (Repairable)           item_name, ticket, par_time_sec
 ## Putting it back
 
 - A set-aside layer gets the gradient outline once every required
-  point on the layers under it is FINISHED. Press it to put it back; it
-  tweens into place.
+  point on the layers under it is FINISHED. Drag it back and drop it
+  within `layer_seat_snap_px` of its home; it tweens into place.
 - Its screws come back loose in their holes, turned back a little, in
   INSTALL mode. Driving them in uses the same microgame, shorter
   ([screws.md](screws.md)).

@@ -74,6 +74,7 @@ held_rotation_deg = 40.0
 scale = Vector2(0.25, 0.25)
 
 [node name="CursorPosition" type="Marker2D" parent="Node2D" unique_id=1842626005]
+position = Vector2(0, -848)
 
 [node name="GrabArea" type="Area2D" parent="Node2D" unique_id=311969663]
 unique_name_in_owner = true

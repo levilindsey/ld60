@@ -642,12 +642,15 @@ func _finish_points(item: Repairable) -> void:
 		point.finish()
 
 
-## Finishes an item without a tool, the way the tools would. Finishing the
-## fasteners takes the cover off, a press puts the cover back, and
-## finishing the fasteners again drives them in. Returns whether the item
-## ended up finished.
+## Finishes an item without a tool, the way the tools would. Finishing
+## the fasteners leaves the cover loose, a drag takes it off and a
+## drag back puts it on again, and finishing the fasteners again
+## drives them in. Returns whether the item ended up finished.
 func _finish_item(item: Repairable) -> bool:
 	_finish_points(item)
+	var exposed := item.get_exposed_layer()
+	if is_instance_valid(exposed) and not exposed.is_innermost():
+		await _drag_layer(exposed, Vector2(360.0, 60.0))
 	var is_ready := await _wait_until(
 		func() -> bool: return _is_next_layer_ready(item),
 		3.0,
@@ -655,7 +658,7 @@ func _finish_item(item: Repairable) -> bool:
 	if not is_ready:
 		return false
 	var layer := item.get_next_layer_to_put_back()
-	await _press_at(layer.global_position)
+	await _drag_layer(layer, layer.get_home_global_position())
 	var is_back := await _wait_until(
 		func() -> bool: return layer.is_on and not layer.is_moving,
 		3.0,
@@ -664,6 +667,24 @@ func _finish_item(item: Repairable) -> bool:
 		return false
 	_finish_points(item)
 	return item.has_finished
+
+
+## Drags a layer by a clear patch of its art to a bench point.
+func _drag_layer(layer: RepairLayer, target: Vector2) -> void:
+	for x_offset in range(-80, 81, 20):
+		for y_offset in range(-60, 61, 20):
+			var point := (
+				layer.global_position
+				+ Vector2(float(x_offset), float(y_offset))
+			)
+			if (
+				layer.has_point(point)
+				and not is_instance_valid(_hand.find_point(point))
+			):
+				await _press_down(point)
+				await _move_to(target)
+				await _release_at(target)
+				return
 
 
 func _is_next_layer_ready(item: Repairable) -> bool:

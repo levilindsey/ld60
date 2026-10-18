@@ -1,11 +1,16 @@
+@tool
 class_name LiftableProp
 extends Node2D
 ## A prop that rests flat on the desk and lifts into view to be read.
 ##
-## At rest it sits at `desk_spot`, with `warped_sprite` drawn onto
-## `desk_corners` so it looks like it's lying flat in perspective. Lifting
-## eases it to its open pose, which is wherever the level placed it, while
-## the corners ease back to the flat sprite.
+## At rest it sits wherever the level placed it, with `warped_sprite`
+## drawn onto `desk_corners` so it looks like it's lying flat in
+## perspective. Lifting eases it to `open_spot` while the corners ease back
+## to the flat sprite.
+##
+## In the editor, only the resting perspective warp runs, so the level
+## shows the prop as it looks on the desk. Subclasses need `@tool` too for
+## that, and must skip their own setup in the editor.
 ##
 ## Presses are routed through `_handle_press()` from `_unhandled_input`
 ## rather than through Area2D picking. A prop placed after the level's Hand
@@ -17,13 +22,17 @@ extends Node2D
 const _LIFT_DURATION_SEC := 0.3
 
 
-## Where the prop rests. Its position, rotation, scale and skew place the
-## resting prop on the desk. Without one, the prop stays put.
-@export var desk_spot: Node2D
+## Where the prop lifts to. Its position, rotation, scale and skew give
+## the open pose. Without one, the prop stays put.
+@export var open_spot: Node2D
 ## The warped sprite's corners while resting on the desk: top left, top
 ## right, bottom right, bottom left, in the sprite's local space. They ease
 ## back to the flat sprite as the prop lifts.
-@export var desk_corners := PackedVector2Array()
+@export var desk_corners := PackedVector2Array():
+	set(value):
+		desk_corners = value
+		if Engine.is_editor_hint() and is_node_ready():
+			_preview_in_editor()
 ## The sprite drawn in perspective while resting. It needs the
 ## perspective_quad shader as its material.
 @export var warped_sprite: Sprite2D
@@ -33,41 +42,67 @@ const _LIFT_DURATION_SEC := 0.3
 ## the prop and see presses first. Lifting moves it back to its own place
 ## and z_index.
 @export var resting_draw_before: Node
+## Optional shadow, shown only while the prop rests on the desk.
+@export var shadow: CanvasItem
 
 
-var _open_position := Vector2.ZERO
-var _open_rotation := 0.0
-var _open_scale := Vector2.ONE
-var _open_skew := 0.0
+var _rest_position := Vector2.ZERO
+var _rest_rotation := 0.0
+var _rest_scale := Vector2.ONE
+var _rest_skew := 0.0
 var _warped_corners := PackedVector2Array()
 var _lift_tween_id := -1
 var _lifted_z_index := 0
 ## The sibling the prop follows while lifted.
 var _lifted_after: Node
+var _has_preview_material := false
 
 
 func _ready() -> void:
-	_open_position = global_position
-	_open_rotation = global_rotation
-	_open_scale = global_scale
-	_open_skew = global_skew
+	if Engine.is_editor_hint():
+		_preview_in_editor()
+		return
+	_rest_position = global_position
+	_rest_rotation = global_rotation
+	_rest_scale = global_scale
+	_rest_skew = global_skew
 	_set_warped_corners(_get_flat_corners())
 	_lifted_z_index = z_index
 	var index := get_index()
 	if index > 0:
 		_lifted_after = get_parent().get_child(index - 1)
-	if is_instance_valid(desk_spot):
-		_set_lift(0.0)
-		reset_physics_interpolation()
+	_set_lift(0.0)
 	# Deferred: the parent is still setting up its children.
 	_set_resting_order.call_deferred(true)
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Engine.is_editor_hint():
+		return
 	if not _is_left_mouse_event(event, true):
 		return
 	if _handle_press(event as InputEventMouseButton):
 		get_viewport().set_input_as_handled()
+
+
+## Shows the resting warp in the editor. It works on a copy of the
+## material, so the preview never changes the material saved with the
+## prop's scene.
+func _preview_in_editor() -> void:
+	if not is_instance_valid(warped_sprite) or warped_sprite.texture == null:
+		return
+	if not _has_preview_material:
+		var original := warped_sprite.material
+		var copy := original.duplicate()
+		warped_sprite.material = copy
+		if is_instance_valid(shadow) and shadow.material == original:
+			shadow.material = copy
+		_has_preview_material = true
+	var flat_corners := _get_flat_corners()
+	if desk_corners.size() == flat_corners.size():
+		_set_warped_corners(desk_corners)
+	else:
+		_set_warped_corners(flat_corners)
 
 
 ## Handles a left press. Returns whether it landed on the prop, which keeps
@@ -82,7 +117,7 @@ func _tween_lift(
 	on_completed: Callable,
 ) -> void:
 	_stop_lift()
-	if not is_instance_valid(desk_spot):
+	if not is_instance_valid(open_spot):
 		on_completed.call()
 		return
 	_lift_tween_id = G.time.tween_method(
@@ -125,16 +160,19 @@ func _set_resting_order(is_resting: bool) -> void:
 	parent.move_child(self, target_index)
 
 
-## 0 rests at `desk_spot`; 1 is the open pose.
+## 0 rests where the level placed the prop; 1 is at `open_spot`.
 func _set_lift(lift: float) -> void:
-	global_position = desk_spot.global_position.lerp(_open_position, lift)
-	global_rotation = lerp_angle(
-		desk_spot.global_rotation,
-		_open_rotation,
-		lift,
-	)
-	global_scale = desk_spot.global_scale.lerp(_open_scale, lift)
-	global_skew = lerpf(desk_spot.global_skew, _open_skew, lift)
+	if is_instance_valid(shadow):
+		shadow.visible = is_zero_approx(lift)
+	if is_instance_valid(open_spot):
+		global_position = _rest_position.lerp(open_spot.global_position, lift)
+		global_rotation = lerp_angle(
+			_rest_rotation,
+			open_spot.global_rotation,
+			lift,
+		)
+		global_scale = _rest_scale.lerp(open_spot.global_scale, lift)
+		global_skew = lerpf(_rest_skew, open_spot.global_skew, lift)
 
 	var flat_corners := _get_flat_corners()
 	if desk_corners.size() != flat_corners.size():
@@ -147,6 +185,21 @@ func _set_lift(lift: float) -> void:
 
 
 ## Whether a press lands on the warped sprite as it's currently drawn.
+## True when a world position is on this prop as it is currently
+## drawn, so the hand can offer to pick it up or open it.
+func is_point_on_prop(global_point: Vector2) -> bool:
+	if (
+		not is_instance_valid(warped_sprite)
+		or not warped_sprite.is_visible_in_tree()
+	):
+		return false
+	var local_point := (
+		warped_sprite.get_global_transform().affine_inverse()
+		* global_point
+	)
+	return Geometry2D.is_point_in_polygon(local_point, _warped_corners)
+
+
 func _is_on_warped_sprite(event: InputEventMouse) -> bool:
 	var point := (
 		(warped_sprite.make_input_local(event) as InputEventMouse).position

@@ -1,10 +1,10 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene format=3 uid="uid://dinrtvteq5ayd"]
 
-[ext_resource type="Script" path="res://src/ui/ticket/ticket_card.gd" id="1_ticket"]
-[ext_resource type="FontFile" path="res://assets/fonts/reenie_beanie/ReenieBeanie.ttf" id="4_handwriting"]
-[ext_resource type="Shader" path="res://assets/shaders/perspective_quad.gdshader" id="5_perspective"]
-[ext_resource type="PackedScene" path="res://src/props/prop_close_button.tscn" id="6_close"]
-[ext_resource type="Texture2D" path="res://assets/images/repairticket.png" id="7_paper"]
+[ext_resource type="Script" uid="uid://d0cwcbqrcvhhb" path="res://src/ui/ticket/ticket_card.gd" id="1_ticket"]
+[ext_resource type="FontFile" uid="uid://dpjyugfnnu6wc" path="res://assets/fonts/reenie_beanie/ReenieBeanie.ttf" id="4_handwriting"]
+[ext_resource type="Shader" uid="uid://thfeaa7qcy2v" path="res://assets/shaders/perspective_quad.gdshader" id="5_perspective"]
+
+[ext_resource type="Texture2D" uid="uid://ciwpguv1cbffl" path="res://assets/images/repairticket.png" id="7_paper"]
 
 [sub_resource type="Theme" id="Theme_paper"]
 Label/colors/font_color = Color(0.22, 0.15, 0.08, 1)
@@ -16,14 +16,15 @@ shader_parameter/top_right = Vector2(360, -300)
 shader_parameter/bottom_right = Vector2(360, 300)
 shader_parameter/bottom_left = Vector2(-360, 300)
 
-[node name="TicketCard" type="Node2D" node_paths=PackedStringArray("warped_sprite", "close_button")]
+[node name="TicketCard" type="Node2D" unique_id=1676508802 node_paths=PackedStringArray("warped_sprite", "shadow")]
 visible = false
 z_index = 95
 script = ExtResource("1_ticket")
 warped_sprite = NodePath("Display")
-close_button = NodePath("CloseButton")
 
-[node name="ContentViewport" type="SubViewport" parent="."]
+shadow = NodePath("DisplayShadow")
+
+[node name="ContentViewport" type="SubViewport" parent="." unique_id=966013137]
 unique_name_in_owner = true
 disable_3d = true
 transparent_bg = true
@@ -33,7 +34,7 @@ size_2d_override = Vector2i(360, 300)
 size_2d_override_stretch = true
 render_target_update_mode = 3
 
-[node name="Paper" type="Control" parent="ContentViewport"]
+[node name="Paper" type="Control" parent="ContentViewport" unique_id=2114120535]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -43,7 +44,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme = SubResource("Theme_paper")
 
-[node name="Background" type="TextureRect" parent="ContentViewport/Paper"]
+[node name="Background" type="TextureRect" parent="ContentViewport/Paper" unique_id=792869632]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -54,21 +55,21 @@ mouse_filter = 2
 texture = ExtResource("7_paper")
 expand_mode = 1
 
-[node name="Contents" type="VBoxContainer" parent="ContentViewport/Paper"]
+[node name="Contents" type="VBoxContainer" parent="ContentViewport/Paper" unique_id=2007959233]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 64.0
-offset_right = -24.0
-offset_bottom = -16.0
+offset_left = 32.0
+offset_top = 72.0
+offset_right = -16.0
+offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/separation = 6
 
-[node name="ComplaintLabel" type="Label" parent="ContentViewport/Paper/Contents"]
+[node name="ComplaintLabel" type="Label" parent="ContentViewport/Paper/Contents" unique_id=366817362]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_fonts/font = ExtResource("4_handwriting")
@@ -76,10 +77,15 @@ theme_override_font_sizes/font_size = 40
 text = "Complaint"
 autowrap_mode = 3
 
-[node name="Display" type="Sprite2D" parent="."]
+[node name="DisplayShadow" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+self_modulate = Color(0, 0, 0, 0.4)
+material = SubResource("ShaderMaterial_display")
+position = Vector2(10, 16)
+scale = Vector2(0.5, 0.5)
+
+[node name="Display" type="Sprite2D" parent="." unique_id=757834437]
 unique_name_in_owner = true
 material = SubResource("ShaderMaterial_display")
 scale = Vector2(0.5, 0.5)
 
-[node name="CloseButton" parent="." instance=ExtResource("6_close")]
-position = Vector2(186, -156)

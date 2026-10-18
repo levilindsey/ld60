@@ -17,6 +17,9 @@ extends Node2D
 signal layer_removed(layer: RepairLayer)
 signal layer_installed(layer: RepairLayer)
 signal point_finished(point: InteractionPoint)
+## The arriving item hit the bench. Strength is 1 for the first hit and
+## less for each later bounce.
+signal impacted(strength: float)
 ## The arrival is over. The item sits on the bench and its clock runs.
 signal landed
 signal finished
@@ -36,6 +39,11 @@ enum Mode {
 
 ## How many times the item jerks when an unfinished item is pressed.
 const _SHAKE_STEPS := 4
+## The share of the arrival spent falling; the bounces take the rest.
+const _ARRIVAL_FALL_SHARE := 0.55
+const _ARRIVAL_BOUNCE_COUNT := 3
+## Each bounce's height as a share of the one before.
+const _ARRIVAL_BOUNCE_DECAY := 0.4
 
 @export var item_name := ""
 ## The customer's complaint, shown on the ticket.
@@ -43,6 +51,11 @@ const _SHAKE_STEPS := 4
 @export var par_time_sec := 90.0
 
 var mode := Mode.ENTERING
+## True while the level is bringing this finished item back
+## to the workable area after it was dropped outside both the
+## workable area and the outbox. It cannot be grabbed again
+## until it comes to rest, unless the hand catches it first.
+var is_returning := false
 ## The layers, innermost first. Collected from `%Layers`.
 var layers: Array[RepairLayer] = []
 ## True while the item is finished.
@@ -56,8 +69,14 @@ var drop_area: Area2D:
 	get:
 		return %DropArea
 
+var _repair_sequence: RepairSequence
 var _shake_tween: Tween
 var _motion_tween: Tween
+var _arrival_start_position := Vector2.ZERO
+var _arrival_target_position := Vector2.ZERO
+var _arrival_start_rotation := 0.0
+## How many times the arriving item has hit the bench.
+var _arrival_impact_count := 0
 var _outline_hint: OutlineHint
 var _outlined_art: Sprite2D
 var _art_material_before_outline: Material
@@ -70,6 +89,19 @@ func _ready() -> void:
 			layer.item = self
 			layers.append(layer)
 	G.check(not layers.is_empty())
+	_repair_sequence = RepairSequence.build_for(self)
+	DropShadow.attach(
+		self,
+		Vector2(170.0, 32.0),
+		Vector2(5.0, 62.0),
+		func() -> bool:
+			return (
+				mode == Mode.UNDER_REPAIR
+				and is_instance_valid(G.level)
+				and is_instance_valid(G.level.hand)
+				and G.level.hand.held != self
+			),
+	)
 	# The repair clock only runs from landing to finished.
 	set_physics_process(false)
 
@@ -77,6 +109,14 @@ func _ready() -> void:
 # The paused tree skips this, so the clock only counts unpaused time.
 func _physics_process(delta: float) -> void:
 	quality.repair_time_sec += delta
+
+
+## This item's repair steps, derived from its layers and points
+## by `RepairSequence` when the item enters the tree.
+func get_repair_sequence() -> RepairSequence:
+	if not is_instance_valid(_repair_sequence):
+		_repair_sequence = RepairSequence.build_for(self)
+	return _repair_sequence
 
 
 ## The outermost layer still on, or null.
@@ -196,19 +236,54 @@ func arrive(target_global_position: Vector2) -> void:
 	mode = Mode.ENTERING
 	var angle_max := deg_to_rad(G.settings.item_arrival_angle_max_deg)
 	rotation = randf_range(-angle_max, angle_max)
-	_start_motion(
-		target_global_position,
+	_arrival_start_position = global_position
+	_arrival_target_position = target_global_position
+	_arrival_start_rotation = rotation
+	_arrival_impact_count = 0
+	_kill_motion_tween()
+	_motion_tween = create_tween()
+	_motion_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_motion_tween.tween_method(
+		_set_arrival_progress,
 		0.0,
+		1.0,
 		G.settings.item_arrival_sec,
-		Tween.TRANS_BACK,
-		Tween.EASE_OUT,
 	)
 	_motion_tween.tween_callback(_land)
+
+
+## How far this item reaches from its middle, in world
+## pixels. Its `%DropArea` is 100 by 100, so half of that.
+## The level keeps this much of a finished item inside the
+## workable area when it comes to rest, and it sets how
+## much the item bounces and skids when it lands there. A
+## big item like this bounces little and stops quickly.
+func get_bench_radius_px() -> float:
+	return 50.0
+
+
+## The level starts bringing this finished item back to the
+## workable area. Any ease home that was running stops.
+func start_bench_return() -> void:
+	is_returning = true
+	_kill_motion_tween()
+
+
+## The item has come to rest inside the workable area,
+## straightened up again.
+func finish_bench_return() -> void:
+	is_returning = false
+	rotation = 0.0
+	reset_physics_interpolation()
 
 
 ## The hand picked the item up. Whatever move was running stops.
 func on_grabbed() -> void:
 	_kill_motion_tween()
+	if is_returning:
+		is_returning = false
+		if is_instance_valid(G.level):
+			G.level.cancel_bench_return(self)
 
 
 ## Eases the item, straightened, to a world position. The hand calls it
@@ -254,19 +329,11 @@ func on_point_finished(point: InteractionPoint) -> void:
 	_update_state()
 
 
-## Called by a layer when it reaches the set-aside spot.
+## Called by a layer when the player drags it off the item. A layer
+## with no fasteners is loose as soon as it is exposed, but it too
+## waits to be dragged off. Nothing on the item moves by itself.
 func on_layer_removed(layer: RepairLayer) -> void:
 	layer_removed.emit(layer)
-	# A layer with no fasteners is loose as soon as it is exposed, so it
-	# lifts right after the layer above it.
-	var exposed := get_exposed_layer()
-	if (
-		is_instance_valid(exposed)
-		and not exposed.is_moving
-		and not exposed.is_innermost()
-		and exposed.is_loose()
-	):
-		exposed.lift_off()
 	_update_state()
 
 
@@ -309,11 +376,63 @@ func _kill_motion_tween() -> void:
 		_motion_tween.kill()
 
 
+## 0 is at the spawn point; 1 has landed. The item falls, speeding up,
+## then bounces a few times, each bounce lower than the last.
+func _set_arrival_progress(progress: float) -> void:
+	rotation = lerpf(
+		_arrival_start_rotation,
+		0.0,
+		ease(progress, 0.4),
+	)
+	if progress < _ARRIVAL_FALL_SHARE:
+		var fall := progress / _ARRIVAL_FALL_SHARE
+		global_position = _arrival_start_position.lerp(
+			_arrival_target_position,
+			fall * fall,
+		)
+		return
+
+	# Each bounce lasts in proportion to the square root of its height,
+	# like a real one.
+	var heights: Array[float] = []
+	var total_duration := 0.0
+	var height := G.settings.item_arrival_bounce_px
+	for i in _ARRIVAL_BOUNCE_COUNT:
+		heights.append(height)
+		total_duration += sqrt(height)
+		height *= _ARRIVAL_BOUNCE_DECAY
+	var bounce_time := (
+		(progress - _ARRIVAL_FALL_SHARE)
+		/ (1.0 - _ARRIVAL_FALL_SHARE)
+		* total_duration
+	)
+	var rise := 0.0
+	# The first hit ends the fall; each finished bounce is another.
+	var impact_count := 1
+	for bounce_height in heights:
+		var duration := sqrt(bounce_height)
+		if bounce_time < duration:
+			var bounce := bounce_time / duration
+			rise = bounce_height * 4.0 * bounce * (1.0 - bounce)
+			break
+		bounce_time -= duration
+		impact_count += 1
+	global_position = _arrival_target_position + Vector2(0.0, -rise)
+	while _arrival_impact_count < impact_count:
+		_impact(pow(_ARRIVAL_BOUNCE_DECAY, _arrival_impact_count))
+		_arrival_impact_count += 1
+
+
+func _impact(strength: float) -> void:
+	if is_equal_approx(strength, 1.0):
+		G.audio.play_sound(&"thud")
+	impacted.emit(strength)
+
+
 func _land() -> void:
 	mode = Mode.UNDER_REPAIR
 	quality.par_time_sec = par_time_sec
 	set_physics_process(true)
-	G.audio.play_sound(&"thud")
 	landed.emit()
 
 

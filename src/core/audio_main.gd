@@ -12,7 +12,8 @@ extends Node2D
 ## AudioStreamRandomizer on the node, so each play picks a take. The
 ## humming is a one-off intro. StateMain plays it once when the game
 ## starts, after the title screen closes. It is not a theme and it
-## never loops. The themes stay empty until music lands. Add new
+## never loops. The main theme is the radio music in
+## `assets/audio/music/`; the menu and end themes stay empty. Add new
 ## named entries here as needed.
 @onready var STREAM_PLAYERS_BY_NAME := {
 	"menu_theme" = %MenuTheme,

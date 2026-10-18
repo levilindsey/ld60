@@ -1,10 +1,11 @@
 class_name Part
 extends Node2D
-## A replacement part from the parts drawer. The hand holds it like a
-## tool: it follows the pointer, a press tries to fit it, and putting
-## it back is a press on the drawer (docs/design/parts_bin.md). While
-## held or flying home it renders over the top of repairables (the
-## z_index in part.tscn); once installed it layers with its item.
+## A replacement part from the parts drawers. It rests loose on the
+## bench or hidden inside a drawer until the player drags it out.
+## Dragging it onto an empty socket fits it; dragging it back over a
+## drawer puts it away (docs/design/parts_bin.md). While loose it
+## renders over the top of repairables (the z_index in part.tscn);
+## once installed it layers with its item.
 
 
 enum Type {
@@ -13,9 +14,8 @@ enum Type {
 	SPRING,
 }
 
-## Seconds the part takes to snap into a socket or fly home.
+## Seconds the part takes to snap into a socket.
 const _FIT_SEC := 0.15
-const _FLY_HOME_SEC := 0.3
 ## How many times the part jerks in the "nope" shake.
 const _NOPE_SHAKE_STEPS := 4
 
@@ -24,16 +24,65 @@ const _NOPE_SHAKE_STEPS := 4
 ## True once the part sits in its socket. An installed part no longer
 ## follows the pointer.
 var is_installed := false
+## True while the part is hidden inside a drawer. It appears when
+## that drawer opens.
+var is_stored := false
+## The drawer the part is stored in, or its last drawer while it is
+## out on the bench. -1 when it has never been stored.
+var drawer_index := -1
+## True while a drawer is putting the part away. A returning part
+## cannot be grabbed.
+var is_returning := false
 
-var _is_flying := false
 var _shake_tween: Tween
+var _hint_hint: OutlineHint
+var _is_hint_active := false
 
 
-func _physics_process(_delta: float) -> void:
-	if is_installed or _is_flying:
-		return
-	if is_instance_valid(G.level) and G.level.hand.held == self:
-		global_position = G.level.hand.pointer_position
+func _ready() -> void:
+	DropShadow.attach_silhouette(
+		self,
+		[get_node("%Art")],
+		Vector2(0.0, 6.0),
+		func() -> bool:
+			return (
+				not is_installed
+				and not is_stored
+				and not is_returning
+				and is_instance_valid(G.level)
+				and is_instance_valid(G.level.hand)
+				and G.level.hand.held != self
+			),
+		0.8,
+	)
+
+
+## How far the part reaches from its middle, in world pixels.
+## The level keeps this much of the part inside the workable
+## area when it comes to rest, and it sets how much the part
+## bounces and skids when it lands there.
+func get_radius_px() -> float:
+	var radius := 0.0
+	for point in get_polygon(type):
+		radius = maxf(radius, point.length())
+	return radius
+
+
+## The level starts bringing this part back to the workable
+## area. Until `finish_bench_return()` the part cannot be
+## grabbed, which `is_returning` already says for a part on
+## its way into a drawer.
+func start_bench_return() -> void:
+	is_returning = true
+	if is_instance_valid(_shake_tween):
+		_shake_tween.kill()
+	%Art.position = Vector2.ZERO
+
+
+## The part has come to rest inside the workable area.
+func finish_bench_return() -> void:
+	is_returning = false
+	z_index = 10
 
 
 ## Sets the part's kind and rebuilds its placeholder art.
@@ -64,12 +113,37 @@ func nope() -> void:
 	_shake_tween.tween_property(%Art, "position", Vector2.ZERO, step_sec)
 
 
+## Shows or hides the idle hint outline around this part, in the
+## shape of its kind. The tracker highlights a stored part's drawer
+## instead, and this part once it is out on the bench.
+func set_hint_active(is_active: bool) -> void:
+	_is_hint_active = is_active
+	if is_active:
+		if not is_instance_valid(_hint_hint):
+			_hint_hint = OutlineHint.new()
+			add_child(_hint_hint)
+			_hint_hint.polygon = get_polygon(type)
+		_hint_hint.set_active(true)
+	elif is_instance_valid(_hint_hint):
+		_hint_hint.set_active(false)
+
+
+## True while the idle hint outline shows on this part.
+func is_hint_active() -> bool:
+	return (
+		_is_hint_active
+		and is_instance_valid(_hint_hint)
+		and _hint_hint.is_active()
+	)
+
+
 ## Leaves the hand and snaps into a socket. The socket hears about it
 ## when the part lands.
 func install_into(socket: PartSocket) -> void:
 	is_installed = true
 	var from_global_position := global_position
-	G.level.hand.release()
+	if G.level.hand.held == self:
+		G.level.hand.release()
 	# Installed, it layers with the item again: the cover can close
 	# over it. While held it stays on top (part.tscn's z_index).
 	z_index = 0
@@ -86,23 +160,6 @@ func install_into(socket: PartSocket) -> void:
 	)
 	tween.parallel().tween_property(self, "rotation", 0.0, _FIT_SEC)
 	tween.tween_callback(socket.on_part_installed)
-
-
-## Leaves the hand and flies back to the drawer, then frees itself.
-func fly_home(home_global_position: Vector2) -> void:
-	_is_flying = true
-	G.level.hand.release()
-	G.audio.play_sound(&"whoosh")
-	var tween := create_tween()
-	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
-	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tween.tween_property(
-		self, "global_position", home_global_position, _FLY_HOME_SEC
-	)
-	tween.parallel().tween_property(
-		self, "modulate:a", 0.0, _FLY_HOME_SEC
-	)
-	tween.tween_callback(queue_free)
 
 
 static func get_display_name(part_type: Type) -> String:

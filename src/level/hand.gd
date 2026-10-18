@@ -49,6 +49,13 @@ var _drag_offset := Vector2.ZERO
 ## The turn of the dragged item, in radians. It follows the drag speed.
 var _drag_tilt := 0.0
 var _drag_previous_pointer := Vector2.ZERO
+## A loose bench piece being dragged: a resting screw, a layer off
+## its item or a part out of a drawer. Only one loose drag runs at
+## a time.
+var _loose_screw: Screw
+var _loose_layer: RepairLayer
+var _loose_part: Part
+var _loose_drag_offset := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -78,6 +85,7 @@ func _notification(what: int) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_drag_loose_piece()
 	_drag_held_item(delta)
 	_update_cursor()
 
@@ -133,6 +141,11 @@ func grab(thing: Node2D) -> void:
 	thing.tree_exiting.connect(_on_held_tree_exiting)
 	if thing is Tool:
 		(thing as Tool).pick_up()
+		# Tools are their own draw group. The tool just taken rises
+		# to the top of it.
+		var parent := thing.get_parent()
+		if is_instance_valid(parent):
+			parent.move_child(thing, parent.get_child_count() - 1)
 	_update_cursor()
 
 
@@ -215,6 +228,33 @@ func find_point(global_point: Vector2) -> InteractionPoint:
 	return null
 
 
+## The first exposed point lined up with a tool's working end, or
+## null. Engaging lines the tool's InteractionArea up with the
+## point's area; where the cursor marker sits doesn't matter.
+func find_point_for_tool(tool: Tool) -> InteractionPoint:
+	var shape_node := tool.get_interaction_shape()
+	if not is_instance_valid(shape_node):
+		return null
+	if not is_instance_valid(shape_node.shape):
+		return null
+	var parameters := PhysicsShapeQueryParameters2D.new()
+	parameters.shape = shape_node.shape
+	parameters.transform = shape_node.global_transform
+	parameters.collision_mask = Settings.PhysicsLayer.INTERACTION_POINTS
+	parameters.collide_with_areas = true
+	parameters.collide_with_bodies = false
+	var space := get_world_2d().direct_space_state
+	for result in space.intersect_shape(parameters, _QUERY_MAX_RESULTS):
+		var point := result.collider as InteractionPoint
+		if (
+			is_instance_valid(point)
+			and point.is_visible_in_tree()
+			and point.is_exposed()
+		):
+			return point
+	return null
+
+
 ## The first active surface under a world position, or null.
 func find_surface(global_point: Vector2) -> Surface:
 	for area in _query(global_point, Settings.PhysicsLayer.SURFACES):
@@ -227,60 +267,136 @@ func find_surface(global_point: Vector2) -> Surface:
 ## The press rules from tools.md "Routing a press", in order. Returns
 ## true when the press was used.
 func _handle_press(global_point: Vector2) -> bool:
-	# The parts menu is up: its backdrop usually takes the press and
-	# cancels the menu. Any press that still arrives here only
-	# cancels it too, never the bench behind it (the drawer, the
-	# tool rack, the item).
-	var parts_menu := G.level.get_parts_menu()
-	if is_instance_valid(parts_menu) and parts_menu.is_blocking_bench():
-		parts_menu.cancel()
-		return true
 	# 1. A microgame owns input.
 	if is_instance_valid(input_owner):
 		if input_owner.has_method("on_pointer_pressed"):
 			input_owner.on_pointer_pressed(global_point)
 		return true
+	# A drawer is open in the center, or one is on its way: it takes
+	# every press until it is shut again.
+	if _press_drawer_modal(global_point):
+		return true
 	return (
 		_press_resting_screw(global_point)
 		or _press_set_aside_layer(global_point)
+		or _press_loose_part(global_point)
 		or _press_drawer(global_point)
 		or _press_rack(global_point)
-		or _press_with_part(global_point)
 		or _press_with_tool(global_point)
+		or _press_loose_layer(global_point)
 		or _press_with_empty_hand(global_point)
 	)
 
 
-## 2. Over a screw resting on the bench: once its layer is back on, send it
-## back to its hole, whatever the hand holds. Before that the press does
+## 2. Over a screw resting on the bench: start dragging it, empty
+## handed. It seats again only when dropped close to its hole once
+## its layer is back on. With anything in the hand the press does
 ## nothing (docs/design/screw_pullout.md).
 func _press_resting_screw(global_point: Vector2) -> bool:
 	var screw := G.level.get_resting_screw_at(global_point)
 	if not is_instance_valid(screw):
 		return false
-	if screw.can_come_back():
-		screw.come_back()
+	if is_empty() and not is_instance_valid(_loose_screw):
+		_loose_screw = screw
+		_loose_drag_offset = (
+			screw.bench_art.global_position - global_point
+		)
+		screw.is_carried = true
+		screw.on_picked_up()
 	return true
 
 
-## 3. Over a set-aside layer that is ready to go back: put it back.
+## 3. Over a layer lying loose on the bench: start dragging it,
+## empty handed. Dropped close to home once it is ready, it tweens
+## back on. With anything in the hand the press does nothing.
 func _press_set_aside_layer(global_point: Vector2) -> bool:
-	var layer := _find_ready_layer(global_point)
+	var layer := _find_loose_layer(global_point)
 	if not is_instance_valid(layer):
 		return false
-	layer.put_back()
+	if is_empty() and not is_instance_valid(_loose_layer):
+		_loose_layer = layer
+		_loose_drag_offset = layer.global_position - global_point
+		layer.is_moving = true
 	return true
 
 
-## 4. Over the parts drawer: holding a part returns it. Holding a tool
-## puts it away first. Empty-handed, the parts menu opens.
-func _press_drawer(global_point: Vector2) -> bool:
-	var bin := _find_parts_bin(global_point)
-	if not is_instance_valid(bin):
+## Over the item's exposed layer once its fasteners are all out:
+## start dragging it off the item, empty handed.
+func _press_loose_layer(global_point: Vector2) -> bool:
+	if not is_empty() or is_instance_valid(_loose_layer):
 		return false
-	if held is Part:
-		bin.take_back(held as Part)
+	var item := G.level.active_repairable
+	if not is_instance_valid(item):
+		return false
+	var layer := item.get_exposed_layer()
+	if (
+		not is_instance_valid(layer)
+		or layer.is_innermost()
+		or not layer.is_loose()
+		or not layer.has_point(global_point)
+		or is_instance_valid(find_point(global_point))
+	):
+		return false
+	layer.take_off_for_drag()
+	_loose_layer = layer
+	_loose_drag_offset = layer.global_position - global_point
+	return true
+
+
+## While a drawer is open in the center (or still on its way), it
+## takes every press. A press on one of its parts takes the part
+## out and shuts the drawer behind it. A press on the drawer itself
+## does nothing. Any other press just shuts it.
+func _press_drawer_modal(global_point: Vector2) -> bool:
+	if G.level.are_drawers_busy():
 		return true
+	var drawer := G.level.get_open_drawer()
+	if not is_instance_valid(drawer):
+		return false
+	var part := G.level.get_drawer_part_at(drawer, global_point)
+	if is_instance_valid(part):
+		if (
+			is_empty()
+			and not is_instance_valid(_loose_screw)
+			and not is_instance_valid(_loose_layer)
+			and not is_instance_valid(_loose_part)
+		):
+			_loose_part = part
+			_loose_drag_offset = part.global_position - global_point
+			part.is_stored = false
+			part.drawer_index = -1
+			drawer.close_drawer()
+			G.audio.play_sound(&"click")
+		return true
+	if drawer.has_global_point(global_point):
+		return true
+	drawer.close_drawer()
+	return true
+
+
+## Over a part resting on the bench: start dragging it, empty
+## handed. With anything in the hand the press does nothing.
+func _press_loose_part(global_point: Vector2) -> bool:
+	var part := G.level.get_loose_part_at(global_point)
+	if not is_instance_valid(part):
+		return false
+	if (
+		is_empty()
+		and not is_instance_valid(_loose_screw)
+		and not is_instance_valid(_loose_layer)
+		and not is_instance_valid(_loose_part)
+	):
+		_loose_part = part
+		_loose_drag_offset = part.global_position - global_point
+	return true
+
+
+## 4. Over a shut parts drawer: open it. Holding a tool puts the
+## tool away first, like the rack.
+func _press_drawer(global_point: Vector2) -> bool:
+	var drawer := _find_drawer(global_point)
+	if not is_instance_valid(drawer):
+		return false
 	if held is Repairable:
 		return false
 	var held_tool := get_held_tool()
@@ -289,24 +405,13 @@ func _press_drawer(global_point: Vector2) -> bool:
 			# A point has the tool. Let it finish first.
 			return true
 		held_tool.put_away()
-	bin.open_menu()
+	G.audio.play_sound(&"whoosh")
+	drawer.open_drawer()
 	return true
 
 
-## 7. Holding a part: a press over a socket tries to fit it. Any other
-## press nopes and keeps the part. The drawer press comes first.
-func _press_with_part(global_point: Vector2) -> bool:
-	var part := held as Part
-	if not is_instance_valid(part):
-		return false
-	var socket := _find_socket(global_point)
-	if is_instance_valid(socket):
-		return socket.try_fit(part)
-	part.nope()
-	return true
-
-
-## 5. Over the tool rack: take that tool. A held tool goes back first.
+## 5. Over a stored tool: take it. A held tool goes back first.
+## Only the tool itself counts: its holder does not.
 func _press_rack(global_point: Vector2) -> bool:
 	var rack_tool := _find_rack_tool(global_point)
 	if not is_instance_valid(rack_tool):
@@ -315,17 +420,13 @@ func _press_rack(global_point: Vector2) -> bool:
 	if is_instance_valid(held_tool) and held_tool.mode == Tool.Mode.IN_USE:
 		# A point has the tool. Let it finish first.
 		return true
-	if rack_tool != held:
-		grab(rack_tool)
-	else:
-		# Its own empty holder: put it back.
-		rack_tool.put_away()
+	grab(rack_tool)
 	return true
 
 
 ## 6. Holding a tool: its tip goes to the press, then it acts there.
 ## Effect tools act at the press point and stay in the hand. Engage
-## tools go IN_USE on the point under the tip.
+## tools go IN_USE on the point lined up with their working end.
 func _press_with_tool(global_point: Vector2) -> bool:
 	var held_tool := get_held_tool()
 	if not is_instance_valid(held_tool) or held_tool.mode != Tool.Mode.HELD:
@@ -334,7 +435,7 @@ func _press_with_tool(global_point: Vector2) -> bool:
 	if held_tool.is_effect_tool():
 		held_tool.on_effect_pressed(global_point)
 		return true
-	var target := find_point(global_point)
+	var target := find_point_for_tool(held_tool)
 	if not is_instance_valid(target) or not target.can_engage():
 		return false
 	if target.accepts(held_tool):
@@ -369,12 +470,145 @@ func _handle_release(global_point: Vector2) -> bool:
 		if input_owner.has_method("on_pointer_released"):
 			input_owner.on_pointer_released(global_point)
 		return true
+	if is_instance_valid(_loose_part):
+		_drop_loose_part(global_point)
+		return true
+	if is_instance_valid(_loose_screw):
+		_drop_loose_screw()
+		return true
+	if is_instance_valid(_loose_layer):
+		_drop_loose_layer()
+		return true
 	if held is Repairable:
 		var item := held as Repairable
 		release()
 		G.level.drop_item(item)
 		return true
 	return false
+
+
+## Follows the pointer with the loose piece being dragged. A drag
+## that leaves the workbench drops the piece at the bench's edge at
+## once, instead of letting it be carried off the bench.
+func _drag_loose_piece() -> void:
+	if is_instance_valid(_loose_part):
+		# A part may be carried anywhere, over the drawers too. It
+		# is only set down, fitted or put away on release.
+		_loose_part.global_position = (
+			pointer_position + _loose_drag_offset
+		)
+	elif is_instance_valid(_loose_screw):
+		if not G.level.is_inside_bench(pointer_position):
+			_loose_screw.bench_art.global_position = (
+				G.level.clamp_to_bench(
+					pointer_position + _loose_drag_offset,
+				)
+			)
+			_drop_loose_screw()
+			return
+		_loose_screw.bench_art.global_position = (
+			pointer_position + _loose_drag_offset
+		)
+	elif is_instance_valid(_loose_layer):
+		if not G.level.is_inside_bench(pointer_position):
+			_loose_layer.global_position = G.level.clamp_to_bench(
+				pointer_position + _loose_drag_offset,
+			)
+			_drop_loose_layer()
+			return
+		_loose_layer.global_position = (
+			pointer_position + _loose_drag_offset
+		)
+
+
+## Lets go of a dragged screw. Dropped close to its hole once its
+## layer is back on, it arcs down into the hole. Anywhere else on
+## the bench it simply rests where it fell.
+func _drop_loose_screw() -> void:
+	var screw := _loose_screw
+	_loose_screw = null
+	if not is_instance_valid(screw):
+		return
+	screw.is_carried = false
+	if (
+		screw.can_come_back()
+		and screw.bench_art.global_position.distance_to(
+			screw.global_position,
+		) <= G.settings.screw_seat_snap_px
+	):
+		screw.come_back()
+		return
+	# Set down on the table after a drag: it rolls a little.
+	screw.on_set_down()
+
+
+## True while this layer is being dragged across the bench.
+func is_dragging_loose_layer(layer: RepairLayer) -> bool:
+	return _loose_layer == layer
+
+
+## The resting screw being dragged, or null.
+func get_loose_screw() -> Screw:
+	return _loose_screw
+
+
+## The loose layer being dragged, or null.
+func get_loose_layer() -> RepairLayer:
+	return _loose_layer
+
+
+## The loose part being dragged, or null.
+func get_loose_part() -> Part:
+	return _loose_part
+
+
+## Lets go of a dragged part. Released over a socket, it tries to
+## fit: the right part snaps in, the wrong one nopes and stays on
+## the bench. Released over a drawer that may take it, the drawer
+## puts it away. A drawer that is still shutting takes nothing, so
+## the part is set down instead. Anywhere else it rests where it
+## fell, clamped to the bench.
+func _drop_loose_part(global_point: Vector2) -> void:
+	var part := _loose_part
+	_loose_part = null
+	if not is_instance_valid(part):
+		return
+	var socket := _find_socket(global_point)
+	if is_instance_valid(socket):
+		socket.try_fit(part)
+		if part.is_installed:
+			return
+		_set_down_part(part)
+		return
+	var drawer := G.level.get_drawer_at(global_point)
+	if is_instance_valid(drawer) and drawer.can_take_part():
+		drawer.take_part(part)
+		return
+	_set_down_part(part)
+
+
+## Sets a part down on the bench where it was let go.
+func _set_down_part(part: Part) -> void:
+	part.global_position = G.level.clamp_to_bench(part.global_position)
+	part.z_index = 10
+
+
+## Lets go of a dragged layer. Dropped close to home once it is
+## ready to go back, it tweens into its exact place. Anywhere else
+## on the bench it rests where it fell.
+func _drop_loose_layer() -> void:
+	var layer := _loose_layer
+	_loose_layer = null
+	if not is_instance_valid(layer):
+		return
+	layer.finish_drag()
+	if (
+		layer.is_ready_to_go_back()
+		and layer.global_position.distance_to(
+			layer.get_home_global_position(),
+		) <= G.settings.layer_seat_snap_px
+	):
+		layer.put_back()
 
 
 ## Moves the dragged item with the pointer and tilts it with the sideways
@@ -405,23 +639,36 @@ func _track_pointer(event: InputEventMouse) -> void:
 
 
 ## The pointing hand when empty, an open hand when empty and over
-## something it can grab, a drag hand while an item is held, hidden
-## while a tool is held. The arrow shape carries the point texture
-## and the pointing-hand shape the grab one (Main._set_up_cursors).
+## something it can grab (a tuggable part, a page that can flip),
+## and the grabbed hand while anything is held, dragged loose or
+## being tugged out. The cursor is never hidden: the arrow shape
+## carries the point texture, the pointing-hand shape the open
+## hand, and the drag shape the grabbed hand
+## (Main._set_up_cursors).
 func _update_cursor() -> void:
 	if not is_inside_tree() or not _is_level_running():
 		return
 	if not can_process():
 		_apply_cursor(Input.MOUSE_MODE_VISIBLE, Input.CURSOR_ARROW)
-	elif held is Repairable:
-		# The item is drawn at the pointer, so keep the pointer visible.
+	elif _is_tugging_part():
 		_apply_cursor(Input.MOUSE_MODE_VISIBLE, Input.CURSOR_DRAG)
-	elif is_instance_valid(held):
-		_apply_cursor(Input.MOUSE_MODE_HIDDEN, Input.CURSOR_ARROW)
+	elif (
+		is_instance_valid(_loose_screw)
+		or is_instance_valid(_loose_layer)
+		or is_instance_valid(_loose_part)
+		or is_instance_valid(held)
+	):
+		_apply_cursor(Input.MOUSE_MODE_VISIBLE, Input.CURSOR_DRAG)
 	elif _can_take(pointer_position):
 		_apply_cursor(Input.MOUSE_MODE_VISIBLE, Input.CURSOR_POINTING_HAND)
 	else:
 		_apply_cursor(Input.MOUSE_MODE_VISIBLE, Input.CURSOR_ARROW)
+
+
+## True while a broken part is being tugged out of its socket.
+func _is_tugging_part() -> bool:
+	var owner_socket := input_owner as PartSocket
+	return is_instance_valid(owner_socket) and owner_socket.is_tugging()
 
 
 ## False for the one frame a level run on its own (F6) waits to be
@@ -443,10 +690,6 @@ func _apply_cursor(
 
 
 func _can_take(global_point: Vector2) -> bool:
-	# Nothing on the bench can be taken while the parts menu is up.
-	var parts_menu := G.level.get_parts_menu()
-	if is_instance_valid(parts_menu) and parts_menu.is_blocking_bench():
-		return false
 	if is_instance_valid(input_owner):
 		# A broken part being wiggled out still shows the open hand.
 		# Every other running microgame takes the arrow instead.
@@ -456,19 +699,61 @@ func _can_take(global_point: Vector2) -> bool:
 			and owner_socket.has_tuggable_part()
 		)
 	var screw := G.level.get_resting_screw_at(global_point)
-	if is_instance_valid(screw) and screw.can_come_back():
+	if is_instance_valid(screw):
 		return true
-	if is_instance_valid(_find_ready_layer(global_point)):
+	if is_instance_valid(_find_loose_layer(global_point)):
 		return true
-	if is_instance_valid(_find_parts_bin(global_point)):
+	var item := G.level.active_repairable
+	if is_instance_valid(item):
+		var exposed := item.get_exposed_layer()
+		if (
+			is_instance_valid(exposed)
+			and not exposed.is_innermost()
+			and exposed.is_loose()
+			and exposed.has_point(global_point)
+		):
+			return true
+	var manual := (
+		G.level.get_node_or_null("InstructionManual") as InstructionManual
+	)
+	if (
+		is_instance_valid(manual)
+		and manual.is_point_over_flippable_page(global_point)
+	):
+		return true
+	for prop_name in ["InstructionManual", "%TicketCard"]:
+		var prop := G.level.get_node_or_null(prop_name) as LiftableProp
+		if not is_instance_valid(prop):
+			continue
+		# The open manual is covered by the page check above. Its
+		# cover only offers a grab while closed.
+		if (
+			prop is InstructionManual
+			and (prop as InstructionManual).state
+			!= InstructionManual.State.CLOSED
+		):
+			continue
+		if prop.is_point_on_prop(global_point):
+			return true
+	if is_instance_valid(G.level.get_loose_part_at(global_point)):
+		return true
+	var open_drawer := G.level.get_open_drawer()
+	if (
+		is_instance_valid(open_drawer)
+		and is_instance_valid(
+			G.level.get_drawer_part_at(open_drawer, global_point)
+		)
+	):
+		return true
+	if is_instance_valid(_find_drawer(global_point)):
 		return true
 	if is_instance_valid(_find_rack_tool(global_point)):
 		return true
 	var socket := _find_socket(global_point)
 	if is_instance_valid(socket) and socket.has_tuggable_part():
 		return true
-	var item := _find_item(global_point)
-	return is_instance_valid(item) and item.has_finished
+	var found_item := _find_item(global_point)
+	return is_instance_valid(found_item) and found_item.has_finished
 
 
 func _put_back_held() -> void:
@@ -479,37 +764,28 @@ func _put_back_held() -> void:
 		release()
 
 
-## The stored tool under a world position, either the tool itself or
-## its holder, or null. Pressing the held tool's own holder returns the
-## held tool.
+## The stored tool under a world position, or null. Only the
+## tool's own grab area counts: its holder does not.
 func _find_rack_tool(global_point: Vector2) -> Tool:
-	var mask := (
-		Settings.PhysicsLayer.TOOLS | Settings.PhysicsLayer.TOOL_HOLDERS
-	)
-	for area in _query(global_point, mask):
-		var tool: Tool = null
-		if area is ToolHolder:
-			tool = G.level.tools_by_type.get((area as ToolHolder).type)
-		else:
-			tool = _find_tool_owner(area)
+	for area in _query(global_point, Settings.PhysicsLayer.TOOLS):
+		var tool := _find_tool_owner(area)
 		if not is_instance_valid(tool):
 			continue
 		if (
 			tool.mode == Tool.Mode.STORED
 			or tool.mode == Tool.Mode.ENTERING
-			or (area is ToolHolder and tool == held)
 		):
 			return tool
 	return null
 
 
 ## The parts drawer under a world position, or null.
-func _find_parts_bin(global_point: Vector2) -> PartsBin:
+func _find_drawer(global_point: Vector2) -> Drawer:
 	for area in _query(global_point, Settings.PhysicsLayer.PARTS):
 		var node: Node = area
 		while is_instance_valid(node):
-			if node is PartsBin:
-				return node as PartsBin
+			if node is Drawer:
+				return node as Drawer
 			node = node.get_parent()
 	return null
 
@@ -544,6 +820,18 @@ func _find_ready_layer(global_point: Vector2) -> RepairLayer:
 	for index in range(layers.size() - 1, -1, -1):
 		var layer := layers[index]
 		if layer.is_ready_to_go_back() and layer.has_point(global_point):
+			return layer
+	return null
+
+
+## Any layer lying loose on the bench under a world position,
+## ready or not: all of them can be dragged around.
+func _find_loose_layer(global_point: Vector2) -> RepairLayer:
+	var layers := G.level.get_set_aside_layers()
+	# The top of the stack first.
+	for index in range(layers.size() - 1, -1, -1):
+		var layer := layers[index]
+		if not layer.is_moving and layer.has_point(global_point):
 			return layer
 	return null
 

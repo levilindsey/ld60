@@ -107,6 +107,49 @@ func _press_at(world_point: Vector2) -> void:
 	await _release_at(world_point)
 
 
+## Presses so the held tool's working end lands on `world_point`.
+## The cursor goes wherever it must for the working end to line up:
+## engaging a point checks the working end, not the cursor marker.
+## The offset is long, so the tool's held turn must settle before
+## it can be measured.
+func _press_tool_at(tool: Tool, world_point: Vector2) -> void:
+	var settle_frames := 0
+	while settle_frames < 90 and (
+		tool.follow_offset.length() > 0.5
+		or (
+			is_instance_valid(tool.rotation_tween)
+			and tool.rotation_tween.is_running()
+		)
+	):
+		await _physics_frames(1)
+		settle_frames += 1
+	var offset := tool.get_work_end_position() - tool.get_tip_position()
+	await _move_to(world_point - offset)
+	offset = tool.get_work_end_position() - tool.get_tip_position()
+	await _press_at(world_point - offset)
+
+
+## Takes a stored tool by pressing the tool itself. Its holder
+## does not count, so this presses where the tool's holder shape
+## sits on the tool as it rests.
+func _grab_tool(tool: Tool) -> void:
+	await _press_at(tool._get_holder_shape().global_position)
+
+
+## Glides a held tool onto its holder until the tool's holder
+## area puts it away on its own. No press on the holder counts.
+func _put_tool_away(tool: Tool) -> void:
+	var holder_position := G.level.get_tool_holder_position(tool.type)
+	for _attempt in 90:
+		if tool.mode == Tool.Mode.STORED:
+			return
+		var offset := (
+			tool._get_holder_shape().global_position
+			- tool.get_tip_position()
+		)
+		await _move_to(holder_position - offset)
+
+
 ## A press and a release with no motion first, like a finger landing
 ## somewhere new.
 func _tap_at(world_point: Vector2) -> void:

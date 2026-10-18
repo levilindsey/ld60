@@ -21,6 +21,19 @@ enum Mode {
 	IN_USE,
 }
 
+## How this tool's shadow is drawn while it rests in its holder,
+## picked from where the tool meets the holder at `holder_area`:
+## the glue bottle sits on a shelf (an ellipse under the contact),
+## the rag hangs on a hook (its full shape, offset down), and the
+## rest rest on shoulders at a neck (only the shape at and below
+## the contact casts). While the tool is in use its full shape
+## always casts.
+enum HolderShadow {
+	ELLIPSE_AT_HOLDER,
+	SILHOUETTE,
+	SILHOUETTE_BELOW_HOLDER,
+}
+
 const ROTATE_DURATION_SEC := 0.3
 const POSITION_DURATION_SEC := 0.3
 ## How many times the tool jerks in the "nope" shake.
@@ -41,6 +54,10 @@ const _NOPE_SHAKE_STEPS := 4
 
 @export var stored_rotation_deg := 0.0
 @export var held_rotation_deg := 0.0
+## The in-holder shadow treatment for this tool (see HolderShadow).
+## Set per tool scene: glue is ELLIPSE_AT_HOLDER, the rag is
+## SILHOUETTE, the rest are SILHOUETTE_BELOW_HOLDER.
+@export var holder_shadow := HolderShadow.SILHOUETTE_BELOW_HOLDER
 
 var mode := Mode.ENTERING:
 	set(to_mode):
@@ -58,8 +75,14 @@ var position_tween: Tween
 var rotation_tween: Tween
 
 var _shake_offset := Vector2.ZERO
+var _hint_hint: OutlineHint
+var _is_hint_active := false
 var _follow_offset_tween: Tween
 var _shake_tween: Tween
+var _drop_shadow: DropShadow
+## True once the tip has been outside this tool's holder during
+## the current hold, which arms putting it away by its tip.
+var _tip_left_holder := false
 
 
 func _ready() -> void:
@@ -83,6 +106,13 @@ func _ready() -> void:
 	)
 	G.check(is_instance_valid(_get_holder_shape()))
 	holder_area.area_entered.connect(_on_holder_area_entered)
+	_drop_shadow = DropShadow.attach_silhouette(
+		self,
+		[],
+		Vector2(0.0, 6.0),
+		func() -> bool: return mode != Mode.HELD,
+	)
+	_update_drop_shadow()
 
 
 func _physics_process(_delta: float) -> void:
@@ -90,9 +120,78 @@ func _physics_process(_delta: float) -> void:
 		place_tip(
 			G.level.hand.pointer_position + follow_offset + _shake_offset
 		)
+		_check_holder_return()
+
+
+## Dragging the tip into this tool's own holder puts the tool
+## away, like dragging its neck there already does. The tip must
+## leave the holder first, so taking the tool off the rack (its
+## tip starts beyond the holder) never puts it straight back.
+func _check_holder_return() -> void:
+	if not is_instance_valid(G.level):
+		return
+	if follow_offset.length() > 2.0:
+		# Still gliding from the rack into the hand.
+		return
+	if _is_tip_over_own_holder():
+		if _tip_left_holder:
+			put_away()
+	else:
+		_tip_left_holder = true
+
+
+## Whether the tip (the cursor position) is inside this tool's
+## own ToolHolder area right now.
+func _is_tip_over_own_holder() -> bool:
+	var query := PhysicsPointQueryParameters2D.new()
+	query.position = get_tip_position()
+	query.collision_mask = Settings.PhysicsLayer.TOOL_HOLDERS
+	query.collide_with_areas = true
+	query.collide_with_bodies = false
+	var hits := get_world_2d().direct_space_state.intersect_point(
+		query,
+		4,
+	)
+	for hit in hits:
+		var holder := hit.get("collider") as ToolHolder
+		if is_instance_valid(holder) and holder.type == type:
+			return true
+	return false
+
+
+## Points the drop shadow at the treatment this mode calls for:
+## the holder treatment while stored, the full shape while in use.
+func _update_drop_shadow() -> void:
+	if not is_instance_valid(_drop_shadow):
+		return
+	match mode:
+		Mode.ENTERING, Mode.STORED:
+			match holder_shadow:
+				HolderShadow.ELLIPSE_AT_HOLDER:
+					_drop_shadow.anchor = holder_area
+					_drop_shadow.clip_holder = null
+					_drop_shadow.size_px = Vector2(100.0, 24.0)
+					_drop_shadow.offset_px = Vector2(0.0, -4.0)
+					_drop_shadow.kind = DropShadow.Kind.ELLIPSE
+				HolderShadow.SILHOUETTE:
+					_drop_shadow.anchor = null
+					_drop_shadow.clip_holder = null
+					_drop_shadow.offset_px = Vector2(0.0, 8.0)
+					_drop_shadow.kind = DropShadow.Kind.SILHOUETTE
+				HolderShadow.SILHOUETTE_BELOW_HOLDER:
+					_drop_shadow.anchor = null
+					_drop_shadow.clip_holder = _get_holder_shape()
+					_drop_shadow.offset_px = Vector2(0.0, 6.0)
+					_drop_shadow.kind = DropShadow.Kind.SILHOUETTE
+		Mode.IN_USE:
+			_drop_shadow.anchor = null
+			_drop_shadow.clip_holder = null
+			_drop_shadow.offset_px = Vector2(0.0, 6.0)
+			_drop_shadow.kind = DropShadow.Kind.SILHOUETTE
 
 
 func _set_mode(to_mode: Mode, _from_mode: Mode) -> void:
+	_update_drop_shadow()
 	match to_mode:
 		Mode.ENTERING, Mode.STORED:
 			tween_rotation(deg_to_rad(stored_rotation_deg))
@@ -113,6 +212,7 @@ func _set_mode(to_mode: Mode, _from_mode: Mode) -> void:
 ## Called by the hand when it takes this tool.
 func pick_up() -> void:
 	var from_tip := get_tip_position()
+	_tip_left_holder = false
 	mode = Mode.HELD
 	# Glide from the rack into the hand (LX5).
 	ease_follow_offset_from(from_tip - G.level.hand.pointer_position)
@@ -126,6 +226,18 @@ func put_away() -> void:
 	engaged_point = null
 	_cancel_follow_offset()
 	mode = Mode.STORED
+
+
+## Puts the tool straight into its holder, with no glide.
+func snap_to_holder() -> void:
+	put_away()
+	if is_instance_valid(rotation_tween):
+		rotation_tween.kill()
+	if is_instance_valid(position_tween):
+		position_tween.kill()
+	rotation = deg_to_rad(stored_rotation_deg)
+	global_position = _get_stored_position()
+	reset_physics_interpolation()
 
 
 ## Called by a point when it engages this tool. The point places the
@@ -181,6 +293,54 @@ func nope() -> void:
 	_shake_tween.tween_property(self, "_shake_offset", Vector2.ZERO, step_sec)
 
 
+## Shows or hides the idle hint outline around this tool, in the
+## shape of its grab area. The tracker only lights a tool after
+## the longer delay, and only while it rests stored in the rack.
+func set_hint_active(is_active: bool) -> void:
+	_is_hint_active = is_active
+	if is_active:
+		var points := _get_hint_polygon()
+		if points.size() < 3:
+			return
+		if not is_instance_valid(_hint_hint):
+			_hint_hint = OutlineHint.new()
+			add_child(_hint_hint)
+		_hint_hint.polygon = points
+		_hint_hint.set_active(true)
+	elif is_instance_valid(_hint_hint):
+		_hint_hint.set_active(false)
+
+
+## True while the idle hint outline shows on this tool.
+func is_hint_active() -> bool:
+	return (
+		_is_hint_active
+		and is_instance_valid(_hint_hint)
+		and _hint_hint.is_active()
+	)
+
+
+func _get_hint_polygon() -> PackedVector2Array:
+	if not is_instance_valid(grab_area):
+		return PackedVector2Array()
+	for child in grab_area.get_children():
+		var local_points := PackedVector2Array()
+		if child is CollisionShape2D:
+			local_points = OutlineHint.get_shape_polygon(
+				child as CollisionShape2D,
+			)
+		elif child is CollisionPolygon2D:
+			local_points = (child as CollisionPolygon2D).polygon
+		if local_points.size() < 3:
+			continue
+		var polygon_node := child as Node2D
+		var points := PackedVector2Array()
+		for point in local_points:
+			points.append(to_local(polygon_node.to_global(point)))
+		return points
+	return PackedVector2Array()
+
+
 func get_tip_position() -> Vector2:
 	return cursor_position.global_position
 
@@ -188,6 +348,27 @@ func get_tip_position() -> Vector2:
 ## Moves the tool so its tip is at a world position.
 func place_tip(global_point: Vector2) -> void:
 	global_position = global_point - (get_tip_position() - global_position)
+
+
+## The working end's world position: where this tool acts on a point.
+## It is usually well away from the cursor marker, so engaging a point
+## lines this up with the point, not the marker.
+func get_work_end_position() -> Vector2:
+	return interaction_area.global_position
+
+
+## Moves the tool so its working end is at a world position.
+func place_work_end(global_point: Vector2) -> void:
+	global_position = global_point - (get_work_end_position() - global_position)
+
+
+## The collision shape of the working end, the shape that must line
+## up with a point's area to engage it.
+func get_interaction_shape() -> CollisionShape2D:
+	for child in interaction_area.get_children():
+		if child is CollisionShape2D:
+			return child as CollisionShape2D
+	return null
 
 
 ## Puts the tip at a press point and drops any follow offset still

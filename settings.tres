@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://src/repairables/finish_sparkle.tscn" id="6_sparkle"]
 [ext_resource type="Texture2D" uid="uid://c1wq44nrt4htx" path="res://assets/images/cursors/cursor_grab.png" id="7_hand"]
 [ext_resource type="Texture2D" uid="uid://by5dmf6ybbvjo" path="res://assets/images/cursors/cursor_point.png" id="8_point"]
+[ext_resource type="Texture2D" uid="uid://s5opskck1h1i" path="res://assets/images/cursors/cursor_grabbed.png" id="9_grabbed"]
 [ext_resource type="PackedScene" uid="uid://k22j46btanto" path="res://src/tools/rag.tscn" id="9_rag"]
 [ext_resource type="PackedScene" uid="uid://loo6ls40aw13" path="res://src/tools/air_blower.tscn" id="10_blower"]
 [ext_resource type="PackedScene" uid="uid://coo7afm5ydr44" path="res://src/tools/hammer.tscn" id="11_hammer"]
@@ -32,6 +33,7 @@ pauses_on_focus_out = false
 default_level_scene = ExtResource("1_w7hap")
 point_cursor_texture = ExtResource("8_point")
 grab_cursor_texture = ExtResource("7_hand")
+grabbed_cursor_texture = ExtResource("9_grabbed")
 outline_hint_material = SubResource("ShaderMaterial_outline")
 finish_sparkle_scene = ExtResource("6_sparkle")
 flat_head_screw_repairable_scene = ExtResource("3_yixrw")

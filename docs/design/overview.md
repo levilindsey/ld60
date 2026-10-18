@@ -46,6 +46,7 @@ future that never happened.
 | [glue.md](glue.md) | Gluing cracks and clips | LX22 | M2 |
 | [stretch_tools.md](stretch_tools.md) | Tweezers, soldering iron, more | LX29, LX30 | Stretch |
 | [booklet.md](booklet.md) | Instruction booklet ideas | LX28 | Later |
+| [hints.md](hints.md) | The derived repair sequence, idle hints | LX62 | M1 |
 
 ## The repair loop
 

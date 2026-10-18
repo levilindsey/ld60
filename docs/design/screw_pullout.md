@@ -9,6 +9,22 @@ Levi's flow (2026-10-17), with his animation in
 still in the hole. `RemoveScrew` (0.3 s) pulls the screw out while the
 top-down head squashes and fades into the angled view.
 
+## Amendment (2026-10-18, bench drag stage 1)
+
+Levi replaced the automatic travel below with dragging. Steps 3
+and 4 now read: at the end of the pull-out the screw comes to rest
+where it landed and does not slide to a rest spot, and there is no
+press to send it back. The player drags resting screws and loose
+layers anywhere inside the level's bench polygon (`Level.bench_
+polygon`); a drag that leaves the bench drops the piece at the
+edge. When the layer is back on, dropping a screw within
+`screw_seat_snap_px` of its hole seats it: it arcs down into the
+hole from above (`screw_seat_arc_px`). The twists also raise the
+head twice as far (the `RemoveScrew` first key doubled, about
+12 px). The rest-spot row is unused. Stage 2 (rolling set-down,
+shadows, overlap-aware draw order, drawer parts on the bench) is
+LX60.
+
 ## The flow
 
 1. Unscrewing: the twists raise the screw out of its hole (`Screw.slide`,

@@ -6,8 +6,44 @@ belts (LX31) and part orientation (LX32).
 
 ## What the player does
 
-Wiggle the broken part loose and toss it. Open the parts drawer,
-pick out a replacement and fit it into the empty spot.
+Wiggle the broken part loose and toss it. Open a parts drawer,
+drag out a replacement and fit it into the empty spot.
+
+## The diegetic drawers (current)
+
+Decision (Levi, 2026-10-18): the parts menu below is gone. Three
+diegetic drawers (`src/level/drawer_new.tscn`, `Drawer`) stack
+vertically on the left side of the level. The art is three
+orthographic views (top, front, side) on one shared canvas laid
+out as an unfolded box. At rest the top and side views are scaled
+down and skewed next to the front, faking a slight angle. The
+"open" animation slides the drawer out of its slot (clipped by an
+L-shaped mask, like the screws leaving their holes), then turns
+it to mostly top-down, with the front and side left as thin
+skewed strips, while the `%Mover` wrapper tweens it to the center
+of the level. Putting it back runs the whole thing in reverse.
+
+- A press on a shut drawer plays the open animation, then slides
+  the drawer to the center. Its stored parts appear at random
+  spots inside it. A press outside the open drawer hides the
+  parts, slides the drawer back and reverses the animation.
+- At the start of each repairable, the drawers are restocked: one
+  part per socket the item needs, plus decoys
+  (`Settings.decoy_part_count`), shuffled across the three
+  drawers, so the player hunts.
+- Parts are dragged, not held. Pressing a part in an open drawer
+  takes it out and the drawer shuts behind it. A loose part is
+  dragged around the bench, set down anywhere on it, and picked
+  up again. Releasing it over a socket fits the right part and
+  nopes the wrong one. Releasing it over a shut (or open) drawer
+  puts it away: the drawer opens halfway while the part rises
+  over its top edge, sinks down inside, and shuts again. A drawer
+  that is still shutting takes nothing; the part is set down.
+- When an item goes into the outbox, parts left out on the bench
+  are cleaned up into one drawer picked at random, with the same
+  rise-and-sink put-away.
+
+The menu description below is kept for the record.
 
 ## Where the bin lives
 

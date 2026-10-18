@@ -28,6 +28,10 @@ var is_on := true
 ## True from the moment it starts to lift off or go back until it
 ## lands.
 var is_moving := false
+## True once the layer has been taken off the item at least once.
+## The repair sequence uses it to tell driving screws out from
+## driving the same screws back in.
+var has_been_removed := false
 
 var _home_parent: Node
 var _home_index := 0
@@ -43,6 +47,7 @@ var _pulse_tween: Tween
 var _outline_hint: OutlineHint
 var _outlined_art: Sprite2D
 var _art_material_before_outline: Material
+var _is_hint_active := false
 
 
 func _ready() -> void:
@@ -53,6 +58,18 @@ func _ready() -> void:
 	_home_rotation = rotation
 	_home_scale = scale
 	_rest_scale = scale
+	DropShadow.attach(
+		self,
+		Vector2(150.0, 30.0),
+		Vector2(5.0, 58.0),
+		func() -> bool:
+			return (
+				not is_on
+				and is_instance_valid(G.level)
+				and is_instance_valid(G.level.hand)
+				and not G.level.hand.is_dragging_loose_layer(self)
+			),
+	)
 
 
 ## The points on this layer. Points inside the art don't count.
@@ -121,17 +138,11 @@ func is_ready_to_go_back() -> bool:
 	)
 
 
-## Called by a point on this layer when it finishes. The last fastener
-## out makes the layer lift off.
-func on_point_finished(point: InteractionPoint) -> void:
-	if (
-		point.role == InteractionPoint.Role.FASTENER
-		and is_on
-		and not is_moving
-		and not is_innermost()
-		and is_loose()
-	):
-		lift_off()
+## Called by a point on this layer when it finishes. The last
+## fastener out only makes the layer loose. It stays where it is
+## until the player drags it off the item.
+func on_point_finished(_point: InteractionPoint) -> void:
+	pass
 
 
 ## Lifts this loose layer off the item after a short delay and moves it
@@ -146,12 +157,50 @@ func lift_off() -> void:
 	_move_tween.tween_callback(_start_lift)
 
 
+## Where this layer sits on the item, in world pixels.
+func get_home_global_position() -> Vector2:
+	if _home_parent is CanvasItem:
+		return (_home_parent as CanvasItem).to_global(_home_position)
+	return _home_position
+
+
+## The player starts dragging this loose layer off the item. It
+## leaves the item's stack and becomes a loose piece on the bench,
+## staying exactly where it was drawn.
+func take_off_for_drag() -> void:
+	G.check(is_on and not is_innermost() and is_loose())
+	var spot := G.level.get_set_aside_spot()
+	var kept_global := global_position
+	var kept_rotation := global_rotation
+	has_been_removed = true
+	is_on = false
+	is_moving = true
+	z_index = 10
+	_stop_outline()
+	reparent(spot)
+	global_position = kept_global
+	global_rotation = kept_rotation
+	scale = _home_scale
+	_rest_scale = _home_scale
+	reset_physics_interpolation()
+	if is_instance_valid(item):
+		item.on_layer_removed(self)
+
+
+## The player let go of this dragged layer somewhere on the bench.
+## It rests there until it is dragged again.
+func finish_drag() -> void:
+	is_moving = false
+	_rest_scale = scale
+
+
 ## Puts this set-aside layer back on the item. Its fasteners come back
 ## raised and loose, in install mode.
 func put_back() -> void:
 	G.check(not is_on)
 	is_on = true
 	is_moving = true
+	z_index = 0
 	_stop_outline()
 	reparent(_home_parent)
 	_home_parent.move_child(
@@ -169,6 +218,23 @@ func update_outline() -> void:
 		_start_outline()
 	else:
 		_stop_outline()
+
+
+## Shows or hides the idle hint outline on this layer. It shares
+## the ready to go back outline's drawing, but clearing the hint
+## never clears that outline while the layer is ready.
+func set_hint_active(is_active: bool) -> void:
+	_is_hint_active = is_active
+	if is_active:
+		_start_outline()
+	elif not is_ready_to_go_back():
+		_stop_outline()
+
+
+## True while an outline shows on this layer, the idle hint or
+## the ready to go back outline the game shows on its own.
+func is_hint_active() -> bool:
+	return is_showing_outline()
 
 
 ## True while the outline that says this layer can go back on shows.
@@ -241,6 +307,7 @@ func has_point(global_point: Vector2) -> bool:
 
 
 func _start_lift() -> void:
+	has_been_removed = true
 	is_on = false
 	var stack_index := G.level.get_set_aside_layers().size()
 	reparent(G.level.get_set_aside_spot())

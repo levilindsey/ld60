@@ -16,6 +16,8 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 
 ## In progress
 
+
+
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
 
@@ -103,9 +105,19 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 - **LX26** · Web export and itch.io upload (`scripts/export_web.ps1`).
   Check decal clipping in Firefox, Safari and the Pixel's Chrome; only
   Chrome and Edge are verified (`docs/design/decals.md` "Clipping").
+- **LX60** · Bench polish, stage 2 (stage 1 drag core landed;
+  the roll on set-down after a drag, the pick-up turn and
+  shape-matching drop shadows are done: tools pick a holder
+  treatment by enum, screws/parts cast silhouettes that follow
+  their rotation, ticket/manual have their authored shadows):
+  overlap-aware draw order inside each group (a piece rises
+  only once dragged clear of what covers it).
 
 ## Residuals (known, not fixed)
 
+- **LX63** · `level.tscn` loads `res://src/level/drawer.tscn`, but the
+  file is `Drawer.tscn` (ef836b1). Windows hides it; a case-sensitive
+  export (web) may fail to load it. Rename one to match.
 - **LX59** · `full_loop`, `full_loop_booklet`, `item_flow`, `screws`
   and `parts` probes fail at HEAD 2d0096b (checked 2026-10-18 on a
   clean worktree, so not LX58 fallout): the Phillips-in-test-box and
@@ -121,8 +133,8 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   rejects over 100 MB). Levi: leave them for now (2026-10-17). Since
   then: a 20 MB `window.kra-autosave.kra` (cb47839, deleted in 2d71113)
   a 9.6 MB `room!!!!!!.png5857331650.tmp` (2d71113), and
-  `screwwwzzzzzzflat.png~` (4e44a86). Ignoring `*~`,
-  `*autosave*` and `*.tmp` in `.gitignore` would stop new ones.
+  `screwwwzzzzzzflat.png~` (4e44a86). `.gitignore` now skips `*~`
+  and `*.kra-autosave.kra`; lowercase `*.tmp` is still not ignored.
 - **LX36** · Decals have no cap per part, so repeated unseats pile up,
   and a part that draws nothing (a plain `Node2D`) shows its decals
   unclipped, with no warning (`src/decals/decal_spawner.gd`).
@@ -183,6 +195,19 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX62** · Idle hints on a derived repair sequence: each item's
+  steps are autodetermined from its layers, fasteners, faults and
+  sockets (`RepairSequence`); after 7 s without a correct
+  interaction the current step's target lights, after 16 s its
+  tool (or the fitting socket) too, every drawer for a fetch, the
+  outbox for shipping. Done in the working-tree landing
+  (2026-10-18). Levi still to play it for the delays' feel (LX41).
+  Design: `docs/design/hints.md`, probe: `tests/hints/`.
+- **LX61** · Diegetic parts drawers: three clip-masked art drawers
+  replace the parts menu; parts hide in them per item, drag out to
+  the bench, drag back to put away, leftovers cleaned up at the
+  outbox. Done in the working-tree landing (2026-10-18). Levi
+  still to play it and align the drawers with the room art (LX41).
 - **LX22** · Glue along cracks: squeeze, trace, dry, blobs
   (`docs/design/glue.md`). Done in 37959f3 (2026-10-17) with the
   placeholder bottle. Levi still to play it (LX41).

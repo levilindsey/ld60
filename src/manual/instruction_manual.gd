@@ -1,3 +1,4 @@
+@tool
 class_name InstructionManual
 extends LiftableProp
 ## An in-world instruction manual. Starts closed on the desk; tapping the
@@ -60,6 +61,9 @@ var _drag_velocity_x := 0.0
 
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		super()
+		return
 	%LeftPage.position.x = -_PAGE_WIDTH / 2.0 + spine_overlap
 	%RightPage.position.x = _PAGE_WIDTH / 2.0 - spine_overlap
 	%Closed.position.x = -spine_overlap
@@ -84,6 +88,7 @@ func open() -> void:
 	G.print("Opening instruction manual", ScaffolderLog.CATEGORY_INTERACTION)
 	_play_sound(&"page_flip")
 	state = State.LIFTING
+	_set_resting_order(false)
 	_tween_lift(0.0, 1.0, _on_lifted)
 
 
@@ -94,14 +99,12 @@ func close() -> void:
 	G.print("Closing instruction manual", ScaffolderLog.CATEGORY_INTERACTION)
 	_play_sound(&"pages_flip")
 	state = State.CLOSING
-	close_button.pop_out()
 	_turn_back_to_first_spread()
 
 
 func _on_lifted() -> void:
 	state = State.OPENING
 	%RightPage.visible = true
-	close_button.pop_in()
 	G.time.tween_property(
 		%Closed,
 		"scale:x",
@@ -133,9 +136,6 @@ func _on_left_page_unfolded() -> void:
 
 
 func _handle_press(event: InputEventMouseButton) -> bool:
-	if close_button.is_pressed_by(event):
-		close()
-		return true
 	match state:
 		State.CLOSED:
 			if not _is_on_warped_sprite(event):
@@ -270,6 +270,7 @@ func _on_cover_closed() -> void:
 
 
 func _on_lowered() -> void:
+	_set_resting_order(true)
 	state = State.CLOSED
 	closed.emit()
 
@@ -343,3 +344,17 @@ func _get_page_content(page_index: int) -> Texture2D:
 
 func _get_local_x(event: InputEventMouse) -> float:
 	return (make_input_local(event) as InputEventMouse).position.x
+
+
+## True while the book is open and a world point is over a page
+## that can still turn: the right page needs a spread after this
+## one, the left page needs one before it.
+func is_point_over_flippable_page(global_point: Vector2) -> bool:
+	if state != State.IDLE:
+		return false
+	var shape_node := %ClickAreaShape as CollisionShape2D
+	var local := shape_node.to_local(global_point)
+	var size := (shape_node.shape as RectangleShape2D).size
+	if not Rect2(-size / 2.0, size).has_point(local):
+		return false
+	return _has_next_spread() if local.x >= 0.0 else spread_index > 0

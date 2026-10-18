@@ -72,6 +72,48 @@ static func get_art_polygon(art: CanvasItem) -> PackedVector2Array:
 	return PackedVector2Array()
 
 
+## The outline shape of a collision shape, in the shape node's
+## local points. Circles become a twenty sided polygon, rectangles
+## their corners and capsules their bounding box. Empty when the
+## shape has no flat outline.
+static func get_shape_polygon(
+	shape_node: CollisionShape2D,
+) -> PackedVector2Array:
+	if not is_instance_valid(shape_node):
+		return PackedVector2Array()
+	if not is_instance_valid(shape_node.shape):
+		return PackedVector2Array()
+	var center := shape_node.position
+	if shape_node.shape is CircleShape2D:
+		var radius := (shape_node.shape as CircleShape2D).radius
+		var points := PackedVector2Array()
+		for index in 20:
+			var angle := TAU * float(index) / 20.0
+			points.append(center + Vector2.from_angle(angle) * radius)
+		return points
+	if shape_node.shape is RectangleShape2D:
+		var half := (shape_node.shape as RectangleShape2D).size * 0.5
+		return PackedVector2Array([
+			center + Vector2(-half.x, -half.y),
+			center + Vector2(half.x, -half.y),
+			center + half,
+			center + Vector2(-half.x, half.y),
+		])
+	if shape_node.shape is CapsuleShape2D:
+		var capsule := shape_node.shape as CapsuleShape2D
+		var half := Vector2(
+			capsule.radius,
+			capsule.height * 0.5,
+		)
+		return PackedVector2Array([
+			center + Vector2(-half.x, -half.y),
+			center + Vector2(half.x, -half.y),
+			center + half,
+			center + Vector2(-half.x, half.y),
+		])
+	return PackedVector2Array()
+
+
 func _ready() -> void:
 	z_index = 10
 	visible = false

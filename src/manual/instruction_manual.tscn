@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://src/manual/instruction_manual.gd" id="1_manual"]
 [ext_resource type="PackedScene" path="res://src/manual/manual_page.tscn" id="2_page"]
@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" path="res://assets/images/manual_outline_right.png" id="5_outline_right"]
 [ext_resource type="Texture2D" path="res://assets/images/manual_front.png" id="6_cover"]
 [ext_resource type="Texture2D" path="res://assets/images/manual_spine.png" id="7_spine"]
-[ext_resource type="PackedScene" path="res://src/props/prop_close_button.tscn" id="8_close"]
+
 [ext_resource type="Shader" path="res://assets/shaders/perspective_quad.gdshader" id="9_perspective"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_spread"]
@@ -20,11 +20,12 @@ shader_parameter/top_right = Vector2(120, -160)
 shader_parameter/bottom_right = Vector2(120, 160)
 shader_parameter/bottom_left = Vector2(-120, 160)
 
-[node name="InstructionManual" type="Node2D" node_paths=PackedStringArray("warped_sprite", "close_button")]
+[node name="InstructionManual" type="Node2D" node_paths=PackedStringArray("warped_sprite", "shadow")]
 z_index = 90
 script = ExtResource("1_manual")
 warped_sprite = NodePath("Closed/Cover")
-close_button = NodePath("CloseButton")
+
+shadow = NodePath("Closed/CoverShadow")
 
 [node name="Spine" type="Sprite2D" parent="."]
 unique_name_in_owner = true
@@ -72,14 +73,17 @@ outline = ExtResource("4_outline_left")
 [node name="Closed" type="Node2D" parent="."]
 unique_name_in_owner = true
 
+[node name="CoverShadow" type="Sprite2D" parent="Closed"]
+self_modulate = Color(0, 0, 0, 0.4)
+material = SubResource("ShaderMaterial_cover")
+position = Vector2(128, 12)
+texture = ExtResource("6_cover")
+
 [node name="Cover" type="Sprite2D" parent="Closed"]
 unique_name_in_owner = true
 material = SubResource("ShaderMaterial_cover")
 position = Vector2(120, 0)
 texture = ExtResource("6_cover")
-
-[node name="CloseButton" parent="." instance=ExtResource("8_close")]
-position = Vector2(266, -186)
 
 [node name="ClickArea" type="Area2D" parent="."]
 unique_name_in_owner = true
