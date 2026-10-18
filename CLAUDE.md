@@ -72,7 +72,7 @@ that finishes it.
 - `src/ui/hud/` - `hud.gd`/`hud.tscn`: title/pause/credits overlays.
 - `src/ui/super_hud/` - Top-level HUD host with `debug_console`.
 - `assets/` - `fonts/` (Special Elite for menus and printed paper,
-  Caveat for handwriting), `images/` (tool art, `props/` background + Krita source, `gui/`
+  Reenie Beanie for handwriting), `images/` (tool art, `props/` background + Krita source, `gui/`
   buttons, `placeholders/`), `shaders/sprite_outline.gdshader`.
 - `docs/design/` - One design doc per piece of work.
 - `scripts/` - `check.ps1` (run after every change), `godot_helpers.ps1`

@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://src/ui/ticket/ticket_card.gd" id="1_ticket"]
 [ext_resource type="Theme" uid="uid://cl3pkwueh4mag" path="res://src/core/main_theme.tres" id="2_theme"]
 [ext_resource type="FontFile" path="res://assets/fonts/special_elite/SpecialElite-Regular.ttf" id="3_elite"]
-[ext_resource type="FontFile" path="res://assets/fonts/caveat/Caveat-Bold.ttf" id="4_caveat"]
+[ext_resource type="FontFile" path="res://assets/fonts/reenie_beanie/ReenieBeanie.ttf" id="4_handwriting"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_paper"]
 content_margin_left = 18.0
@@ -94,7 +94,7 @@ color = Color(0.4, 0.3, 0.18, 0.6)
 [node name="ComplaintLabel" type="Label" parent="Slide/Paper/Contents"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_fonts/font = ExtResource("4_caveat")
-theme_override_font_sizes/font_size = 30
+theme_override_fonts/font = ExtResource("4_handwriting")
+theme_override_font_sizes/font_size = 40
 text = "Complaint"
 autowrap_mode = 3
