@@ -161,11 +161,17 @@ enum PhysicsLayer {
 @export var flathead_slip_max := 0.6
 @export_group("")
 
-@export_group("Screw slide")
-## How far a screw slides up the screen, in world pixels, while it turns
-## all the way out. It slides back down as it turns in
-## (docs/design/screws.md "Removal").
-@export var screw_slide_px := 6.0
+@export_group("Screw rest")
+## Where a pulled-out screw waits on the bench while its layer is off
+## (docs/design/screw_pullout.md). The first removed screw rests at the
+## first position, and each next one a step along the row. A full row
+## starts a new one a row step away.
+@export var screw_rest_first_position := Vector2(-440.0, 80.0)
+@export var screw_rest_step := Vector2(36.0, 0.0)
+@export var screw_rest_row_step := Vector2(0.0, 56.0)
+@export var screw_rest_row_size := 5
+## Seconds a screw takes to slide from its hole to its rest spot, and back.
+@export var screw_travel_sec := 0.4
 @export_group("")
 
 

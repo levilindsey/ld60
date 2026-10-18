@@ -233,13 +233,26 @@ func _handle_press(global_point: Vector2) -> bool:
 			input_owner.on_pointer_pressed(global_point)
 		return true
 	return (
-		_press_set_aside_layer(global_point)
+		_press_resting_screw(global_point)
+		or _press_set_aside_layer(global_point)
 		or _press_drawer(global_point)
 		or _press_rack(global_point)
 		or _press_with_part(global_point)
 		or _press_with_tool(global_point)
 		or _press_with_empty_hand(global_point)
 	)
+
+
+## Over a screw resting on the bench: once its layer is back on, send it
+## back to its hole, whatever the hand holds. Before that the press does
+## nothing (docs/design/screw_pullout.md).
+func _press_resting_screw(global_point: Vector2) -> bool:
+	var screw := G.level.get_resting_screw_at(global_point)
+	if not is_instance_valid(screw):
+		return false
+	if screw.can_come_back():
+		screw.come_back()
+	return true
 
 
 ## 2. Over a set-aside layer that is ready to go back: put it back.
@@ -417,6 +430,9 @@ func _apply_cursor(
 func _can_take(global_point: Vector2) -> bool:
 	if is_instance_valid(input_owner):
 		return false
+	var screw := G.level.get_resting_screw_at(global_point)
+	if is_instance_valid(screw) and screw.can_come_back():
+		return true
 	if is_instance_valid(_find_ready_layer(global_point)):
 		return true
 	if is_instance_valid(_find_parts_bin(global_point)):

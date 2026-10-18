@@ -21,6 +21,11 @@ var hand: Hand:
 	get:
 		return %Hand
 
+## The screws resting on the bench, by rest spot (docs/design/
+## screw_pullout.md). A free spot holds null or a freed screw. It is
+## untyped so a freed screw never lands in a typed variable.
+var _resting_screws: Array = []
+
 
 func _enter_tree() -> void:
 	if not is_instance_valid(G.main):
@@ -168,6 +173,53 @@ func get_set_aside_layers() -> Array[RepairLayer]:
 		if child is RepairLayer:
 			layers.append(child as RepairLayer)
 	return layers
+
+
+## Gives `screw` the first free rest spot on the bench, or the one it
+## already has, and returns that spot's world position.
+func take_screw_rest_spot(screw: Screw) -> Vector2:
+	var index := _resting_screws.find(screw)
+	if index < 0:
+		index = 0
+		while (
+			index < _resting_screws.size()
+			and is_instance_valid(_resting_screws[index])
+		):
+			index += 1
+		if index == _resting_screws.size():
+			_resting_screws.append(screw)
+		else:
+			_resting_screws[index] = screw
+	return get_screw_rest_position(index)
+
+
+## Frees the rest spot of `screw`, if it has one.
+func free_screw_rest_spot(screw: Screw) -> void:
+	var index := _resting_screws.find(screw)
+	if index >= 0:
+		_resting_screws[index] = null
+
+
+## The world position of rest spot number `index`, counting from 0.
+func get_screw_rest_position(index: int) -> Vector2:
+	var row_size := maxi(G.settings.screw_rest_row_size, 1)
+	return (
+		G.settings.screw_rest_first_position
+		+ G.settings.screw_rest_step * (index % row_size)
+		+ G.settings.screw_rest_row_step * floori(float(index) / row_size)
+	)
+
+
+## The resting screw that a press at a world position would bring back,
+## or null.
+func get_resting_screw_at(global_point: Vector2) -> Screw:
+	for entry: Variant in _resting_screws:
+		if not is_instance_valid(entry):
+			continue
+		var screw := entry as Screw
+		if screw.has_rest_point(global_point):
+			return screw
+	return null
 
 
 ## Adds a decal of `kind` to `part` and returns it, or null if it can't.

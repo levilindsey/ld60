@@ -1,46 +1,213 @@
 [gd_scene format=3 uid="uid://cg17ymgfrol22"]
 
 [ext_resource type="Script" uid="uid://dnhtim17pwlns" path="res://src/interaction_points/flat_head_screw.gd" id="1_8uvch"]
+[ext_resource type="Texture2D" uid="uid://bbsbswnunrrqw" path="res://assets/images/circle.png" id="2_w7024"]
+[ext_resource type="Texture2D" uid="uid://bclc8sopmd7hr" path="res://assets/images/circle-with-rectangle.png" id="3_vqoce"]
+[ext_resource type="Texture2D" uid="uid://lk6nlbk0tidj" path="res://assets/images/screwwwzzzzzzflat.png" id="4_t7xyj"]
+[ext_resource type="Texture2D" uid="uid://csqlenh214xgi" path="res://assets/images/screweeeeeeeeddddddd.png" id="5_a0cqg"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 12.0
 
-[node name="FlatHeadScrew" type="Area2D" unique_id=268084832 node_paths=PackedStringArray("head", "rust_overlay", "rust_streak", "sparks")]
+[sub_resource type="Animation" id="Animation_h67g2"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ClippingSpace/PositioningWrapper/TopDownHead:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.26595747, 0.26595747)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ClippingSpace/PositioningWrapper/AnglePerspective:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.34042558, 0.75531924)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ClippingSpace/PositioningWrapper/TopDownHead:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ClippingSpace/PositioningWrapper/AnglePerspective:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-5.3191495, 512.766)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("ClippingSpace/PositioningWrapper:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_gmkry"]
+resource_name = "RemoveScrew"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ClippingSpace/PositioningWrapper/TopDownHead:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.26595747, 0.26595747), Vector2(0.266, 0.117)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ClippingSpace/PositioningWrapper/AnglePerspective:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.34042558, 0.75531924), Vector2(0.34, 0.34)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ClippingSpace/PositioningWrapper/TopDownHead:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ClippingSpace/PositioningWrapper/AnglePerspective:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-5.3191495, 512.766), Vector2(-0.5, 421.89453)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("ClippingSpace/PositioningWrapper:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, -64), Vector2(0, -230)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_h67g2"]
+_data = {
+&"RESET": SubResource("Animation_h67g2"),
+&"RemoveScrew": SubResource("Animation_gmkry")
+}
+
+[node name="FlatHeadScrew" type="Area2D" unique_id=268084832 node_paths=PackedStringArray("head", "rust_overlay", "rust_streak", "animation_player", "slide_node", "clip_space", "bench_art", "hit_shape", "sparks")]
 collision_layer = 4
 collision_mask = 0
 monitoring = false
 script = ExtResource("1_8uvch")
 role = 0
 accepted_tools = Array[int]([0])
-head = NodePath("Head")
-rust_overlay = NodePath("Head/RustOverlay")
+head = NodePath("ClippingSpace/PositioningWrapper/TopDownHead/Head")
+rust_overlay = NodePath("ClippingSpace/PositioningWrapper/TopDownHead/Head/RustOverlay")
 rust_streak = NodePath("RustStreak")
+animation_player = NodePath("AnimationPlayer")
+slide_node = NodePath("ClippingSpace/PositioningWrapper")
+clip_space = NodePath("ClippingSpace")
+bench_art = NodePath("UnclippedAnglePerspective")
+hit_shape = NodePath("CollisionShape2D")
 sparks = NodePath("Sparks")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=156215341]
 shape = SubResource("CircleShape2D_giktf")
 
-[node name="RustStreak" type="Polygon2D" parent="."]
+[node name="RustStreak" type="Polygon2D" parent="." unique_id=13723375]
 visible = false
 color = Color(0.55, 0.27, 0.1, 0.7)
 polygon = PackedVector2Array(-5, 6, 5, 6, 3, 20, 2, 32, -1, 32, -3, 20)
 
-[node name="Head" type="Node2D" parent="." unique_id=1688050116]
+[node name="Hole" type="Sprite2D" parent="." unique_id=102901982]
+modulate = Color(0.12156863, 0.12156863, 0.12156863, 1)
+position = Vector2(0, 6.0000005)
+scale = Vector2(0.094, 0.094)
+texture = ExtResource("2_w7024")
 
-[node name="Disc" type="Polygon2D" parent="Head"]
-color = Color(0.52, 0.52, 0.52, 1)
-polygon = PackedVector2Array(12, 0, 11.087, 4.592, 8.485, 8.485, 4.592, 11.087, 0, 12, -4.592, 11.087, -8.485, 8.485, -11.087, 4.592, -12, 0, -11.087, -4.592, -8.485, -8.485, -4.592, -11.087, 0, -12, 4.592, -11.087, 8.485, -8.485, 11.087, -4.592)
+[node name="ClippingSpace" type="Sprite2D" parent="." unique_id=1821905139]
+clip_children = 1
+position = Vector2(0, -33.2)
+scale = Vector2(0.094, 0.094)
+texture = ExtResource("3_vqoce")
 
-[node name="Slot" type="Polygon2D" parent="Head"]
-color = Color(0.1, 0.1, 0.1, 1)
-polygon = PackedVector2Array(-2, -11, 2, -11, 2, 11, -2, 11)
+[node name="PositioningWrapper" type="Node2D" parent="ClippingSpace" unique_id=248263416]
 
-[node name="RustOverlay" type="Polygon2D" parent="Head"]
+[node name="AnglePerspective" type="Sprite2D" parent="ClippingSpace/PositioningWrapper" unique_id=1238162573]
+position = Vector2(-5.3191495, 512.766)
+scale = Vector2(0.34042558, 0.75531924)
+texture = ExtResource("4_t7xyj")
+
+[node name="TopDownHead" type="Node2D" parent="ClippingSpace/PositioningWrapper" unique_id=940362607]
+position = Vector2(0, 353.19153)
+scale = Vector2(0.26595747, 0.26595747)
+
+[node name="Head" type="Sprite2D" parent="ClippingSpace/PositioningWrapper/TopDownHead" unique_id=1688050116]
+position = Vector2(17, -9)
+texture = ExtResource("5_a0cqg")
+offset = Vector2(-17, 9)
+
+[node name="RustOverlay" type="Polygon2D" parent="ClippingSpace/PositioningWrapper/TopDownHead/Head" unique_id=1775114722]
 visible = false
+scale = Vector2(40, 40)
 color = Color(0.6, 0.3, 0.12, 0.6)
 polygon = PackedVector2Array(-10, -4, -4, -10, 6, -9, 11, -2, 8, 7, 0, 11, -8, 8)
 
-[node name="Sparks" type="CPUParticles2D" parent="."]
+[node name="UnclippedAnglePerspective" type="Sprite2D" parent="." unique_id=1147643259]
+visible = false
+position = Vector2(0, -15.1)
+scale = Vector2(0.032, 0.032)
+texture = ExtResource("4_t7xyj")
+
+[node name="Sparks" type="CPUParticles2D" parent="." unique_id=1365637706]
 emitting = false
 amount = 12
 lifetime = 0.35
@@ -55,3 +222,7 @@ initial_velocity_max = 140.0
 scale_amount_min = 1.5
 scale_amount_max = 2.5
 color = Color(1, 0.8, 0.3, 1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1040972780]
+callback_mode_process = 0
+libraries/ = SubResource("AnimationLibrary_h67g2")

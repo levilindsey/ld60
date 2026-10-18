@@ -6,7 +6,13 @@ extends InteractionPoint
 ## A screw has health. Every slip of its driver costs 1, and at 0 it is
 ## stripped: the driver no longer bites. A seized screw won't turn until
 ## the oil can frees it. A screw shows how far in it is by turning its
-## head and sliding up out of its hole (`slide`). It never scales.
+## head and sliding its art up out of its hole (`slide`). It never scales.
+##
+## Once it is all the way out, it pulls itself out of the hole and slides
+## off to a rest spot on the bench. When its layer is back on, a press
+## sends it back to sink into its hole, loose and ready to be driven in
+## (docs/design/screw_pullout.md). The root stays at the hole with the
+## hole art and the clip mask. Only the art and the hit shape move.
 ##
 ## Each screw type runs its own microgame. It overrides
 ## `_start_microgame()`, feeds `slide` as it turns the head, and calls
@@ -26,6 +32,22 @@ enum HeadFrame {
 	STRIPPED,
 }
 
+## Where the screw is on its trip from its hole to the bench and back.
+enum Travel {
+	## In its hole. Only here can it be driven.
+	HOME,
+	## `pull_out_animation` plays from where the last twist left it.
+	PULLING_OUT,
+	## The bench art slides from the hole to the screw's rest spot.
+	LEAVING,
+	## Waiting at its rest spot on the bench.
+	RESTING,
+	## The bench art slides from the rest spot back over the hole.
+	RETURNING,
+	## `pull_out_animation` plays backwards: the screw sinks into its hole.
+	SINKING,
+}
+
 ## How far a loose screw's head sits turned back (counter-clockwise) from
 ## home: half a turn and a little more. The slot looks the same after half
 ## a turn, so the player sees a small turned-back angle, and driving the
@@ -40,14 +62,15 @@ const _PLACEHOLDER_FRAME_TINTS: Array[Color] = [
 	Color(0.95, 0.6, 0.38),
 	Color(0.6, 0.28, 0.22),
 ]
-## How high the head hops as the screw comes out, and how long it takes.
-const _HOP_HEIGHT_PX := 14.0
-const _HOP_SEC := 0.25
 ## Seconds from the grind to the stand-in pry.
 const _PRY_DELAY_SEC := 0.3
+## A resting screw that can come back glows like a layer that can go back:
+## this bright at the top of each pulse, and this long for each half.
+const _GLOW_COLOR := Color(1.35, 1.35, 1.0)
+const _GLOW_HALF_PERIOD_SEC := 0.5
 
-## The screw head's art. If it is an `AnimatedSprite2D`, its frames are
-## the `HeadFrame` states in order.
+## The screw head's art, seen from the top. The twists turn it. If it is an
+## `AnimatedSprite2D`, its frames are the `HeadFrame` states in order.
 @export var head: Node2D
 ## Health when the screw arrives. Each slip costs 1.
 @export var max_health := 3
@@ -62,31 +85,72 @@ const _PRY_DELAY_SEC := 0.3
 ## Optional. A rust streak running down from the hole, shown while seized.
 @export var rust_streak: CanvasItem
 
+@export_group("Pull-out")
+## Plays `pull_out_animation`.
+@export var animation_player: AnimationPlayer
+## Pulls the screw out of its hole. Its first key for `slide_node`'s
+## position is the backed-out pose, where the twists leave the screw
+## (`slide` 1), so that key sets how far the twists raise it. Its last pose
+## must match `bench_art`. It plays backwards to sink the screw back in.
+@export var pull_out_animation := &"RemoveScrew"
+## What the slide moves: the screw's art inside the clip mask. Where it
+## sits in the scene is the screw all the way in.
+@export var slide_node: Node2D
+## Clips the screw's art to the part above the hole. It hides while the
+## screw is out of its hole.
+@export var clip_space: CanvasItem
+## The screw out of its hole, unclipped, matching the end of
+## `pull_out_animation`. It slides to the bench and back, and is hidden
+## while the screw is in its hole.
+@export var bench_art: Node2D
+## The screw's hit shape. It slides with the art, and is off while the
+## screw is out of its hole.
+@export var hit_shape: CollisionShape2D
+## A press this close to a resting screw's middle, in world pixels, is a
+## press on it.
+@export var rest_hit_radius_px := 22.0
+## Where a resting screw's middle sits from `bench_art`'s origin.
+@export var rest_hit_offset := Vector2(0.0, 10.0)
+@export_group("")
+
 ## True once its layer was put back: the screw sits loose in its hole,
 ## turned back, and driving it in uses the same microgame.
 var is_install_mode := false
 var health := 0
-## How far out of its hole the screw has slid: 0 is home and 1 is all the
-## way out. The whole screw, with its head, rust and hit shape, sits
-## `G.settings.screw_slide_px` times this far up from home in its parent's
-## frame, so the screw node's own rotation doesn't tilt the slide. Set it
-## once the screw is ready.
+## How far out of its hole the screw has slid: 0 is all the way in and 1 is
+## the backed-out pose that starts `pull_out_animation`. The art and the
+## hit shape slide straight up the screen, `get_slide_height_px()` at 1.
+## Set it once the screw is ready.
 var slide := 0.0:
 	set(value):
 		slide = clampf(value, 0.0, 1.0)
 		_update_slide_position()
+## Where the screw is on its trip from its hole to the bench and back.
+var travel := Travel.HOME
 
 ## The head's angle when the screw is all the way in.
 var _home_head_rotation := 0.0
-var _home_head_position := Vector2.ZERO
-## Where the screw sits in its parent's frame when `slide` is 0.
-var _home_position := Vector2.ZERO
+## Where `slide_node` and the hit shape sit at `slide` 0, and how far each
+## moves at `slide` 1, in its own parent's frame.
+var _home_slide_position := Vector2.ZERO
+var _slide_offset := Vector2.ZERO
+var _home_shape_position := Vector2.ZERO
+var _shape_slide_offset := Vector2.ZERO
+## Where `bench_art` sits under the screw, and its scale.
+var _bench_art_home_position := Vector2.ZERO
+var _bench_art_home_scale := Vector2.ONE
+## Where the bench art starts and ends its trip, in world pixels. A trip
+## back ends over the hole wherever the screw is.
+var _travel_from := Vector2.ZERO
+var _travel_to := Vector2.ZERO
 ## True once a press on the stripped screw has ground and noped.
 var _is_strip_warned := false
 ## True once the first try on the seized screw has ground as a warning.
 var _is_seize_warned := false
-var _hop_tween: Tween
 var _pry_tween: Tween
+var _travel_tween: Tween
+var _glow_tween: Tween
+var _rest_pulse_tween: Tween
 
 
 func _init() -> void:
@@ -98,12 +162,42 @@ func _ready() -> void:
 	G.check(role == Role.FASTENER)
 	G.check(is_instance_valid(head))
 	G.check(max_health > 0)
-	_home_head_rotation = head.rotation
-	_home_head_position = head.position
-	_home_position = position
+	G.check(is_instance_valid(animation_player))
+	G.check(animation_player.has_animation(pull_out_animation))
+	G.check(is_instance_valid(slide_node))
+	G.check(slide_node.get_parent() is Node2D)
+	G.check(is_instance_valid(clip_space))
+	G.check(is_instance_valid(bench_art))
+	G.check(is_instance_valid(hit_shape))
+	make_upright()
+	_home_slide_position = slide_node.position
+	_slide_offset = _get_backed_out_position() - _home_slide_position
+	_home_shape_position = hit_shape.position
+	var slide_frame := (
+		global_transform.affine_inverse()
+		* (slide_node.get_parent() as Node2D).global_transform
+	)
+	_shape_slide_offset = slide_frame.basis_xform(_slide_offset)
+	_bench_art_home_position = bench_art.position
+	_bench_art_home_scale = bench_art.scale
+	bench_art.hide()
+	animation_player.animation_finished.connect(_on_animation_finished)
 	health = max_health
 	_update_head_frame()
 	_update_rust()
+
+
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_PREDELETE:
+		return
+	# The bench art is not a child while the screw is out of its hole.
+	if is_instance_valid(bench_art) and bench_art.get_parent() != self:
+		bench_art.queue_free()
+
+
+## A screw out of its hole can't be engaged.
+func can_engage() -> bool:
+	return travel == Travel.HOME and super.can_engage()
 
 
 func is_fastened() -> bool:
@@ -122,6 +216,23 @@ func get_head_frame() -> HeadFrame:
 	return (
 		HeadFrame.STRIPPED - clampi(health, 0, HeadFrame.STRIPPED)
 	) as HeadFrame
+
+
+## How far the art slides up the screen at `slide` 1, in world pixels.
+func get_slide_height_px() -> float:
+	var slide_parent := slide_node.get_parent() as Node2D
+	return slide_parent.global_transform.basis_xform(_slide_offset).length()
+
+
+## Moves the node's own rotation onto the head. A screw node's rotation
+## only sets its slot's angle, so the art, the hole and the slide stay
+## upright in the parent's frame. `_ready()` calls it, and so may a probe
+## that turns a screw after that.
+func make_upright() -> void:
+	head.rotation += rotation
+	rotation = 0.0
+	_home_head_rotation = head.rotation
+	reset_physics_interpolation()
 
 
 ## Costs health. Each point lost is a SCREW_DAMAGE defect, and the strip
@@ -159,15 +270,17 @@ func engage(tool: Tool) -> void:
 		_start_microgame()
 
 
-## Brings the screw back loose, turned back and slid out, ready to be
-## driven in.
+## Its layer is back on. A screw in its hole sits loose, turned back and
+## slid out, ready to be driven in. A screw on the bench glows until a
+## press brings it back (`come_back()`).
 func set_install_mode() -> void:
 	super.set_install_mode()
 	is_install_mode = true
-	_stop_hop()
-	visible = true
-	head.rotation = _home_head_rotation - LOOSE_TURN_RAD
-	_snap_slide(1.0)
+	if travel == Travel.HOME:
+		head.rotation = _home_head_rotation - LOOSE_TURN_RAD
+		_snap_slide(1.0)
+	elif travel == Travel.RESTING:
+		_start_glow()
 	if is_stripped():
 		# Stand-in until LX19. A pried screw is scrap, and a new one comes
 		# from the parts bin. Until then the old one comes back as new.
@@ -176,14 +289,18 @@ func set_install_mode() -> void:
 		_update_head_frame()
 
 
-## Takes the screw out: a pop, and it hops off and disappears. It is all
-## the way out by then. Its layer and item hear about it from finish().
+## Takes the screw out: a pop, the driver goes back to the hand, and the
+## screw pulls itself out of its hole and slides off to its rest spot. It
+## stays ACTIVE until it is out of the hole, so its layer waits for it, and
+## then finish() tells the layer and the item.
 func remove() -> void:
 	G.audio.play_sound("pop")
 	slide = 1.0
-	finish()
-	_hop_off()
+	release_tool()
 	removed.emit()
+	travel = Travel.PULLING_OUT
+	animation_player.play(pull_out_animation)
+	animation_player.advance(0.0)
 
 
 ## Drives the screw home after its layer was put back. The microgame turns
@@ -194,6 +311,64 @@ func install() -> void:
 	slide = 0.0
 	finish()
 	installed.emit()
+
+
+## True when a press on this resting screw would bring it back: its layer
+## is back on and it waits at its rest spot.
+func can_come_back() -> bool:
+	return is_install_mode and travel == Travel.RESTING
+
+
+## True when a world position is on this screw while it rests on the
+## bench.
+func has_rest_point(global_point: Vector2) -> bool:
+	if travel != Travel.RESTING:
+		return false
+	var middle := bench_art.global_position + rest_hit_offset
+	return (
+		middle.distance_squared_to(global_point)
+		<= rest_hit_radius_px * rest_hit_radius_px
+	)
+
+
+## Sends the resting screw back over its hole, where it sinks in, loose
+## and ready to be driven in.
+func come_back() -> void:
+	if not G.check(can_come_back()):
+		return
+	if is_instance_valid(G.level):
+		G.level.free_screw_rest_spot(self)
+	_stop_glow()
+	_stop_rest_pulse()
+	travel = Travel.RETURNING
+	_travel_from = bench_art.global_position
+	_start_travel(_reach_hole)
+
+
+## One short pulse that shows this point still needs work. A resting
+## screw pulses on the bench.
+func pulse() -> void:
+	if travel == Travel.HOME:
+		super.pulse()
+		return
+	if travel != Travel.RESTING:
+		return
+	_stop_rest_pulse()
+	_rest_pulse_tween = create_tween().set_trans(Tween.TRANS_QUAD)
+	_rest_pulse_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	var half_sec := G.settings.point_pulse_sec * 0.5
+	_rest_pulse_tween.tween_property(
+		bench_art,
+		"scale",
+		_bench_art_home_scale * _PULSE_SCALE,
+		half_sec,
+	)
+	_rest_pulse_tween.tween_property(
+		bench_art,
+		"scale",
+		_bench_art_home_scale,
+		half_sec,
+	)
 
 
 ## Starts the microgame once the tool is IN_USE. Each screw type
@@ -265,11 +440,13 @@ func _update_rust() -> void:
 		rust_streak.visible = is_seized
 
 
-## Moves the whole screw to where `slide` says. Home is exact at 0.
+## Moves the art and the hit shape to where `slide` says. Home is exact
+## at 0.
 func _update_slide_position() -> void:
 	if not is_node_ready():
 		return
-	position = _home_position + Vector2.UP * G.settings.screw_slide_px * slide
+	slide_node.position = _home_slide_position + _slide_offset * slide
+	hit_shape.position = _home_shape_position + _shape_slide_offset * slide
 
 
 ## Sets `slide` with no easing from where the screw was, like a screw that
@@ -279,34 +456,143 @@ func _snap_slide(fraction: float) -> void:
 	reset_physics_interpolation()
 
 
-## The head hops up and fades, then the screw hides. It never scales.
-func _hop_off() -> void:
-	_stop_hop()
-	_hop_tween = create_tween().set_trans(Tween.TRANS_QUAD)
-	_hop_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
-	_hop_tween.tween_property(
-		head,
-		"position:y",
-		_home_head_position.y - _HOP_HEIGHT_PX,
-		_HOP_SEC,
-	).set_ease(Tween.EASE_OUT)
-	_hop_tween.parallel().tween_property(
-		self,
-		"modulate:a",
+## The first key of `pull_out_animation` for `slide_node`'s position: the
+## backed-out pose.
+func _get_backed_out_position() -> Vector2:
+	var animation := animation_player.get_animation(pull_out_animation)
+	var animation_root := animation_player.get_node(animation_player.root_node)
+	var track := animation.find_track(
+		NodePath("%s:position" % animation_root.get_path_to(slide_node)),
+		Animation.TYPE_VALUE,
+	)
+	if not G.ensure(
+		track >= 0 and animation.track_get_key_count(track) > 0,
+		"%s has no position key for %s" % [pull_out_animation, slide_node],
+	):
+		return slide_node.position
+	return animation.track_get_key_value(track, 0)
+
+
+## Where the bench art goes while the screw is out of its hole: next to
+## the item, so it stays on the bench when the layer lifts off, and draws
+## above the item and below the tools.
+func _get_bench_parent() -> Node:
+	var item := get_item()
+	if is_instance_valid(item) and is_instance_valid(item.get_parent()):
+		return item.get_parent()
+	return get_parent()
+
+
+func _on_animation_finished(animation_name: StringName) -> void:
+	if animation_name != pull_out_animation:
+		return
+	if travel == Travel.PULLING_OUT:
+		_leave_hole()
+	elif travel == Travel.SINKING:
+		_settle_in_hole()
+
+
+## Out of the hole: the unclipped art takes over from the clipped one and
+## slides off to the screw's rest spot. Only now do the layer and the item
+## hear that the screw is out.
+func _leave_hole() -> void:
+	travel = Travel.LEAVING
+	clip_space.hide()
+	hit_shape.set_deferred("disabled", true)
+	bench_art.show()
+	bench_art.reparent(_get_bench_parent())
+	bench_art.rotation = 0.0
+	bench_art.scale = _bench_art_home_scale
+	bench_art.reset_physics_interpolation()
+	_travel_from = bench_art.global_position
+	_travel_to = _travel_from
+	if is_instance_valid(G.level):
+		_travel_to = G.level.take_screw_rest_spot(self)
+	_start_travel(_reach_rest_spot)
+	finish()
+
+
+func _reach_rest_spot() -> void:
+	travel = Travel.RESTING
+	if is_install_mode:
+		_start_glow()
+
+
+## Over the hole: the clipped art takes over again and sinks into the
+## hole, turned back like a loose screw.
+func _reach_hole() -> void:
+	bench_art.reparent(self, false)
+	bench_art.position = _bench_art_home_position
+	bench_art.rotation = 0.0
+	bench_art.scale = _bench_art_home_scale
+	bench_art.hide()
+	head.rotation = _home_head_rotation - LOOSE_TURN_RAD
+	clip_space.show()
+	reset_physics_interpolation()
+	travel = Travel.SINKING
+	animation_player.play_backwards(pull_out_animation)
+	animation_player.advance(0.0)
+
+
+## Sunk in: the screw sits loose in its hole, raised and turned back, and
+## can be driven in.
+func _settle_in_hole() -> void:
+	travel = Travel.HOME
+	_snap_slide(1.0)
+	hit_shape.set_deferred("disabled", false)
+
+
+## Slides the bench art from `_travel_from`, eased, then calls `on_done`.
+func _start_travel(on_done: Callable) -> void:
+	if is_instance_valid(_travel_tween):
+		_travel_tween.kill()
+	_travel_tween = create_tween()
+	_travel_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	_travel_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_travel_tween.tween_method(
+		_place_bench_art,
 		0.0,
-		_HOP_SEC,
-	).set_ease(Tween.EASE_IN)
-	_hop_tween.tween_callback(_on_hop_finished)
+		1.0,
+		G.settings.screw_travel_sec,
+	)
+	_travel_tween.tween_callback(on_done)
 
 
-func _on_hop_finished() -> void:
-	visible = false
-	_stop_hop()
+## Puts the bench art `weight` of the way along its trip. A trip back ends
+## over the hole, even if the screw moved since it began.
+func _place_bench_art(weight: float) -> void:
+	var to_position := _travel_to
+	if travel == Travel.RETURNING:
+		to_position = to_global(_bench_art_home_position)
+	bench_art.global_position = _travel_from.lerp(to_position, weight)
 
 
-func _stop_hop() -> void:
-	if is_instance_valid(_hop_tween):
-		_hop_tween.kill()
-	head.position = _home_head_position
-	head.reset_physics_interpolation()
-	modulate.a = 1.0
+## A slow glow on the resting screw: a press brings it back.
+func _start_glow() -> void:
+	_stop_glow()
+	_glow_tween = create_tween().set_loops()
+	_glow_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_glow_tween.tween_property(
+		bench_art,
+		"modulate",
+		_GLOW_COLOR,
+		_GLOW_HALF_PERIOD_SEC,
+	)
+	_glow_tween.tween_property(
+		bench_art,
+		"modulate",
+		Color.WHITE,
+		_GLOW_HALF_PERIOD_SEC,
+	)
+
+
+func _stop_glow() -> void:
+	if is_instance_valid(_glow_tween):
+		_glow_tween.kill()
+	bench_art.modulate = Color.WHITE
+
+
+func _stop_rest_pulse() -> void:
+	if is_instance_valid(_rest_pulse_tween):
+		_rest_pulse_tween.kill()
+	bench_art.scale = _bench_art_home_scale
