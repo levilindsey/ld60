@@ -1196,6 +1196,22 @@ func _step_bench_returns(delta: float) -> void:
 				_step_return_settling(entry, delta)
 		if (entry.get("phase") as int) == -1:
 			_bench_returns.remove_at(index)
+		elif _is_flung_into_outbox(owner):
+			_bench_returns.remove_at(index)
+			var item := owner as Repairable
+			item.is_returning = false
+			_send_to_outbox(item)
+
+
+## True when a finished item on its way back to the bench touches the
+## outbox, which takes it as if it were dropped there.
+func _is_flung_into_outbox(owner: Object) -> bool:
+	var item := owner as Repairable
+	return (
+		is_instance_valid(item)
+		and item.has_finished
+		and %Outbox.overlaps_area(item.drop_area)
+	)
 
 
 func _step_return_flight(entry: Dictionary, delta: float) -> void:
