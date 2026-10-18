@@ -111,6 +111,16 @@ func _check_gauge_tint() -> void:
 		absf(calm_color.r - calm_color.g) < 0.01,
 		"the gauge face stays plain above the meter's low end",
 	)
+	_left.grip_meter = 0.5
+	_expect(
+		_left.get_failure_share() > 0.0,
+		"the gauge face starts reddening at half grip",
+	)
+	_left.grip_meter = G.settings.phillips_failure_tint_full
+	_expect(
+		_left.get_failure_share() > 0.99,
+		"the gauge face hits full red before the meter empties",
+	)
 	_left.grip_meter = 0.02
 	_left._turned_rad = 0.0
 	var failure_color := _left.gauge._get_background_color(_left)

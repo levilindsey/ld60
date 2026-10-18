@@ -27,6 +27,9 @@ of the level. Putting it back runs the whole thing in reverse.
   the drawer to the center. Its stored parts appear at random
   spots inside it. A press outside the open drawer hides the
   parts, slides the drawer back and reverses the animation.
+  Pressing another shut drawer while one is open (or still
+  opening) closes the current one and opens the pressed one
+  instead, both animating at once.
 - At the start of each repairable, the drawers are restocked: one
   part per socket the item needs, plus decoys
   (`Settings.decoy_part_count`), shuffled across the three

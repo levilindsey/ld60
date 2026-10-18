@@ -11,6 +11,10 @@ extends Node2D
 
 const _QUERY_MAX_RESULTS := 32
 const _NOPE_ICON_OFFSET := Vector2(14.0, -14.0)
+## Frames the pointer's speed must stay past the throw
+## threshold before a release counts as a throw. A single
+## jump of the pointer never counts.
+const _THROW_SUSTAIN_FRAMES := 3
 ## The device of the motion event that Input makes up when the cursor
 ## shape changes. Godot calls it InputEvent::DEVICE_ID_INTERNAL but
 ## doesn't expose it to scripts.
@@ -56,6 +60,13 @@ var _loose_screw: Screw
 var _loose_layer: RepairLayer
 var _loose_part: Part
 var _loose_drag_offset := Vector2.ZERO
+## The pointer's speed, smoothed over the last frames of
+## a drag, and how many frames it has stayed fast. A fast
+## enough release throws the piece with this speed.
+var _drag_velocity := Vector2.ZERO
+var _throw_pointer_previous := Vector2.ZERO
+var _has_throw_pointer_previous := false
+var _drag_sustain_frames := 0
 
 
 func _ready() -> void:
@@ -85,9 +96,62 @@ func _notification(what: int) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_track_drag_velocity(delta)
 	_drag_loose_piece()
 	_drag_held_item(delta)
 	_update_cursor()
+
+
+## Keeps the smoothed pointer speed of the current drag. It
+## only builds while a loose part, a resting screw or the
+## finished item is being dragged, and it only counts as a
+## throw when the speed stays past the threshold for a few
+## frames in a row, so one jump of the pointer is a drag,
+## never a throw.
+func _track_drag_velocity(delta: float) -> void:
+	var is_dragging := (
+		is_instance_valid(_loose_part)
+		or is_instance_valid(_loose_screw)
+		or held is Repairable
+	)
+	if not is_dragging or delta <= 0.0:
+		_drag_velocity = Vector2.ZERO
+		_drag_sustain_frames = 0
+		_has_throw_pointer_previous = false
+		return
+	var pointer := pointer_position
+	if not _has_throw_pointer_previous:
+		_throw_pointer_previous = pointer
+		_has_throw_pointer_previous = true
+		return
+	var instant_velocity := (pointer - _throw_pointer_previous) / delta
+	_throw_pointer_previous = pointer
+	var smoothing_sec := maxf(
+		G.settings.workable_cursor_smoothing_sec,
+		0.001,
+	)
+	var weight := 1.0 - exp(-delta / smoothing_sec)
+	_drag_velocity = _drag_velocity.lerp(instant_velocity, weight)
+	if (
+		instant_velocity.length()
+		>= G.settings.workable_throw_min_speed_px_per_sec
+	):
+		_drag_sustain_frames += 1
+	else:
+		_drag_sustain_frames = 0
+
+
+## The speed a piece is thrown with on release, or zero
+## when the drag was slow, brief or a single jump.
+func get_drag_release_velocity() -> Vector2:
+	if _drag_sustain_frames < _THROW_SUSTAIN_FRAMES:
+		return Vector2.ZERO
+	if (
+		_drag_velocity.length()
+		< G.settings.workable_throw_min_speed_px_per_sec
+	):
+		return Vector2.ZERO
+	return _drag_velocity
 
 
 func _input(event: InputEvent) -> void:
@@ -296,6 +360,10 @@ func _press_resting_screw(global_point: Vector2) -> bool:
 	var screw := G.level.get_resting_screw_at(global_point)
 	if not is_instance_valid(screw):
 		return false
+	if screw.is_returning:
+		# On its way back in. The press is used, but the
+		# screw cannot be picked up until it rests.
+		return true
 	if is_empty() and not is_instance_valid(_loose_screw):
 		_loose_screw = screw
 		_loose_drag_offset = (
@@ -345,28 +413,54 @@ func _press_loose_layer(global_point: Vector2) -> bool:
 
 ## While a drawer is open in the center (or still on its way), it
 ## takes every press. A press on one of its parts takes the part
-## out and shuts the drawer behind it. A press on the drawer itself
-## does nothing. Any other press just shuts it.
+## out and shuts the drawer behind it. A press on another shut
+## drawer shuts this one and opens that one in its place. A press
+## on the drawer itself does nothing. Any other press just shuts
+## it.
 func _press_drawer_modal(global_point: Vector2) -> bool:
-	if G.level.are_drawers_busy():
-		return true
-	var drawer := G.level.get_open_drawer()
+	var drawer := G.level.get_open_or_opening_drawer()
 	if not is_instance_valid(drawer):
-		return false
-	var part := G.level.get_drawer_part_at(drawer, global_point)
-	if is_instance_valid(part):
-		if (
-			is_empty()
-			and not is_instance_valid(_loose_screw)
-			and not is_instance_valid(_loose_layer)
-			and not is_instance_valid(_loose_part)
-		):
-			_loose_part = part
-			_loose_drag_offset = part.global_position - global_point
-			part.is_stored = false
-			part.drawer_index = -1
+		# None open or opening: a press while one shuts or takes
+		# a part in is still swallowed.
+		return G.level.are_drawers_busy()
+	if drawer.state == Drawer.State.OPEN:
+		var part := G.level.get_drawer_part_at(drawer, global_point)
+		if is_instance_valid(part):
+			if (
+				is_empty()
+				and not is_instance_valid(_loose_screw)
+				and not is_instance_valid(_loose_layer)
+				and not is_instance_valid(_loose_part)
+			):
+				_loose_part = part
+				_loose_drag_offset = part.global_position - global_point
+				part.is_stored = false
+				part.drawer_index = -1
+				drawer.close_drawer()
+				G.audio.play_sound(&"click")
+			return true
+	var target := _find_drawer(global_point)
+	if (
+		is_instance_valid(target)
+		and target != drawer
+		and target.state == Drawer.State.CLOSED
+	):
+		if held is Repairable:
 			drawer.close_drawer()
-			G.audio.play_sound(&"click")
+			return true
+		var held_tool := get_held_tool()
+		if is_instance_valid(held_tool):
+			if held_tool.mode == Tool.Mode.IN_USE:
+				# A point has the tool. Let it finish first.
+				drawer.close_drawer()
+				return true
+			held_tool.put_away()
+		G.audio.play_sound(&"whoosh")
+		# Both animate at once: the opener's slide out of its
+		# slot staggers it past the closer's trip home, so the
+		# two never meaningfully cross in the center.
+		drawer.close_drawer()
+		target.open_drawer()
 		return true
 	if drawer.has_global_point(global_point):
 		return true
@@ -470,11 +564,12 @@ func _handle_release(global_point: Vector2) -> bool:
 		if input_owner.has_method("on_pointer_released"):
 			input_owner.on_pointer_released(global_point)
 		return true
+	var release_velocity := get_drag_release_velocity()
 	if is_instance_valid(_loose_part):
-		_drop_loose_part(global_point)
+		_drop_loose_part(global_point, release_velocity)
 		return true
 	if is_instance_valid(_loose_screw):
-		_drop_loose_screw()
+		_drop_loose_screw(release_velocity)
 		return true
 	if is_instance_valid(_loose_layer):
 		_drop_loose_layer()
@@ -482,14 +577,16 @@ func _handle_release(global_point: Vector2) -> bool:
 	if held is Repairable:
 		var item := held as Repairable
 		release()
-		G.level.drop_item(item)
+		G.level.drop_item(item, release_velocity)
 		return true
 	return false
 
 
-## Follows the pointer with the loose piece being dragged. A drag
-## that leaves the workbench drops the piece at the bench's edge at
-## once, instead of letting it be carried off the bench.
+## Follows the pointer with the loose piece being dragged. Parts
+## and screws may be carried anywhere, outside the workable area
+## too. They are only set down on release, and a release outside
+## the workable area sends them back in. A layer still drops at
+## the bench's edge at once, instead of being carried off it.
 func _drag_loose_piece() -> void:
 	if is_instance_valid(_loose_part):
 		# A part may be carried anywhere, over the drawers too. It
@@ -498,14 +595,9 @@ func _drag_loose_piece() -> void:
 			pointer_position + _loose_drag_offset
 		)
 	elif is_instance_valid(_loose_screw):
-		if not G.level.is_inside_bench(pointer_position):
-			_loose_screw.bench_art.global_position = (
-				G.level.clamp_to_bench(
-					pointer_position + _loose_drag_offset,
-				)
-			)
-			_drop_loose_screw()
-			return
+		# A screw may be carried anywhere too. It is only set
+		# down on release, and a release outside the workable
+		# area sends it back in.
 		_loose_screw.bench_art.global_position = (
 			pointer_position + _loose_drag_offset
 		)
@@ -522,9 +614,11 @@ func _drag_loose_piece() -> void:
 
 
 ## Lets go of a dragged screw. Dropped close to its hole once its
-## layer is back on, it arcs down into the hole. Anywhere else on
-## the bench it simply rests where it fell.
-func _drop_loose_screw() -> void:
+## layer is back on, it arcs down into the hole. Dropped outside
+## the workable area, it flies back in and comes to rest inside
+## it. A fast release throws it with the cursor's motion.
+## Anywhere else inside, it simply rests where it fell.
+func _drop_loose_screw(release_velocity := Vector2.ZERO) -> void:
 	var screw := _loose_screw
 	_loose_screw = null
 	if not is_instance_valid(screw):
@@ -537,6 +631,8 @@ func _drop_loose_screw() -> void:
 		) <= G.settings.screw_seat_snap_px
 	):
 		screw.come_back()
+		return
+	if G.level.try_return_screw(screw, release_velocity):
 		return
 	# Set down on the table after a drag: it rolls a little.
 	screw.on_set_down()
@@ -567,8 +663,12 @@ func get_loose_part() -> Part:
 ## the bench. Released over a drawer that may take it, the drawer
 ## puts it away. A drawer that is still shutting takes nothing, so
 ## the part is set down instead. Anywhere else it rests where it
-## fell, clamped to the bench.
-func _drop_loose_part(global_point: Vector2) -> void:
+## fell, unless that is outside the workable area, which sends
+## it back in.
+func _drop_loose_part(
+	global_point: Vector2,
+	release_velocity := Vector2.ZERO,
+) -> void:
 	var part := _loose_part
 	_loose_part = null
 	if not is_instance_valid(part):
@@ -578,18 +678,25 @@ func _drop_loose_part(global_point: Vector2) -> void:
 		socket.try_fit(part)
 		if part.is_installed:
 			return
-		_set_down_part(part)
+		_set_down_part(part, release_velocity)
 		return
 	var drawer := G.level.get_drawer_at(global_point)
 	if is_instance_valid(drawer) and drawer.can_take_part():
 		drawer.take_part(part)
 		return
-	_set_down_part(part)
+	_set_down_part(part, release_velocity)
 
 
-## Sets a part down on the bench where it was let go.
-func _set_down_part(part: Part) -> void:
-	part.global_position = G.level.clamp_to_bench(part.global_position)
+## Sets a part down on the bench where it was let go. Let go
+## outside the workable area, it flies back in and comes to
+## rest inside it instead of resting where it fell. A fast
+## release throws it with the cursor's motion.
+func _set_down_part(
+	part: Part,
+	release_velocity := Vector2.ZERO,
+) -> void:
+	if G.level.try_return_part(part, release_velocity):
+		return
 	part.z_index = 10
 
 

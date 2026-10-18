@@ -6,6 +6,38 @@ const _GAME_OVER_RESTART_DELAY_SEC := 1.5
 
 const _PLAYER_CAMERA_OFFSET := Vector2.ZERO
 
+## A bench return is flying in under gravity toward its
+## landing point inside the workable area.
+const _RETURN_FLYING := 0
+## A bench return has landed and is bouncing and skidding
+## on the bench until it comes to rest.
+const _RETURN_SETTLING := 1
+## A bench return was thrown with the cursor's motion. It
+## flies under gravity, bounces off the sides of the
+## viewport, may pass out of the top and falls back, and
+## lands when it falls into the workable area.
+const _RETURN_THROWN := 2
+## A thrown return that would fall past the workable area
+## is guided the rest of the way: its path starts along the
+## speed it was thrown with and eases into its rest point.
+const _RETURN_GUIDED := 3
+## How much speed a throw keeps when it bounces off a side
+## of the viewport.
+const _RETURN_WALL_RESTITUTION := 0.55
+## Longest a throw may fly before it is guided in anyway,
+## in seconds.
+const _RETURN_THROW_MAX_SEC := 4.0
+## The least bounce a returned piece keeps, whatever its
+## size, and the most any piece keeps.
+const _RETURN_MIN_RESTITUTION := 0.08
+const _RETURN_MAX_RESTITUTION := 0.5
+## How much of a landing's downward speed becomes a skid
+## across the bench, and how much of its sideways speed the
+## skid keeps. The downward share is small: most of a fall
+## becomes the bounce, so the skid cannot swallow it.
+const _RETURN_SKID_DOWN_SHARE := 0.08
+const _RETURN_SKID_SIDE_SHARE := 0.7
+
 
 var has_started := false
 var has_won := false
@@ -37,6 +69,21 @@ var _outbox_outline_hint: OutlineHint
 ## Installed parts leave the list by flag, not by removal. It is
 ## untyped so a freed part never lands in a typed variable.
 var _drawer_parts: Array = []
+
+## The fade tween currently running on each drawer's stored
+## parts, keyed by the drawer, so a new fade kills the old one.
+var _part_fade_tweens: Dictionary = {}
+
+## Pieces on their way back to the workable area after a
+## drop outside it, one dictionary per piece. See
+## `start_bench_return()`. Untyped so a freed piece never
+## lands in a typed variable.
+var _bench_returns: Array = []
+
+## The `%WorkableArea` and `%Outbox` polygons in world
+## pixels, read from their collision polygons once.
+var _workable_polygon_global: PackedVector2Array = []
+var _outbox_polygon_global: PackedVector2Array = []
 
 ## The scene a drawer part comes from.
 @export var part_scene: PackedScene
@@ -80,6 +127,8 @@ func _ready() -> void:
 	# follow logic in _physics_process.
 	%Camera2D.anchor_mode = Camera2D.ANCHOR_MODE_DRAG_CENTER
 
+	_cache_area_polygons()
+
 	var drawers := get_drawers()
 	for index in drawers.size():
 		var drawer := drawers[index]
@@ -105,6 +154,10 @@ func _ready() -> void:
 		"The item queue is empty.",
 	):
 		_spawn_next_item()
+
+
+func _physics_process(delta: float) -> void:
+	_step_bench_returns(delta)
 
 
 func start_game() -> void:
@@ -165,14 +218,34 @@ func shake_camera(amplitude_px: float, duration_sec: float) -> void:
 
 
 ## The hand let go of an item. A finished item over the outbox goes into
-## it. Any other drop eases the item back to the bench.
-func drop_item(item: Repairable) -> void:
+## it. A drop inside the workable area eases back to where the bench
+## keeps the item. A drop outside both the workable area and the
+## outbox flies back in under gravity and comes to rest inside the
+## workable area, bouncing and skidding as it lands. A fast drag
+## throws it with the cursor's motion instead, the way it throws
+## a part or a screw.
+func drop_item(
+	item: Repairable,
+	release_velocity := Vector2.ZERO,
+) -> void:
 	if not is_instance_valid(item):
 		return
 	if item.has_finished and %Outbox.overlaps_area(item.drop_area):
 		_send_to_outbox(item)
-	else:
+		return
+	if try_return_repairable(item, release_velocity):
+		return
+	var margin_px := (
+		item.get_bench_radius_px()
+		+ G.settings.workable_edge_padding_px
+	)
+	if (
+		is_inside_workable_area(item.global_position, margin_px)
+		or is_inside_outbox_area(item.global_position, margin_px)
+	):
 		return_item(item)
+		return
+	return_item(item)
 
 
 ## Shows or hides the outline around the outbox. A finished item
@@ -233,6 +306,19 @@ func get_drawers() -> Array[Drawer]:
 		if child is Drawer:
 			drawers.append(child as Drawer)
 	return drawers
+
+
+## The drawer open in the center or on its way there, or null.
+## A press while one is still opening already counts as a press
+## with a drawer open.
+func get_open_or_opening_drawer() -> Drawer:
+	for drawer in get_drawers():
+		if (
+			drawer.state == Drawer.State.OPEN
+			or drawer.state == Drawer.State.OPENING
+		):
+			return drawer
+	return null
 
 
 ## The drawer sitting open in the center, or null.
@@ -349,6 +435,10 @@ func get_part_of_type_in_drawer(
 func restock_parts(item: Repairable) -> void:
 	for drawer in get_drawers():
 		drawer.reset_closed()
+		var fade := _part_fade_tweens.get(drawer) as Tween
+		if is_instance_valid(fade):
+			fade.kill()
+	_part_fade_tweens.clear()
 	for entry: Variant in _drawer_parts:
 		if is_instance_valid(entry):
 			(entry as Part).queue_free()
@@ -485,6 +575,818 @@ func clamp_to_bench(global_point: Vector2) -> Vector2:
 	return to_global(closest)
 
 
+## The `%WorkableArea` polygon in world pixels. Loose parts
+## and screws may be dragged anywhere, but they only come to
+## rest inside this polygon. A finished item may also come
+## to rest in the outbox.
+func get_workable_polygon() -> PackedVector2Array:
+	if _workable_polygon_global.is_empty():
+		_cache_area_polygons()
+	return _workable_polygon_global
+
+
+## The `%Outbox` polygon in world pixels.
+func get_outbox_polygon() -> PackedVector2Array:
+	if _outbox_polygon_global.is_empty():
+		_cache_area_polygons()
+	return _outbox_polygon_global
+
+
+## True when a world position is inside the workable area,
+## at least `margin_px` clear of every edge. The margin is
+## the piece's radius plus the edge padding, so the whole
+## piece is inside when its middle passes.
+func is_inside_workable_area(
+	global_point: Vector2,
+	margin_px := 0.0,
+) -> bool:
+	return _is_inside_area_polygon(
+		global_point,
+		get_workable_polygon(),
+		margin_px,
+	)
+
+
+## True when a world position is inside the outbox area, at
+## least `margin_px` clear of every edge.
+func is_inside_outbox_area(
+	global_point: Vector2,
+	margin_px := 0.0,
+) -> bool:
+	return _is_inside_area_polygon(
+		global_point,
+		get_outbox_polygon(),
+		margin_px,
+	)
+
+
+## The point inside the workable area that a piece dropped
+## at a world position should land on: the position itself
+## when it is already inside with `margin_px` to spare, else
+## the nearest edge point pushed that far toward the middle.
+func get_workable_area_target(
+	global_point: Vector2,
+	margin_px := 0.0,
+) -> Vector2:
+	return _get_area_target(
+		global_point,
+		get_workable_polygon(),
+		margin_px,
+	)
+
+
+## Starts bringing a loose part back to the workable area
+## after it was dropped outside it. It falls straight down
+## when it is above the area and is flicked in an arc under
+## gravity from below or from the side, then bounces and
+## skids as it lands. The amount of bounce and skid follows
+## the landing speed and the part's size. A release faster
+## than the throw threshold in `Settings` throws it with
+## the cursor's motion instead. Returns true when a return
+## started, and false when the part already rests inside
+## and was let go slowly.
+func try_return_part(
+	part: Part,
+	release_velocity := Vector2.ZERO,
+) -> bool:
+	if not is_instance_valid(part):
+		return false
+	return _start_bench_return(
+		part,
+		part,
+		part.global_position,
+		part.get_radius_px(),
+		Vector2.INF,
+		release_velocity,
+	)
+
+
+## Starts bringing a resting screw back to the workable
+## area after it was dropped outside it, the way
+## `try_return_part()` does for a part. The screw's middle
+## is its bench art plus `rest_hit_offset`, where presses
+## find it.
+func try_return_screw(
+	screw: Screw,
+	release_velocity := Vector2.ZERO,
+) -> bool:
+	if not is_instance_valid(screw):
+		return false
+	if not is_instance_valid(screw.bench_art):
+		return false
+	var middle := (
+		screw.bench_art.global_position + screw.rest_hit_offset
+	)
+	return _start_bench_return(
+		screw,
+		screw.bench_art,
+		middle,
+		screw.get_rest_radius_px(),
+		Vector2.INF,
+		release_velocity,
+	)
+
+
+## Starts bringing a finished item back after it was
+## dropped outside both the workable area and the outbox.
+## It flies to where the bench keeps the item being
+## repaired instead of to the nearest edge, the way
+## `return_item()` eases it there.
+func try_return_repairable(
+	item: Repairable,
+	release_velocity := Vector2.ZERO,
+) -> bool:
+	if not is_instance_valid(item):
+		return false
+	return _start_bench_return(
+		item,
+		item,
+		item.global_position,
+		item.get_bench_radius_px(),
+		%ActiveItemPosition.global_position,
+		release_velocity,
+	)
+
+
+## True while a piece is on its way back to the workable
+## area and has not come to rest yet.
+func is_bench_returning(owner: Object) -> bool:
+	for entry: Variant in _bench_returns:
+		if (entry as Dictionary).get("owner") == owner:
+			return true
+	return false
+
+
+## Stops a piece's trip back where it is. The hand calls
+## this through `Repairable.on_grabbed()` when the player
+## catches a finished item in the air. The piece's own
+## return flag is cleared by its grab, not here.
+func cancel_bench_return(owner: Object) -> void:
+	for index in range(_bench_returns.size() - 1, -1, -1):
+		var entry := _bench_returns[index] as Dictionary
+		if entry.get("owner") == owner:
+			_bench_returns.remove_at(index)
+
+
+func _cache_area_polygons() -> void:
+	_workable_polygon_global = _get_area_polygon_global(
+		%WorkableArea,
+	)
+	_outbox_polygon_global = _get_area_polygon_global(%Outbox)
+
+
+## One area's collision polygon in world pixels, or an empty
+## polygon when the area has none.
+func _get_area_polygon_global(area: Area2D) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	if not is_instance_valid(area):
+		return points
+	for child in area.get_children():
+		if child is CollisionPolygon2D:
+			var polygon_node := child as CollisionPolygon2D
+			for point in polygon_node.polygon:
+				points.append(polygon_node.to_global(point))
+			return points
+	return points
+
+
+## The visible viewport as a world rectangle. Its sides
+## are the walls a thrown piece bounces off. The top is
+## open: a throw may pass it and fall back down.
+func _get_viewport_world_rect() -> Rect2:
+	var visible := get_viewport().get_visible_rect()
+	var transform := get_canvas_transform().affine_inverse()
+	var top_left := transform * visible.position
+	var bottom_right := transform * visible.end
+	return Rect2(top_left, bottom_right - top_left)
+
+
+func _is_inside_area_polygon(
+	global_point: Vector2,
+	polygon: PackedVector2Array,
+	margin_px: float,
+) -> bool:
+	if polygon.size() < 3:
+		return false
+	if not Geometry2D.is_point_in_polygon(global_point, polygon):
+		return false
+	if margin_px <= 0.0:
+		return true
+	for index in polygon.size():
+		var from_point := polygon[index]
+		var to_point := polygon[(index + 1) % polygon.size()]
+		var closest := Geometry2D.get_closest_point_to_segment(
+			global_point,
+			from_point,
+			to_point,
+		)
+		if global_point.distance_to(closest) < margin_px:
+			return false
+	return true
+
+
+func _get_area_target(
+	global_point: Vector2,
+	polygon: PackedVector2Array,
+	margin_px: float,
+) -> Vector2:
+	if polygon.size() < 3:
+		return global_point
+	if _is_inside_area_polygon(global_point, polygon, margin_px):
+		return global_point
+	var closest := global_point
+	var closest_distance := INF
+	for index in polygon.size():
+		var from_point := polygon[index]
+		var to_point := polygon[(index + 1) % polygon.size()]
+		var candidate := Geometry2D.get_closest_point_to_segment(
+			global_point,
+			from_point,
+			to_point,
+		)
+		var distance := global_point.distance_squared_to(candidate)
+		if distance < closest_distance:
+			closest_distance = distance
+			closest = candidate
+	var centroid := Vector2.ZERO
+	for point in polygon:
+		centroid += point
+	centroid /= float(polygon.size())
+	# Push in along the closest edge's own inward normal,
+	# not toward the middle of the area: along a long edge
+	# the middle is mostly sideways, so a push that way
+	# barely gains any clearance from the edge. Near a
+	# corner the nearest edge changes as the point moves
+	# in, so push again from the new nearest edge until
+	# the whole piece fits.
+	var target := global_point
+	if not Geometry2D.is_point_in_polygon(global_point, polygon):
+		target = closest
+	for push in 16:
+		if _is_inside_area_polygon(target, polygon, margin_px):
+			return target
+		var edge := _get_closest_edge(polygon, target)
+		var edge_point := edge[0] as Vector2
+		var edge_distance := edge[1] as float
+		var inward := edge[2] as Vector2
+		if inward.length() < 0.001:
+			inward = centroid - edge_point
+			if inward.length() < 0.001:
+				return target
+			inward = inward.normalized()
+		target += inward * (margin_px - edge_distance + 1.0)
+	return target
+
+
+## The closest point on a polygon's edge to a world point,
+## how far it is, and the edge's inward normal: the way
+## from the edge toward the polygon's middle.
+func _get_closest_edge(
+	polygon: PackedVector2Array,
+	global_point: Vector2,
+) -> Array:
+	var centroid := Vector2.ZERO
+	for point in polygon:
+		centroid += point
+	centroid /= float(polygon.size())
+	var closest := global_point
+	var closest_distance := INF
+	var inward := Vector2.ZERO
+	for index in polygon.size():
+		var from_point := polygon[index]
+		var to_point := polygon[(index + 1) % polygon.size()]
+		var candidate := Geometry2D.get_closest_point_to_segment(
+			global_point,
+			from_point,
+			to_point,
+		)
+		var distance := global_point.distance_to(candidate)
+		if distance < closest_distance:
+			closest_distance = distance
+			closest = candidate
+			var edge_direction := (to_point - from_point).normalized()
+			inward = Vector2(
+				-edge_direction.y,
+				edge_direction.x,
+			)
+			if inward.dot(centroid - candidate) < 0.0:
+				inward = -inward
+	return [closest, closest_distance, inward]
+
+
+## Starts one piece's trip back. `middle` is where the
+## piece is judged against the area: its own position, or
+## a resting screw's bench art plus its hit offset. A
+## `forced_target` other than `Vector2.INF` lands there
+## instead of at the nearest point inside. A release speed
+## past the throw threshold throws the piece with that
+## speed, even from inside the area, instead of solving a
+## fall or a flick for it. Returns false when the middle
+## already rests inside and the release was slow.
+func _start_bench_return(
+	owner: Object,
+	moving_node: Node2D,
+	middle: Vector2,
+	radius_px: float,
+	forced_target: Vector2,
+	release_velocity: Vector2,
+) -> bool:
+	if not is_instance_valid(owner):
+		return false
+	if not is_instance_valid(moving_node):
+		return false
+	if is_bench_returning(owner):
+		return true
+	var margin_px := (
+		radius_px + G.settings.workable_edge_padding_px
+	)
+	var is_thrown := (
+		release_velocity.length()
+		>= G.settings.workable_throw_min_speed_px_per_sec
+	)
+	if is_inside_workable_area(middle, margin_px) and not is_thrown:
+		return false
+	var target := forced_target
+	if target == Vector2.INF:
+		target = get_workable_area_target(middle, margin_px)
+	var velocity := Vector2.ZERO
+	var duration_sec := 0.0
+	var phase := _RETURN_FLYING
+	if is_thrown:
+		velocity = release_velocity.limit_length(
+			G.settings.workable_throw_max_speed_px_per_sec,
+		)
+		phase = _RETURN_THROWN
+	else:
+		var flight := _solve_return_flight(middle, target)
+		velocity = flight[0] as Vector2
+		duration_sec = flight[1] as float
+	var restitution := clampf(
+		G.settings.workable_bounce_restitution
+		- radius_px * G.settings.workable_bounce_size_falloff,
+		_RETURN_MIN_RESTITUTION,
+		_RETURN_MAX_RESTITUTION,
+	)
+	var skid_deceleration := (
+		G.settings.workable_skid_deceleration
+		* sqrt(maxf(radius_px, 1.0) / 20.0)
+	)
+	var viewport_rect := _get_viewport_world_rect()
+	var workable_bottom := -INF
+	for point in get_workable_polygon():
+		workable_bottom = maxf(workable_bottom, point.y)
+	_bench_returns.append(
+		{
+			"owner": owner,
+			"node": moving_node,
+			"offset": middle - moving_node.global_position,
+			"middle": middle,
+			"ground": target,
+			"target": target,
+			"rest_target": forced_target,
+			"velocity": velocity,
+			"flight_left_sec": duration_sec,
+			"flight_elapsed_sec": 0.0,
+			"phase": phase,
+			"radius_px": radius_px,
+			"margin_px": margin_px,
+			"restitution": restitution,
+			"skid_deceleration": skid_deceleration,
+			"ground_velocity": Vector2.ZERO,
+			"bounce_height_px": 0.0,
+			"bounce_velocity": 0.0,
+			"angular_velocity": clampf(
+				velocity.x / maxf(radius_px, 8.0),
+				-4.0,
+				4.0,
+			)
+			* 0.4,
+			"does_spin": not owner is Repairable,
+			"wall_left": viewport_rect.position.x + radius_px,
+			"wall_right": viewport_rect.end.x - radius_px,
+			"workable_bottom": workable_bottom,
+			"guided_from": middle,
+			"guided_velocity": Vector2.ZERO,
+			"guided_elapsed_sec": 0.0,
+			"guided_duration_sec": 1.0,
+		},
+	)
+	if owner is Part:
+		(owner as Part).start_bench_return()
+	elif owner is Screw:
+		(owner as Screw).start_bench_return()
+	elif owner is Repairable:
+		(owner as Repairable).start_bench_return()
+	return true
+
+
+## The first velocity and the flight time of a trip from
+## `from_point` to `to_point` under the game's gravity. A
+## drop from above falls straight down: it starts with no
+## downward speed and only drifts sideways as fast as the
+## tuning allows, stretching the fall when the gap is wide.
+## A drop from below or from the side is flicked up in an
+## arc whose peak grows with the distance, high enough to
+## clear the landing point and fall onto it.
+func _solve_return_flight(
+	from_point: Vector2,
+	to_point: Vector2,
+) -> Array:
+	var gravity := maxf(
+		G.settings.default_gravity_acceleration,
+		1.0,
+	)
+	var displacement := to_point - from_point
+	if displacement.y > 1.0:
+		var duration_sec := sqrt(
+			2.0 * displacement.y / gravity,
+		)
+		var velocity := Vector2(
+			displacement.x / maxf(duration_sec, 0.001),
+			0.0,
+		)
+		var max_drift := maxf(
+			G.settings.workable_fall_max_drift_px_per_sec,
+			1.0,
+		)
+		if absf(velocity.x) > max_drift:
+			duration_sec = absf(displacement.x) / max_drift
+			velocity = Vector2(
+				signf(displacement.x) * max_drift,
+				(
+					displacement.y
+					- 0.5 * gravity * duration_sec * duration_sec
+				)
+				/ maxf(duration_sec, 0.001),
+			)
+		return [velocity, duration_sec]
+	var distance := displacement.length()
+	var peak_px := clampf(
+		distance * 0.35,
+		G.settings.workable_flick_peak_min_px,
+		G.settings.workable_flick_peak_max_px,
+	)
+	var apex_y := to_point.y - peak_px
+	var rise_px := maxf(from_point.y - apex_y, 1.0)
+	var up_velocity := -sqrt(2.0 * gravity * rise_px)
+	var up_sec := absf(up_velocity) / gravity
+	var down_sec := sqrt(2.0 * peak_px / gravity)
+	var flick_duration_sec := up_sec + down_sec
+	return [
+		Vector2(
+			displacement.x / maxf(flick_duration_sec, 0.001),
+			up_velocity,
+		),
+		flick_duration_sec,
+	]
+
+
+## Moves every piece on its way back by one physics step:
+## gravity in the air, then a bounce whose height follows
+## the landing speed and a skid that friction slows, both
+## smaller for a bigger piece, until the piece rests.
+func _step_bench_returns(delta: float) -> void:
+	if _bench_returns.is_empty() or delta <= 0.0:
+		return
+	for index in range(_bench_returns.size() - 1, -1, -1):
+		var entry := _bench_returns[index] as Dictionary
+		var owner := entry.get("owner") as Object
+		var moving_node := entry.get("node") as Node2D
+		if (
+			not is_instance_valid(owner)
+			or not is_instance_valid(moving_node)
+		):
+			_bench_returns.remove_at(index)
+			continue
+		match entry.get("phase") as int:
+			_RETURN_FLYING:
+				_step_return_flight(entry, delta)
+			_RETURN_THROWN:
+				_step_return_thrown(entry, delta)
+			_RETURN_GUIDED:
+				_step_return_guided(entry, delta)
+			_:
+				_step_return_settling(entry, delta)
+		if (entry.get("phase") as int) == -1:
+			_bench_returns.remove_at(index)
+
+
+func _step_return_flight(entry: Dictionary, delta: float) -> void:
+	var gravity := maxf(
+		G.settings.default_gravity_acceleration,
+		1.0,
+	)
+	var velocity := entry.get("velocity") as Vector2
+	velocity.y += gravity * delta
+	entry["velocity"] = velocity
+	var middle := entry.get("middle") as Vector2
+	middle += velocity * delta
+	var flight_left_sec := (
+		entry.get("flight_left_sec") as float
+	)
+	flight_left_sec -= delta
+	entry["flight_left_sec"] = flight_left_sec
+	var moving_node := entry.get("node") as Node2D
+	var offset := entry.get("offset") as Vector2
+	var does_spin := entry.get("does_spin") as bool
+	if does_spin:
+		moving_node.rotation += (
+			entry.get("angular_velocity") as float
+		) * delta
+	elif moving_node is Repairable:
+		# A finished item tilts with its sideways speed in
+		# the air and straightens as it lands.
+		moving_node.rotation = clampf(
+			velocity.x * 0.0004,
+			-deg_to_rad(8.0),
+			deg_to_rad(8.0),
+		)
+	if flight_left_sec > 0.0:
+		entry["middle"] = middle
+		moving_node.global_position = middle - offset
+		return
+	# The solved flight ends on its landing point. Any step
+	# past it is the landing itself, not more travel.
+	middle = entry.get("target") as Vector2
+	entry["middle"] = middle
+	_land_bench_return(entry, velocity)
+	moving_node.global_position = middle - offset
+
+
+## One step of a throw. Gravity pulls it down, the sides
+## of the viewport bounce it back in, and the top is open.
+## Falling into the workable area lands it there. Falling
+## past the bottom of the workable area, or flying for too
+## long, hands it to the guided slide instead, so it still
+## comes to rest inside.
+func _step_return_thrown(entry: Dictionary, delta: float) -> void:
+	var gravity := maxf(
+		G.settings.default_gravity_acceleration,
+		1.0,
+	)
+	var velocity := entry.get("velocity") as Vector2
+	velocity.y += gravity * delta
+	var middle := entry.get("middle") as Vector2
+	middle += velocity * delta
+	var wall_left := entry.get("wall_left") as float
+	var wall_right := entry.get("wall_right") as float
+	if middle.x < wall_left:
+		middle.x = wall_left
+		velocity.x = absf(velocity.x) * _RETURN_WALL_RESTITUTION
+	elif middle.x > wall_right:
+		middle.x = wall_right
+		velocity.x = -absf(velocity.x) * _RETURN_WALL_RESTITUTION
+	entry["velocity"] = velocity
+	entry["middle"] = middle
+	var elapsed := (entry.get("flight_elapsed_sec") as float) + delta
+	entry["flight_elapsed_sec"] = elapsed
+	var moving_node := entry.get("node") as Node2D
+	var offset := entry.get("offset") as Vector2
+	var radius_px := entry.get("radius_px") as float
+	if entry.get("does_spin") as bool:
+		entry["angular_velocity"] = clampf(
+			velocity.x / maxf(radius_px, 8.0),
+			-6.0,
+			6.0,
+		) * 0.4
+		moving_node.rotation += (
+			entry.get("angular_velocity") as float
+		) * delta
+	elif moving_node is Repairable:
+		moving_node.rotation = clampf(
+			velocity.x * 0.0004,
+			-deg_to_rad(8.0),
+			deg_to_rad(8.0),
+		)
+	moving_node.global_position = middle - offset
+	var margin_px := entry.get("margin_px") as float
+	if (
+		velocity.y > 0.0
+		and is_inside_workable_area(middle, margin_px)
+	):
+		entry["middle"] = middle
+		entry["target"] = middle
+		_land_bench_return(entry, velocity)
+		moving_node.global_position = middle - offset
+		return
+	if (
+		velocity.y > 0.0
+		and (
+			middle.y > (entry.get("workable_bottom") as float)
+			or elapsed > _RETURN_THROW_MAX_SEC
+		)
+	):
+		_start_return_guided(entry)
+
+
+## Starts the guided slide: a smooth path that leaves along
+## the speed the piece has now and eases into its rest
+## point inside the workable area, where it lands with the
+## speed it was guided in at.
+func _start_return_guided(entry: Dictionary) -> void:
+	var middle := entry.get("middle") as Vector2
+	var velocity := entry.get("velocity") as Vector2
+	var rest_target := entry.get("rest_target") as Vector2
+	if rest_target == Vector2.INF:
+		rest_target = get_workable_area_target(
+			middle,
+			entry.get("margin_px") as float,
+		)
+	entry["target"] = rest_target
+	entry["guided_from"] = middle
+	entry["guided_velocity"] = velocity
+	entry["guided_elapsed_sec"] = 0.0
+	var distance := middle.distance_to(rest_target)
+	var speed := maxf(velocity.length(), 400.0)
+	entry["guided_duration_sec"] = clampf(
+		distance / speed,
+		0.35,
+		0.9,
+	)
+	entry["phase"] = _RETURN_GUIDED
+
+
+## One step of the guided slide. The path is a cubic that
+## starts along the thrown speed and arrives at the rest
+## point with no speed left, so the turn back toward the
+## bench never snaps.
+func _step_return_guided(entry: Dictionary, delta: float) -> void:
+	var elapsed := (
+		(entry.get("guided_elapsed_sec") as float) + delta
+	)
+	entry["guided_elapsed_sec"] = elapsed
+	var duration := entry.get("guided_duration_sec") as float
+	var weight := clampf(elapsed / maxf(duration, 0.001), 0.0, 1.0)
+	var from_point := entry.get("guided_from") as Vector2
+	var from_velocity := entry.get("guided_velocity") as Vector2
+	var target := entry.get("target") as Vector2
+	var weight_squared := weight * weight
+	var weight_cubed := weight_squared * weight
+	var middle := (
+		(2.0 * weight_cubed - 3.0 * weight_squared + 1.0)
+		* from_point
+		+ (weight_cubed - 2.0 * weight_squared + weight)
+		* duration
+		* from_velocity
+		+ (-2.0 * weight_cubed + 3.0 * weight_squared) * target
+	)
+	entry["middle"] = middle
+	var moving_node := entry.get("node") as Node2D
+	var offset := entry.get("offset") as Vector2
+	moving_node.global_position = middle - offset
+	if entry.get("does_spin") as bool:
+		moving_node.rotation += (
+			entry.get("angular_velocity") as float
+		) * delta
+	if weight < 1.0:
+		return
+	var guided_velocity := entry.get("guided_velocity") as Vector2
+	var impact := Vector2(
+		guided_velocity.x * 0.5,
+		clampf(absf(guided_velocity.y), 250.0, 900.0),
+	)
+	entry["middle"] = target
+	_land_bench_return(entry, impact)
+	moving_node.global_position = target - offset
+
+
+## The landing: the downward speed becomes a bounce up and
+## a skid across the bench. A slow landing only skids. A
+## bigger piece keeps less of both.
+func _land_bench_return(
+	entry: Dictionary,
+	impact_velocity: Vector2,
+) -> void:
+	var target := entry.get("target") as Vector2
+	entry["ground"] = target
+	entry["phase"] = _RETURN_SETTLING
+	var downward_speed := maxf(impact_velocity.y, 0.0)
+	var bounce_velocity := 0.0
+	if (
+		downward_speed
+		>= G.settings.workable_bounce_min_speed_px_per_sec
+	):
+		bounce_velocity = (
+			downward_speed * (entry.get("restitution") as float)
+		)
+	entry["bounce_velocity"] = bounce_velocity
+	entry["bounce_height_px"] = 0.0
+	var ground_velocity := Vector2(
+		impact_velocity.x * _RETURN_SKID_SIDE_SHARE,
+		downward_speed * _RETURN_SKID_DOWN_SHARE,
+	)
+	entry["ground_velocity"] = ground_velocity
+	var radius_px := entry.get("radius_px") as float
+	entry["angular_velocity"] = (
+		clampf(
+			ground_velocity.x / maxf(radius_px, 8.0),
+			-6.0,
+			6.0,
+		)
+		* G.settings.workable_spin_factor
+	)
+
+
+func _step_return_settling(
+	entry: Dictionary,
+	delta: float,
+) -> void:
+	var gravity := maxf(
+		G.settings.default_gravity_acceleration,
+		1.0,
+	)
+	var bounce_height_px := entry.get("bounce_height_px") as float
+	var bounce_velocity := entry.get("bounce_velocity") as float
+	if bounce_height_px > 0.0 or bounce_velocity > 0.0:
+		bounce_velocity -= gravity * delta
+		bounce_height_px += bounce_velocity * delta
+		if bounce_height_px <= 0.0:
+			bounce_height_px = 0.0
+			var impact_speed := absf(bounce_velocity)
+			if (
+				impact_speed
+				< G.settings.workable_bounce_min_speed_px_per_sec
+			):
+				bounce_velocity = 0.0
+			else:
+				bounce_velocity = (
+					impact_speed
+					* (entry.get("restitution") as float)
+				)
+		entry["bounce_height_px"] = bounce_height_px
+		entry["bounce_velocity"] = bounce_velocity
+	var ground := entry.get("ground") as Vector2
+	var ground_velocity := entry.get("ground_velocity") as Vector2
+	var moving_node := entry.get("node") as Node2D
+	var does_spin := entry.get("does_spin") as bool
+	if ground_velocity.length() > 0.5:
+		ground += ground_velocity * delta
+		var deceleration := entry.get("skid_deceleration") as float
+		ground_velocity = ground_velocity.move_toward(
+			Vector2.ZERO,
+			deceleration * delta,
+		)
+		entry["ground_velocity"] = ground_velocity
+		if does_spin:
+			# The spin follows the skid as it slows, so a
+			# smaller piece turns faster and stops with it.
+			var radius_px := entry.get("radius_px") as float
+			entry["angular_velocity"] = (
+				clampf(
+					ground_velocity.x / maxf(radius_px, 8.0),
+					-6.0,
+					6.0,
+				)
+				* G.settings.workable_spin_factor
+			)
+			moving_node.rotation += (
+				entry.get("angular_velocity") as float
+			) * delta
+		# The skid never carries the piece back out. It
+		# stops at the edge instead.
+		var clamped := get_workable_area_target(
+			ground,
+			entry.get("margin_px") as float,
+		)
+		if clamped != ground:
+			ground = clamped
+			entry["ground_velocity"] = Vector2.ZERO
+			ground_velocity = Vector2.ZERO
+		entry["ground"] = ground
+	elif does_spin:
+		entry["angular_velocity"] = 0.0
+	var offset := entry.get("offset") as Vector2
+	moving_node.global_position = (
+		ground - offset + Vector2(0.0, -bounce_height_px)
+	)
+	if (
+		bounce_height_px <= 0.0
+		and bounce_velocity <= 0.0
+		and ground_velocity.length() <= 0.5
+	):
+		_finish_bench_return(entry)
+
+
+## The piece has come to rest inside the workable area.
+## Its own finish clears its return flag and settles its
+## turn, and the entry is dropped by the caller.
+func _finish_bench_return(entry: Dictionary) -> void:
+	var ground := entry.get("ground") as Vector2
+	var offset := entry.get("offset") as Vector2
+	var moving_node := entry.get("node") as Node2D
+	if is_instance_valid(moving_node):
+		moving_node.global_position = ground - offset
+		moving_node.reset_physics_interpolation()
+	var owner := entry.get("owner") as Object
+	if owner is Part:
+		(owner as Part).finish_bench_return()
+	elif owner is Screw:
+		(owner as Screw).finish_bench_return()
+	elif owner is Repairable:
+		(owner as Repairable).finish_bench_return()
+	entry["phase"] = -1
+
+
 ## Notes a screw as resting loose on the bench, wherever the player
 ## left it, so presses can find it.
 func register_resting_screw(screw: Screw) -> void:
@@ -612,21 +1514,53 @@ func _on_item_departed(item: Repairable) -> void:
 
 
 ## A drawer finished opening in the center: its stored parts
-## appear at random spots inside it.
+## fade in at random spots inside it.
 func _on_drawer_opened(drawer: Drawer) -> void:
 	for part in get_parts_in_drawer(drawer):
 		part.global_position = (
 			drawer.get_random_interior_global_position()
 		)
 		part.z_index = 16
-		part.show()
+	_fade_drawer_parts(drawer, true)
 
 
-## A drawer started to close: its stored parts disappear before
+## A drawer started to close: its stored parts fade out before
 ## the wrapper slides back and the animation reverses.
 func _on_drawer_close_started(drawer: Drawer) -> void:
-	for part in get_parts_in_drawer(drawer):
-		part.hide()
+	_fade_drawer_parts(drawer, false)
+
+
+## Fades a drawer's stored parts in, or out and then hidden.
+## The fade that ends hidden restores full opacity, so a part
+## taken out or put away never keeps a leftover fade.
+func _fade_drawer_parts(drawer: Drawer, is_fading_in: bool) -> void:
+	var parts := get_parts_in_drawer(drawer)
+	var old := _part_fade_tweens.get(drawer) as Tween
+	if is_instance_valid(old):
+		old.kill()
+	var tween := create_tween()
+	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	tween.set_parallel()
+	_part_fade_tweens[drawer] = tween
+	for part in parts:
+		if is_fading_in:
+			part.modulate.a = 0.0
+			part.show()
+		tween.tween_property(
+			part,
+			"modulate:a",
+			1.0 if is_fading_in else 0.0,
+			G.settings.part_fade_sec,
+		)
+	if is_fading_in:
+		return
+	tween.chain().tween_callback(
+		func() -> void:
+			for part in parts:
+				if is_instance_valid(part):
+					part.hide()
+					part.modulate.a = 1.0
+	)
 
 
 func _on_defect_added(

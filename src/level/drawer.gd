@@ -16,9 +16,9 @@ extends Node2D
 ## center, and swaps back before the animation reverses. One
 ## `AnimationPlayer` drives both groups, so they never drift apart.
 ##
-## Parts live in the level, not in the drawer. The level shows this
-## drawer's stored parts once it is fully open and hides them again
-## as soon as it starts to close (the `opened` and `close_started`
+## Parts live in the level, not in the drawer. The level fades this
+## drawer's stored parts in once it is fully open and back out as
+## soon as it starts to close (the `opened` and `close_started`
 ## signals).
 
 
@@ -37,10 +37,8 @@ enum State {
 const _OPEN_ANIMATION := &"open"
 ## Where an opened drawer sits on the level, in world space.
 const _CENTER_GLOBAL_POSITION := Vector2(0.0, 0.0)
-## The open drawer's inside, in this scene's local space: the top
-## view's panel on the shared art canvas. Stored parts rest at
-## random spots in it.
-const _INTERIOR_LOCAL := Rect2(-1503.0, -1037.0, 1307.0, 1140.0)
+## How far inside `%ContentsArea` a stored part may rest, so no
+## part hangs over the drawer's rim.
 const _INTERIOR_MARGIN_PX := 40.0
 ## The point in the open animation where the slide out of the slot
 ## ends and the turn to the top-down view begins. A drawer taking a
@@ -55,6 +53,7 @@ var state := State.CLOSED
 var drawer_index := -1
 
 var _open_fraction := 0.0
+var _is_clipped := true
 var _hint_hint: OutlineHint
 var _is_hint_active := false
 var _tween: Tween
@@ -72,6 +71,7 @@ func _ready() -> void:
 ## Shows the clipped sprite group in the slot, or the unclipped
 ## duplicate once the drawer is out and on its way to the center.
 func _set_clipped(is_clipped: bool) -> void:
+	_is_clipped = is_clipped
 	(%ClippingSpace as CanvasItem).visible = is_clipped
 	(%VisualUnclipped as CanvasItem).visible = not is_clipped
 
@@ -154,15 +154,23 @@ func is_hint_active() -> bool:
 	)
 
 
-## A random world position inside the open drawer, clear of its rim.
+## A random world position inside the open drawer, clear of its
+## rim. `%ContentsArea` marks the inside in the scene, the way the
+## hit shape marks the face.
 func get_random_interior_global_position() -> Vector2:
-	var transform := (%Mover as Node2D).global_transform
-	var interior := _INTERIOR_LOCAL.grow(-_INTERIOR_MARGIN_PX)
+	var shape_node := (
+		(%ContentsArea as Area2D).get_node("CollisionShape2D")
+		as CollisionShape2D
+	)
+	var shape := shape_node.shape as RectangleShape2D
+	var interior := Rect2(
+		-shape.size * 0.5, shape.size
+	).grow(-_INTERIOR_MARGIN_PX)
 	var local_point := Vector2(
 		randf_range(interior.position.x, interior.end.x),
 		randf_range(interior.position.y, interior.end.y),
 	)
-	return transform * local_point
+	return shape_node.global_transform * local_point
 
 
 ## Slides out of the slot, then turns to the top-down view while
@@ -205,14 +213,27 @@ func open_drawer() -> void:
 
 
 ## Hides the stored parts, turns back and slides to the slot
-## together, swaps to the clipped group, then slides home.
+## together, swaps to the clipped group, then slides home. Called
+## while the drawer is still opening, it reverses the opening
+## from wherever it has got to.
 func close_drawer() -> void:
-	if state != State.OPEN:
+	if state != State.OPEN and state != State.OPENING:
 		return
 	state = State.CLOSING
 	var generation := _generation
 	close_started.emit()
 	_kill_tween()
+	if _is_clipped:
+		# Still in the slot: the opening never got the drawer
+		# out. Just slide it home.
+		await _tween_open_fraction(
+			0.0, G.settings.drawer_slide_sec
+		).finished
+		if generation != _generation:
+			return
+		state = State.CLOSED
+		closed.emit()
+		return
 	_tween = create_tween()
 	_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	_tween.set_parallel()

@@ -2,8 +2,10 @@ extends "res://tests/probe_base.gd"
 ## Loose pieces on the bench: a screw comes out twice as far, rests
 ## where it lands instead of sliding to a row, and screws and the
 ## cover are dragged around the bench by hand. Nothing moves by
-## itself. A drag off the bench drops the piece at the edge, and a
-## piece dropped close to home at the right step seats itself.
+## itself. A screw may be dragged outside the workable area, and
+## a drop out there flies back in and rests inside it. A layer
+## still drops at the bench's edge, and a piece dropped close to
+## home at the right step seats itself.
 ##
 ## Run it with `tests/run.ps1 -Name bench_drag`, or from the repo
 ## root (PowerShell):
@@ -79,8 +81,10 @@ func _collect_nodes() -> void:
 
 
 ## Turns the flathead screw out, recentering the tip every frame.
+## The press goes by the driver's working end, the way a press
+## engages a point, not by the cursor tip.
 func _drive_screw_out() -> void:
-	await _press_at(_screw.global_position)
+	await _press_tool_at(_tool, _screw.global_position)
 	_expect(
 		_screw.mode == InteractionPoint.Mode.ACTIVE,
 		"the driver engages the screw",
@@ -224,17 +228,45 @@ func _check_off_bench_drop() -> void:
 	)
 	await _press_down(middle)
 	await _move_to(Vector2(-700.0, 260.0))
-	var dropped := _screw.bench_art.global_position
+	var carried := _screw.bench_art.global_position
 	_expect(
-		dropped.x >= -625.0,
-		"a drag off the bench drops the screw at the bench edge"
-		+ " (at %s)" % dropped,
+		carried.x < -625.0,
+		"a screw may be carried outside the workable area"
+		+ " (carried to %s)" % carried,
+	)
+	await _release_at(Vector2(-700.0, 260.0))
+	_expect(
+		_screw.is_returning,
+		"a screw dropped outside the workable area is on its way back",
+	)
+	var is_back := false
+	for frame in 300:
+		if not _screw.is_returning:
+			is_back = true
+			break
+		await get_tree().physics_frame
+	_expect(
+		is_back,
+		"the returned screw comes to rest instead of flying forever",
+	)
+	var rested := (
+		_screw.bench_art.global_position + _screw.rest_hit_offset
+	)
+	_expect(
+		_level.is_inside_workable_area(
+			rested,
+			_screw.get_rest_radius_px()
+			+ G.settings.workable_edge_padding_px,
+		),
+		"the returned screw rests inside the workable area"
+		+ " (at %s)" % rested,
 	)
 	await _move_to(Vector2(0.0, 200.0))
-	await _release_at(Vector2(0.0, 200.0))
 	_expect(
-		_screw.bench_art.global_position.distance_to(dropped) < 1.0,
-		"the dropped screw no longer follows the pointer",
+		_screw.bench_art.global_position.distance_to(
+			rested - _screw.rest_hit_offset,
+		) < 1.0,
+		"the returned screw no longer follows the pointer",
 	)
 
 

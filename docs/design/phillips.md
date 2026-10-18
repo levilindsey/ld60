@@ -82,7 +82,8 @@ it frees up.
   gauge sweeps clockwise to match. The grip
   ring around the hub shifts from red to green as it fills.
 - The gauge's face never tints for progress. It stays plain
-  until the grip falls below 0.4, then reddens toward empty.
+  until the grip falls below 0.55, then reddens, reaching its
+  fullest red at 0.15, a little before the bit slips out.
 - The driver's twisting animation plays only while the screw
   is actually making progress: not while seated idle, and not
   while circling outside the window.
@@ -117,7 +118,7 @@ easing between `phillips_zone_move_min_rad_per_sec` (0.8) and
 (1.2 to 2.6 s). The gauge tops out at 14, fill is 0.35/s, drain
 is 0.28/s, the meter starts full for removal and install, and
 the face starts reddening below `phillips_failure_tint_start`
-(0.4). The cam-out pause is 0.5 s and the intro is 0.33 s; the
+(0.55) and is fully red by `phillips_failure_tint_full` (0.15). The cam-out pause is 0.5 s and the intro is 0.33 s; the
 microgame starts after `phillips_start_drag_rad` (1.5) of
 dragged turning. The smoothing
 is `phillips_speed_smoothing_sec` (0.65) for the needle and
