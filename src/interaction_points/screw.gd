@@ -73,11 +73,13 @@ const _PRY_DELAY_SEC := 0.3
 const _PICKUP_TURN_SEC := 0.25
 ## The most a picked-up screw turns either way, in radians.
 const _PICKUP_MAX_TURN_RAD := PI / 4.0
-## How long a screw rolls when set down after a drag, and how
-## far the head end sweeps while it rolls.
+## How long a short screw roll takes when set down after a
+## drag (a long one takes longer, with the square root of its
+## reach), and how far the head end sweeps while it rolls: from
+## a nudge to a full swing across the bench.
 const _ROLL_SEC := 0.55
-const _ROLL_HEAD_MIN_PX := 14.0
-const _ROLL_HEAD_MAX_PX := 22.0
+const _ROLL_HEAD_MIN_PX := 16.0
+const _ROLL_HEAD_MAX_PX := 150.0
 ## Release speed (px/s) above which a set-down roll follows the
 ## drag's motion instead of falling either way.
 const _ROLL_FLING_MIN_SPEED := 60.0
@@ -755,14 +757,18 @@ func on_set_down(release_velocity := Vector2.ZERO) -> void:
 		var swing := Vector2(-axis.y, axis.x).normalized()
 		if not is_zero_approx(swing.dot(release_velocity)):
 			direction = signf(swing.dot(release_velocity))
+	var head_sweep := randf_range(_ROLL_HEAD_MIN_PX, _ROLL_HEAD_MAX_PX)
 	_roll_angle_rad = (
-		direction
-		* randf_range(_ROLL_HEAD_MIN_PX, _ROLL_HEAD_MAX_PX)
-		/ (apex_distance + length)
+		direction * head_sweep / (apex_distance + length)
+	)
+	var duration_sec := clampf(
+		_ROLL_SEC * sqrt(head_sweep / _ROLL_HEAD_MIN_PX),
+		_ROLL_SEC,
+		1.5,
 	)
 	_roll_tween = create_tween()
 	_roll_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
-	_roll_tween.tween_method(_apply_roll, 0.0, 1.0, _ROLL_SEC)
+	_roll_tween.tween_method(_apply_roll, 0.0, 1.0, duration_sec)
 
 
 ## Stops a set-down roll where it is.

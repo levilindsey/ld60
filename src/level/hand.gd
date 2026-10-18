@@ -237,6 +237,14 @@ func get_held_tool() -> Tool:
 	return null
 
 
+## True while a tool is in the hand ready to act. A tool cannot
+## grab screws, parts or layers, so while one is held those
+## presses fall through to the tool instead of being swallowed.
+func _is_tool_ready() -> bool:
+	var tool := get_held_tool()
+	return is_instance_valid(tool) and tool.mode == Tool.Mode.HELD
+
+
 ## Sends every press, drag and release to the microgame until it calls
 ## clear_input_owner().
 func set_input_owner(microgame: Object) -> void:
@@ -355,11 +363,14 @@ func _handle_press(global_point: Vector2) -> bool:
 
 ## 2. Over a screw resting on the bench: start dragging it, empty
 ## handed. It seats again only when dropped close to a hole of its
-## type once its layer is back on. With anything in the hand the
-## press does nothing (docs/design/screw_pullout.md).
+## type once its layer is back on. With anything else in the hand
+## the press does nothing; with a tool in the hand it falls
+## through to the tool (docs/design/screw_pullout.md).
 func _press_resting_screw(global_point: Vector2) -> bool:
 	var screw := G.level.get_resting_screw_at(global_point)
 	if not is_instance_valid(screw):
+		return false
+	if _is_tool_ready():
 		return false
 	if screw.is_returning:
 		# On its way back in. The press is used, but the
@@ -378,11 +389,13 @@ func _press_resting_screw(global_point: Vector2) -> bool:
 ## 3. Over a layer lying loose on the bench: start dragging it,
 ## empty handed. Dropped close to home once it is ready, it tweens
 ## back on. Grabbed once it can go back, it first turns back to
-## the rotation it has on the item. With anything in the hand the
-## press does nothing.
+## the rotation it has on the item. With anything else in the
+## hand the press does nothing; with a tool it falls through.
 func _press_set_aside_layer(global_point: Vector2) -> bool:
 	var layer := _find_loose_layer(global_point)
 	if not is_instance_valid(layer):
+		return false
+	if _is_tool_ready():
 		return false
 	if layer.is_returning:
 		# On its way back in. The press is used, but the layer
@@ -480,10 +493,13 @@ func _press_drawer_modal(global_point: Vector2) -> bool:
 
 
 ## Over a part resting on the bench: start dragging it, empty
-## handed. With anything in the hand the press does nothing.
+## handed. With anything else in the hand the press does
+## nothing; with a tool in the hand it falls through to the tool.
 func _press_loose_part(global_point: Vector2) -> bool:
 	var part := G.level.get_loose_part_at(global_point)
 	if not is_instance_valid(part):
+		return false
+	if _is_tool_ready():
 		return false
 	if (
 		is_empty()
