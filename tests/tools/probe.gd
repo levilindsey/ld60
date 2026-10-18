@@ -207,8 +207,10 @@ func _check_holder_return() -> void:
 		driver.mode == Tool.Mode.HELD,
 		"the flathead driver is in hand off the rack",
 	)
+	# The far holder, so neither the tip's path nor the tool's
+	# neck can reach the flathead's own holder on the way.
 	await _move_to(
-		G.level.get_tool_holder_position(Tool.Type.PHILLIPS_SCREW_DRIVER)
+		G.level.get_tool_holder_position(Tool.Type.RAG)
 	)
 	await _physics_frames(4)
 	_expect(
