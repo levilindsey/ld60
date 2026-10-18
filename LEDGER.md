@@ -9,9 +9,9 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 - **LX47** · Flathead calls from the m1-screws handoff
   (`docs/design/m1_agents.md`), my picks in brackets: 2 install twists of
   101.25 degrees from a 22.5 degree tilt [keep]; the ratchet only between
-  twists [keep]; overcorrecting unseats, in the pause too [stop the push
-  at the slot's end, so only a drift skids]; the 12 px seat tolerance is
-  about 1 mm of finger travel, inferred [a touch gain, as a setting].
+  twists [keep]. Decided by Levi (2026-10-17): only a twist's drift
+  unseats, never the player's push. Left: the 12 px seat tolerance is
+  about 1 mm of finger travel, inferred [touch-only gain, as a setting].
 
 ## In progress
 

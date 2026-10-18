@@ -38,13 +38,16 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
   never corrects should still usually lose the tip before the screw is
   out, which is why drifts mostly keep going one way ("Tuning").
 - **Correcting:** mouse motion along the slot moves the tip,
-  `offset += event.relative.dot(slot_axis)`. Motion across the slot is
-  ignored. On touch, the player drags a finger.
-- **Unseat:** when `abs(offset) > seat_tolerance_px`, the tip skids
-  out. The screw takes 1 damage, a skid scratch decal appears where the
-  tip left, and the tool returns to HELD, with the follow offset easing
-  it back under the cursor. Twists done so far are kept. Press again to
-  re-engage.
+  `offset += event.relative.dot(slot_axis)`, stopped at the slot's
+  ends (`-seat_tolerance_px` to `seat_tolerance_px`). Motion across
+  the slot is ignored. On touch, the player drags a finger.
+- **Unseat:** only during a twist, when its drift pushes
+  `abs(offset) > seat_tolerance_px`, the tip skids out. The player's
+  own push stops at the end and can never skid it, in the pause or in
+  a twist (LX47, Levi 2026-10-17). The screw takes 1 damage, a skid
+  scratch decal appears where the tip left, and the tool returns to
+  HELD, with the follow offset easing it back under the cursor.
+  Twists done so far are kept. Press again to re-engage.
 - **Done:** after `twists_needed` (default 4) twists the screw is out,
   and the tool returns to HELD.
 - **Install mode:** `install_twists` (2), turning the other way.

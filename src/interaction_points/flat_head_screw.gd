@@ -120,8 +120,9 @@ func get_tip_position() -> Vector2:
 
 
 ## The hand calls this on every pointer motion while this screw owns the
-## pointer. Motion along the slot moves the tip. Motion across it does
-## nothing.
+## pointer. Motion along the slot moves the tip, stopped at the slot's
+## ends, so the player's own push can never skid it out. Motion across
+## the slot does nothing.
 func on_pointer_moved(_global_position: Vector2) -> void:
 	# Screen pixels, so a camera shake doesn't count as motion.
 	var screen_delta := (
@@ -133,7 +134,11 @@ func on_pointer_moved(_global_position: Vector2) -> void:
 			screen_delta
 		)
 	)
-	tip_offset_px += world_delta.dot(get_slot_axis())
+	tip_offset_px = clampf(
+		tip_offset_px + world_delta.dot(get_slot_axis()),
+		-seat_tolerance_px,
+		seat_tolerance_px,
+	)
 
 
 ## A finger can land anywhere, so motion counts from the new press.
@@ -170,13 +175,15 @@ func _start_microgame() -> void:
 
 
 ## One physics frame of the twist cycle: pause, telegraph, twist.
+## Only a twist's drift can push the tip past the slot's end, so the
+## unseat check runs only in that phase.
 func _advance_cycle(delta: float) -> void:
 	_phase_sec += delta
 	if _phase == Phase.TWIST:
 		_turn_and_drift()
-	if absf(tip_offset_px) > seat_tolerance_px:
-		_unseat()
-		return
+		if absf(tip_offset_px) > seat_tolerance_px:
+			_unseat()
+			return
 	_set_in_danger(
 		absf(tip_offset_px) > seat_tolerance_px * _DANGER_FRACTION
 	)
