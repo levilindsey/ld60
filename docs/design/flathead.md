@@ -63,7 +63,8 @@ change: reset the twist count on unseat. LX6 kept the default.
   tool. It rotates and never scales, and it slides up the screen as it
   turns out ([screws.md](screws.md) "Removal").
 - **Unseat:** a skid sound, sparks at the tip, and the tool hops.
-- **Done:** a pop as the screw comes out.
+- **Done:** a pop, then the screw pulls itself out of its hole and slides
+  to its rest spot on the bench ([screws.md](screws.md) "Removal").
 
 ## Building it
 
@@ -93,7 +94,8 @@ change: reset the twist count on unseat. LX6 kept the default.
 | `slip_bias` | 0.9 | per screw |
 | `twists_needed` | 4 | per screw |
 | `install_twists` | 2 | per screw |
-| `screw_slide_px` | 6 | settings, "Screw slide" group |
+| slide height | about 6 px | first key of `RemoveScrew`, in the screw scene |
+| `screw_travel_sec` | 0.4 | settings, "Screw rest" group |
 
 What `slip_bias` does to a player who never corrects, from a million
 simulated screws using the drift formula above:
