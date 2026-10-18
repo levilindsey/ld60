@@ -173,6 +173,7 @@ var _roll_distance_px := 0.0
 var _roll_angle_rad := 0.0
 var _outlined_bench_art: Sprite2D
 var _bench_material_before_outline: Material
+var _is_rest_hint_active := false
 
 
 func _init() -> void:
@@ -432,6 +433,30 @@ func pulse() -> void:
 		_bench_art_home_scale,
 		half_sec,
 	)
+
+
+## Shows or hides the idle hint. A resting screw highlights its
+## bench art, where the player's press lands. A screw in its hole
+## highlights at the hole like any other point. Clearing the hint
+## never clears the install outline of a screw that can come back,
+## which the game shows on its own.
+func set_hint_active(is_active: bool) -> void:
+	if travel == Travel.RESTING:
+		_is_rest_hint_active = is_active
+		if is_active:
+			_start_outline()
+		elif not can_come_back():
+			_stop_outline()
+		return
+	super.set_hint_active(is_active)
+
+
+## True while the idle hint shows, or the resting screw already
+## shows its own return outline.
+func is_hint_active() -> bool:
+	if travel == Travel.RESTING:
+		return is_showing_outline()
+	return super.is_hint_active()
 
 
 ## Starts the microgame once the tool is IN_USE. Each screw type

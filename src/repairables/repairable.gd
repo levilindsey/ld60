@@ -56,6 +56,7 @@ var drop_area: Area2D:
 	get:
 		return %DropArea
 
+var _repair_sequence: RepairSequence
 var _shake_tween: Tween
 var _motion_tween: Tween
 var _outline_hint: OutlineHint
@@ -70,6 +71,7 @@ func _ready() -> void:
 			layer.item = self
 			layers.append(layer)
 	G.check(not layers.is_empty())
+	_repair_sequence = RepairSequence.build_for(self)
 	DropShadow.attach(
 		self,
 		Vector2(170.0, 32.0),
@@ -89,6 +91,14 @@ func _ready() -> void:
 # The paused tree skips this, so the clock only counts unpaused time.
 func _physics_process(delta: float) -> void:
 	quality.repair_time_sec += delta
+
+
+## This item's repair steps, derived from its layers and points
+## by `RepairSequence` when the item enters the tree.
+func get_repair_sequence() -> RepairSequence:
+	if not is_instance_valid(_repair_sequence):
+		_repair_sequence = RepairSequence.build_for(self)
+	return _repair_sequence
 
 
 ## The outermost layer still on, or null.

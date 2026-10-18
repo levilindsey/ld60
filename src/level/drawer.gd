@@ -55,6 +55,8 @@ var state := State.CLOSED
 var drawer_index := -1
 
 var _open_fraction := 0.0
+var _hint_hint: OutlineHint
+var _is_hint_active := false
 var _tween: Tween
 var _fraction_tween: Tween
 ## Bumped by `reset_closed()`, so an open or close that was cut
@@ -106,6 +108,44 @@ func get_hit_global_rect() -> Rect2:
 	for corner in corners:
 		rect = rect.expand(corner)
 	return rect
+
+
+## Shows or hides the idle hint outline around this drawer's
+## face, where it rests shut in its slot. The tracker lights every
+## drawer at once for a fetch step, because the needed part could
+## be in any of them. The outline is placed while the drawer is
+## shut, so it does not follow the trip to the center.
+func set_hint_active(is_active: bool) -> void:
+	_is_hint_active = is_active
+	if is_active:
+		if not is_instance_valid(_hint_hint):
+			var rect := get_hit_global_rect()
+			var points := PackedVector2Array()
+			points.append(to_local(rect.position))
+			points.append(
+				to_local(rect.position + Vector2(rect.size.x, 0.0)),
+			)
+			points.append(to_local(rect.position + rect.size))
+			points.append(
+				to_local(rect.position + Vector2(0.0, rect.size.y)),
+			)
+			if points.size() < 3:
+				return
+			_hint_hint = OutlineHint.new()
+			add_child(_hint_hint)
+			_hint_hint.polygon = points
+		_hint_hint.set_active(true)
+	elif is_instance_valid(_hint_hint):
+		_hint_hint.set_active(false)
+
+
+## True while the idle hint outline shows on this drawer.
+func is_hint_active() -> bool:
+	return (
+		_is_hint_active
+		and is_instance_valid(_hint_hint)
+		and _hint_hint.is_active()
+	)
 
 
 ## A random world position inside the open drawer, clear of its rim.

@@ -195,6 +195,14 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX62** · Idle hints on a derived repair sequence: each item's
+  steps are autodetermined from its layers, fasteners, faults and
+  sockets (`RepairSequence`); after 7 s without a correct
+  interaction the current step's target lights, after 16 s its
+  tool (or the fitting socket) too, every drawer for a fetch, the
+  outbox for shipping. Done in the working-tree landing
+  (2026-10-18). Levi still to play it for the delays' feel (LX41).
+  Design: `docs/design/hints.md`, probe: `tests/hints/`.
 - **LX61** · Diegetic parts drawers: three clip-masked art drawers
   replace the parts menu; parts hide in them per item, drag out to
   the bench, drag back to put away, leftovers cleaned up at the

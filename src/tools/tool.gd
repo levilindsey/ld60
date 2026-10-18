@@ -75,6 +75,8 @@ var position_tween: Tween
 var rotation_tween: Tween
 
 var _shake_offset := Vector2.ZERO
+var _hint_hint: OutlineHint
+var _is_hint_active := false
 var _follow_offset_tween: Tween
 var _shake_tween: Tween
 var _drop_shadow: DropShadow
@@ -236,6 +238,54 @@ func nope() -> void:
 			step_sec,
 		)
 	_shake_tween.tween_property(self, "_shake_offset", Vector2.ZERO, step_sec)
+
+
+## Shows or hides the idle hint outline around this tool, in the
+## shape of its grab area. The tracker only lights a tool after
+## the longer delay, and only while it rests stored in the rack.
+func set_hint_active(is_active: bool) -> void:
+	_is_hint_active = is_active
+	if is_active:
+		var points := _get_hint_polygon()
+		if points.size() < 3:
+			return
+		if not is_instance_valid(_hint_hint):
+			_hint_hint = OutlineHint.new()
+			add_child(_hint_hint)
+		_hint_hint.polygon = points
+		_hint_hint.set_active(true)
+	elif is_instance_valid(_hint_hint):
+		_hint_hint.set_active(false)
+
+
+## True while the idle hint outline shows on this tool.
+func is_hint_active() -> bool:
+	return (
+		_is_hint_active
+		and is_instance_valid(_hint_hint)
+		and _hint_hint.is_active()
+	)
+
+
+func _get_hint_polygon() -> PackedVector2Array:
+	if not is_instance_valid(grab_area):
+		return PackedVector2Array()
+	for child in grab_area.get_children():
+		var local_points := PackedVector2Array()
+		if child is CollisionShape2D:
+			local_points = OutlineHint.get_shape_polygon(
+				child as CollisionShape2D,
+			)
+		elif child is CollisionPolygon2D:
+			local_points = (child as CollisionPolygon2D).polygon
+		if local_points.size() < 3:
+			continue
+		var polygon_node := child as Node2D
+		var points := PackedVector2Array()
+		for point in local_points:
+			points.append(to_local(polygon_node.to_global(point)))
+		return points
+	return PackedVector2Array()
 
 
 func get_tip_position() -> Vector2:

@@ -35,6 +35,8 @@ var drawer_index := -1
 var is_returning := false
 
 var _shake_tween: Tween
+var _hint_hint: OutlineHint
+var _is_hint_active := false
 
 
 func _ready() -> void:
@@ -81,6 +83,30 @@ func nope() -> void:
 			step_sec,
 		)
 	_shake_tween.tween_property(%Art, "position", Vector2.ZERO, step_sec)
+
+
+## Shows or hides the idle hint outline around this part, in the
+## shape of its kind. The tracker highlights a stored part's drawer
+## instead, and this part once it is out on the bench.
+func set_hint_active(is_active: bool) -> void:
+	_is_hint_active = is_active
+	if is_active:
+		if not is_instance_valid(_hint_hint):
+			_hint_hint = OutlineHint.new()
+			add_child(_hint_hint)
+			_hint_hint.polygon = get_polygon(type)
+		_hint_hint.set_active(true)
+	elif is_instance_valid(_hint_hint):
+		_hint_hint.set_active(false)
+
+
+## True while the idle hint outline shows on this part.
+func is_hint_active() -> bool:
+	return (
+		_is_hint_active
+		and is_instance_valid(_hint_hint)
+		and _hint_hint.is_active()
+	)
 
 
 ## Leaves the hand and snaps into a socket. The socket hears about it

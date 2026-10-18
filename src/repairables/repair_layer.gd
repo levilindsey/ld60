@@ -28,6 +28,10 @@ var is_on := true
 ## True from the moment it starts to lift off or go back until it
 ## lands.
 var is_moving := false
+## True once the layer has been taken off the item at least once.
+## The repair sequence uses it to tell driving screws out from
+## driving the same screws back in.
+var has_been_removed := false
 
 var _home_parent: Node
 var _home_index := 0
@@ -43,6 +47,7 @@ var _pulse_tween: Tween
 var _outline_hint: OutlineHint
 var _outlined_art: Sprite2D
 var _art_material_before_outline: Material
+var _is_hint_active := false
 
 
 func _ready() -> void:
@@ -167,6 +172,7 @@ func take_off_for_drag() -> void:
 	var spot := G.level.get_set_aside_spot()
 	var kept_global := global_position
 	var kept_rotation := global_rotation
+	has_been_removed = true
 	is_on = false
 	is_moving = true
 	z_index = 10
@@ -212,6 +218,23 @@ func update_outline() -> void:
 		_start_outline()
 	else:
 		_stop_outline()
+
+
+## Shows or hides the idle hint outline on this layer. It shares
+## the ready to go back outline's drawing, but clearing the hint
+## never clears that outline while the layer is ready.
+func set_hint_active(is_active: bool) -> void:
+	_is_hint_active = is_active
+	if is_active:
+		_start_outline()
+	elif not is_ready_to_go_back():
+		_stop_outline()
+
+
+## True while an outline shows on this layer, the idle hint or
+## the ready to go back outline the game shows on its own.
+func is_hint_active() -> bool:
+	return is_showing_outline()
 
 
 ## True while the outline that says this layer can go back on shows.
@@ -284,6 +307,7 @@ func has_point(global_point: Vector2) -> bool:
 
 
 func _start_lift() -> void:
+	has_been_removed = true
 	is_on = false
 	var stack_index := G.level.get_set_aside_layers().size()
 	reparent(G.level.get_set_aside_spot())

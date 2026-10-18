@@ -547,6 +547,21 @@ func is_dragging_loose_layer(layer: RepairLayer) -> bool:
 	return _loose_layer == layer
 
 
+## The resting screw being dragged, or null.
+func get_loose_screw() -> Screw:
+	return _loose_screw
+
+
+## The loose layer being dragged, or null.
+func get_loose_layer() -> RepairLayer:
+	return _loose_layer
+
+
+## The loose part being dragged, or null.
+func get_loose_part() -> Part:
+	return _loose_part
+
+
 ## Lets go of a dragged part. Released over a socket, it tries to
 ## fit: the right part snaps in, the wrong one nopes and stays on
 ## the bench. Released over a drawer that may take it, the drawer

@@ -122,6 +122,18 @@ enum PhysicsLayer {
 @export_group("")
 
 
+@export_group("Hints")
+## Seconds without a correct interaction on the current repair
+## step before the hint tracker outlines what to touch next. Any
+## correct interaction restarts the count. See RepairSequence.
+@export var hint_delay_sec := 7.0
+## Seconds without a correct interaction before the tracker also
+## outlines the stored tool the highlighted point needs, on top of
+## the point itself. Counted from the same last correct
+## interaction as `hint_delay_sec`, so it is the longer delay.
+@export var hint_tool_delay_sec := 16.0
+@export_group("")
+
 @export_group("Drawers")
 ## Seconds an open drawer takes to slide to the center of the level,
 ## and back to its slot.

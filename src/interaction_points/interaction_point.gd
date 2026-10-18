@@ -52,6 +52,8 @@ var engaged_tool: Tool
 
 var _pulse_tween: Tween
 var _poke_tween: Tween
+var _hint_hint: OutlineHint
+var _is_hint_active := false
 
 
 func _ready() -> void:
@@ -179,6 +181,49 @@ func pulse() -> void:
 		half_sec,
 	)
 	_pulse_tween.tween_property(self, "scale", Vector2.ONE, half_sec)
+
+
+## Shows or hides the idle hint outline around this point. The
+## hint tracker calls it after its delay, and clears it as soon as
+## the player works on the point. The outline follows the point's
+## own collision shape, so every point kind highlights in place.
+func set_hint_active(is_active: bool) -> void:
+	_is_hint_active = is_active
+	if is_active:
+		var points := _get_hint_polygon()
+		if points.size() < 3:
+			return
+		if not is_instance_valid(_hint_hint):
+			_hint_hint = OutlineHint.new()
+			add_child(_hint_hint)
+		_hint_hint.polygon = points
+		_hint_hint.set_active(true)
+	elif is_instance_valid(_hint_hint):
+		_hint_hint.set_active(false)
+
+
+## True while the idle hint outline shows on this point.
+func is_hint_active() -> bool:
+	return (
+		_is_hint_active
+		and is_instance_valid(_hint_hint)
+		and _hint_hint.is_active()
+	)
+
+
+func _get_hint_polygon() -> PackedVector2Array:
+	for child in get_children():
+		if child is CollisionShape2D:
+			var points := OutlineHint.get_shape_polygon(
+				child as CollisionShape2D,
+			)
+			if points.size() >= 3:
+				return points
+	var points := PackedVector2Array()
+	for index in 12:
+		var angle := TAU * float(index) / 12.0
+		points.append(Vector2.from_angle(angle) * 22.0)
+	return points
 
 
 ## Swaps this point for an instance of `broken_scene` with the same

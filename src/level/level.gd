@@ -10,6 +10,10 @@ const _PLAYER_CAMERA_OFFSET := Vector2.ZERO
 var has_started := false
 var has_won := false
 
+## Times the current repair step and lights its target, then
+## its tool, when the player stalls. See HintTracker.
+var hint_tracker: HintTracker
+
 var tools_by_type: Dictionary[Tool.Type, Tool] = {}
 ## The item on the bench, or null while the next one is on its way.
 var active_repairable: Repairable
@@ -84,6 +88,10 @@ func _ready() -> void:
 		drawer.close_started.connect(_on_drawer_close_started.bind(drawer))
 
 	%Receipt.closed.connect(_on_receipt_closed)
+
+	hint_tracker = HintTracker.new()
+	hint_tracker.name = "HintTracker"
+	add_child(hint_tracker)
 
 	# TODO: Add some level and spawn configs to control when what things spawn.
 	spawn_tool(Tool.Type.FLAT_HEAD_SCREW_DRIVER)
@@ -289,6 +297,50 @@ func get_parts_in_drawer(drawer: Drawer) -> Array[Part]:
 		if part.is_stored and part.drawer_index == drawer.drawer_index:
 			parts.append(part)
 	return parts
+
+
+## Every part spawned for the item on the bench, stored, loose
+## or returning. Installed parts stay in the list by flag.
+func get_drawer_parts() -> Array[Part]:
+	var parts: Array[Part] = []
+	for entry: Variant in _drawer_parts:
+		if is_instance_valid(entry):
+			parts.append(entry as Part)
+	return parts
+
+
+## The loose part of a kind that is out on the bench, or null. A
+## part being dragged counts, and sorts first, so a step that
+## needs the part sees the one already in motion.
+func get_loose_part_of_type(part_type: Part.Type) -> Part:
+	var dragged: Part = null
+	if is_instance_valid(hand):
+		dragged = hand.get_loose_part()
+	if (
+		is_instance_valid(dragged)
+		and dragged.type == part_type
+		and not dragged.is_installed
+	):
+		return dragged
+	for part in get_drawer_parts():
+		if part.type != part_type:
+			continue
+		if part.is_stored or part.is_installed or part.is_returning:
+			continue
+		return part
+	return null
+
+
+## The stored part of a kind inside a drawer, visible or not, or
+## null.
+func get_part_of_type_in_drawer(
+	drawer: Drawer,
+	part_type: Part.Type,
+) -> Part:
+	for part in get_parts_in_drawer(drawer):
+		if part.type == part_type:
+			return part
+	return null
 
 
 ## Restocks the drawers for an item that just landed: the old loose
