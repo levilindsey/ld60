@@ -27,10 +27,10 @@ turn, and the grip drains. An empty grip cams the bit out.
   not count. The turning is averaged over 0.45 s and then
   smoothed over 0.5 s, so the needle has some weight.
   Dragging the wrong way reads as a negative speed.
-- **The zone:** 3 radians per second wide. It starts centered on
+- **The zone:** 3.5 radians per second wide. It starts centered on
   6.25 rad/s, where the old fixed band sat, then its center
   climbs at a pace that eases toward a fresh random target
-  between 0.8 and 2.8 rad/s per second, picked every 1.2 to
+  between 0.8 and 2.2 rad/s per second, picked every 1.2 to
   2.6 s. On the gauge, climbing speed reads as the green arc
   sliding counter-clockwise; at the fast end it wraps back to
   the slow end and keeps going. Inside the zone the screw and
@@ -92,9 +92,9 @@ it frees up.
 In the "Phillips" group in `settings.gd`: the zone starts
 centered between `phillips_speed_min_rad_per_sec` (2.5) and
 `phillips_speed_max_rad_per_sec` (10), is
-`phillips_zone_width_rad_per_sec` (3) wide, and climbs at a pace
+`phillips_zone_width_rad_per_sec` (3.5) wide, and climbs at a pace
 easing between `phillips_zone_move_min_rad_per_sec` (0.8) and
-`phillips_zone_move_max_rad_per_sec` (2.8), retargeted every
+`phillips_zone_move_max_rad_per_sec` (2.2), retargeted every
 `phillips_zone_retarget_min_sec` to `phillips_zone_retarget_max_sec`
 (1.2 to 2.6 s). The gauge tops out at 14, fill is 0.35/s, drain
 is 0.28/s, the meter starts at 0.4 (0.65 to install), the

@@ -154,12 +154,12 @@ enum PhysicsLayer {
 ## Width of the green speed zone, in radians per second. The zone
 ## slides counter-clockwise around the gauge, so its center keeps
 ## climbing and wraps from the fast end back to the slow end.
-@export var phillips_zone_width_rad_per_sec := 3.0
+@export var phillips_zone_width_rad_per_sec := 3.5
 ## Slowest and fastest rate the zone center climbs at, in radians
 ## per second per second. It eases between fresh targets in this
 ## range, so the pace never stays put for long.
 @export var phillips_zone_move_min_rad_per_sec := 0.8
-@export var phillips_zone_move_max_rad_per_sec := 2.8
+@export var phillips_zone_move_max_rad_per_sec := 2.2
 ## Seconds between fresh zone-pace targets.
 @export var phillips_zone_retarget_min_sec := 1.2
 @export var phillips_zone_retarget_max_sec := 2.6
