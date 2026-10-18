@@ -3,10 +3,10 @@
 [ext_resource type="Script" uid="uid://bqj50lqds4nhs" path="res://src/level/level.gd" id="1_la7um"]
 [ext_resource type="Script" uid="uid://3xax4i6teywv" path="res://src/level/camera_shaker.gd" id="2_xv147"]
 [ext_resource type="Script" uid="uid://bfo0vmq35oagd" path="res://src/level/tool_holder.gd" id="3_af42n"]
-[ext_resource type="Texture2D" uid="uid://wk5xvr0y7ksb" path="res://assets/images/props/background.png" id="4_background"]
-[ext_resource type="Script" path="res://src/level/hand.gd" id="5_hand"]
+[ext_resource type="Script" uid="uid://d8bmnco1ssr8" path="res://src/level/hand.gd" id="5_hand"]
 [ext_resource type="PackedScene" path="res://src/decals/decal_spawner.tscn" id="6_decals"]
 [ext_resource type="PackedScene" path="res://src/ui/ticket/ticket_card.tscn" id="7_ticket"]
+[ext_resource type="Texture2D" uid="uid://lmxtxt6qwc8n" path="res://assets/images/room!!!!!!.png" id="8_ob0n7"]
 [ext_resource type="PackedScene" path="res://src/ui/receipt/receipt.tscn" id="8_receipt"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
@@ -14,6 +14,11 @@ radius = 34.058773
 
 [node name="Level" type="Node2D" unique_id=894130576]
 script = ExtResource("1_la7um")
+
+[node name="Room!!!!!!" type="Sprite2D" parent="." unique_id=1576706779]
+position = Vector2(5.3750024, 2.2499912)
+scale = Vector2(0.36922747, 0.29375002)
+texture = ExtResource("8_ob0n7")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1488511100]
 unique_name_in_owner = true
@@ -24,47 +29,44 @@ script = ExtResource("2_xv147")
 camera = NodePath("../Camera2D")
 metadata/_custom_type_script = "uid://3xax4i6teywv"
 
-[node name="Decals" parent="." instance=ExtResource("6_decals")]
+[node name="Decals" parent="." unique_id=150936615 instance=ExtResource("6_decals")]
 unique_name_in_owner = true
-
-[node name="Background" type="Sprite2D" parent="." unique_id=242847735]
-scale = Vector2(0.6666667, 0.6666667)
-texture = ExtResource("4_background")
 
 [node name="ActiveItemPosition" type="Marker2D" parent="." unique_id=802295010]
 unique_name_in_owner = true
-position = Vector2(0, 62)
+position = Vector2(3, 218)
 
 [node name="ItemSpawnPosition" type="Marker2D" parent="." unique_id=527054541]
 unique_name_in_owner = true
 position = Vector2(0, -549)
 
-[node name="Outbox" type="Area2D" parent="."]
+[node name="Outbox" type="Area2D" parent="." unique_id=235443095]
 unique_name_in_owner = true
 position = Vector2(-587, 105)
 collision_layer = 0
 collision_mask = 2
 monitorable = false
 
-[node name="Shape" type="CollisionPolygon2D" parent="Outbox"]
-polygon = PackedVector2Array(-53, -110, 102, -110, 4, 110, -53, 110)
+[node name="Shape" type="CollisionPolygon2D" parent="Outbox" unique_id=1296355483]
+position = Vector2(-8, 102)
+polygon = PackedVector2Array(-53, -110, 6, -112, 102, -110, 4, 110, -53, 110)
 
-[node name="Placeholder" type="Polygon2D" parent="Outbox"]
+[node name="Placeholder" type="Polygon2D" parent="Outbox" unique_id=879909176]
+position = Vector2(-3, 103)
 color = Color(0.2, 0.15, 0.1, 0.4)
-polygon = PackedVector2Array(-53, -110, 102, -110, 4, 110, -53, 110)
+polygon = PackedVector2Array(-53, -110, 8, -102, 102, -110, 4, 110, -53, 110)
 
-[node name="Label" type="Label" parent="Outbox"]
+[node name="Label" type="Label" parent="Outbox" unique_id=1379218495]
 offset_left = -50.0
-offset_top = -18.0
-offset_right = 40.0
-offset_bottom = 18.0
-mouse_filter = 2
+offset_top = 59.0
+offset_right = 49.0
+offset_bottom = 104.0
 theme_override_font_sizes/font_size = 32
 text = "OUT"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="OutboxExitPosition" type="Marker2D" parent="."]
+[node name="OutboxExitPosition" type="Marker2D" parent="." unique_id=277017737]
 unique_name_in_owner = true
 position = Vector2(-880, 105)
 
@@ -73,7 +75,7 @@ unique_name_in_owner = true
 
 [node name="FlatHeadScrewDriverHolder" type="Area2D" parent="ToolHolders" unique_id=417891166]
 unique_name_in_owner = true
-position = Vector2(497, 174)
+position = Vector2(541, 308)
 collision_layer = 16
 collision_mask = 0
 monitoring = false
@@ -87,36 +89,36 @@ metadata/_edit_lock_ = true
 [node name="Repairables" type="Node" parent="." unique_id=75239543]
 unique_name_in_owner = true
 
-[node name="SetAsideSpot" type="Node2D" parent="."]
+[node name="SetAsideSpot" type="Node2D" parent="." unique_id=19567912]
 unique_name_in_owner = true
-position = Vector2(360, 100)
+position = Vector2(362, 188)
 
 [node name="Tools" type="Node" parent="." unique_id=1614121728]
 unique_name_in_owner = true
 
-[node name="Hand" type="Node2D" parent="."]
+[node name="Hand" type="Node2D" parent="." unique_id=1632762533]
 unique_name_in_owner = true
 script = ExtResource("5_hand")
 
-[node name="NopeIcon" type="Node2D" parent="Hand"]
+[node name="NopeIcon" type="Node2D" parent="Hand" unique_id=655969916]
 unique_name_in_owner = true
 z_index = 100
 
-[node name="StrokeA" type="Line2D" parent="Hand/NopeIcon"]
+[node name="StrokeA" type="Line2D" parent="Hand/NopeIcon" unique_id=2096154936]
 points = PackedVector2Array(-8, -8, 8, 8)
 width = 4.0
 default_color = Color(0.9, 0.15, 0.1, 1)
 
-[node name="StrokeB" type="Line2D" parent="Hand/NopeIcon"]
+[node name="StrokeB" type="Line2D" parent="Hand/NopeIcon" unique_id=1195762339]
 points = PackedVector2Array(-8, 8, 8, -8)
 width = 4.0
 default_color = Color(0.9, 0.15, 0.1, 1)
 
-[node name="FlowOverlays" type="CanvasLayer" parent="."]
+[node name="FlowOverlays" type="CanvasLayer" parent="." unique_id=937127538]
 layer = 100
 
-[node name="TicketCard" parent="FlowOverlays" instance=ExtResource("7_ticket")]
+[node name="TicketCard" parent="FlowOverlays" unique_id=1682604079 instance=ExtResource("7_ticket")]
 unique_name_in_owner = true
 
-[node name="Receipt" parent="FlowOverlays" instance=ExtResource("8_receipt")]
+[node name="Receipt" parent="FlowOverlays" unique_id=1906733515 instance=ExtResource("8_receipt")]
 unique_name_in_owner = true
