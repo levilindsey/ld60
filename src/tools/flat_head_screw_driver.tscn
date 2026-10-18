@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://m8ven6g4aiv4"]
 
 [ext_resource type="Script" uid="uid://co3owsfq8o6x5" path="res://src/tools/flat_head_screw_driver.gd" id="1_85718"]
-[ext_resource type="Texture2D" uid="uid://y2d4xpq8kryi" path="res://assets/images/frame0000.png" id="6_60bvt"]
-[ext_resource type="Texture2D" uid="uid://1rd5fw5ndrty" path="res://assets/images/frame0001.png" id="7_4tha1"]
-[ext_resource type="Texture2D" uid="uid://dgcgnndc0tdya" path="res://assets/images/frame0002.png" id="8_thf8m"]
-[ext_resource type="Texture2D" uid="uid://dh82ikeqsxlhw" path="res://assets/images/frame0003.png" id="9_75fi4"]
+[ext_resource type="Texture2D" uid="uid://bq84tw6lf1cbk" path="res://assets/images/flat_driver_frame0000.png" id="6_60bvt"]
+[ext_resource type="Texture2D" uid="uid://cgsh3bate771v" path="res://assets/images/flat_driver_frame0001.png" id="7_4tha1"]
+[ext_resource type="Texture2D" uid="uid://dqmo4r0awi58b" path="res://assets/images/flat_driver_frame0002.png" id="8_thf8m"]
+[ext_resource type="Texture2D" uid="uid://di88mstchp1sc" path="res://assets/images/flat_driver_frame0003.png" id="9_75fi4"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_85718"]
 radius = 19.999998

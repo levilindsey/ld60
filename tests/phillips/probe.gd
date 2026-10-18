@@ -327,6 +327,13 @@ func _check_removals() -> void:
 	await _seconds(0.4)
 	await _drag_cover_to(Vector2(360.0, 60.0))
 	_expect(not _cover.is_on, "the loose cover is dragged off")
+	# Like a part, the dropped cover may fly back into the
+	# workable area first. It can only be dragged again once it
+	# has come to rest.
+	for frame in 300:
+		if not _cover.is_returning:
+			break
+		await get_tree().physics_frame
 
 
 func _check_install() -> void:

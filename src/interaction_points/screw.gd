@@ -12,7 +12,10 @@ extends InteractionPoint
 ## comes to rest on the bench where it landed. The player drags it
 ## around the bench. When its layer is back on, dragging it close to
 ## its hole seats it: it arcs down into the hole, loose and ready to
-## be driven in (docs/design/screw_pullout.md). The root stays at
+## be driven in (docs/design/screw_pullout.md). Screws of a given
+## type are interchangeable: it may instead seat into any other
+## empty hole of its type on its layer, and the screw that hole
+## belongs to takes this screw's hole in trade. The root stays at
 ## the hole with the hole art and the clip mask. Only the art and
 ## the hit shape move.
 ##
@@ -70,23 +73,24 @@ const _PRY_DELAY_SEC := 0.3
 const _PICKUP_TURN_SEC := 0.25
 ## The most a picked-up screw turns either way, in radians.
 const _PICKUP_MAX_TURN_RAD := PI / 4.0
-## How long a screw rolls when set down after a drag, and how far
-## the pointy end sweeps while it pivots on its head.
+## How long a screw rolls when set down after a drag, and how
+## far the head end sweeps while it rolls.
 const _ROLL_SEC := 0.55
-const _ROLL_TIP_MIN_PX := 10.0
-const _ROLL_TIP_MAX_PX := 18.0
+const _ROLL_HEAD_MIN_PX := 14.0
+const _ROLL_HEAD_MAX_PX := 22.0
 ## Release speed (px/s) above which a set-down roll follows the
 ## drag's motion instead of falling either way.
 const _ROLL_FLING_MIN_SPEED := 60.0
-## The head's centre, the tip, and the head's radius in the bench
-## art's own texture pixels, measured from the art (both screw
-## kinds share the drawing): the wide head is at the top, the
-## pointy end at the bottom. The art's world scale turns these
-## into pixels on the bench (head about 24 px across, shaft
-## about 11, head to tip about 41).
+## The head's centre, the tip, and the radii of both ends in the
+## bench art's own texture pixels, measured from the art (both
+## screw kinds share the drawing): the wide head is at the top,
+## the pointy end at the bottom. The art's world scale turns
+## these into pixels on the bench (head about 24 px across,
+## shaft about 11, head to tip about 41).
 const _HEAD_LOCAL := Vector2(19.0, -264.0)
 const _TIP_LOCAL := Vector2(19.0, 1005.0)
 const _HEAD_RADIUS_LOCAL := 376.0
+const _SHAFT_RADIUS_LOCAL := 173.5
 
 ## The screw head's art, seen from the top. The twists turn it. If it is an
 ## `AnimatedSprite2D`, its frames are the `HeadFrame` states in order.
@@ -182,12 +186,10 @@ var _rest_pulse_tween: Tween
 var _pickup_tween: Tween
 var _roll_tween: Tween
 ## The roll taken when the screw is set down after a drag: where
-## it started, where its head started, how far the head drifts
-## as it rolls on its rim, and the yaw of the roll.
+## it started, the fixed apex it rolls around, and its yaw.
 var _roll_from_position := Vector2.ZERO
 var _roll_from_rotation := 0.0
-var _roll_head_start := Vector2.ZERO
-var _roll_head_drift := Vector2.ZERO
+var _roll_apex := Vector2.ZERO
 var _roll_angle_rad := 0.0
 var _outlined_bench_art: Sprite2D
 var _bench_material_before_outline: Material
@@ -404,6 +406,48 @@ func can_come_back() -> bool:
 	return is_install_mode and travel == Travel.RESTING
 
 
+## True when this screw and `other` are screws of a given type, so
+## either one fits the other's hole. A flathead screw and a
+## Phillips screw are different types and never trade holes.
+func is_interchangeable_with(other: Screw) -> bool:
+	return (
+		is_instance_valid(other)
+		and other != self
+		and type == other.type
+	)
+
+
+## The hole this resting screw seats into when dropped at a
+## world position, or null when no hole is close enough. Its own
+## hole counts, and so does every other empty hole of its type on
+## its layer: a hole whose screw still rests on the bench, waiting
+## to come back. The closest such hole wins.
+func find_seat_target(global_point: Vector2) -> Screw:
+	if not can_come_back():
+		return null
+	var layer := get_layer()
+	if not is_instance_valid(layer):
+		return null
+	var best: Screw = null
+	var best_distance := G.settings.screw_seat_snap_px
+	for point in layer.get_points():
+		var hole := point as Screw
+		if not is_instance_valid(hole):
+			continue
+		if hole != self:
+			if not is_interchangeable_with(hole):
+				continue
+			if not hole.can_come_back():
+				continue
+		var distance := global_point.distance_to(
+			hole.global_position
+		)
+		if distance <= best_distance:
+			best_distance = distance
+			best = hole
+	return best
+
+
 ## True while the resting screw shows the outline that says a press
 ## brings it back.
 func is_showing_outline() -> bool:
@@ -446,10 +490,21 @@ func on_picked_up() -> void:
 
 
 ## Sends the resting screw back over its hole, where it sinks in, loose
-## and ready to be driven in.
-func come_back() -> void:
+## and ready to be driven in. With a `target` screw of the same
+## type, it sinks into that screw's hole instead, and the two
+## screws trade holes: the target screw's hole is this one's now,
+## and it waits on the bench for the hole this screw left behind.
+func come_back(target: Screw = null) -> void:
 	if not G.check(can_come_back()):
 		return
+	if is_instance_valid(target) and target != self:
+		if not G.check(
+			is_interchangeable_with(target)
+			and target.can_come_back()
+			and get_layer() == target.get_layer()
+		):
+			return
+		_trade_holes_with(target)
 	if is_instance_valid(G.level):
 		G.level.free_screw_rest_spot(self)
 	_stop_outline()
@@ -662,40 +717,48 @@ func _reach_rest_spot() -> void:
 		_start_outline()
 
 
-## The screw was just set down on the table after a drag. It
-## rolls a short way: the heavy, wide head stays nearly planted
-## and the screw yaws around it, so the pointy end sweeps an arc
-## while the head only drifts as far as rolling on its rim
-## carries it (yaw times head radius). The yaw is sized from a
-## tip sweep and the real head-to-tip length, at whatever angle
-## the screw starts from, and a fast release tips the fall
+## The screw was just set down on the table after a drag. A
+## screw is a squat cone (head about 24 px across, shaft about
+## 11), so lying on its side it rolls like one: around the
+## cone's apex, which sits past the pointy end at the distance
+## the two radii set. The apex stays put while the body travels
+## sideways and yaws around it, the wide head sweeping the
+## longest arc. The yaw is sized from a head sweep at whatever
+## angle the screw starts from, and a fast release rolls it
 ## toward the drag's motion. It does not roll when the unscrew
 ## microgame finishes: only a set-down after being carried
 ## counts.
 func on_set_down(release_velocity := Vector2.ZERO) -> void:
 	_roll_from_position = bench_art.global_position
 	_roll_from_rotation = bench_art.rotation
-	_roll_head_start = bench_art.to_global(_HEAD_LOCAL)
+	var head_start := bench_art.to_global(_HEAD_LOCAL)
 	var tip_start := bench_art.to_global(_TIP_LOCAL)
-	var axis := tip_start - _roll_head_start
+	var axis := tip_start - head_start
+	var length := maxf(axis.length(), 1.0)
 	var head_radius := bench_art.to_global(
 		_HEAD_LOCAL + Vector2(_HEAD_RADIUS_LOCAL, 0.0),
-	).distance_to(_roll_head_start)
+	).distance_to(head_start)
+	var shaft_radius := bench_art.to_global(
+		_TIP_LOCAL + Vector2(_SHAFT_RADIUS_LOCAL, 0.0),
+	).distance_to(tip_start)
+	# Where the cone's apex sits past the tip: from there, the
+	# radii grow in proportion along the whole screw.
+	var apex_distance := (
+		length
+		* shaft_radius
+		/ maxf(head_radius - shaft_radius, 0.5)
+	)
+	_roll_apex = tip_start + axis.normalized() * apex_distance
 	var direction := 1.0 if randf() < 0.5 else -1.0
 	if release_velocity.length() > _ROLL_FLING_MIN_SPEED:
-		# The tip swings toward the drag's motion.
+		# The head sweeps toward the drag's motion.
 		var swing := Vector2(-axis.y, axis.x).normalized()
 		if not is_zero_approx(swing.dot(release_velocity)):
 			direction = signf(swing.dot(release_velocity))
 	_roll_angle_rad = (
 		direction
-		* randf_range(_ROLL_TIP_MIN_PX, _ROLL_TIP_MAX_PX)
-		/ maxf(axis.length(), 1.0)
-	)
-	_roll_head_drift = (
-		Vector2(-axis.y, axis.x).normalized()
-		* _roll_angle_rad
-		* head_radius
+		* randf_range(_ROLL_HEAD_MIN_PX, _ROLL_HEAD_MAX_PX)
+		/ (apex_distance + length)
 	)
 	_roll_tween = create_tween()
 	_roll_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
@@ -709,19 +772,31 @@ func _stop_roll() -> void:
 
 
 ## Puts the rolling screw `weight` of the way through its roll:
-## the body turns about its head while the head drifts on its
-## rim, both eased out together.
+## the body turns about the cone's fixed apex, eased out.
 func _apply_roll(weight: float) -> void:
 	var eased := 1.0 - pow(1.0 - weight, 3.0)
-	var head_now := _roll_head_start + _roll_head_drift * eased
 	bench_art.global_position = (
-		head_now
-		+ (_roll_from_position - _roll_head_start).rotated(
+		_roll_apex
+		+ (_roll_from_position - _roll_apex).rotated(
 			_roll_angle_rad * eased,
 		)
 	)
 	bench_art.rotation = _roll_from_rotation + _roll_angle_rad * eased
 	_rest_rotation = bench_art.rotation
+
+
+## Trades holes with `other`, a screw of the same type on the
+## same layer: this screw's root takes the other screw's place on
+## the layer, and the other screw's root takes this one's. Each
+## physical screw keeps its own health, head and tuning. A screw
+## resting on the bench keeps its bench art where it lies: only
+## the roots, which stay at the holes, trade places.
+func _trade_holes_with(other: Screw) -> void:
+	var own_position := position
+	position = other.position
+	other.position = own_position
+	reset_physics_interpolation()
+	other.reset_physics_interpolation()
 
 
 ## Over the hole: the clipped art takes over again and sinks into the

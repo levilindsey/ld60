@@ -440,8 +440,9 @@ enum PhysicsLayer {
 @export var screw_rest_row_size := 5
 ## Seconds a screw takes to slide from its hole to its rest spot, and back.
 @export var screw_travel_sec := 0.4
-## A dragged screw dropped within this many world pixels of its hole
-## tweens down into it, loose and ready to drive in.
+## A dragged screw dropped within this many world pixels of its
+## hole, or of another empty hole of its type on its layer, tweens
+## down into that hole, loose and ready to drive in.
 @export var screw_seat_snap_px := 48.0
 ## How far above its hole a seating screw's arc peaks, in world
 ## pixels, so it always comes down into place from above.

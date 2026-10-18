@@ -16,8 +16,6 @@ residuals, decisions waiting on Levi, and ideas. Convention:
 
 ## In progress
 
-
-
 <!-- Each item is a resume handle: owner, branch + last commit, evidence,
 next, brief, env (`.claude/rules/ledger.md`). -->
 
@@ -194,6 +192,20 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 - **LX63** · `level.tscn` loaded `drawer.tscn` for `Drawer.tscn`. Done
   in fd489cd (2026-10-18).
+- **LX64** · Screws of a given type are interchangeable: a resting
+  screw dropped near any empty same-type hole on its layer seats
+  there, and the two screws trade holes. It did not work that way
+  before: a screw only seated into its own hole. Done (2026-10-18)
+  in `Screw.find_seat_target()`/`come_back(target)` and the hand's
+  drop, with the `tests/screw_swap/` probe (23 checks). Levi still
+  to play it by hand (LX41).
+- **LX65** · The lid (cover layer) no longer renders behind the
+  item's main part after being put back on. `RepairLayer.put_back()`
+  restored a raw child index read at ready, before each layer's
+  drop shadow moved in beside it, so the cover landed in front of
+  the inside layer in draw order. It now restores its place among
+  the item's layers. Done (2026-10-18), covered in
+  `tests/screw_swap/` and `tests/bench_drag/`.
 - **LX62** · Idle hints on a derived repair sequence: each item's
   steps are autodetermined from its layers, fasteners, faults and
   sockets (`RepairSequence`); after 7 s without a correct

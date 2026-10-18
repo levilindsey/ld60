@@ -277,10 +277,7 @@ func put_back() -> void:
 	z_index = 0
 	_stop_outline()
 	reparent(_home_parent)
-	_home_parent.move_child(
-		self,
-		mini(_home_index, _home_parent.get_child_count() - 1),
-	)
+	_place_among_home_layers()
 	reset_physics_interpolation()
 	G.audio.play_sound(&"whoosh")
 	_tween_to(_home_position, _home_rotation, _home_scale, _on_put_back)
@@ -404,6 +401,33 @@ func has_point(global_point: Vector2) -> bool:
 			polygon_art.polygon,
 		)
 	return false
+
+
+## Restores this layer's draw order under its home parent: after
+## every layer that sits under it on the item, and before every
+## layer that sits over it, so a cover put back on draws over the
+## inside again. The home parent holds more than layers by then.
+## Each layer's drop shadow moved in beside its layer, after
+## `_home_index` was read at ready, so that raw index would put
+## this layer back in front of a layer it covers.
+func _place_among_home_layers() -> void:
+	if not is_instance_valid(item):
+		_home_parent.move_child(
+			self,
+			mini(
+				_home_index,
+				_home_parent.get_child_count() - 1,
+			),
+		)
+		return
+	var own_order := item.layers.find(self)
+	var target_index := _home_parent.get_child_count() - 1
+	for sibling in _home_parent.get_children():
+		if sibling == self or not sibling is RepairLayer:
+			continue
+		if item.layers.find(sibling as RepairLayer) > own_order:
+			target_index = mini(target_index, sibling.get_index())
+	_home_parent.move_child(self, target_index)
 
 
 func _start_lift() -> void:

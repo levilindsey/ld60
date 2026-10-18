@@ -354,9 +354,9 @@ func _handle_press(global_point: Vector2) -> bool:
 
 
 ## 2. Over a screw resting on the bench: start dragging it, empty
-## handed. It seats again only when dropped close to its hole once
-## its layer is back on. With anything in the hand the press does
-## nothing (docs/design/screw_pullout.md).
+## handed. It seats again only when dropped close to a hole of its
+## type once its layer is back on. With anything in the hand the
+## press does nothing (docs/design/screw_pullout.md).
 func _press_resting_screw(global_point: Vector2) -> bool:
 	var screw := G.level.get_resting_screw_at(global_point)
 	if not is_instance_valid(screw):
@@ -621,24 +621,23 @@ func _drag_loose_piece() -> void:
 		)
 
 
-## Lets go of a dragged screw. Dropped close to its hole once its
-## layer is back on, it arcs down into the hole. Dropped outside
-## the workable area, it flies back in and comes to rest inside
-## it. A fast release throws it with the cursor's motion.
-## Anywhere else inside, it simply rests where it fell.
+## Lets go of a dragged screw. Dropped close to its own hole, or
+## to another empty hole of its type on its layer, once its layer
+## is back on, it arcs down into that hole. Dropped outside the
+## workable area, it flies back in and comes to rest inside it. A
+## fast release throws it with the cursor's motion. Anywhere else
+## inside, it simply rests where it fell.
 func _drop_loose_screw(release_velocity := Vector2.ZERO) -> void:
 	var screw := _loose_screw
 	_loose_screw = null
 	if not is_instance_valid(screw):
 		return
 	screw.is_carried = false
-	if (
-		screw.can_come_back()
-		and screw.bench_art.global_position.distance_to(
-			screw.global_position,
-		) <= G.settings.screw_seat_snap_px
-	):
-		screw.come_back()
+	var target := screw.find_seat_target(
+		screw.bench_art.global_position
+	)
+	if is_instance_valid(target):
+		screw.come_back(target)
 		return
 	if G.level.try_return_screw(screw, release_velocity):
 		return

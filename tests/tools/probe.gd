@@ -53,10 +53,46 @@ func _run() -> void:
 		"rag, air blower and hammer are on the rack",
 	)
 	_check_holder_shadows()
+	_check_driver_art()
 	await _check_holder_return()
 	await _check_rag()
 	await _check_air_blower()
 	await _check_hammer()
+
+
+## Both drivers draw something at rest. The flathead's frames
+## once shared their filenames with the bird's, and a bird
+## export overwrote them with a transparent frame: the driver
+## was on the rack with its outline showing and no art.
+func _check_driver_art() -> void:
+	for type in [
+		Tool.Type.FLAT_HEAD_SCREW_DRIVER,
+		Tool.Type.PHILLIPS_SCREW_DRIVER,
+	]:
+		var driver := G.level.tools_by_type[type] as Tool
+		var sprite := driver.find_child(
+			"AnimatedSprite2D",
+			true,
+			false,
+		) as AnimatedSprite2D
+		var is_drawn := false
+		if is_instance_valid(sprite):
+			var texture := sprite.sprite_frames.get_frame_texture(
+				sprite.animation,
+				sprite.frame,
+			)
+			if is_instance_valid(texture):
+				var image := texture.get_image()
+				is_drawn = (
+					is_instance_valid(image)
+					and not image.is_empty()
+					and image.get_used_rect().has_area()
+				)
+		_expect(
+			is_drawn,
+			"the %s driver draws its art at rest"
+			% Tool.Type.keys()[type].to_lower(),
+		)
 
 
 ## Each stored tool's shadow follows its holder treatment: the

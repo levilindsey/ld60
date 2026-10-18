@@ -231,8 +231,8 @@ func _check_screw_rest_and_drag() -> void:
 		_screw.bench_art.to_global(Screw._TIP_LOCAL)
 	)
 	_expect(
-		tip_travel > 4.0 and head_travel < tip_travel * 0.5,
-		"the roll pivots on the head, not the tip"
+		head_travel > 6.0 and head_travel > tip_travel * 1.4,
+		"the roll turns about the cone's apex past the tip"
 		+ " (head %.1f px, tip %.1f px)" % [head_travel, tip_travel],
 	)
 
@@ -408,6 +408,13 @@ func _check_cover_drag() -> void:
 	await _release_at(_cover.get_home_global_position())
 	await _seconds(0.8)
 	_expect(_cover.is_on, "dropped close, the cover tweens back on")
+	var inside := _item.layers[0]
+	_expect(
+		_cover.get_index() > inside.get_index(),
+		"back on, the cover draws over the inside layer"
+		+ " (cover at %d, inside at %d)"
+		% [_cover.get_index(), inside.get_index()],
+	)
 	# Drag the first screw to its hole: it arcs down and sinks in.
 	var middle := (
 		_screw.bench_art.global_position + _screw.rest_hit_offset

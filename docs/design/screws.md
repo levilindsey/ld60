@@ -78,6 +78,13 @@ Ledger: **LX10** (M1). Depends on [repairables.md](repairables.md)
   layer that can go back) until a press brings it back. The press
   works whatever the hand holds, and the hand keeps it. Before the
   layer is back on, a press on a resting screw does nothing.
+- **Screws of a given type are interchangeable (LX64).** A resting
+  screw seats into any empty hole of its own type on its layer, not
+  only the hole it came from: dropping it within
+  `screw_seat_snap_px` of such a hole arcs it down into that hole,
+  and the two screws trade holes, so the other screw now waits for
+  the hole this one left. A screw of another type does not seat
+  there. Each screw keeps its own health and tuning as it trades.
 - Coming back, the bench art slides over the hole (`screw_travel_sec`),
   the clipped art takes over, and `RemoveScrew` plays backwards: the
   screw sinks into its hole and turns back into the top-down head. It

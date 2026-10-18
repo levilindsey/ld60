@@ -19,7 +19,9 @@ layers anywhere inside the level's bench polygon (`Level.bench_
 polygon`); a drag that leaves the bench drops the piece at the
 edge. When the layer is back on, dropping a screw within
 `screw_seat_snap_px` of its hole seats it: it arcs down into the
-hole from above (`screw_seat_arc_px`). The twists also raise the
+hole from above (`screw_seat_arc_px`). Since LX64 the hole need
+not be its own: any empty hole of the same type on its layer
+seats it, and the two screws trade holes. The twists also raise the
 head twice as far (the `RemoveScrew` first key doubled, about
 12 px). The rest-spot row is unused. Stage 2 (rolling set-down,
 shadows, overlap-aware draw order, drawer parts on the bench) is
