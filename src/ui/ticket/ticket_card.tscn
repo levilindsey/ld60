@@ -5,6 +5,7 @@
 [ext_resource type="Shader" uid="uid://thfeaa7qcy2v" path="res://assets/shaders/perspective_quad.gdshader" id="5_perspective"]
 [ext_resource type="Texture2D" uid="uid://ciwpguv1cbffl" path="res://assets/images/manual/repairticket.png" id="7_paper"]
 [ext_resource type="Script" path="res://src/ui/ticket/ink_write_effect.gd" id="8_ink"]
+[ext_resource type="Script" path="res://src/ui/ticket/complaint_scribbles.gd" id="12_scribbles"]
 [ext_resource type="Texture2D" uid="uid://csi0e2pfynhcy" path="res://assets/images/manual/repair_oof.png" id="9_oof"]
 [ext_resource type="Texture2D" uid="uid://dl5wlm5l7chkb" path="res://assets/images/manual/repair_ok.png" id="10_ok"]
 [ext_resource type="Texture2D" uid="uid://s054wl0a6nns" path="res://assets/images/manual/repair_great.png" id="11_great"]
@@ -84,6 +85,17 @@ theme_override_fonts/font = ExtResource("4_handwriting")
 theme_override_font_sizes/font_size = 40
 text = "Complaint"
 autowrap_mode = 3
+
+[node name="Scribbles" type="Control" parent="ContentViewport/Paper/Contents/ComplaintLabel"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("12_scribbles")
 
 [node name="TimeLabel" type="RichTextLabel" parent="ContentViewport/Paper"]
 unique_name_in_owner = true

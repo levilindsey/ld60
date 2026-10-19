@@ -94,9 +94,10 @@ func _ready() -> void:
 
 
 ## Drops the ticket onto the desk with the customer's complaint. A ticket
-## that is still showing swaps its text and drops again.
+## that is still showing swaps its text and drops again. Words in braces,
+## like `{darn}`, are scribbled out.
 func show_item(complaint: String) -> void:
-	%ComplaintLabel.text = complaint
+	_set_complaint(complaint)
 	_fit_complaint()
 	%TimeLabel.text = ""
 	%Stamp.visible = false
@@ -337,6 +338,24 @@ func _stop_motion() -> void:
 	G.time.clear_timeout(_timeout_id)
 	_timeout_id = -1
 	_stop_lift()
+
+
+## Shows a complaint, with its `{braced}` words written without the
+## braces and scribbled over.
+func _set_complaint(complaint: String) -> void:
+	var text := ""
+	var scribble_ranges: Array[Vector2i] = []
+	var scribble_start := -1
+	for character in complaint:
+		if character == "{":
+			scribble_start = text.length()
+		elif character == "}" and scribble_start >= 0:
+			scribble_ranges.append(Vector2i(scribble_start, text.length()))
+			scribble_start = -1
+		else:
+			text += character
+	%ComplaintLabel.text = text
+	%Scribbles.ranges = scribble_ranges
 
 
 ## Shrinks the complaint's font until it fits in its area.

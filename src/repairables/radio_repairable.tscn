@@ -1,4 +1,4 @@
-﻿[gd_scene format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/repairables/repairable.gd" id="1_item"]
 [ext_resource type="Script" path="res://src/repairables/repair_layer.gd" id="2_layer"]
@@ -29,7 +29,7 @@ radius = 220.0
 scale = Vector2(0.12, 0.12)
 script = ExtResource("1_item")
 item_name = "Radio"
-ticket = "Son of a $!#@ this $@!# radio!"
+ticket = "Son of a {biscuit} this {flipping} radio!"
 
 [node name="DropArea" type="Area2D" parent="."]
 unique_name_in_owner = true
