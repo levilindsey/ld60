@@ -44,13 +44,13 @@ shape = NodePath("Shape")
 scale = Vector2(0.16, 0.16)
 texture = ExtResource("body_tex")
 
-[node name="Shape" type="Area2D" parent="Layers/Body"]
+[node name="Shape" type="Area2D" parent="Layers/Body" unique_id=1409663735]
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape" unique_id=52556345]
 polygon = PackedVector2Array(-95.52, -66.72, 111.84, -66.72, 111.84, 110.24, -95.52, 110.24)
 
 [node name="Joystick" parent="Layers/Body" unique_id=967882368 node_paths=PackedStringArray("installed_art", "locking_fastener") instance=ExtResource("5_socket")]
@@ -59,13 +59,13 @@ accepted_part = 7
 installed_art = NodePath("GoodStick")
 locking_fastener = NodePath("../Screw")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Layers/Body/Joystick"]
+[node name="CollisionShape2D" parent="Layers/Body/Joystick" index="0"]
 shape = SubResource("socket_shape")
 
-[node name="Outline" type="Polygon2D" parent="Layers/Body/Joystick"]
+[node name="Outline" parent="Layers/Body/Joystick" index="1"]
 visible = false
 
-[node name="BrokenArt" type="Polygon2D" parent="Layers/Body/Joystick/BrokenPart"]
+[node name="BrokenArt" parent="Layers/Body/Joystick/BrokenPart" index="0"]
 visible = false
 
 [node name="BadStick" type="Sprite2D" parent="Layers/Body/Joystick/BrokenPart"]
