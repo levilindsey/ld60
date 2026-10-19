@@ -29,9 +29,9 @@ const _FIT_SEC := 0.15
 ## then stays hidden, and cannot be grabbed, until that
 ## layer has been taken off the item.
 @export var covering_layer: RepairLayer
-## The piece's z_index while it's on the item. Below 0 draws it
-## behind the layer's art, like a far wheel.
-@export var installed_z_index := 0
+## True: while on the item, the piece draws behind its layer's art,
+## like a far wheel. Put it before the art in the scene too.
+@export var is_behind_layer_art := false
 ## How close a press may land and still grab it, in pixels.
 @export var grab_radius_px := 30.0
 ## The piece's art: a Polygon2D, so its shape can be redrawn
@@ -251,11 +251,13 @@ func attach_to_point(point: BrokenPoint) -> void:
 	var layer := point.get_layer()
 	if is_instance_valid(layer):
 		reparent(layer)
+		if is_behind_layer_art and is_instance_valid(layer.art):
+			layer.move_child(self, layer.art.get_index())
 	else:
 		reparent(point.get_parent())
 	global_position = from_global
 	reset_physics_interpolation()
-	z_index = installed_z_index
+	z_index = 0
 	z_as_relative = true
 	G.audio.play_sound(&"snap")
 	var tween := create_tween()
