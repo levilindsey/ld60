@@ -114,6 +114,8 @@ func on_effect_pressed(_global_point: Vector2) -> void:
 		var point := G.level.hand.find_point(_locked_point)
 		_locked_target = point as StrikablePoint
 		if not is_instance_valid(_locked_target):
+			_locked_target = _find_shape_target(_locked_point)
+		if not is_instance_valid(_locked_target):
 			_locked_surface = G.level.hand.find_surface(_locked_point)
 		if (
 			not is_instance_valid(_locked_target)
@@ -125,6 +127,31 @@ func on_effect_pressed(_global_point: Vector2) -> void:
 	_wind_sec = 0.0
 	charge = 0.0
 	queue_redraw()
+
+
+## A whack anywhere on the item's Shape counts as a whack
+## on its stuck part (the TV's final whack: the whole set is
+## whackable, not just one circle on it). Only a plain
+## StuckPart qualifies, and only while it is unfinished and
+## on the exposed layer: a bent part still has to be hit on
+## the part itself.
+func _find_shape_target(global_point: Vector2) -> StrikablePoint:
+	if not is_instance_valid(G.level):
+		return null
+	var item := G.level.active_repairable
+	if not is_instance_valid(item):
+		return null
+	if not item.is_point_in_shape(global_point):
+		return null
+	for layer in item.layers:
+		for layer_point in layer.get_points():
+			if (
+				layer_point is StuckPart
+				and layer_point.mode != InteractionPoint.Mode.FINISHED
+				and layer_point.is_exposed()
+			):
+				return layer_point as StrikablePoint
+	return null
 
 
 func on_pointer_released(_global_point: Vector2) -> void:

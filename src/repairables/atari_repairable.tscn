@@ -1,74 +1,61 @@
-[gd_scene format=3]
+﻿[gd_scene format=3 uid="uid://ctymgiosl5rx7"]
 
-[ext_resource type="Script" path="res://src/repairables/repairable.gd" id="1_item"]
-[ext_resource type="Script" path="res://src/repairables/repair_layer.gd" id="2_layer"]
+[ext_resource type="Script" uid="uid://b40vyfwtlqdt0" path="res://src/repairables/repairable.gd" id="1_item"]
+[ext_resource type="Script" uid="uid://bexc8yuqwibs5" path="res://src/repairables/repair_layer.gd" id="2_layer"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/part_socket.tscn" id="5_socket"]
-[ext_resource type="PackedScene" path="res://src/interaction_points/flat_head_screw.tscn" id="6_screw"]
+[ext_resource type="PackedScene" uid="uid://cg17ymgfrol22" path="res://src/interaction_points/flat_head_screw.tscn" id="6_screw"]
 [ext_resource type="Texture2D" uid="uid://bqrp5b0s1dnbx" path="res://assets/images/repairables/atari_joystick_with_gaps.png" id="body_tex"]
-[ext_resource type="Texture2D" uid="uid://cb1cycyi1mevn" path="res://assets/images/repairables/atari_joystick_bad.png" id="bad_tex"]
 [ext_resource type="Texture2D" uid="uid://du62c2fga02r4" path="res://assets/images/repairables/atari_joystick_good.png" id="good_tex"]
 
 [sub_resource type="RectangleShape2D" id="drop_shape"]
 size = Vector2(215, 185)
 
-[sub_resource type="CircleShape2D" id="socket_shape"]
-radius = 70.0
-
-[node name="AtariRepairable" type="Node2D"]
+[node name="AtariRepairable" type="Node2D" unique_id=1191888130 node_paths=PackedStringArray("shape")]
 script = ExtResource("1_item")
 item_name = "Atari joystick"
+shadow_style = 1
+shape = NodePath("Shape")
 ticket = "hi i movd it to strong and now it dont werk
 :("
 
-[node name="DropArea" type="Area2D" parent="."]
+[node name="DropArea" type="Area2D" parent="." unique_id=1445261071]
 unique_name_in_owner = true
 position = Vector2(8, 22)
 collision_layer = 2
 collision_mask = 0
 monitoring = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea" unique_id=1168562579]
 shape = SubResource("drop_shape")
 
-[node name="Layers" type="Node2D" parent="."]
+[node name="Layers" type="Node2D" parent="." unique_id=1367025518]
 unique_name_in_owner = true
 
-[node name="Body" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+[node name="Body" type="Node2D" parent="Layers" unique_id=674076723 node_paths=PackedStringArray("art")]
 script = ExtResource("2_layer")
 art = NodePath("Art")
 
-[node name="Art" type="Sprite2D" parent="Layers/Body"]
+[node name="Art" type="Sprite2D" parent="Layers/Body" unique_id=226079780]
 scale = Vector2(0.16, 0.16)
 texture = ExtResource("body_tex")
 
-[node name="Joystick" parent="Layers/Body" node_paths=PackedStringArray("installed_art", "locking_fastener") instance=ExtResource("5_socket")]
+[node name="Joystick" parent="Layers/Body" unique_id=967882368 node_paths=PackedStringArray("installed_art", "locking_fastener") instance=ExtResource("5_socket")]
 position = Vector2(6, -2)
 accepted_part = 7
 installed_art = NodePath("GoodStick")
 locking_fastener = NodePath("../Screw")
 
-[node name="CollisionShape2D" parent="Layers/Body/Joystick"]
-shape = SubResource("socket_shape")
-
-[node name="Outline" parent="Layers/Body/Joystick"]
-visible = false
-
-[node name="BrokenArt" parent="Layers/Body/Joystick/BrokenPart"]
-visible = false
-
-[node name="BadStick" type="Sprite2D" parent="Layers/Body/Joystick/BrokenPart"]
-position = Vector2(-2, -28)
-scale = Vector2(0.16, 0.16)
-texture = ExtResource("bad_tex")
-region_enabled = true
-region_rect = Rect2(1235, 637, 1086, 825)
-
-[node name="GoodStick" type="Sprite2D" parent="Layers/Body/Joystick"]
+[node name="GoodStick" type="Sprite2D" parent="Layers/Body/Joystick" unique_id=536495873]
 position = Vector2(-22, -42)
 scale = Vector2(0.16, 0.16)
 texture = ExtResource("good_tex")
 region_enabled = true
 region_rect = Rect2(1235, 467, 836, 995)
 
-[node name="Screw" parent="Layers/Body" instance=ExtResource("6_screw")]
+[node name="Screw" parent="Layers/Body" unique_id=1956487963 instance=ExtResource("6_screw")]
 position = Vector2(-68, -2)
+
+[node name="Shape" type="Area2D" parent="." unique_id=824273015]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape" unique_id=770472274]
+polygon = PackedVector2Array(-91, -13, -2, -64, 18, -64, 96, -9, 100, 2, 93, 45, 7, 108, -1, 107, -87, 44, -93, 5)

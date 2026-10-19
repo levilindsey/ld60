@@ -17,9 +17,10 @@ size = Vector2(100, 100)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_case"]
 size = Vector2(96, 96)
 
-[node name="TestScrewRepairable" type="Node2D" unique_id=1685354276]
+[node name="TestScrewRepairable" type="Node2D" unique_id=1685354276 node_paths=PackedStringArray("shape")]
 script = ExtResource("1_0ufjt")
 item_name = "Test box"
+shape = NodePath("Shape")
 ticket = "It rattles. Open it up, swap the gear, close it again."
 
 [node name="DropArea" type="Area2D" parent="." unique_id=1715486403]
@@ -57,11 +58,11 @@ is_required = false
 position = Vector2(30, -30)
 is_required = false
 
-[node name="BrokenPointHidden" parent="Layers/Inside" instance=ExtResource("9_brokenpoint")]
+[node name="BrokenPointHidden" parent="Layers/Inside" unique_id=481060396 instance=ExtResource("9_brokenpoint")]
 position = Vector2(-32, 30)
 is_required = false
 
-[node name="BrokenPieceHidden" parent="Layers/Inside" node_paths=PackedStringArray("target_point", "covering_layer") instance=ExtResource("10_brokenpiece")]
+[node name="BrokenPieceHidden" parent="Layers/Inside" unique_id=389620952 node_paths=PackedStringArray("target_point", "covering_layer") instance=ExtResource("10_brokenpiece")]
 position = Vector2(30, 32)
 target_point = NodePath("../BrokenPointHidden")
 covering_layer = NodePath("../../Cover")
@@ -91,19 +92,23 @@ shape = SubResource("RectangleShape2D_case")
 position = Vector2(-30, -30)
 covering_grime = NodePath("../CoverGrime")
 
-[node name="CoverGrime" parent="Layers/Cover" instance=ExtResource("6_grime")]
+[node name="CoverGrime" parent="Layers/Cover" unique_id=2125667899 instance=ExtResource("6_grime")]
 position = Vector2(-30, -30)
 is_required = false
 
 [node name="ScrewRight" parent="Layers/Cover" unique_id=268084832 instance=ExtResource("8_aj7g0")]
 position = Vector2(30, 30)
 
-[node name="BrokenPointFallen" parent="Layers/Cover" instance=ExtResource("9_brokenpoint")]
+[node name="BrokenPointFallen" parent="Layers/Cover" unique_id=358163595 instance=ExtResource("9_brokenpoint")]
 position = Vector2(32, -10)
 is_required = false
 
-[node name="BrokenPieceFallen" parent="Layers/Cover" node_paths=PackedStringArray("target_point") instance=ExtResource("10_brokenpiece")]
+[node name="BrokenPieceFallen" parent="Layers/Cover" unique_id=1107355884 node_paths=PackedStringArray("target_point") instance=ExtResource("10_brokenpiece")]
 position = Vector2(-32, 10)
 target_point = NodePath("../BrokenPointFallen")
 starts_detached = true
-fall_target_offset = Vector2(150, 40)
+
+[node name="Shape" type="Area2D" parent="." unique_id=1681408469]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape" unique_id=119108308]
+polygon = PackedVector2Array(-49, -50, 50, -50, 49, 50, -50, 49)

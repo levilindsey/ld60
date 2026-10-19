@@ -1,14 +1,13 @@
-[gd_scene format=3]
+﻿[gd_scene format=3 uid="uid://crw5iclamtou6"]
 
-[ext_resource type="Script" path="res://src/repairables/repairable.gd" id="1_item"]
-[ext_resource type="Script" path="res://src/repairables/repair_layer.gd" id="2_layer"]
-[ext_resource type="Script" path="res://src/repairables/surface.gd" id="3_surface"]
+[ext_resource type="Script" uid="uid://b40vyfwtlqdt0" path="res://src/repairables/repairable.gd" id="1_item"]
+[ext_resource type="Script" uid="uid://bexc8yuqwibs5" path="res://src/repairables/repair_layer.gd" id="2_layer"]
+[ext_resource type="Script" uid="uid://be84jbhspe8mj" path="res://src/repairables/surface.gd" id="3_surface"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/part_socket.tscn" id="5_socket"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/dust_clump.tscn" id="7_dust"]
 [ext_resource type="Texture2D" uid="uid://bf07lv0swan6r" path="res://assets/images/repairables/keyss_with_gaps.png" id="body_tex"]
-[ext_resource type="Texture2D" uid="uid://c2b23walsit0v" path="res://assets/images/repairables/keyss_letter_key.png" id="letter_tex"]
-[ext_resource type="Texture2D" uid="uid://7wo0ua7mj4o2" path="res://assets/images/repairables/keyss_bad_spacebar.png" id="bad_space_tex"]
 [ext_resource type="Texture2D" uid="uid://ck6msk1nmmndq" path="res://assets/images/repairables/keyss_spacebar.png" id="good_space_tex"]
+[ext_resource type="Texture2D" uid="uid://c2b23walsit0v" path="res://assets/images/repairables/keyss_letter_key.png" id="letter_tex"]
 
 [sub_resource type="RectangleShape2D" id="drop_shape"]
 size = Vector2(2610, 545)
@@ -16,119 +15,79 @@ size = Vector2(2610, 545)
 [sub_resource type="RectangleShape2D" id="surface_shape"]
 size = Vector2(2610, 545)
 
-[sub_resource type="CircleShape2D" id="letter_shape"]
-radius = 110.0
-
-[sub_resource type="CircleShape2D" id="space_shape"]
-radius = 470.0
-
-[sub_resource type="CircleShape2D" id="dust_shape"]
-radius = 150.0
-
-[node name="KeyboardRepairable" type="Node2D"]
+[node name="KeyboardRepairable" type="Node2D" unique_id=1025452835 node_paths=PackedStringArray("shape")]
 scale = Vector2(0.13, 0.13)
 script = ExtResource("1_item")
-shadow_offset = Vector2(5, 34)
 item_name = "Computer keyboard"
+shadow_style = 1
+shape = NodePath("Shape")
 ticket = "Lost some keys, and some of my toast, but at least I can touch-type."
+shadow_offset = Vector2(5, 34)
 
-[node name="DropArea" type="Area2D" parent="."]
+[node name="DropArea" type="Area2D" parent="." unique_id=1720184209]
 unique_name_in_owner = true
 collision_layer = 2
 collision_mask = 0
 monitoring = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea" unique_id=1631115837]
 position = Vector2(-11, 142)
 shape = SubResource("drop_shape")
 
-[node name="Layers" type="Node2D" parent="."]
+[node name="Layers" type="Node2D" parent="." unique_id=1323642180]
 unique_name_in_owner = true
 
-[node name="Body" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+[node name="Body" type="Node2D" parent="Layers" unique_id=1431940832 node_paths=PackedStringArray("art")]
 position = Vector2(0, -215)
 script = ExtResource("2_layer")
 art = NodePath("Art")
 
-[node name="Art" type="Sprite2D" parent="Layers/Body"]
+[node name="Art" type="Sprite2D" parent="Layers/Body" unique_id=1622340983]
 texture = ExtResource("body_tex")
 
-[node name="CaseSurface" type="Area2D" parent="Layers/Body"]
+[node name="CaseSurface" type="Area2D" parent="Layers/Body" unique_id=1128330153]
 collision_layer = 32
 collision_mask = 0
 monitoring = false
 script = ExtResource("3_surface")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Layers/Body/CaseSurface"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layers/Body/CaseSurface" unique_id=1307264537]
 position = Vector2(-11, 357)
 shape = SubResource("surface_shape")
 
-[node name="LetterKey" parent="Layers/Body" node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
+[node name="LetterKey" parent="Layers/Body" unique_id=1490118301 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
 position = Vector2(-574, 308)
 accepted_part = 4
 installed_art = NodePath("GoodLetter")
 
-[node name="CollisionShape2D" parent="Layers/Body/LetterKey"]
-shape = SubResource("letter_shape")
-
-[node name="Outline" parent="Layers/Body/LetterKey"]
-visible = false
-
-[node name="BrokenArt" parent="Layers/Body/LetterKey/BrokenPart"]
-visible = false
-
-[node name="BadLetter" type="Sprite2D" parent="Layers/Body/LetterKey/BrokenPart"]
+[node name="GoodLetter" type="Sprite2D" parent="Layers/Body/LetterKey" unique_id=590498116]
 texture = ExtResource("letter_tex")
 region_enabled = true
 region_rect = Rect2(1120, 1501, 120, 94)
 
-[node name="GoodLetter" type="Sprite2D" parent="Layers/Body/LetterKey"]
-texture = ExtResource("letter_tex")
-region_enabled = true
-region_rect = Rect2(1120, 1501, 120, 94)
-
-[node name="Spacebar" parent="Layers/Body" node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
+[node name="Spacebar" parent="Layers/Body" unique_id=1223335619 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
 position = Vector2(-4, 372)
 accepted_part = 5
 installed_art = NodePath("GoodSpacebar")
 
-[node name="CollisionShape2D" parent="Layers/Body/Spacebar"]
-shape = SubResource("space_shape")
-
-[node name="Outline" parent="Layers/Body/Spacebar"]
-visible = false
-
-[node name="BrokenArt" parent="Layers/Body/Spacebar/BrokenPart"]
-visible = false
-
-[node name="BadSpacebar" type="Sprite2D" parent="Layers/Body/Spacebar/BrokenPart"]
-position = Vector2(0, 24)
-texture = ExtResource("bad_space_tex")
-region_enabled = true
-region_rect = Rect2(1296, 1586, 908, 100)
-
-[node name="GoodSpacebar" type="Sprite2D" parent="Layers/Body/Spacebar"]
+[node name="GoodSpacebar" type="Sprite2D" parent="Layers/Body/Spacebar" unique_id=1968967572]
 texture = ExtResource("good_space_tex")
 region_enabled = true
 region_rect = Rect2(1296, 1562, 908, 100)
 
-[node name="DustA" parent="Layers/Body" instance=ExtResource("7_dust")]
+[node name="DustA" parent="Layers/Body" unique_id=926858815 instance=ExtResource("7_dust")]
 position = Vector2(-954, 260)
 is_required = false
 
-[node name="CollisionShape2D" parent="Layers/Body/DustA"]
-shape = SubResource("dust_shape")
-
-[node name="DustB" parent="Layers/Body" instance=ExtResource("7_dust")]
+[node name="DustB" parent="Layers/Body" unique_id=1491367719 instance=ExtResource("7_dust")]
 position = Vector2(246, 210)
 is_required = false
 
-[node name="CollisionShape2D" parent="Layers/Body/DustB"]
-shape = SubResource("dust_shape")
-
-[node name="DustC" parent="Layers/Body" instance=ExtResource("7_dust")]
+[node name="DustC" parent="Layers/Body" unique_id=381079909 instance=ExtResource("7_dust")]
 position = Vector2(846, 460)
 is_required = false
 
-[node name="CollisionShape2D" parent="Layers/Body/DustC"]
-shape = SubResource("dust_shape")
+[node name="Shape" type="Area2D" parent="." unique_id=1262051527]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape" unique_id=390957051]
+polygon = PackedVector2Array(-1246.1539, -46.153847, -338.46155, -76.92308, 1092.3077, -115.38462, 1253.8462, 246.15385, 1238.4615, 300, -1284.6155, 361.53848, -1307.6924, 315.3846)

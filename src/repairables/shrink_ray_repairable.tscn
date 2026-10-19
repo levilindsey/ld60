@@ -18,9 +18,10 @@ radius = 18.0
 [sub_resource type="CircleShape2D" id="jam_shape"]
 radius = 26.0
 
-[node name="ShrinkRayRepairable" type="Node2D"]
+[node name="ShrinkRayRepairable" type="Node2D" node_paths=PackedStringArray("shape")]
 scale = Vector2(1.4, 1.4)
 script = ExtResource("1_ray")
+shape = NodePath("Shape")
 item_name = "Shrink ray"
 ticket = "The pawn guy doesn't remember where he got it. Careful, it might go off."
 bench_radius_px = 130.0
@@ -96,3 +97,8 @@ accepted_part = 2
 [node name="CrystalGrime" parent="Layers/Body" instance=ExtResource("8_grime")]
 position = Vector2(53.7, -41.1)
 amount = 1.6
+
+[node name="Shape" type="Area2D" parent="."]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape"]
+polygon = PackedVector2Array(-127, -125, 127, -125, 127, 61, -127, 61)

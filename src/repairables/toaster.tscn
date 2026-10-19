@@ -1,48 +1,46 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dtpfs6gw1kf70"]
 
-[ext_resource type="Script" path="res://src/repairables/toaster.gd" id="1_toaster"]
+[ext_resource type="Script" uid="uid://b2egvmunl5r3h" path="res://src/repairables/toaster.gd" id="1_toaster"]
 [ext_resource type="Script" uid="uid://bexc8yuqwibs5" path="res://src/repairables/repair_layer.gd" id="2_layer"]
 [ext_resource type="Texture2D" uid="uid://d1lvqw1c6jtbo" path="res://assets/images/repairables/toaster.png" id="3_body"]
 [ext_resource type="Texture2D" uid="uid://v7y5ncm2p6t5" path="res://assets/images/repairables/toaster_front_left_wheel.png" id="4_wheel_left"]
 [ext_resource type="Texture2D" uid="uid://du7ghsq4a42tk" path="res://assets/images/repairables/toaster_front_right_wheel.png" id="5_wheel_right"]
 [ext_resource type="Texture2D" uid="uid://cjlkscl30x0nm" path="res://assets/images/repairables/toaster_happy.png" id="6_face"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/broken_point.tscn" id="7_broken_point"]
-[ext_resource type="Script" path="res://src/interaction_points/broken_piece.gd" id="8_broken_piece"]
+[ext_resource type="Script" uid="uid://bvk4xcwwvu7k5" path="res://src/interaction_points/broken_piece.gd" id="8_broken_piece"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/stuck_part.tscn" id="9_stuck"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/grime_spot.tscn" id="10_grime"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_drop"]
 size = Vector2(230, 170)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_thump"]
-radius = 40.0
-
-[node name="Toaster" type="Node2D"]
+[node name="Toaster" type="Node2D" unique_id=767667941 node_paths=PackedStringArray("shape")]
 script = ExtResource("1_toaster")
 item_name = "Toaster"
+shape = NodePath("Shape")
 ticket = "Dang thing is too lively, wheel came off. Might need a few smacks. Who invented this?"
 par_time_sec = 120.0
 bench_radius_px = 100.0
 shadow_size = Vector2(240, 34)
 shadow_offset = Vector2(5, 88)
 
-[node name="DropArea" type="Area2D" parent="."]
+[node name="DropArea" type="Area2D" parent="." unique_id=1935434787]
 unique_name_in_owner = true
 collision_layer = 2
 collision_mask = 0
 monitoring = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea" unique_id=825021103]
 shape = SubResource("RectangleShape2D_drop")
 
-[node name="Layers" type="Node2D" parent="."]
+[node name="Layers" type="Node2D" parent="." unique_id=1698067149]
 unique_name_in_owner = true
 
-[node name="Body" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+[node name="Body" type="Node2D" parent="Layers" unique_id=1660206715 node_paths=PackedStringArray("art")]
 script = ExtResource("2_layer")
 art = NodePath("Art")
 
-[node name="SecondWheel" type="Node2D" parent="Layers/Body" node_paths=PackedStringArray("target_point", "art")]
+[node name="SecondWheel" type="Node2D" parent="Layers/Body" unique_id=1131159358 node_paths=PackedStringArray("target_point", "art")]
 unique_name_in_owner = true
 position = Vector2(-102.6, 55.3)
 script = ExtResource("8_broken_piece")
@@ -51,50 +49,44 @@ starts_installed = true
 is_behind_layer_art = true
 art = NodePath("Art")
 
-[node name="Art" type="Sprite2D" parent="Layers/Body/SecondWheel"]
+[node name="Art" type="Sprite2D" parent="Layers/Body/SecondWheel" unique_id=484275735]
 scale = Vector2(0.55, 0.55)
 texture = ExtResource("5_wheel_right")
 region_enabled = true
 region_rect = Rect2(30, 345, 65, 60)
 
-[node name="Art" type="Sprite2D" parent="Layers/Body"]
+[node name="Art" type="Sprite2D" parent="Layers/Body" unique_id=1045007320]
 scale = Vector2(0.55, 0.55)
 texture = ExtResource("3_body")
 offset = Vector2(7, -18.5)
 
-[node name="Face" type="Sprite2D" parent="Layers/Body"]
+[node name="Face" type="Sprite2D" parent="Layers/Body" unique_id=773536517]
 unique_name_in_owner = true
 scale = Vector2(0.55, 0.55)
 texture = ExtResource("6_face")
 offset = Vector2(7, -18.5)
 
-[node name="Thump" parent="Layers/Body" instance=ExtResource("9_stuck")]
+[node name="Thump" parent="Layers/Body" unique_id=374389107 instance=ExtResource("9_stuck")]
 unique_name_in_owner = true
 position = Vector2(-10, 0)
 hits_needed = 2
 
-[node name="CollisionShape2D" parent="Layers/Body/Thump" index="0"]
-shape = SubResource("CircleShape2D_thump")
-
-[node name="Art" parent="Layers/Body/Thump" index="1"]
-visible = false
-
-[node name="GrimeTop" parent="Layers/Body" instance=ExtResource("10_grime")]
+[node name="GrimeTop" parent="Layers/Body" unique_id=1401155333 instance=ExtResource("10_grime")]
 position = Vector2(-60, -45)
 
-[node name="GrimeSide" parent="Layers/Body" instance=ExtResource("10_grime")]
+[node name="GrimeSide" parent="Layers/Body" unique_id=1753542852 instance=ExtResource("10_grime")]
 position = Vector2(60, -20)
 texture_set = 1
 
-[node name="GrimeLow" parent="Layers/Body" instance=ExtResource("10_grime")]
+[node name="GrimeLow" parent="Layers/Body" unique_id=426920468 instance=ExtResource("10_grime")]
 position = Vector2(45, 45)
 
-[node name="FirstWheelPoint" parent="Layers/Body" instance=ExtResource("7_broken_point")]
+[node name="FirstWheelPoint" parent="Layers/Body" unique_id=1665899958 instance=ExtResource("7_broken_point")]
 unique_name_in_owner = true
 position = Vector2(-22.3, 74.5)
 draws_scar = false
 
-[node name="FirstWheel" type="Node2D" parent="Layers/Body" node_paths=PackedStringArray("target_point", "art")]
+[node name="FirstWheel" type="Node2D" parent="Layers/Body" unique_id=876004453 node_paths=PackedStringArray("target_point", "art")]
 position = Vector2(-22.3, 74.5)
 script = ExtResource("8_broken_piece")
 target_point = NodePath("../FirstWheelPoint")
@@ -102,12 +94,17 @@ starts_detached = true
 fall_target_offset = Vector2(170, 40)
 art = NodePath("Art")
 
-[node name="Art" type="Sprite2D" parent="Layers/Body/FirstWheel"]
+[node name="Art" type="Sprite2D" parent="Layers/Body/FirstWheel" unique_id=1279265227]
 scale = Vector2(0.55, 0.55)
 texture = ExtResource("4_wheel_left")
 region_enabled = true
 region_rect = Rect2(174, 376, 69, 68)
 
-[node name="SecondWheelPoint" parent="Layers/Body" instance=ExtResource("7_broken_point")]
+[node name="SecondWheelPoint" parent="Layers/Body" unique_id=1207137006 instance=ExtResource("7_broken_point")]
 position = Vector2(-102.6, 55.3)
 draws_scar = false
+
+[node name="Shape" type="Area2D" parent="." unique_id=1849007626]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape" unique_id=693503427]
+polygon = PackedVector2Array(-101, 63, -103, -8, -92, -29, -68, -47, 35, -55, 64, -77, 69, -74, 71, -54, 95, -45, 104, -56, 111, -55, 109, -24, 102, 46, 86, 60, 67, 52, -2, 73, -45, 73, -96, 66)

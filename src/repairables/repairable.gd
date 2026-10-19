@@ -58,6 +58,22 @@ const _ARRIVAL_BOUNCE_DECAY := 0.4
 const _LEAVING_Z_INDEX := 16
 
 @export var item_name := ""
+## The object's own outline, an Area2D with polygon/shape
+## children tracing the art. It carries no collision state
+## of its own: the item switches its layers and monitoring
+## off at ready and tests points against it by hand, so it
+## never shows up in the hand's physics picking.
+@export var shape: Area2D
+
+## Which bench shadow the item casts. A tall object should
+## keep the ellipse at its foot: a drop shadow of its whole
+## shape would read as a second object lying behind it.
+enum ShadowStyle {
+	FOOT_ELLIPSE,
+	SHAPE_SILHOUETTE,
+}
+
+@export var shadow_style := ShadowStyle.FOOT_ELLIPSE
 ## The customer's complaint, shown on the ticket.
 @export_multiline var ticket := ""
 ## The item is the shop's own radio: it flies down from the shelf instead
@@ -111,18 +127,26 @@ func _ready() -> void:
 			layers.append(layer)
 	G.check(not layers.is_empty())
 	_repair_sequence = RepairSequence.build_for(self)
-	DropShadow.attach(
-		self,
-		shadow_size,
-		shadow_offset,
-		func() -> bool:
-			return (
-				mode == Mode.UNDER_REPAIR
-				and is_instance_valid(G.level)
-				and is_instance_valid(G.level.hand)
-				and G.level.hand.held != self
-			),
-	)
+	_configure_shape()
+	var show_shadow := func() -> bool:
+		return (
+			mode == Mode.UNDER_REPAIR
+			and is_instance_valid(G.level)
+			and is_instance_valid(G.level.hand)
+			and G.level.hand.held != self
+		)
+	if shadow_style == ShadowStyle.SHAPE_SILHOUETTE:
+		var arts: Array = []
+		for layer in layers:
+			if is_instance_valid(layer.art):
+				arts.append(layer.art)
+		DropShadow.attach_silhouette(
+			self, arts, shadow_offset, show_shadow
+		)
+	else:
+		DropShadow.attach(
+			self, shadow_size, shadow_offset, show_shadow
+		)
 	# The repair clock only runs from landing to finished.
 	set_physics_process(false)
 
@@ -130,6 +154,90 @@ func _ready() -> void:
 # The paused tree skips this, so the clock only counts unpaused time.
 func _physics_process(delta: float) -> void:
 	quality.repair_time_sec += delta
+
+
+## The Shape areas arrive with no collision state configured
+## (they were added in the editor as bare outlines). Strip
+## anything that could make physics see them: no layer, no
+## mask, no monitoring either way. Points are tested against
+## them by hand in `is_point_in_shape()`.
+func _configure_shape() -> void:
+	if not is_instance_valid(shape):
+		return
+	shape.collision_layer = 0
+	shape.collision_mask = 0
+	shape.monitoring = false
+	shape.monitorable = false
+
+
+## True when a world point lands on the object's Shape: any
+## of its polygons, or inside any of its collision shapes.
+## False when the item has no Shape configured.
+func is_point_in_shape(world_point: Vector2) -> bool:
+	if not is_instance_valid(shape):
+		return false
+	for child in shape.get_children():
+		if child is CollisionPolygon2D:
+			var polygon_node := child as CollisionPolygon2D
+			if polygon_node.polygon.size() < 3:
+				continue
+			var local := (
+				polygon_node.global_transform.affine_inverse()
+				* world_point
+			)
+			if Geometry2D.is_point_in_polygon(
+				local, polygon_node.polygon
+			):
+				return true
+		elif child is CollisionShape2D:
+			var shape_node := child as CollisionShape2D
+			if not is_instance_valid(shape_node.shape):
+				continue
+			var local := (
+				shape_node.global_transform.affine_inverse()
+				* world_point
+			)
+			if _is_point_in_collision_shape(local, shape_node.shape):
+				return true
+	return false
+
+
+## The Shape's first polygon, in world points, for outlines
+## and hints that want the object's real outline.
+func get_shape_world_polygon() -> PackedVector2Array:
+	var points := PackedVector2Array()
+	if not is_instance_valid(shape):
+		return points
+	for child in shape.get_children():
+		if child is CollisionPolygon2D:
+			var polygon_node := child as CollisionPolygon2D
+			for point in polygon_node.polygon:
+				points.append(
+					polygon_node.global_transform * point
+				)
+			return points
+	return points
+
+
+func _is_point_in_collision_shape(
+	local_point: Vector2, collision_shape: Shape2D
+) -> bool:
+	if collision_shape is RectangleShape2D:
+		var rectangle := collision_shape as RectangleShape2D
+		return Rect2(
+			-rectangle.size * 0.5, rectangle.size
+		).has_point(local_point)
+	if collision_shape is CircleShape2D:
+		var circle := collision_shape as CircleShape2D
+		return local_point.length() <= circle.radius
+	if collision_shape is CapsuleShape2D:
+		var capsule := collision_shape as CapsuleShape2D
+		var half := capsule.height * 0.5 - capsule.radius
+		var nearest := Vector2(
+			0.0, clampf(local_point.y, -half, half)
+		)
+		return local_point.distance_to(nearest) <= capsule.radius
+	return false
 
 
 ## This item's repair steps, derived from its layers and points

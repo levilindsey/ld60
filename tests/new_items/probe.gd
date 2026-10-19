@@ -67,6 +67,32 @@ func _check_tv() -> void:
 			alternated,
 			"the static frames alternate while unfixed",
 		)
+	_expect(
+		is_instance_valid(item.shape),
+		"the TV has a Shape",
+	)
+	if is_instance_valid(item.shape):
+		_expect(
+			item.shape.collision_layer == 0
+			and item.shape.collision_mask == 0
+			and not item.shape.monitoring
+			and not item.shape.monitorable,
+			"the item strips the Shape's collision state at ready",
+		)
+		_expect(
+			item.is_point_in_shape(item.global_position),
+			"the TV's middle lands on its Shape",
+		)
+		_expect(
+			not item.is_point_in_shape(
+				item.global_position + Vector2(0, -400)
+			),
+			"above the TV is off its Shape",
+		)
+		_expect(
+			item.shadow_style == Repairable.ShadowStyle.FOOT_ELLIPSE,
+			"the tall TV keeps its ellipse foot shadow",
+		)
 	var antenna := _find_point(item, BentPart) as BentPart
 	_expect(is_instance_valid(antenna), "the TV has a bent antenna")
 	if is_instance_valid(antenna):
