@@ -482,9 +482,10 @@ func _is_smooth_fade(fades: Array, is_rising: bool) -> bool:
 ## Turns `host` a quarter turn and back, and checks that its
 ## drop shadow still bears down-screen from it: the offset is
 ## in the world frame, so the shadow sits at the same world
-## offset however the piece itself is turned. The shadow's
-## turn still follows the host, so a silhouette's shape
-## matches the rotated sprite.
+## offset however the piece itself is turned, and the shadow
+## itself stays upright in the world frame (ef21c50: a
+## silhouette that turned with its host swung its bulk to a
+## different side at every orientation).
 func _check_shadow_turns_with(
 	shadow: DropShadow,
 	host: Node2D,
@@ -512,14 +513,8 @@ func _check_shadow_turns_with(
 		) % [label, actual_offset, expected_offset],
 	)
 	_expect(
-		absf(
-			wrapf(
-				shadow.global_rotation - host.global_rotation,
-				-PI,
-				PI,
-			),
-		) < 0.01,
-		"%s's shadow keeps its turn with it" % label,
+		absf(wrapf(shadow.global_rotation, -PI, PI)) < 0.01,
+		"%s's shadow stays upright however it is turned" % label,
 	)
 	host.rotation = rest_rotation
 	host.reset_physics_interpolation()

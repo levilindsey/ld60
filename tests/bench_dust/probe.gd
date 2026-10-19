@@ -86,18 +86,80 @@ func _run() -> void:
 		)
 	_expect(is_on_bench, "the clumps land on the bench")
 
-	await _check_blower_cleans(spawned[0])
+	# Fresh spew is still flying: it carries a velocity away
+	# from the knock and is not a cleanable point yet.
+	var spew_origin := spawned[0].global_position
 	_expect(
-		G.level.count_bench_dust_left() == 2,
-		"two clumps are left after one is blown away",
+		not spawned[0].is_settled
+		and spawned[0].velocity.length() > 1.0,
+		"fresh bench dust is flying with a velocity",
+	)
+	_expect(
+		not spawned[0].is_exposed(),
+		"flying bench dust is not a cleanable point yet",
+	)
+	await _seconds(0.2)
+	_expect(
+		spawned[0].global_position.distance_to(spew_origin) > 4.0,
+		"flying bench dust moves from where it spewed"
+		+ " (moved %.0f px)"
+		% spawned[0].global_position.distance_to(spew_origin),
+	)
+	var all_settled := false
+	for frame in 360:
+		all_settled = true
+		for dust in spawned:
+			all_settled = all_settled and dust.is_settled
+		if all_settled:
+			break
+		await get_tree().physics_frame
+	_expect(
+		all_settled and spawned[0].is_exposed(),
+		"spewed dust settles into cleanable points on the bench",
+	)
+	_expect(
+		spawned[0].global_position.distance_to(spew_origin) > 4.0
+		and G.level.is_inside_bench(spawned[0].global_position),
+		"the settled dust rests on the bench where it stopped"
+		+ " (at %s)" % spawned[0].global_position,
+	)
+
+	# Clean the settled clump that sits clearest of the
+	# others. The cone may still catch a neighbour that
+	# drifted close; that is the game working, so the charge
+	# checks below count whatever is actually left.
+	var target_dust := spawned[0]
+	var best_clearance := -1.0
+	for dust in spawned:
+		var clearance := INF
+		for other in spawned:
+			if other != dust:
+				clearance = minf(
+					clearance,
+					dust.global_position.distance_to(
+						other.global_position
+					),
+				)
+		if clearance > best_clearance:
+			best_clearance = clearance
+			target_dust = dust
+	await _check_blower_cleans(target_dust)
+	var leftovers := G.level.count_bench_dust_left()
+	_expect(
+		target_dust.mode == InteractionPoint.Mode.FINISHED
+		and leftovers < spawned.size(),
+		"one clump is blown away and %d are left" % leftovers,
 	)
 
 	var points_before := _item.quality.get_defect_points_total()
 	var charged := G.level.charge_bench_dust(_item)
-	_expect(charged == 2, "the charge takes both leftovers")
+	_expect(
+		charged == leftovers,
+		"the charge takes every leftover (%d)" % leftovers,
+	)
 	_expect(
 		_item.quality.get_defect_points_total()
-		== points_before + 2 * G.settings.bench_dust_points,
+		== points_before + leftovers * G.settings.bench_dust_points,
 		"each leftover costs its bench dust points",
 	)
 	var summary_count := 0
@@ -105,7 +167,7 @@ func _run() -> void:
 		if line.defect == RepairQuality.Defect.BENCH_DUST_LEFT:
 			summary_count = line.count
 	_expect(
-		summary_count == 2,
+		summary_count == leftovers,
 		"the receipt lists the bench dust left",
 	)
 	_expect(

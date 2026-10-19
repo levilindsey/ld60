@@ -16,8 +16,18 @@ extends DustClump
 ## True once the leftover charge has taken this clump. It keeps
 ## a second charge from costing the same dust twice.
 var is_charged := false
+## The speed the spew threw this clump at, in world pixels per
+## second. It eases to nothing over the flight, and the clump
+## settles wherever it stops.
+var velocity := Vector2.ZERO
+## True once the clump has come to rest. Only then is it a
+## normal interaction point, at the spot where it settled.
+var is_settled := true
 
 var _was_blower_squeezed := false
+var _launch_velocity := Vector2.ZERO
+var _flight_total_sec := 0.0
+var _flight_left_sec := 0.0
 
 
 func _ready() -> void:
@@ -25,15 +35,47 @@ func _ready() -> void:
 	is_required = false
 
 
-## Bench dust has no layer over it, so it is always reachable.
-## Only a cleaned clump stops counting as exposed.
+## Throws the clump at `p_velocity` for `flight_sec`. It
+## slides that long, slowing evenly, and settles where it
+## stops (the bench edge may stop it sooner).
+func launch(p_velocity: Vector2, flight_sec: float) -> void:
+	velocity = p_velocity
+	_launch_velocity = p_velocity
+	_flight_total_sec = maxf(flight_sec, 0.01)
+	_flight_left_sec = _flight_total_sec
+	is_settled = velocity.is_zero_approx()
+
+
+## Bench dust has no layer over it, so a settled clump is
+## always reachable. A flying clump is not a point yet, and
+## only a cleaned clump stops counting as exposed.
 func is_exposed() -> bool:
-	return mode != Mode.FINISHED
+	return is_settled and mode != Mode.FINISHED
 
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
+	_slide(delta)
 	_poll_blower()
+
+
+## Slides the flying clump across the bench, slowing evenly
+## to a stop inside the bench. Where it stops is where the
+## point lives from then on.
+func _slide(delta: float) -> void:
+	if is_settled or delta <= 0.0:
+		return
+	global_position += velocity * delta
+	if is_instance_valid(G.level):
+		global_position = G.level.clamp_to_bench(global_position)
+	_flight_left_sec -= delta
+	if _flight_left_sec <= 0.0:
+		velocity = Vector2.ZERO
+		is_settled = true
+		return
+	velocity = (
+		_launch_velocity * (_flight_left_sec / _flight_total_sec)
+	)
 
 
 ## Sprays this clump when a fresh puff covers it. The test is

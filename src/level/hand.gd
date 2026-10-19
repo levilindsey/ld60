@@ -325,9 +325,13 @@ func _find_point_by_shape(global_point: Vector2) -> InteractionPoint:
 	return null
 
 
-## The first exposed point lined up with a tool's working end, or
-## null. Engaging lines the tool's InteractionArea up with the
-## point's area; where the cursor marker sits doesn't matter.
+## The nearest engageable point whose area the tool's
+## InteractionArea overlaps, or null. The tool's shape only has
+## to cross the point's area; its centre need not land on it,
+## and where the cursor marker sits doesn't matter. Points
+## that cannot engage (finished ones above all) never win:
+## the cleaned grime on a Game n Watch screw sits exactly on
+## the screw, and picking it would shadow the screw forever.
 func find_point_for_tool(tool: Tool) -> InteractionPoint:
 	var shape_node := tool.get_interaction_shape()
 	if not is_instance_valid(shape_node):
@@ -353,6 +357,7 @@ func find_point_for_tool(tool: Tool) -> InteractionPoint:
 			is_instance_valid(point)
 			and point.is_visible_in_tree()
 			and point.is_exposed()
+			and point.can_engage()
 		):
 			var distance := shape_node.global_position.distance_squared_to(
 				point.global_position
@@ -376,6 +381,7 @@ func find_point_for_tool(tool: Tool) -> InteractionPoint:
 			if (
 				not point.is_visible_in_tree()
 				or not point.is_exposed()
+				or not point.can_engage()
 				or not point.is_point_in_shape(
 					shape_node.global_position
 				)

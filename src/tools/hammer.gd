@@ -119,8 +119,10 @@ func on_effect_pressed(_global_point: Vector2) -> void:
 	_locked_layer = null
 	_locked_prop = null
 	if is_instance_valid(G.level):
-		var point := G.level.hand.find_point(_locked_point)
-		_locked_target = point as StrikablePoint
+		_locked_target = _find_area_target()
+		if not is_instance_valid(_locked_target):
+			var point := G.level.hand.find_point(_locked_point)
+			_locked_target = point as StrikablePoint
 		if not is_instance_valid(_locked_target):
 			_locked_target = _find_shape_target(_locked_point)
 		if not is_instance_valid(_locked_target):
@@ -135,6 +137,45 @@ func on_effect_pressed(_global_point: Vector2) -> void:
 	_wind_sec = 0.0
 	charge = 0.0
 	queue_redraw()
+
+
+## The strikable point the hammer's face overlaps, or null.
+## The face only has to cross the point's area; its centre
+## need not land on it. Where the face crosses more than one
+## point, the nearest to the face's centre wins.
+func _find_area_target() -> StrikablePoint:
+	var shape_node := get_interaction_shape()
+	if not is_instance_valid(shape_node):
+		return null
+	if not is_instance_valid(shape_node.shape):
+		return null
+	var parameters := PhysicsShapeQueryParameters2D.new()
+	parameters.shape = shape_node.shape
+	parameters.transform = shape_node.global_transform
+	parameters.collision_mask = (
+		Settings.PhysicsLayer.INTERACTION_POINTS
+	)
+	parameters.collide_with_areas = true
+	parameters.collide_with_bodies = false
+	var space := get_world_2d().direct_space_state
+	var nearest: StrikablePoint = null
+	var nearest_distance := INF
+	for result in space.intersect_shape(parameters, 32):
+		var point := result.collider as StrikablePoint
+		if (
+			not is_instance_valid(point)
+			or not point.is_exposed()
+			or not point.is_visible_in_tree()
+			or point.mode == InteractionPoint.Mode.FINISHED
+		):
+			continue
+		var distance := shape_node.global_position.distance_squared_to(
+			point.global_position
+		)
+		if distance < nearest_distance:
+			nearest = point
+			nearest_distance = distance
+	return nearest
 
 
 ## A whack anywhere on the item's Shape counts as a whack

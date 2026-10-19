@@ -446,6 +446,25 @@ func _check_hammer() -> void:
 		"enough hits free the stuck part",
 	)
 
+	# The face only has to overlap the point's area: a strike
+	# whose face centre lands beside the point still smacks it
+	# when the two areas cross.
+	var edge := _spawn_point(
+		_STUCK_SCENE_PATH, Vector2(44, 62)
+	) as StuckPart
+	await _physics_frames(2)
+	var face_radius := (
+		hammer.get_interaction_shape().shape as CircleShape2D
+	).radius * hammer.get_interaction_shape().global_scale.x
+	var edge_offset := Vector2(face_radius + 8.0, 0.0)
+	await _strike(hammer, edge.global_position + edge_offset, 0.6)
+	_expect(
+		edge.hits_done == 1,
+		"a strike whose face overlaps the point off-centre jogs it"
+		+ " (face radius %.0f px, offset %.0f px)"
+		% [face_radius, edge_offset.x],
+	)
+
 	var error_before := bent.current_error_deg
 	await _strike(hammer, bent.global_position, 0.6)
 	_expect(

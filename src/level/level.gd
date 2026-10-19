@@ -63,6 +63,11 @@ const _BENCH_DUST_SCENE: PackedScene = preload(
 const _BENCH_DUST_SPREAD_X_PX := 120.0
 const _BENCH_DUST_SETTLE_Y_PX := 70.0
 const _BENCH_DUST_ON_ITEM_SHARE := 0.25
+## Shortest and longest slide of a spewed clump before it
+## settles into a point, and the least distance one travels.
+const _BENCH_DUST_FLIGHT_MIN_SEC := 0.35
+const _BENCH_DUST_FLIGHT_MAX_SEC := 0.55
+const _BENCH_DUST_MIN_TRAVEL_PX := 36.0
 
 
 var has_started := false
@@ -1948,11 +1953,13 @@ func spawn_decal(
 	)
 
 
-## Spews `count` bench dust clumps around a world position
-## and returns them. A hard knock on an item (a hammer whack
-## on the TV) calls this. The clumps live on the bench, not on
-## the item, until the air blower cleans them or the item
-## finishes and `charge_bench_dust()` pays for what is left.
+## Spews `count` bench dust clumps from a world position and
+## returns them. A hard knock on an item (a hammer whack on
+## the TV) calls this. Each clump flies with a velocity and
+## slides to a stop on the bench; where it settles is where
+## it lives as a normal interaction point, until the air
+## blower cleans it or the item finishes and
+## `charge_bench_dust()` pays for what is left.
 func spawn_bench_dust(
 	global_pos: Vector2, count: int
 ) -> Array[BenchDust]:
@@ -1964,26 +1971,39 @@ func spawn_bench_dust(
 			continue
 		dust.amount = randf_range(0.8, 1.0)
 		_get_bench_dust_holder().add_child(dust)
-		var target := global_pos
-		if count > 1:
-			if randf() < _BENCH_DUST_ON_ITEM_SHARE:
-				# On the item: a tight dusting around the knock.
-				target += Vector2(
-					randf_range(-38.0, 38.0),
-					randf_range(-26.0, 26.0),
-				)
-			else:
-				# On the bench: a wide, flat scatter, settling
-				# mostly below the knock.
-				target += Vector2(
-					randf_range(
-						-_BENCH_DUST_SPREAD_X_PX,
-						_BENCH_DUST_SPREAD_X_PX,
-					),
-					randf_range(-12.0, _BENCH_DUST_SETTLE_Y_PX),
-				)
-		dust.global_position = clamp_to_bench(target)
+		dust.global_position = clamp_to_bench(global_pos)
 		dust.reset_physics_interpolation()
+		var target := global_pos
+		if randf() < _BENCH_DUST_ON_ITEM_SHARE:
+			# On the item: a tight dusting around the knock.
+			target += Vector2(
+				randf_range(-38.0, 38.0),
+				randf_range(-26.0, 26.0),
+			)
+		else:
+			# On the bench: a wide, flat scatter, settling
+			# mostly below the knock.
+			target += Vector2(
+				randf_range(
+					-_BENCH_DUST_SPREAD_X_PX,
+					_BENCH_DUST_SPREAD_X_PX,
+				),
+				randf_range(-12.0, _BENCH_DUST_SETTLE_Y_PX),
+			)
+		target = clamp_to_bench(target)
+		var scatter := target - dust.global_position
+		if scatter.length() < _BENCH_DUST_MIN_TRAVEL_PX:
+			# Even a near-direct hit throws the clump a little.
+			scatter = Vector2.from_angle(randf() * TAU) * randf_range(
+				_BENCH_DUST_MIN_TRAVEL_PX,
+				_BENCH_DUST_MIN_TRAVEL_PX * 2.0,
+			)
+		var flight_sec := randf_range(
+			_BENCH_DUST_FLIGHT_MIN_SEC, _BENCH_DUST_FLIGHT_MAX_SEC
+		)
+		# Twice the average speed covers the scatter while
+		# slowing evenly to a stop (see BenchDust._slide()).
+		dust.launch(scatter * 2.0 / flight_sec, flight_sec)
 		_bench_dust.append(dust)
 		spawned.append(dust)
 	return spawned

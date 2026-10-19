@@ -334,11 +334,14 @@ func _check_game_n_watch() -> void:
 	var phillips_count := 0
 	var covered_count := 0
 	var art_sized_hit_count := 0
+	var covered_screw: PhillipsScrew = null
 	for layer in item.layers:
 		for point in layer.get_points():
 			if point is PhillipsScrew:
 				phillips_count += 1
 				var screw := point as PhillipsScrew
+				if not is_instance_valid(covered_screw):
+					covered_screw = screw
 				if is_instance_valid(screw.covering_grime):
 					covered_count += 1
 				var hit_radius := (
@@ -384,7 +387,63 @@ func _check_game_n_watch() -> void:
 				dust_count += 1
 	_expect(has_dpad, "the Game n Watch has a D-pad to glue back on")
 	_expect(dust_count >= 2, "the Game n Watch has dirt to blow away")
+	await _check_gnw_phillips_engages(covered_screw)
 	item.queue_free()
+	await _physics_frames(2)
+
+
+## With the grime off, the Phillips driver engages the Game
+## n Watch screw it overlaps: dead centre first (where the
+## cleaned grime still sits on the screw), then with the
+## driver's face beside the head, overlapping its area.
+func _check_gnw_phillips_engages(screw: PhillipsScrew) -> void:
+	if not _expect(
+		is_instance_valid(screw)
+		and is_instance_valid(screw.covering_grime),
+		"the Game n Watch screw to drive is under grime",
+	):
+		return
+	var driver := G.level.tools_by_type[
+		Tool.Type.PHILLIPS_SCREW_DRIVER
+	] as PhillipsScrewDriver
+	await _grab_tool(driver)
+	_expect(_hand.held == driver, "the hand holds the phillips driver")
+	screw.covering_grime.finish()
+	await _physics_frames(2)
+	await _press_tool_at(driver, screw.global_position)
+	_expect(
+		screw.mode == InteractionPoint.Mode.ACTIVE,
+		"a centre press engages the Game n Watch screw"
+		+ " under its cleaned grime (mode %d)" % screw.mode,
+	)
+	if screw.mode == InteractionPoint.Mode.ACTIVE:
+		screw.release_tool()
+		screw.mode = InteractionPoint.Mode.UNSTARTED
+		await _physics_frames(2)
+	var hit_radius := (
+		(screw.hit_shape.shape as CircleShape2D).radius
+		* screw.hit_shape.global_transform.get_scale().x
+	)
+	var driver_shape := driver.get_interaction_shape()
+	var driver_radius := (
+		(driver_shape.shape as CircleShape2D).radius
+		* driver_shape.global_transform.get_scale().x
+	)
+	var edge_point := (
+		screw.global_position
+		+ Vector2(hit_radius + driver_radius - 6.0, 0.0)
+	)
+	await _press_tool_at(driver, edge_point)
+	_expect(
+		screw.mode == InteractionPoint.Mode.ACTIVE,
+		"an edge press engages the Game n Watch screw"
+		+ " (mode %d)" % screw.mode,
+	)
+	if screw.mode == InteractionPoint.Mode.ACTIVE:
+		screw.release_tool()
+		screw.mode = InteractionPoint.Mode.UNSTARTED
+		await _physics_frames(2)
+	driver.put_away()
 	await _physics_frames(2)
 
 
