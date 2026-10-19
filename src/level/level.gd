@@ -78,6 +78,8 @@ var _resting_screws: Array = []
 
 var _outbox_outline_hint: OutlineHint
 var _outbox_label_tween: Tween
+## Where the shop radio item lines up with the radio on the shelf.
+var _shop_radio_pose := Transform2D.IDENTITY
 
 ## Every loose part spawned for the item on the bench: stored in a
 ## drawer, resting on the bench, or on its way back into a drawer.
@@ -230,6 +232,9 @@ func swap_item_for_dev() -> void:
 	cleanup_broken_pieces(item)
 	cleanup_loose_parts()
 	set_outbox_outline_shown(false)
+	if item.is_shop_radio:
+		%Radio.return_to_shelf()
+		G.audio.restore_main_theme()
 	item.queue_free()
 	if _is_queue_finished():
 		next_item_index = 0
@@ -254,7 +259,10 @@ func spawn_repairable(type: Repairable.Type) -> Repairable:
 	item.quality.defect_added.connect(_on_defect_added)
 	item.impacted.connect(_on_item_impacted)
 	item.landed.connect(_on_item_landed.bind(item))
-	item.arrive(%ActiveItemPosition.global_position)
+	if item.is_shop_radio:
+		_break_shop_radio(item)
+	else:
+		item.arrive(%ActiveItemPosition.global_position)
 	return item
 
 
@@ -276,8 +284,8 @@ func drop_item(
 ) -> void:
 	if not is_instance_valid(item):
 		return
-	if item.has_finished and %Outbox.overlaps_area(item.drop_area):
-		_send_to_outbox(item)
+	if _is_at_ship_spot(item):
+		_ship(item)
 		return
 	if try_return_repairable(item, release_velocity):
 		return
@@ -295,8 +303,16 @@ func drop_item(
 
 
 ## Shows or hides the outline around the outbox. A finished item
-## turns it on, so the bench says where the item goes next.
+## turns it on, so the bench says where the item goes next. The shop
+## radio goes back to its shelf, so it shows the radio's empty spot
+## instead.
 func set_outbox_outline_shown(is_shown: bool) -> void:
+	if (
+		is_instance_valid(active_repairable)
+		and active_repairable.is_shop_radio
+	):
+		%Radio.show_return_spot(is_shown)
+		return
 	if is_shown:
 		if not is_instance_valid(_outbox_outline_hint):
 			var placeholder := (
@@ -1335,22 +1351,29 @@ func _step_bench_returns(delta: float) -> void:
 				_step_return_settling(entry, delta)
 		if (entry.get("phase") as int) == -1:
 			_bench_returns.remove_at(index)
-		elif _is_flung_into_outbox(owner):
+		elif _is_at_ship_spot(owner as Repairable):
 			_bench_returns.remove_at(index)
 			var item := owner as Repairable
 			item.is_returning = false
-			_send_to_outbox(item)
+			_ship(item)
 
 
-## True when a finished item on its way back to the bench touches the
-## outbox, which takes it as if it were dropped there.
-func _is_flung_into_outbox(owner: Object) -> bool:
-	var item := owner as Repairable
-	return (
-		is_instance_valid(item)
-		and item.has_finished
-		and %Outbox.overlaps_area(item.drop_area)
-	)
+## True when a finished item is over where it leaves from: the outbox, or
+## the shelf for the shop radio. A thrown item that touches it on its way
+## back to the bench goes as if it were dropped there.
+func _is_at_ship_spot(item: Repairable) -> bool:
+	if not is_instance_valid(item) or not item.has_finished:
+		return false
+	if item.is_shop_radio:
+		return %Radio.is_over_spot(_get_outer_art_center(item))
+	return %Outbox.overlaps_area(item.drop_area)
+
+
+func _ship(item: Repairable) -> void:
+	if item.is_shop_radio:
+		_return_shop_radio(item)
+	else:
+		_send_to_outbox(item)
 
 
 func _step_return_flight(entry: Dictionary, delta: float) -> void:
@@ -1900,6 +1923,63 @@ func _send_to_outbox(item: Repairable) -> void:
 	)
 
 
+## The shop radio breaks on the shelf. After a beat it flies down to the
+## bench as the item, which starts out lined up with it.
+func _break_shop_radio(item: Repairable) -> void:
+	var bench_scale := item.scale
+	_shop_radio_pose = _get_shop_radio_pose(item)
+	item.scale = _shop_radio_pose.get_scale()
+	item.global_position = _shop_radio_pose.origin
+	item.visible = false
+	item.finished.connect(G.audio.restore_main_theme)
+	%Radio.break_away()
+	var tween := create_tween()
+	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	tween.tween_interval(G.settings.shop_radio_break_sec)
+	tween.tween_callback(_fly_in_shop_radio.bind(bench_scale))
+
+
+func _fly_in_shop_radio(bench_scale: Vector2) -> void:
+	var item := active_repairable
+	if not is_instance_valid(item) or not item.is_shop_radio:
+		return
+	%Radio.leave_shelf()
+	item.visible = true
+	item.fly_in(%ActiveItemPosition.global_position, bench_scale)
+
+
+## The fixed shop radio flies back up to its shelf.
+func _return_shop_radio(item: Repairable) -> void:
+	%Radio.show_return_spot(false)
+	cleanup_loose_parts()
+	cleanup_broken_pieces(item)
+	active_repairable = null
+	item.departed.connect(%Radio.return_to_shelf, CONNECT_ONE_SHOT)
+	item.departed.connect(_on_item_departed.bind(item), CONNECT_ONE_SHOT)
+	item.fly_out(_shop_radio_pose.origin, _shop_radio_pose.get_scale())
+
+
+## The item's position and scale that line its outermost art up with the
+## shop radio's art on the shelf.
+func _get_shop_radio_pose(item: Repairable) -> Transform2D:
+	var art := item.layers.back().art as Node2D
+	var ratio: float = %Radio.get_art_scale() / art.global_scale.x
+	var art_offset := _get_outer_art_center(item) - item.global_position
+	return Transform2D(
+		0.0,
+		item.scale * ratio,
+		0.0,
+		%Radio.get_art_center() - art_offset * ratio,
+	)
+
+
+func _get_outer_art_center(item: Repairable) -> Vector2:
+	var art := item.layers.back().art as Node2D
+	if art is Sprite2D:
+		return art.to_global((art as Sprite2D).offset)
+	return art.global_position
+
+
 func _on_item_impacted(strength: float) -> void:
 	shake_camera(
 		G.settings.item_landing_shake_px * strength,
@@ -1909,7 +1989,7 @@ func _on_item_impacted(strength: float) -> void:
 
 func _on_item_landed(item: Repairable) -> void:
 	restock_parts(item)
-	%TicketCard.show_item(item.ticket, item.ticket_flings_up)
+	%TicketCard.show_item(item.ticket, item.is_shop_radio)
 	G.audio.play_sound_delayed(&"hmm_curious", 0.45)
 
 

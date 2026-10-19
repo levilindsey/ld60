@@ -53,6 +53,9 @@ extends Node2D
 var initial_volumes := {}
 
 var current_theme: AudioStreamPlayer
+## True while the shop radio is broken: the main theme stays silent, even
+## through a pause and resume.
+var is_main_theme_cut_out := false
 
 
 func _enter_tree() -> void:
@@ -138,6 +141,8 @@ func fade_in(stream_player: AudioStreamPlayer, volume: float) -> void:
 	if stream_player.stream == null:
 		# Placeholder player with no stream assigned yet.
 		return
+	if is_main_theme_cut_out and stream_player == %MainTheme:
+		return
 
 	if G.settings.mute_music:
 		volume = mute_volume
@@ -176,6 +181,22 @@ func fade_out(stream_player: AudioStreamPlayer) -> void:
 	# Ensure the stream is still playing, just in case we somehow end up with
 	# overlapping tweens (the latest tween should end up winning).
 	stream_player.stream_paused = true
+
+
+## Stops the main theme dead, until `restore_main_theme()`.
+func cut_out_main_theme() -> void:
+	is_main_theme_cut_out = true
+	%MainTheme.stop()
+
+
+## Starts the main theme again from the top, if it is the one playing.
+func restore_main_theme() -> void:
+	if not is_main_theme_cut_out:
+		return
+	is_main_theme_cut_out = false
+	if current_theme == %MainTheme:
+		%MainTheme.stream_paused = false
+		%MainTheme.play()
 
 
 ## Plays a sound after a delay, running the timer on AudioMain itself

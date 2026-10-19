@@ -349,6 +349,11 @@ enum FirstRepairable {
 @export var radio_glitch_chance_window_sec := 300.0
 ## After the radio is fixed, how long before it can glitch again.
 @export var radio_glitch_cooldown_sec := 300.0
+## When the radio is the item, how long it crackles on the shelf before it
+## flies down to the bench.
+@export var shop_radio_break_sec := 0.6
+## How long the radio takes to fly between the shelf and the bench.
+@export var shop_radio_fly_sec := 0.7
 @export_group("")
 
 @export_group("Glue")

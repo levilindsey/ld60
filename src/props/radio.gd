@@ -12,6 +12,10 @@ extends Node2D
 ## auditioned on their own. Once an item is fixed, it starts glitching at
 ## random (the "Radio" group in `settings.gd`). A hammer hit fixes it and
 ## starts a cooldown. In dev mode, R toggles the glitch.
+##
+## When the radio is the item on the bench, it breaks on the shelf (static,
+## a jolt, the music cuts out) and hides while the item is repaired. Its
+## spot shows a faint ghost of it once the item is ready to go back.
 
 
 ## How far the radio squashes and stretches on each beat, as a fraction of
@@ -58,8 +62,16 @@ extends Node2D
 ## second.
 @export var hit_recover_per_sec: float = 4.0
 
+@export_group("Break")
+## The static's volume as the radio breaks.
+@export var break_static_volume_db: float = -12.0
+## How see-through the ghost on the empty spot is.
+@export var return_spot_alpha: float = 0.35
+
 
 var is_glitching := false
+## True from the radio breaking until it is back on the shelf.
+var is_away := false
 
 var _motion_amount := 0.0
 ## Holds its last value while the music is stopped, so the motion eases
@@ -98,7 +110,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not G.settings.dev_mode:
+	if not G.settings.dev_mode or is_away:
 		return
 	if (
 		event is InputEventKey
@@ -118,7 +130,65 @@ func set_glitching(value: bool) -> void:
 
 ## Whether a hammer press at this point lands on the radio.
 func is_struck_at(global_point: Vector2) -> bool:
-	return %Art.get_rect().has_point(%Art.to_local(global_point))
+	return (
+		not is_away
+		and %Art.get_rect().has_point(%Art.to_local(global_point))
+	)
+
+
+## Whether a point is over the radio's spot on the shelf, with some slack.
+func is_over_spot(global_point: Vector2) -> bool:
+	return (
+		%Art.get_rect()
+		.grow(%Art.get_rect().size.x * 0.25)
+		.has_point(%Art.to_local(global_point))
+	)
+
+
+## The middle of the art at rest, in world pixels.
+func get_art_center() -> Vector2:
+	return to_global(%Art.offset)
+
+
+## The art's scale at rest, in world terms.
+func get_art_scale() -> float:
+	return global_scale.x
+
+
+## The radio crackles, jolts and goes quiet: the music cuts out.
+func break_away() -> void:
+	is_away = true
+	is_glitching = false
+	_glitch_amount = 0.0
+	_hit_amount = 1.0
+	if is_instance_valid(G.audio.current_theme):
+		G.audio.current_theme.pitch_scale = 1.0
+	G.audio.cut_out_main_theme()
+	%Static.volume_db = break_static_volume_db
+	%Static.play()
+
+
+## The radio leaves the shelf to be the item on the bench.
+func leave_shelf() -> void:
+	%Static.stop()
+	visible = false
+
+
+## Shows or hides the faint ghost on the empty spot.
+func show_return_spot(is_shown: bool) -> void:
+	if not is_away:
+		return
+	visible = is_shown
+	modulate.a = return_spot_alpha
+
+
+## The fixed radio is back on the shelf, with a little squash.
+func return_to_shelf() -> void:
+	%Static.stop()
+	is_away = false
+	visible = true
+	modulate.a = 1.0
+	_hit_amount = 1.0
 
 
 ## A hammer hit at any strength bonks the radio and fixes a glitch.
@@ -133,7 +203,7 @@ func on_struck(_charge: float) -> void:
 ## Rolls for a glitch each tick once an item is fixed and the cooldown is
 ## over.
 func _update_trigger(delta: float) -> void:
-	if is_glitching:
+	if is_glitching or is_away:
 		return
 	if _cooldown_remaining_sec > 0.0:
 		_cooldown_remaining_sec -= delta

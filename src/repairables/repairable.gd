@@ -11,7 +11,8 @@ extends Node2D
 ## outline and can be dragged (`on_grabbed()`, `return_to()`), and
 ## `leave()` sends it off
 ## through the outbox. Every item scene needs a `%DropArea` on the
-## REPAIRABLES physics layer for the outbox to detect.
+## REPAIRABLES physics layer for the outbox to detect. The shop radio flies
+## in and out instead (`fly_in()`, `fly_out()`).
 
 
 signal layer_removed(layer: RepairLayer)
@@ -59,9 +60,10 @@ const _LEAVING_Z_INDEX := 16
 @export var item_name := ""
 ## The customer's complaint, shown on the ticket.
 @export_multiline var ticket := ""
-## The ticket is tossed up from below the screen instead of falling from
-## above.
-@export var ticket_flings_up := false
+## The item is the shop's own radio: it flies down from the shelf instead
+## of falling in, goes back to the shelf instead of the outbox, and its
+## ticket is tossed up from below.
+@export var is_shop_radio := false
 @export var par_time_sec := 90.0
 ## How far the item reaches from its middle on the bench, in pixels.
 @export var bench_radius_px := 50.0
@@ -345,13 +347,7 @@ func leave(
 	tray_global_position: Vector2,
 	exit_global_position: Vector2,
 ) -> void:
-	_charge_remaining_mess()
-	if is_instance_valid(G.level):
-		G.level.charge_bench_dust(self)
-		G.level.clear_bench_dust()
-	mode = Mode.LEAVING
-	z_index = _LEAVING_Z_INDEX
-	set_physics_process(false)
+	_start_leaving()
 	_start_motion(
 		tray_global_position,
 		0.0,
@@ -366,6 +362,28 @@ func leave(
 		exit_global_position,
 		G.settings.item_leave_sec,
 	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_motion_tween.tween_callback(_depart)
+
+
+## Flies the item from where it stands to a pose, growing or shrinking to
+## the scale. Nothing falls, so it doesn't bounce. Its loose pieces pop off
+## as it lands, and then `landed` fires.
+func fly_in(target_global_position: Vector2, target_scale: Vector2) -> void:
+	mode = Mode.ENTERING
+	rotation = 0.0
+	_start_flight(target_global_position, target_scale)
+	_motion_tween.tween_callback(
+		_detach_fallen_pieces.bind(target_global_position)
+	)
+	_motion_tween.tween_callback(_land)
+
+
+## Flies the item off the bench to a pose, like `fly_in()`. Mess left on it
+## is charged as in `leave()`. `departed` fires at the end and the item
+## frees itself.
+func fly_out(target_global_position: Vector2, target_scale: Vector2) -> void:
+	_start_leaving()
+	_start_flight(target_global_position, target_scale)
 	_motion_tween.tween_callback(_depart)
 
 
@@ -435,6 +453,38 @@ func _start_motion(
 		"rotation",
 		target_rotation,
 		duration_sec,
+	)
+
+
+func _start_leaving() -> void:
+	_charge_remaining_mess()
+	if is_instance_valid(G.level):
+		G.level.charge_bench_dust(self)
+		G.level.clear_bench_dust()
+	mode = Mode.LEAVING
+	z_index = _LEAVING_Z_INDEX
+	set_physics_process(false)
+
+
+func _start_flight(
+	target_global_position: Vector2,
+	target_scale: Vector2,
+) -> void:
+	_kill_motion_tween()
+	_motion_tween = create_tween()
+	_motion_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_motion_tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	_motion_tween.tween_property(
+		self,
+		"global_position",
+		target_global_position,
+		G.settings.shop_radio_fly_sec,
+	)
+	_motion_tween.parallel().tween_property(
+		self,
+		"scale",
+		target_scale,
+		G.settings.shop_radio_fly_sec,
 	)
 
 

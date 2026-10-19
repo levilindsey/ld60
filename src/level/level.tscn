@@ -74,6 +74,7 @@ scale = Vector2(0.36922747, 0.29375002)
 texture = ExtResource("5_ascnc")
 
 [node name="Radio" parent="." unique_id=675782899 instance=ExtResource("18_radio")]
+unique_name_in_owner = true
 position = Vector2(-290, 145)
 scale = Vector2(0.06, 0.06)
 
