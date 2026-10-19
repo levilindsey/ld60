@@ -1,5 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bc01nx4u2v57p"]
 
+[ext_resource type="Script" uid="uid://dkbgja8ovcp3q" path="res://src/level/bird_smack.gd" id="1_djgon"]
 [ext_resource type="Texture2D" uid="uid://y2d4xpq8kryi" path="res://assets/images/bread/window_smack/frame0000.png" id="1_pmkwv"]
 [ext_resource type="Texture2D" uid="uid://1rd5fw5ndrty" path="res://assets/images/bread/window_smack/frame0001.png" id="2_nel5i"]
 [ext_resource type="Texture2D" uid="uid://dgcgnndc0tdya" path="res://assets/images/bread/window_smack/frame0002.png" id="3_u3fy2"]
@@ -25,21 +26,6 @@
 [ext_resource type="Texture2D" uid="uid://dkjkrysb8y5u8" path="res://assets/images/bread/window_smack/frame0023.png" id="23_rq6c5"]
 [ext_resource type="Texture2D" uid="uid://hfxfc7usw16p" path="res://assets/images/bread/window_smack/frame0024.png" id="24_x24sy"]
 [ext_resource type="Texture2D" uid="uid://b2l3wra637o35" path="res://assets/images/bread/window_smack/frame0025.png" id="25_u6fon"]
-[ext_resource type="Texture2D" uid="uid://cq3cxi8t7vqus" path="res://assets/images/bread/window_smack/frame0026.png" id="26_rjd8f"]
-[ext_resource type="Texture2D" uid="uid://nd1dxkj5d2mg" path="res://assets/images/bread/window_smack/frame0027.png" id="27_xogfb"]
-[ext_resource type="Texture2D" uid="uid://ce8nhyl6rff8j" path="res://assets/images/bread/window_smack/frame0028.png" id="28_dig01"]
-[ext_resource type="Texture2D" uid="uid://cnhw1grt38ko6" path="res://assets/images/bread/window_smack/frame0029.png" id="29_dxpiv"]
-[ext_resource type="Texture2D" uid="uid://c2qafkm55sp03" path="res://assets/images/bread/window_smack/frame0030.png" id="30_81dap"]
-[ext_resource type="Texture2D" uid="uid://bt47q4p5qiu8i" path="res://assets/images/bread/window_smack/frame0031.png" id="31_l61xb"]
-[ext_resource type="Texture2D" uid="uid://d4npgql1vmsnv" path="res://assets/images/bread/window_smack/frame0032.png" id="32_iracy"]
-[ext_resource type="Texture2D" uid="uid://jr6qw25y0la5" path="res://assets/images/bread/window_smack/frame0033.png" id="33_ds0bj"]
-[ext_resource type="Texture2D" uid="uid://s1lmao3xucss" path="res://assets/images/bread/window_smack/frame0034.png" id="34_goojd"]
-[ext_resource type="Texture2D" uid="uid://ckv2do4rhlhj5" path="res://assets/images/bread/window_smack/frame0035.png" id="35_b4211"]
-[ext_resource type="Texture2D" uid="uid://c3ofh7krldapi" path="res://assets/images/bread/window_smack/frame0036.png" id="36_nc134"]
-[ext_resource type="Texture2D" uid="uid://7pqf4e8fmto3" path="res://assets/images/bread/window_smack/frame0037.png" id="37_u3jp4"]
-[ext_resource type="Texture2D" uid="uid://86qayk5qj8d5" path="res://assets/images/bread/window_smack/frame0038.png" id="38_tbfdx"]
-[ext_resource type="Texture2D" uid="uid://c5ijr4ndaxlv8" path="res://assets/images/bread/window_smack/frame0039.png" id="39_0hh5e"]
-[ext_resource type="Texture2D" uid="uid://buqsyl7qok5kj" path="res://assets/images/bread/window_smack/frame0040.png" id="40_ymhsv"]
 [ext_resource type="Texture2D" uid="uid://cv23gicu1xlxf" path="res://assets/images/bread/window_smack/frame0014.png" id="41_tcdhj"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_bird"]
@@ -122,60 +108,16 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": ExtResource("25_u6fon")
-}, {
-"duration": 1.0,
-"texture": ExtResource("26_rjd8f")
-}, {
-"duration": 1.0,
-"texture": ExtResource("27_xogfb")
-}, {
-"duration": 1.0,
-"texture": ExtResource("28_dig01")
-}, {
-"duration": 1.0,
-"texture": ExtResource("29_dxpiv")
-}, {
-"duration": 1.0,
-"texture": ExtResource("30_81dap")
-}, {
-"duration": 1.0,
-"texture": ExtResource("31_l61xb")
-}, {
-"duration": 1.0,
-"texture": ExtResource("32_iracy")
-}, {
-"duration": 1.0,
-"texture": ExtResource("33_ds0bj")
-}, {
-"duration": 1.0,
-"texture": ExtResource("34_goojd")
-}, {
-"duration": 1.0,
-"texture": ExtResource("35_b4211")
-}, {
-"duration": 1.0,
-"texture": ExtResource("36_nc134")
-}, {
-"duration": 1.0,
-"texture": ExtResource("37_u3jp4")
-}, {
-"duration": 1.0,
-"texture": ExtResource("38_tbfdx")
-}, {
-"duration": 1.0,
-"texture": ExtResource("39_0hh5e")
-}, {
-"duration": 1.0,
-"texture": ExtResource("40_ymhsv")
 }],
 "loop": 0,
-"name": &"smack",
+"name": &"fly",
 "speed": 15.0
 }]
 
 [node name="BirdSmack" type="Node2D" unique_id=2100001001]
-visible = false
+script = ExtResource("1_djgon")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2100001002]
+scale = Vector2(0.5, 0.5)
 sprite_frames = SubResource("SpriteFrames_bird")
-animation = &"smack"
+animation = &"fly"

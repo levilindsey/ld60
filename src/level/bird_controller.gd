@@ -6,28 +6,38 @@ extends Node
 ## next repairable. From then on it peeks out of the tree every
 ## so often for the rest of the session; it never peeks before
 ## the smack. The two animations are the `%BirdSmack` and
-## `%BirdPeak` scene instances under the background's Scaler.
+## `%BirdPeak` scene instances outside the window.
 
 
-const REPAIRABLES_BEFORE_SMACK := 2
-const SMACK_DELAY_SEC := 4.0
+const REPAIRABLES_BEFORE_SMACK := 0
+#const SMACK_DELAY_SEC := 8.0
+const SMACK_DELAY_SEC := 1.0
 ## Seconds into the smack animation when the bird reaches the
-## glass (about frame 26 of 41 at 15 fps): the smack and caw
-## sounds land there.
-const SMACK_HIT_SEC := 1.7
-const PEAK_INTERVAL_MIN_SEC := 20.0
-const PEAK_INTERVAL_MAX_SEC := 45.0
+## glass (the splat frame is the 25th shown of 26 at 15 fps):
+## the smack and caw sounds, and the window shake, land there.
+const SMACK_HIT_SEC := 1.6
+#const PEAK_INTERVAL_MIN_SEC := 20.0
+#const PEAK_INTERVAL_MAX_SEC := 45.0
+const PEAK_INTERVAL_MIN_SEC := 4.0
+const PEAK_INTERVAL_MAX_SEC := 5.0
+## Seconds the peek takes to fade out once its animation ends.
+const PEAK_FADE_SEC := 0.5
+## How hard the window jumps when the bird hits it, in pixels.
+## Each hop of the shake is shorter and weaker.
+const WINDOW_SHAKE_PX := 9.0
 
 var _completed_count := 0
 var _has_smacked := false
 var _item: Repairable
+var _window_home := Vector2.ZERO
+var _window_tween: Tween
+var _peak_fade_tween: Tween
 
 
 func _ready() -> void:
-	(%BirdSmack.get_node("AnimatedSprite2D") as AnimatedSprite2D) \
-		.animation_finished.connect(_on_smack_finished)
-	(%BirdPeak.get_node("AnimatedSprite2D") as AnimatedSprite2D) \
-		.animation_finished.connect(_on_peak_finished)
+	(%BirdPeak as Node2D).hide()
+	_window_home = (%Window as Sprite2D).position
+	(%BirdSmack as BirdSmack).finished.connect(_on_smack_done)
 
 
 func _physics_process(_delta: float) -> void:
@@ -59,21 +69,42 @@ func _play_smack() -> void:
 	if _has_smacked:
 		return
 	_has_smacked = true
-	var root := %BirdSmack as Node2D
-	root.show()
-	(root.get_node("AnimatedSprite2D") as AnimatedSprite2D).play(
-		&"smack"
-	)
+	(%BirdSmack as BirdSmack).play_smack()
 	G.time.set_timeout(_play_smack_hit, SMACK_HIT_SEC)
 
 
 func _play_smack_hit() -> void:
 	G.audio.play_sound(&"window_smack")
 	G.audio.play_sound(&"caw")
+	_shake_window()
 
 
-func _on_smack_finished() -> void:
-	(%BirdSmack as Node2D).hide()
+## Kicks the window sprite around its home spot for a few
+## quickly weakening hops, then puts it back.
+func _shake_window() -> void:
+	var window := %Window as Sprite2D
+	if is_instance_valid(_window_tween):
+		_window_tween.kill()
+	_window_tween = create_tween()
+	_window_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	var strength := WINDOW_SHAKE_PX
+	for hop in 6:
+		var offset := Vector2(
+			randf_range(-strength, strength),
+			randf_range(-strength, strength) * 0.6,
+		)
+		_window_tween.tween_property(
+			window, "position", _window_home + offset, 0.045
+		)
+		strength *= 0.62
+	_window_tween.tween_property(
+		window, "position", _window_home, 0.05
+	)
+
+
+## The smack (flight, fall and cleanup) is over: the peeks may
+## start.
+func _on_smack_done() -> void:
 	_roll_next_peak()
 
 
@@ -88,12 +119,38 @@ func _roll_next_peak() -> void:
 
 func _play_peak() -> void:
 	var root := %BirdPeak as Node2D
+	var sprite := root.get_node("AnimatedSprite2D") as AnimatedSprite2D
+	if is_instance_valid(_peak_fade_tween):
+		_peak_fade_tween.kill()
+	# Always back to full strength for the new peek.
+	root.modulate.a = 1.0
 	root.show()
-	(root.get_node("AnimatedSprite2D") as AnimatedSprite2D).play(
-		&"peak"
+	sprite.play(&"peak")
+	# The peek lasts one pass through its frames, loop or not,
+	# then fades out.
+	var frames := sprite.sprite_frames
+	var cycle_sec := (
+		float(frames.get_frame_count(&"peak"))
+		/ frames.get_animation_speed(&"peak")
 	)
+	G.time.set_timeout(_fade_peak_out, cycle_sec)
 
 
-func _on_peak_finished() -> void:
-	(%BirdPeak as Node2D).hide()
+func _fade_peak_out() -> void:
+	var root := %BirdPeak as Node2D
+	_peak_fade_tween = create_tween()
+	_peak_fade_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_peak_fade_tween.set_trans(Tween.TRANS_QUAD).set_ease(
+		Tween.EASE_OUT
+	)
+	_peak_fade_tween.tween_property(
+		root, "modulate:a", 0.0, PEAK_FADE_SEC
+	)
+	_peak_fade_tween.tween_callback(_finish_peak)
+
+
+func _finish_peak() -> void:
+	var root := %BirdPeak as Node2D
+	(root.get_node("AnimatedSprite2D") as AnimatedSprite2D).stop()
+	root.hide()
 	_roll_next_peak()

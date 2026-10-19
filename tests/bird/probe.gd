@@ -2,8 +2,9 @@ extends "res://tests/probe_base.gd"
 ## Bread the bird. Boots the game, checks the bird stays hidden
 ## until enough repairables are through, then (standing in for
 ## the outbox) tells the controller the quota is met and the
-## next item has landed: the smack plays, hides, and arms the
-## peeks. One peek is then played directly to check its scene.
+## next item has landed: the smack plays, falls to its marker,
+## cleans itself up, and arms the peeks. One peek is then
+## played directly to check its scene.
 ##
 ## Run it with `tests/run.ps1 -Name bird`, or from the repo root
 ## (PowerShell):
@@ -38,10 +39,10 @@ func _run() -> void:
 		return
 	_controller = G.level.get_node("BirdController") as BirdController
 	_smack = G.level.get_node(
-		"Background/OutsideStuff/Scaler/BirdSmack"
+		"Background/OutsideStuff/BirdSmack"
 	) as Node2D
 	_peak = G.level.get_node(
-		"Background/OutsideStuff/Scaler/BirdPeak"
+		"Background/OutsideStuff/BirdPeak"
 	) as Node2D
 	if not _expect(
 		is_instance_valid(_controller)
@@ -77,12 +78,26 @@ func _run() -> void:
 		.is_playing(),
 		"the smack animation is playing",
 	)
+	var smack_sprite := _smack.get_node(
+		"AnimatedSprite2D"
+	) as AnimatedSprite2D
+	_expect(
+		await _wait_until(
+			func() -> bool: return smack_sprite.position.length() > 20.0,
+			roundi(8.0 * Engine.physics_ticks_per_second),
+		),
+		"the bird falls from the glass when the animation finishes",
+	)
 	_expect(
 		await _wait_until(
 			func() -> bool: return not _smack.visible,
 			roundi(6.0 * Engine.physics_ticks_per_second),
 		),
-		"the smack hides again when it finishes",
+		"the smack hides again after the fall",
+	)
+	_expect(
+		smack_sprite.position == Vector2.ZERO,
+		"the bird-smack cleans itself up after the fall",
 	)
 	_expect(_controller._has_smacked, "the smack is marked as shown")
 	# The peek loop is armed now; play one peek directly rather
@@ -99,7 +114,23 @@ func _run() -> void:
 			func() -> bool: return not _peak.visible,
 			roundi(8.0 * Engine.physics_ticks_per_second),
 		),
-		"the peek hides again when it finishes",
+		"the peek fades out and hides when it finishes",
+	)
+	_expect(
+		_peak.modulate.a < 0.05,
+		"the peek ends the fade transparent",
+	)
+	_controller._play_peak()
+	_expect(
+		_peak.visible and _peak.modulate.a == 1.0,
+		"the next peek starts fully opaque again",
+	)
+	_expect(
+		await _wait_until(
+			func() -> bool: return not _peak.visible,
+			roundi(8.0 * Engine.physics_ticks_per_second),
+		),
+		"the second peek fades out and hides too",
 	)
 
 
