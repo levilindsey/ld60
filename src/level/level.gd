@@ -46,7 +46,13 @@ const _BENCH_DUST_SCENE: PackedScene = preload(
 )
 ## How far from the spew point a bench dust clump may land,
 ## in world pixels.
-const _BENCH_DUST_SPREAD_PX := 44.0
+## How far spewed dust scatters sideways from the knock, and
+## how far below it most of it settles on the bench. One
+## clump in `_BENCH_DUST_ON_ITEM_SHARE` instead lands close
+## to the knock, on the item itself.
+const _BENCH_DUST_SPREAD_X_PX := 120.0
+const _BENCH_DUST_SETTLE_Y_PX := 70.0
+const _BENCH_DUST_ON_ITEM_SHARE := 0.25
 
 
 var has_started := false
@@ -1807,10 +1813,22 @@ func spawn_bench_dust(
 		_get_bench_dust_holder().add_child(dust)
 		var target := global_pos
 		if count > 1:
-			var angle := TAU * float(index) / float(count)
-			angle += randf_range(-0.35, 0.35)
-			var radius := randf_range(14.0, _BENCH_DUST_SPREAD_PX)
-			target += Vector2.from_angle(angle) * radius
+			if randf() < _BENCH_DUST_ON_ITEM_SHARE:
+				# On the item: a tight dusting around the knock.
+				target += Vector2(
+					randf_range(-38.0, 38.0),
+					randf_range(-26.0, 26.0),
+				)
+			else:
+				# On the bench: a wide, flat scatter, settling
+				# mostly below the knock.
+				target += Vector2(
+					randf_range(
+						-_BENCH_DUST_SPREAD_X_PX,
+						_BENCH_DUST_SPREAD_X_PX,
+					),
+					randf_range(-12.0, _BENCH_DUST_SETTLE_Y_PX),
+				)
 		dust.global_position = clamp_to_bench(target)
 		dust.reset_physics_interpolation()
 		_bench_dust.append(dust)

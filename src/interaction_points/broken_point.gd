@@ -34,6 +34,12 @@ var glue_decal: Sprite2D
 var _dot_drift := Vector2.ZERO
 var _dot_drift_velocity := Vector2.ZERO
 var _drift_retarget_left_sec := 0.0
+## Time left in which the dot cannot fail the hold. A hold
+## starts with the piece up to `broken_hold_start_radius_px`
+## away and the hand needs `broken_hold_align_sec` to ease
+## it onto the centre, so the start is forgiven while that
+## tween runs.
+var _hold_grace_left_sec := 0.0
 var _home_z_index := 0
 var _home_z_as_relative := true
 
@@ -92,9 +98,13 @@ func _draw_scar() -> void:
 
 
 func _draw_hold() -> void:
-	var inner := G.settings.broken_hold_inner_radius_px
-	var outer := G.settings.broken_hold_outer_radius_px
-	var dot_radius := G.settings.broken_hold_dot_radius_px
+	# The settings' radii are world pixels; this drawing is
+	# in the point's local units, which a scaled item makes
+	# much smaller than a world pixel.
+	var per_world := _local_per_world()
+	var inner := G.settings.broken_hold_inner_radius_px * per_world
+	var outer := G.settings.broken_hold_outer_radius_px * per_world
+	var dot_radius := G.settings.broken_hold_dot_radius_px * per_world
 	var state := get_hold_state()
 	var band_color := Color(0.45, 0.95, 0.5, 0.9)
 	if state == 1:
@@ -124,7 +134,12 @@ func _draw_hold() -> void:
 			4.0,
 			true,
 		)
-	draw_circle(ring + get_dot_offset(), dot_radius, band_color)
+	var dot_local := (
+		global_transform.affine_inverse().basis_xform(
+			get_dot_offset()
+		)
+	)
+	draw_circle(ring + dot_local, dot_radius, band_color)
 
 
 ## The piece broke off again: the point needs glue and the
@@ -188,15 +203,27 @@ func get_hold_state() -> int:
 	return 2
 
 
-## The dot, in this point's own pixels: the held piece's
-## offset, amplified, plus its own drift.
+## The dot, in world pixels: the held piece's offset from
+## this point, amplified, plus its own drift. World pixels
+## on purpose: the point's local units are the item's art
+## units, so on a scaled item (the piano at 0.11) a piece a
+## few world pixels off centre read as hundreds of dot
+## pixels and the hold failed on its first frame.
 func get_dot_offset() -> Vector2:
 	var offset := Vector2.ZERO
 	if is_instance_valid(piece):
-		offset = to_local(piece.global_position)
+		offset = piece.global_position - global_position
 	return (
 		offset * G.settings.broken_hold_dot_scale + _dot_drift
 	)
+
+
+## How many of this point's local units make one world
+## pixel. The hold ring's radii are world pixels, so the
+## drawing converts through this on a scaled item.
+func _local_per_world() -> float:
+	var world_scale := global_transform.get_scale().x
+	return 1.0 / maxf(absf(world_scale), 0.001)
 
 
 ## The drift alone, in this point's pixels. A player (or a
@@ -225,6 +252,7 @@ func _try_start_hold() -> void:
 		return
 	is_holding = true
 	hold_progress_sec = 0.0
+	_hold_grace_left_sec = G.settings.broken_hold_align_sec
 	_dot_drift = Vector2.ZERO
 	_dot_drift_velocity = Vector2.ZERO
 	_drift_retarget_left_sec = 0.0
@@ -245,6 +273,12 @@ func _step_hold(delta: float) -> void:
 		or G.level.hand.get_loose_broken_piece() != piece
 	):
 		_end_hold()
+		return
+	if _hold_grace_left_sec > 0.0:
+		# The hand is still easing the piece onto the
+		# centre: the dot cannot fail, bank progress or
+		# start drifting yet.
+		_hold_grace_left_sec -= delta
 		return
 	_update_drift(delta)
 	match get_hold_state():
@@ -291,6 +325,7 @@ func _restore_draw_order() -> void:
 func _end_hold() -> void:
 	is_holding = false
 	hold_progress_sec = 0.0
+	_hold_grace_left_sec = 0.0
 	_dot_drift = Vector2.ZERO
 	_dot_drift_velocity = Vector2.ZERO
 	_restore_draw_order()

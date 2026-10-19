@@ -35,44 +35,47 @@ const _TURN_MIN_RAD := 0.2
 const _TURN_MAX_RAD := 0.5
 ## Real part art per kind, where it exists: the overlay image,
 ## the piece's region on it, and how long its longer side
-## runs on the bench in world pixels. Kinds with no art yet
-## keep the placeholder polygon. A new kind gets art by
-## adding a row here; nothing else needs to change.
+## runs on the bench in world pixels. That bench length is
+## the fitted piece's own world length (its region times its
+## item's scale), so a part is the same size in the drawer,
+## in the hand and in its socket. Kinds with no art yet keep
+## the placeholder polygon. A new kind gets art by adding a
+## row here; nothing else needs to change.
 const _ART := {
 	Type.TUBE: [
 		"res://assets/images/repairables/radio_good_bulb.png",
 		Rect2(2118, 1175, 455, 994),
-		46.0,
+		119.0,
 	],
 	Type.TV_CONTROLS: [
 		"res://assets/images/repairables/tv_controls.png",
 		Rect2(2217, 919, 567, 1015),
-		46.0,
+		132.0,
 	],
 	Type.LETTER_KEY: [
 		"res://assets/images/repairables/keyss_letter_key.png",
 		Rect2(1120, 1501, 120, 94),
-		36.0,
+		16.0,
 	],
 	Type.SPACEBAR: [
 		"res://assets/images/repairables/keyss_spacebar.png",
 		Rect2(1296, 1562, 908, 100),
-		54.0,
+		118.0,
 	],
 	Type.LED: [
 		"res://assets/images/repairables/piano_good_led.png",
 		Rect2(227, 718, 418, 110),
-		42.0,
+		46.0,
 	],
 	Type.JOYSTICK: [
 		"res://assets/images/repairables/atari_joystick_good.png",
 		Rect2(1235, 467, 836, 995),
-		46.0,
+		159.0,
 	],
 	Type.CIRCUIT: [
 		"res://assets/images/repairables/gamenwatch_chip_good.png",
 		Rect2(839, 809, 537, 765),
-		46.0,
+		99.0,
 	],
 	Type.CRYSTAL: [
 		"res://assets/images/repairables/shrinkray_fixed_crystal.png",
@@ -125,6 +128,18 @@ func _ready() -> void:
 ## area when it comes to rest, and it sets how much the part
 ## bounces and skids when it lands there.
 func get_radius_px() -> float:
+	var sprite := get_node("%Sprite") as Sprite2D
+	if is_instance_valid(sprite) and sprite.visible:
+		var rect := sprite.get_rect()
+		var radius := 0.0
+		for corner in [
+			rect.position,
+			rect.end,
+			Vector2(rect.position.x, rect.end.y),
+			Vector2(rect.end.x, rect.position.y),
+		]:
+			radius = maxf(radius, (corner * sprite.scale).length())
+		return radius
 	var radius := 0.0
 	for point in get_polygon(type):
 		radius = maxf(radius, point.length())

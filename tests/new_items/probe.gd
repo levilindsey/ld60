@@ -1,4 +1,4 @@
-extends "res://tests/probe_base.gd"
+﻿extends "res://tests/probe_base.gd"
 ## The TV, keyboard and piano repairables. Boots the game,
 ## then loads each new item scene onto the bench and works
 ## its points directly: the TV antenna straightens and swaps
@@ -49,6 +49,24 @@ func _check_tv() -> void:
 	var item := _spawn("res://src/repairables/tv_repairable.tscn")
 	if not _expect(is_instance_valid(item), "the TV loads"):
 		return
+	var tv := item as TVRepairable
+	_expect(is_instance_valid(tv), "the TV has its screen script")
+	if is_instance_valid(tv):
+		_expect(
+			tv.static_frames.has(tv.screen.texture),
+			"the screen shows static before the fix",
+		)
+		var first_frame := tv.screen.texture
+		var alternated := false
+		for _wait in 40:
+			await get_tree().create_timer(0.05).timeout
+			if tv.screen.texture != first_frame:
+				alternated = tv.static_frames.has(tv.screen.texture)
+				break
+		_expect(
+			alternated,
+			"the static frames alternate while unfixed",
+		)
 	var antenna := _find_point(item, BentPart) as BentPart
 	_expect(is_instance_valid(antenna), "the TV has a bent antenna")
 	if is_instance_valid(antenna):
@@ -97,6 +115,24 @@ func _check_tv() -> void:
 		_expect(
 			whack.mode == InteractionPoint.Mode.FINISHED,
 			"the final whack finishes its point",
+		)
+	if is_instance_valid(tv):
+		_expect(tv.has_finished, "the worked TV finishes")
+		await get_tree().create_timer(0.45).timeout
+		_expect(
+			tv.fixed_frames.has(tv.screen.texture),
+			"the screen shows the fixed channel after the fix",
+		)
+		var fixed_frame := tv.screen.texture
+		var alternated := false
+		for _wait in 40:
+			await get_tree().create_timer(0.05).timeout
+			if tv.screen.texture != fixed_frame:
+				alternated = tv.fixed_frames.has(tv.screen.texture)
+				break
+		_expect(
+			alternated,
+			"the fixed channel frames keep alternating",
 		)
 	item.queue_free()
 	await _physics_frames(2)

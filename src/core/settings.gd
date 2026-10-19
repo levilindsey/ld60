@@ -444,7 +444,7 @@ enum FirstRepairable {
 ## Each twist drifts the tip by a random fraction of the screw's seat
 ## tolerance in this range. The most is over 1, so one twist can unseat
 ## a tip the player does not correct during the twist.
-@export var flathead_slip_min := 0.85
+@export var flathead_slip_min := 0.70
 @export var flathead_slip_max := 1.02
 ## A touch drag moves the flathead's tip this many times as far as the
 ## finger (docs/design/flathead.md "Correcting"). Mouse motion is 1 to 1.

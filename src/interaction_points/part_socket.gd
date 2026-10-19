@@ -14,6 +14,12 @@ extends InteractionPoint
 const _MAX_SLIDE_OUT_PX := 8.0
 ## How far the broken part shifts sideways per radian it rocks.
 const _ROCK_SHIFT_PX := 20.0
+## How far above the part the yank arrows float while it is
+## being tugged, in world pixels, like the glue hold's ring.
+## They only show mid-tug, and they keep world size and
+## heading whatever the item's scale and turn.
+const _INDICATOR_OFFSET_PX := 64.0
+const _INDICATOR_HALF_SPAN_PX := 30.0
 
 ## The part kind this socket takes.
 @export var accepted_part := Part.Type.GEAR
@@ -80,10 +86,10 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	# The locking fastener can change this at any time.
 	_refresh_yank_indicator()
 	if not is_instance_valid(_yank_indicator) or not _yank_indicator.visible:
 		return
+	_place_yank_indicator()
 	_yank_time += delta
 	var wave := sin(_yank_time * TAU * 2.5)
 	if is_instance_valid(_yank_left):
@@ -230,7 +236,7 @@ func _build_yank_indicator() -> void:
 		[Vector2(6, -7), Vector2(-6, 0), Vector2(6, 7)]
 	)
 	_yank_left.color = Color(1.0, 0.92, 0.4, 1.0)
-	_yank_left.position = Vector2(-30, 0)
+	_yank_left.position = Vector2(-_INDICATOR_HALF_SPAN_PX, 0)
 	_yank_indicator.add_child(_yank_left)
 	_yank_right = Polygon2D.new()
 	_yank_right.name = "YankRight"
@@ -238,15 +244,32 @@ func _build_yank_indicator() -> void:
 		[Vector2(-6, -7), Vector2(6, 0), Vector2(-6, 7)]
 	)
 	_yank_right.color = Color(1.0, 0.92, 0.4, 1.0)
-	_yank_right.position = Vector2(30, 0)
+	_yank_right.position = Vector2(_INDICATOR_HALF_SPAN_PX, 0)
 	_yank_indicator.add_child(_yank_right)
 
 
-## The arrows show while a part can be tugged, and hide
-## once it is out or fitted.
+## The arrows show only while the part is being tugged:
+## never as an idle hint beforehand, and they hide once it
+## is out or fitted.
 func _refresh_yank_indicator() -> void:
 	if is_instance_valid(_yank_indicator):
-		_yank_indicator.visible = has_tuggable_part()
+		_yank_indicator.visible = _is_wiggling
+
+
+## Floats the arrows above the part in world terms: the
+## offset, size and heading stay the screen's, whatever
+## scale and turn the item gives this socket.
+func _place_yank_indicator() -> void:
+	var inverse := global_transform.affine_inverse()
+	_yank_indicator.position = inverse.basis_xform(
+		Vector2(0.0, -_INDICATOR_OFFSET_PX)
+	)
+	_yank_indicator.rotation = -global_rotation
+	var world_scale := global_transform.get_scale()
+	_yank_indicator.scale = Vector2(
+		1.0 / maxf(absf(world_scale.x), 0.001),
+		1.0 / maxf(absf(world_scale.y), 0.001),
+	)
 
 
 ## The broken part pops out and flies off as scrap. A yank costs a

@@ -97,8 +97,8 @@ func _unscrew_stick() -> void:
 		"with its screw out, the stick can be tugged",
 	)
 	_expect(
-		_socket.is_yank_indicator_visible(),
-		"the yank arrows show once the stick is free to tug",
+		not _socket.is_yank_indicator_visible(),
+		"the yank arrows stay hidden until the stick is tugged",
 	)
 	await _put_tool_away(_driver)
 
@@ -110,6 +110,10 @@ func _yank_and_refit() -> void:
 	_expect(
 		absf(broken_part.rotation) > 0.01,
 		"the dead joystick rocks with the drag",
+	)
+	_expect(
+		_socket.is_yank_indicator_visible(),
+		"the yank arrows show while the stick is being tugged",
 	)
 	for swing in 7:
 		var offset := 25.0 if swing % 2 == 0 else -25.0

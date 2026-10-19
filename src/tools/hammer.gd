@@ -16,8 +16,10 @@ enum WindPhase {
 ## Props outside the item that the hammer can hit, like the radio. Each
 ## needs `is_struck_at(global_point) -> bool` and `on_struck(charge)`.
 const STRIKABLE_PROPS_GROUP := &"strikable_props"
-## How far the held-at-full hammer trembles, in pixels each way.
-const MAX_TREMBLE_PX := 4.5
+## How far the hammer jitters at full charge, in pixels each
+## way. It jitters through the whole wind up, the amplitude
+## rising with the charge from nothing to this.
+const MAX_TREMBLE_PX := 18.0
 ## The shrunken hammer's size, as a share of its own.
 const _TINY_SCALE := 0.4
 const _SHRINK_SEC := 0.35
@@ -60,14 +62,13 @@ func _physics_process(delta: float) -> void:
 	var windup := deg_to_rad(G.settings.hammer_max_windup_deg) * charge
 	art.rotation = _art_home_rotation + windup
 	art.scale = Vector2.ONE * (1.0 + 0.15 * charge)
-	if charge >= 1.0:
-		# The held full swing trembles hard in the hand.
-		art.position = Vector2(
-			randf_range(-MAX_TREMBLE_PX, MAX_TREMBLE_PX),
-			randf_range(-MAX_TREMBLE_PX, MAX_TREMBLE_PX),
-		)
-	else:
-		art.position = Vector2.ZERO
+	# The jitter runs the whole wind up, growing with the
+	# charge: still at the start, shaking hard at full.
+	var tremble := MAX_TREMBLE_PX * charge
+	art.position = Vector2(
+		randf_range(-tremble, tremble),
+		randf_range(-tremble, tremble),
+	)
 	queue_redraw()
 
 

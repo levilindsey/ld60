@@ -5,6 +5,15 @@ extends DirtSpot
 ## the shared `DirtSpot` base.
 
 
+## Ghost copies of the clump's art shed on each puff: they
+## drift the way the air pushes, swell up and fade out. This
+## is the whole dust-blow effect; a shader cloud would fight
+## the hand-drawn decals.
+const _PUFF_GROUP := &"dust_puff"
+const _BURST_PUFF_COUNT := 5
+const _PUFF_MIN_SEC := 0.45
+const _PUFF_MAX_SEC := 0.7
+
 ## How much dust there is. More takes more puffs and draws a
 ## bigger clump.
 @export var amount := 1.0
@@ -37,6 +46,7 @@ func on_sprayed(strength: float, direction: Vector2, delta: float) -> void:
 	var damage := G.settings.air_blow_rate * strength * delta
 	hit_points_left = maxf(hit_points_left - damage, 0.0)
 	_wobble()
+	_spawn_puff(direction, 0.55)
 	if hit_points_left <= 0.0:
 		_blow_off(direction)
 	else:
@@ -48,8 +58,70 @@ func on_poked() -> void:
 	super.on_poked()
 
 
+## Sheds `count` ghost copies of the clump's art into the
+## level. Each drifts along `direction` (fanned out a bit),
+## swells to up to twice its size, turns a little and fades
+## away, then frees itself. `alpha_scale` dims the shed
+## wisps against the burst when the clump goes.
+func _spawn_puff(direction: Vector2, alpha_scale: float) -> void:
+	if not is_instance_valid(G.level) or not is_instance_valid(art):
+		return
+	for _index in _BURST_PUFF_COUNT if alpha_scale >= 1.0 else 1:
+		var ghost := Sprite2D.new()
+		ghost.texture = art.texture
+		ghost.region_enabled = art.region_enabled
+		ghost.region_rect = art.region_rect
+		ghost.centered = art.centered
+		ghost.offset = art.offset
+		ghost.flip_h = art.flip_h
+		ghost.flip_v = art.flip_v
+		# Normal blending: the source art's multiply decal
+		# material would darken whatever bench it crosses.
+		ghost.material = null
+		ghost.modulate = Color(
+			art.modulate.r,
+			art.modulate.g,
+			art.modulate.b,
+			art.modulate.a * 0.55 * alpha_scale,
+		)
+		ghost.global_position = global_position
+		ghost.rotation = art.rotation + randf_range(-0.4, 0.4)
+		var start_scale := _art_home_scale * randf_range(0.5, 0.8)
+		ghost.scale = start_scale
+		ghost.z_index = 18
+		ghost.z_as_relative = false
+		ghost.add_to_group(_PUFF_GROUP)
+		G.level.add_child(ghost)
+		var travel := direction.rotated(randf_range(-0.55, 0.55))
+		var target := (
+			ghost.global_position
+			+ travel * randf_range(45.0, 95.0)
+			+ Vector2(0.0, randf_range(-28.0, -8.0))
+		)
+		var duration := randf_range(_PUFF_MIN_SEC, _PUFF_MAX_SEC)
+		var tween := ghost.create_tween()
+		tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+		tween.set_parallel()
+		tween.tween_property(ghost, "global_position", target, duration)
+		tween.tween_property(
+			ghost,
+			"scale",
+			start_scale * randf_range(1.7, 2.3),
+			duration,
+		)
+		tween.tween_property(
+			ghost,
+			"rotation",
+			ghost.rotation + randf_range(-0.7, 0.7),
+			duration,
+		)
+		tween.tween_property(ghost, "modulate:a", 0.0, duration)
+		tween.chain().tween_callback(ghost.queue_free)
+
+
 func _blow_off(direction: Vector2) -> void:
 	_is_gone = true
+	_spawn_puff(direction, 1.0)
 	G.audio.play_sound(&"whoosh")
 	if is_instance_valid(_fly_tween):
 		_fly_tween.kill()

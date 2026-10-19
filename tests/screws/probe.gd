@@ -24,10 +24,10 @@ const _DRIFT_TABLE_SEED := 6060
 ## percent that unseat on twist 1, the percent that unseat on twist 2,
 ## the percent that unseat within 4.
 const _BIAS_TABLE := [
-	[0.5, 2, 11.6, 44.2, 82.8],
-	[0.8, 2, 11.8, 60.0, 93.1],
-	[0.9, 2, 11.9, 72.1, 97.7],
-	[1.0, 2, 11.8, 88.2, 100.0],
+	[0.5, 2, 6.3, 46.9, 81.2],
+	[0.8, 2, 6.3, 63.7, 92.3],
+	[0.9, 2, 6.2, 76.9, 97.6],
+	[1.0, 2, 6.3, 93.7, 100.0],
 ]
 ## The table rounds to a tenth of a percent, and the probe samples fewer
 ## screws than the table did.

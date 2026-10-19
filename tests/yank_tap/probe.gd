@@ -51,10 +51,15 @@ func _ready() -> void:
 		_finish(1)
 		return
 	_expect(
-		_socket.is_yank_indicator_visible(),
-		"the yank arrows show while the part can be tugged",
+		not _socket.is_yank_indicator_visible(),
+		"the yank arrows stay hidden before the part is tugged",
 	)
-	await _press_at(_socket.global_position)
+	await _press_down(_socket.global_position)
+	_expect(
+		_socket.is_yank_indicator_visible(),
+		"the yank arrows show while the part is being tugged",
+	)
+	await _release_at(_socket.global_position)
 	_expect(
 		_socket._wiggle.swings == 1,
 		"one tap is one wiggle swing",
