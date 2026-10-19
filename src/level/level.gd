@@ -336,6 +336,22 @@ func drop_item(
 	if _is_at_ship_spot(item):
 		_ship(item)
 		return
+	if not item.has_finished:
+		# A repositioning drag of the item's main body: let go
+		# inside the workable area and the item rests where it
+		# lies, straightening up. Let go outside it, it flies
+		# back in like any loose piece.
+		if _start_bench_return(
+			item,
+			item,
+			item.global_position,
+			item.get_bench_radius_px(),
+			Vector2.INF,
+			release_velocity,
+		):
+			return
+		item.return_to(item.global_position)
+		return
 	if try_return_repairable(item, release_velocity):
 		return
 	var margin_px := (

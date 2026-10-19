@@ -107,12 +107,15 @@ sequence below is still design only.
 Open values: the glitch delay X, the reward card's art, and
 whether the radio repair interrupts or follows the queue.
 
-## Dragging the main body (design only this pass)
+## Dragging the main body
 
-Not built yet. Intended: the empty hand drags the main
-repairable body to reposition it on the bench at any time,
-finished or not; the body never rotates. Layers, points and
-the drop shadow follow as children. Needs care around taps
-that open drawers, press points, or grab loose pieces, and
-around the finished item's outbox drag, which this would
-generalise.
+Built (LX70). The empty hand drags the main repairable body
+(its innermost layer, once that layer is exposed) to
+reposition the item on the bench at any time mid-repair;
+layers, points and the drop shadow follow as children of the
+item. It rests where it is let go inside the workable area,
+straightening up, and flies back in when let go outside it,
+like a loose layer. Presses on points and sockets still land
+on them, drawer taps still land on drawers, and the finished
+item keeps its drag-to-the-outbox press, which this
+generalises.

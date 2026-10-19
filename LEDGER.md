@@ -111,9 +111,6 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   overlap-aware draw order inside each group (a piece rises
   only once dragged clear of what covers it).
 
-- **LX70** · Dragging/repositioning the main repairable body (never
-  rotating it) is designed only, not built. Design:
-  `docs/design/new_items.md`.
 - **LX71** · Authored Shapes now exist on points and broken pieces
   (TV antenna, piano key, Atari socket's good/bad parts). The other
   BrokenPieces (radio dial, toaster wheels) still grab by their
@@ -208,6 +205,13 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX70** · Dragging the main repairable body: the empty hand
+  drags the item by its innermost layer once exposed, at any
+  time mid-repair; it rests where it is dropped inside the
+  workable area and flies back in when let go outside it, like
+  a loose layer. Points, sockets and the finished item's
+  outbox drag keep their presses. Probe: `tests/misuse/`.
+  Done (2026-10-19).
 - **LX71** · Gear, bolt and nut art wired in as real parts (new
   BOLT/NUT kinds with dedicated scenes; the shrink ray's hook
   socket takes a bolt now). There is no spring part: the SPRING

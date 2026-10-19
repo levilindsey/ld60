@@ -420,6 +420,7 @@ func _handle_press(global_point: Vector2) -> bool:
 		or _press_rack(global_point)
 		or _press_with_tool(global_point)
 		or _press_loose_layer(global_point)
+		or _press_item_body(global_point)
 		or _press_with_empty_hand(global_point)
 	)
 
@@ -498,6 +499,45 @@ func _press_loose_layer(global_point: Vector2) -> bool:
 	_loose_layer = layer
 	_loose_drag_offset = layer.global_position - global_point
 	return true
+
+
+## Over the item's main body (its innermost layer, once it is the
+## exposed one): start dragging the whole item to a new spot on
+## the bench, empty handed, the way a loose layer is dragged.
+## Points and sockets on the body still take their presses, and
+## a finished item keeps its own drag-to-the-outbox press.
+func _press_item_body(global_point: Vector2) -> bool:
+	var item := _get_body_drag_item(global_point)
+	if not is_instance_valid(item):
+		return false
+	drag_item(item)
+	return true
+
+
+## The item whose main body a press at a world position would
+## pick up, or null: the active item, mid-repair and unfinished,
+## with its innermost layer exposed and the press on that
+## layer's art but not on any point or socket there.
+func _get_body_drag_item(global_point: Vector2) -> Repairable:
+	if not is_empty() or is_instance_valid(_loose_layer):
+		return null
+	var item := G.level.active_repairable
+	if (
+		not is_instance_valid(item)
+		or item.mode != Repairable.Mode.UNDER_REPAIR
+		or item.has_finished
+	):
+		return null
+	var body := item.get_exposed_layer()
+	if (
+		not is_instance_valid(body)
+		or not body.is_innermost()
+		or not body.has_point(global_point)
+		or is_instance_valid(find_point(global_point))
+		or is_instance_valid(_find_socket(global_point))
+	):
+		return null
+	return item
 
 
 ## While a drawer is open in the center (or still on its way), it
@@ -1054,6 +1094,8 @@ func _can_take(global_point: Vector2) -> bool:
 			and exposed.is_loose()
 			and exposed.has_point(global_point)
 		):
+			return true
+		if is_instance_valid(_get_body_drag_item(global_point)):
 			return true
 	var manual := (
 		G.level.get_node_or_null("InstructionManual") as InstructionManual

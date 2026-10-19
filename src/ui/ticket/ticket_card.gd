@@ -65,7 +65,7 @@ const _SLAP_ROCK_RADIANS := 0.03
 ## Bounces as the ticket settles from the slap.
 const _SLAP_BOUNCES := 2.5
 ## How long the finished receipt stays before it leaves.
-const _DONE_HOLD_SEC := 2.0
+const _DONE_HOLD_SEC := 4.0
 ## The complaint's font size, and the smallest it shrinks to so a long
 ## complaint still fits on the paper.
 const _COMPLAINT_FONT_SIZE := 40
