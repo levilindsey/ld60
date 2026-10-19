@@ -59,6 +59,10 @@ const _SLAP_ROCK_RADIANS := 0.03
 const _SLAP_BOUNCES := 2.5
 ## How long the finished receipt stays before it leaves.
 const _DONE_HOLD_SEC := 2.0
+## The complaint's font size, and the smallest it shrinks to so a long
+## complaint still fits on the paper.
+const _COMPLAINT_FONT_SIZE := 40
+const _COMPLAINT_MIN_FONT_SIZE := 24
 
 
 ## The pose the ticket lifts to as the receipt.
@@ -93,6 +97,7 @@ func _ready() -> void:
 ## that is still showing swaps its text and drops again.
 func show_item(complaint: String) -> void:
 	%ComplaintLabel.text = complaint
+	_fit_complaint()
 	%TimeLabel.text = ""
 	%Stamp.visible = false
 	_stop_motion()
@@ -332,6 +337,24 @@ func _stop_motion() -> void:
 	G.time.clear_timeout(_timeout_id)
 	_timeout_id = -1
 	_stop_lift()
+
+
+## Shrinks the complaint's font until it fits in its area.
+func _fit_complaint() -> void:
+	var font: Font = %ComplaintLabel.get_theme_font(&"font")
+	var area: Vector2 = %Contents.size
+	var font_size := _COMPLAINT_FONT_SIZE
+	while font_size > _COMPLAINT_MIN_FONT_SIZE:
+		var text_size := font.get_multiline_string_size(
+			%ComplaintLabel.text,
+			HORIZONTAL_ALIGNMENT_LEFT,
+			area.x,
+			font_size,
+		)
+		if text_size.y <= area.y:
+			break
+		font_size -= 2
+	%ComplaintLabel.add_theme_font_size_override(&"font_size", font_size)
 
 
 func _set_ink_progress(progress: float) -> void:
