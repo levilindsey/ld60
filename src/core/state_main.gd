@@ -76,8 +76,8 @@ func transition(to_state: State) -> void:
 			if from_state == State.TITLE or from_state == State.CREDITS:
 				G.audio.play_sound(&"humming")
 		State.PAUSE:
+			# The radio keeps playing under the pause screen.
 			get_tree().paused = true
-			G.audio.fade_to_menu_theme()
 		State.CREDITS:
 			if not G.session.is_game_over:
 				G.game_panel.end_game()

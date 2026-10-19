@@ -97,9 +97,10 @@ func stop_sound(sound_name: StringName) -> void:
 
 
 func fade_to_theme(theme_name: String) -> void:
-	if is_instance_valid(current_theme):
+	var next_theme: AudioStreamPlayer = STREAM_PLAYERS_BY_NAME[theme_name]
+	if is_instance_valid(current_theme) and current_theme != next_theme:
 		fade_out(current_theme)
-	current_theme = STREAM_PLAYERS_BY_NAME[theme_name]
+	current_theme = next_theme
 	fade_in(current_theme, initial_volumes[theme_name])
 
 
