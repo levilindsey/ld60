@@ -100,18 +100,22 @@ func _run() -> void:
 		_hand.held == glue, "the hand holds the glue bottle"
 	)
 	_expect(_point.is_exposed(), "the fallen point is exposed")
+	# A click the bottle's working end misses glues nothing.
 	await _press_down(_point.global_position)
-	await _seconds(0.6)
+	await _seconds(0.3)
 	await _release_at(_point.global_position)
+	_expect(
+		not _point.has_glue,
+		"a click the nozzle misses glues nothing",
+	)
+	await _squeeze_glue_at(glue, _point.global_position, 0.6)
 	_expect(_point.has_glue, "glue sticks to the broken point")
 
 	# Glue off the point smears, free until the item finishes.
 	var cover := _item.layers[_item.layers.size() - 1]
 	var smear_spot := cover.to_global(Vector2(-38, 0))
 	var defects_before := _item.quality.get_defect_count()
-	await _press_down(smear_spot)
-	await _seconds(0.9)
-	await _release_at(smear_spot)
+	await _squeeze_glue_at(glue, smear_spot, 0.9)
 	var smear := _find_smear(cover)
 	if _expect(
 		is_instance_valid(smear), "off target glue leaves a smear"
@@ -165,6 +169,15 @@ func _run() -> void:
 		await _wait_for_hold_start(),
 		"holding the piece on the point starts the hold",
 	)
+	_expect(
+		_point.z_index == 40 and not _point.z_as_relative,
+		"the hold game draws over everything else",
+	)
+	_expect(
+		_point.get_ring_global_position().y
+		< _point.global_position.y - 50.0,
+		"the hold ring floats above the point",
+	)
 	await _move_to(_point.global_position + Vector2(230, 0))
 	await _physics_frames(4)
 	_expect(
@@ -199,9 +212,7 @@ func _run() -> void:
 	# A smear left when the repair ends is charged then.
 	await _grab_tool_inside(glue)
 	var late_spot := cover.to_global(Vector2(-38, 24))
-	await _press_down(late_spot)
-	await _seconds(0.9)
-	await _release_at(late_spot)
+	await _squeeze_glue_at(glue, late_spot, 0.9)
 	await _put_tool_away(glue)
 	var late_smear := _find_smear(cover)
 	if _expect(
@@ -221,6 +232,34 @@ func _run() -> void:
 ## polygon edge and misses (the glue probe's known miss).
 func _grab_tool_inside(tool: Tool) -> void:
 	await _press_at(tool.global_position)
+
+
+## Squeezes glue with the bottle's working end on a target.
+## The pointer goes wherever the working end lands there.
+func _squeeze_glue_at(
+	tool: Tool, target: Vector2, seconds: float
+) -> void:
+	var pointer := await _glue_pointer_for(tool, target)
+	await _press_down(pointer)
+	await _seconds(seconds)
+	await _release_at(pointer)
+
+
+func _glue_pointer_for(tool: Tool, target: Vector2) -> Vector2:
+	var settle_frames := 0
+	while settle_frames < 90 and (
+		tool.follow_offset.length() > 0.5
+		or (
+			is_instance_valid(tool.rotation_tween)
+			and tool.rotation_tween.is_running()
+		)
+	):
+		await _physics_frames(1)
+		settle_frames += 1
+	var offset := (
+		tool.get_work_end_position() - tool.get_tip_position()
+	)
+	return target - offset
 
 
 func _find_smear(layer: RepairLayer) -> GlueSmear:

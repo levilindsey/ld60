@@ -15,6 +15,8 @@ const _TIMEOUT_SEC := 90.0
 
 var _item: Repairable
 var _crack: Crack
+## Pointer minus sample, so the nozzle follows the crack.
+var _nozzle_offset := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -50,11 +52,13 @@ func _run() -> void:
 	await _physics_frames(2)
 	_expect(_crack.get_sample_count() > 10, "the crack has samples")
 
-	await _grab_tool(G.level.tools_by_type[Tool.Type.GLUE])
+	var glue_tool := G.level.tools_by_type[Tool.Type.GLUE]
+	await _press_at(glue_tool.global_position)
 	_expect(
-		_hand.held == G.level.tools_by_type[Tool.Type.GLUE],
+		_hand.held == glue_tool,
 		"the hand holds the glue bottle",
 	)
+	_nozzle_offset = await _get_nozzle_offset(glue_tool)
 
 	# Flooding one spot blobs it.
 	var samples := _crack.get_samples()
@@ -62,9 +66,9 @@ func _run() -> void:
 		samples[samples.size() / 2]
 	)
 	var defects_before := _item.quality.get_defect_count()
-	await _press_down(middle)
+	await _press_down(middle - _nozzle_offset)
 	await _seconds(1.2)
-	await _release_at(middle)
+	await _release_at(middle - _nozzle_offset)
 	_expect(
 		_item.quality.get_defect_count() > defects_before,
 		"flooding one spot costs a glue blob",
@@ -84,16 +88,36 @@ func _run() -> void:
 	)
 
 
-## Presses at the first sample and drags along the crack and
-## back, pausing a few frames on each sample.
+## The working end's offset from the pointer, once the held
+## bottle has settled into the hand.
+func _get_nozzle_offset(tool: Tool) -> Vector2:
+	var settle_frames := 0
+	while settle_frames < 90 and (
+		tool.follow_offset.length() > 0.5
+		or (
+			is_instance_valid(tool.rotation_tween)
+			and tool.rotation_tween.is_running()
+		)
+	):
+		await _physics_frames(1)
+		settle_frames += 1
+	return (
+		tool.get_work_end_position() - tool.get_tip_position()
+	)
+
+
+## Presses with the nozzle at the first sample and drags it
+## along the crack and back, pausing a few frames per sample.
 func _trace_crack() -> void:
 	var samples := _crack.get_samples()
 	var start: Vector2 = _crack.to_global(samples[0])
-	await _press_down(start)
+	await _press_down(start - _nozzle_offset)
 	for sample in samples:
-		await _move_to(_crack.to_global(sample))
+		await _move_to(_crack.to_global(sample) - _nozzle_offset)
 		await _physics_frames(4)
 	for index in range(samples.size() - 1, -1, -1):
-		await _move_to(_crack.to_global(samples[index]))
+		await _move_to(
+			_crack.to_global(samples[index]) - _nozzle_offset
+		)
 		await _physics_frames(4)
-	await _release_at(start)
+	await _release_at(start - _nozzle_offset)

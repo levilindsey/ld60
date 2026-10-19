@@ -338,6 +338,9 @@ enum PhysicsLayer {
 @export var broken_hold_outer_radius_px := 46.0
 ## Radius of the hold game's dot itself, in pixels.
 @export var broken_hold_dot_radius_px := 8.0
+## How far above the point the hold ring draws, in world
+## pixels, so the player's finger is not over the game.
+@export var broken_hold_ring_offset_px := 96.0
 ## How much the held piece's offset moves the dot, so a
 ## small hand movement reads clearly in the ring.
 @export var broken_hold_dot_scale := 1.6

@@ -26,7 +26,11 @@ func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 	if not _is_squeezing or delta <= 0.0:
 		return
-	var nozzle := get_tip_position()
+	# Glue leaves the working end, never the cursor marker or
+	# the bottle's origin. A crack takes it where the working
+	# end passes. A broken point takes it while the tool's
+	# InteractionArea overlaps the point's own area.
+	var nozzle := get_work_end_position()
 	var amount := G.settings.glue_flow_rate * delta
 	var hit := false
 	if is_instance_valid(G.level) and is_instance_valid(
@@ -45,13 +49,18 @@ func _physics_process(delta: float) -> void:
 						amount,
 					):
 						hit = true
-				elif point is BrokenPoint:
-					if (point as BrokenPoint).on_glued(
-						nozzle,
-						G.settings.glue_radius_px,
-						amount,
-					):
-						hit = true
+	for area in interaction_area.get_overlapping_areas():
+		var broken := area as BrokenPoint
+		if not is_instance_valid(broken):
+			continue
+		if not broken.is_exposed() or not broken.is_visible_in_tree():
+			continue
+		if broken.on_glued(
+			broken.global_position,
+			G.settings.glue_radius_px,
+			amount,
+		):
+			hit = true
 	if hit:
 		_off_target_sec = 0.0
 		return
@@ -65,14 +74,54 @@ func is_effect_tool() -> bool:
 	return true
 
 
-## A press starts the squeeze where the nozzle lands.
+## A press starts the squeeze. The click itself already
+## glues a broken point whose area the tool's InteractionArea
+## overlaps, so a click on the nozzle counts at once. The
+## shape query reads the working end where the press put it,
+## where the physics overlaps have not caught up yet.
 func on_effect_pressed(_global_point: Vector2) -> void:
 	_is_squeezing = true
 	_off_target_sec = 0.0
 	art.scale = Vector2(1.0, 0.9)
 	if is_instance_valid(G.level):
 		G.level.hand.set_input_owner(self)
+		var broken := _find_broken_point_at_work_end()
+		if is_instance_valid(broken):
+			broken.on_glued(
+				broken.global_position,
+				G.settings.glue_radius_px,
+				1.0,
+			)
 	G.audio.play_sound(&"scrape")
+
+
+## The broken point under the working end right now, by the
+## InteractionArea's own shape, or null. Other points in the
+## way do not hide it.
+func _find_broken_point_at_work_end() -> BrokenPoint:
+	var shape_node := get_interaction_shape()
+	if not is_instance_valid(shape_node):
+		return null
+	if not is_instance_valid(shape_node.shape):
+		return null
+	var parameters := PhysicsShapeQueryParameters2D.new()
+	parameters.shape = shape_node.shape
+	parameters.transform = shape_node.global_transform
+	parameters.collision_mask = (
+		Settings.PhysicsLayer.INTERACTION_POINTS
+	)
+	parameters.collide_with_areas = true
+	parameters.collide_with_bodies = false
+	var space := get_world_2d().direct_space_state
+	for result in space.intersect_shape(parameters, 32):
+		var broken := result.collider as BrokenPoint
+		if (
+			is_instance_valid(broken)
+			and broken.is_exposed()
+			and broken.is_visible_in_tree()
+		):
+			return broken
+	return null
 
 
 func on_pointer_released(_global_point: Vector2) -> void:

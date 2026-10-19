@@ -11,6 +11,9 @@ extends InteractionPoint
 const _START_RADIUS_PX := 56.0
 ## How close the glue nozzle has to land, in world pixels.
 const _GLUE_HIT_RADIUS_PX := 30.0
+## Draw order of the hold game while it runs, over the tools
+## (z 20) and every loose piece, in absolute canvas order.
+const _HOLD_Z_INDEX := 40
 
 ## Seconds the piece must be held still. Per point, so one
 ## item can ask for a quick tack and another for a long hold.
@@ -29,6 +32,8 @@ var piece: BrokenPiece
 var _dot_drift := Vector2.ZERO
 var _dot_drift_velocity := Vector2.ZERO
 var _drift_retarget_left_sec := 0.0
+var _home_z_index := 0
+var _home_z_as_relative := true
 
 
 func _ready() -> void:
@@ -36,6 +41,8 @@ func _ready() -> void:
 	type = Type.BROKEN_POINT
 	role = Role.REPAIR
 	accepted_tools = [Tool.Type.GLUE]
+	_home_z_index = z_index
+	_home_z_as_relative = z_as_relative
 
 
 func _process(_delta: float) -> void:
@@ -88,15 +95,21 @@ func _draw() -> void:
 		band_color = Color(1.0, 0.75, 0.25, 0.95)
 	elif state == 2:
 		band_color = Color(1.0, 0.3, 0.25, 0.95)
-	# The wide band the dot has to stay inside, and its safe core.
-	draw_arc(Vector2.ZERO, outer, 0.0, TAU, 40, band_color, 5.0, true)
-	draw_arc(Vector2.ZERO, inner, 0.0, TAU, 32, band_color, 2.0, true)
-	draw_circle(Vector2.ZERO, inner, Color(band_color, 0.12))
+	# The wide band the dot has to stay inside, and its safe
+	# core. The ring floats above the point, clear of the
+	# finger holding the piece on it.
+	var ring := _get_ring_center()
+	draw_arc(ring, outer, 0.0, TAU, 40, band_color, 5.0, true)
+	draw_arc(ring, inner, 0.0, TAU, 32, band_color, 2.0, true)
+	draw_circle(ring, inner, Color(band_color, 0.12))
+	draw_line(
+		Vector2.ZERO, ring, Color(band_color, 0.35), 2.0, true
+	)
 	# Progress around the outside while the dot stays good.
 	if hold_sec > 0.0:
 		var share := clampf(hold_progress_sec / hold_sec, 0.0, 1.0)
 		draw_arc(
-			Vector2.ZERO,
+			ring,
 			outer + 9.0,
 			-PI * 0.5,
 			-PI * 0.5 + share * TAU,
@@ -105,7 +118,7 @@ func _draw() -> void:
 			4.0,
 			true,
 		)
-	draw_circle(get_dot_offset(), dot_radius, band_color)
+	draw_circle(ring + get_dot_offset(), dot_radius, band_color)
 
 
 ## Glue flowed at a world point. True when it landed here.
@@ -153,6 +166,11 @@ func get_dot_drift() -> Vector2:
 	return _dot_drift
 
 
+## Where the hold ring draws, in world pixels.
+func get_ring_global_position() -> Vector2:
+	return to_global(_get_ring_center())
+
+
 func _try_start_hold() -> void:
 	if not has_glue or not is_instance_valid(piece):
 		return
@@ -171,6 +189,9 @@ func _try_start_hold() -> void:
 	_dot_drift = Vector2.ZERO
 	_dot_drift_velocity = Vector2.ZERO
 	_drift_retarget_left_sec = 0.0
+	# The game draws over the tools, the piece and the hand.
+	z_as_relative = false
+	z_index = _HOLD_Z_INDEX
 	G.audio.play_sound(&"click")
 
 
@@ -210,11 +231,26 @@ func _update_drift(delta: float) -> void:
 		_dot_drift_velocity = -_dot_drift.normalized() * speed
 
 
+## Where the ring draws, in this point's own pixels: above
+## the point in the world, so a finger on the piece is clear.
+func _get_ring_center() -> Vector2:
+	var above := global_position + Vector2(
+		0.0, -G.settings.broken_hold_ring_offset_px
+	)
+	return to_local(above)
+
+
+func _restore_draw_order() -> void:
+	z_index = _home_z_index
+	z_as_relative = _home_z_as_relative
+
+
 func _end_hold() -> void:
 	is_holding = false
 	hold_progress_sec = 0.0
 	_dot_drift = Vector2.ZERO
 	_dot_drift_velocity = Vector2.ZERO
+	_restore_draw_order()
 
 
 ## The dot left the band. The piece drops where it is, and
@@ -230,6 +266,7 @@ func _fail_hold() -> void:
 
 func _complete_hold() -> void:
 	is_holding = false
+	_restore_draw_order()
 	hold_progress_sec = maxf(hold_sec, 0.0)
 	var attached := piece
 	G.audio.play_sound(&"ding")

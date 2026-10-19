@@ -53,12 +53,20 @@ Ledger: **LX66**. A snapped off piece is two placeable nodes.
   turns it to the point's rotation. Letting go on the bench can
   turn it again through the bench physics.
 - **The hold:** while the piece is held near its glued point, a
-  ring shows. The dot is the piece's offset from the point
-  (`broken_hold_dot_scale`) plus a drift that changes direction
-  every `broken_hold_drift_retarget_sec`. Fully inside the inner
-  circle banks time. Straddling the wide band warns (amber) and
-  pauses the timer. Past the band fails: the piece drops, the glue
-  stays. `hold_sec` on the point (default 5) is the still time.
+  ring shows, drawn over everything else and offset above the
+  point (`broken_hold_ring_offset_px`) so the finger holding the
+  piece is not over it. The dot is the piece's offset from the
+  point (`broken_hold_dot_scale`) plus a drift that changes
+  direction every `broken_hold_drift_retarget_sec`. Fully inside
+  the inner circle banks time. Straddling the wide band warns
+  (amber) and pauses the timer. Past the band fails: the piece
+  drops where it is, the glue stays. `hold_sec` on the point
+  (default 5) is the still time.
+- **Glue contact:** glue leaves the bottle's working end, never
+  the cursor marker or the bottle origin. A broken point glues
+  when the click lands with the tool's InteractionArea
+  overlapping the point's area (and while squeezing there). A
+  crack takes glue where the working end passes over it.
 
 ## Glue smears
 
