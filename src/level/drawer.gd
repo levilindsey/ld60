@@ -168,23 +168,77 @@ func is_hint_active() -> bool:
 	)
 
 
-## A random world position inside the open drawer, clear of its
-## rim. `%ContentsArea` marks the inside in the scene, the way the
-## hit shape marks the face.
-func get_random_interior_global_position() -> Vector2:
+## The drawer's inside in `%ContentsArea`'s shape-local
+## coordinates, clear of its rim. `%ContentsArea` marks the
+## inside in the scene, the way the hit shape marks the face.
+## A part's drawer spot (`Part.drawer_spot_local`) lives in
+## these coordinates, so it means the same spot whatever pose
+## the drawer is passing through.
+func get_interior_local_rect() -> Rect2:
+	var shape := (
+		(%ContentsArea as Area2D).get_node("CollisionShape2D")
+		as CollisionShape2D
+	).shape as RectangleShape2D
+	return Rect2(-shape.size * 0.5, shape.size).grow(
+		-_INTERIOR_MARGIN_PX
+	)
+
+
+## A spot in interior-local coordinates (see
+## `get_interior_local_rect()`) as a world position in the
+## drawer's current pose.
+func get_interior_global_position(local_point: Vector2) -> Vector2:
 	var shape_node := (
 		(%ContentsArea as Area2D).get_node("CollisionShape2D")
 		as CollisionShape2D
 	)
-	var shape := shape_node.shape as RectangleShape2D
-	var interior := Rect2(
-		-shape.size * 0.5, shape.size
-	).grow(-_INTERIOR_MARGIN_PX)
+	return shape_node.global_transform * local_point
+
+
+## How many world pixels one interior-local unit spans on each
+## axis once the drawer sits open in the center, whatever pose
+## it is in now: the trip to the center multiplies the scaler,
+## so the closed drawer's measure is scaled back up by the
+## share the scaler still has to grow. The level lays drawer
+## spots out with this, so spacing is judged in the pixels the
+## player will actually see.
+func get_open_interior_world_per_local() -> Vector2:
+	var shape_node := (
+		(%ContentsArea as Area2D).get_node("CollisionShape2D")
+		as CollisionShape2D
+	)
+	var basis := shape_node.global_transform
+	var scaler_scale := _get_scaler().scale
+	var grow := Vector2(
+		_scaler_home_scale.x
+		* _CENTER_SCALE_MULTIPLIER
+		/ maxf(scaler_scale.x, 0.0001),
+		_scaler_home_scale.y
+		* _CENTER_SCALE_MULTIPLIER
+		/ maxf(scaler_scale.y, 0.0001),
+	)
+	return Vector2(basis.x.length(), basis.y.length()) * grow
+
+
+## Where a stored part rests in the world in the drawer's
+## current pose: at its drawer spot when the level gave it one
+## for this item, anywhere inside otherwise.
+func get_stored_global_position(part: Part) -> Vector2:
+	if part.has_drawer_spot():
+		return get_interior_global_position(part.drawer_spot_local)
+	return get_random_interior_global_position()
+
+
+## A random world position inside the open drawer, clear of its
+## rim. `%ContentsArea` marks the inside in the scene, the way the
+## hit shape marks the face.
+func get_random_interior_global_position() -> Vector2:
+	var interior := get_interior_local_rect()
 	var local_point := Vector2(
 		randf_range(interior.position.x, interior.end.x),
 		randf_range(interior.position.y, interior.end.y),
 	)
-	return shape_node.global_transform * local_point
+	return get_interior_global_position(local_point)
 
 
 ## Slides out of the slot, then turns to the top-down view while
@@ -318,7 +372,7 @@ func take_part(part: Part) -> void:
 	if state == State.OPEN:
 		await _sink_part(part)
 		_store_part(part)
-		part.global_position = get_random_interior_global_position()
+		part.global_position = get_stored_global_position(part)
 		part.is_returning = false
 		return
 	state = State.STORING
@@ -372,7 +426,7 @@ func store_parts(parts: Array[Part]) -> void:
 		down_tween.tween_property(
 			loose[index],
 			"global_position",
-			get_random_interior_global_position(),
+			get_stored_global_position(loose[index]),
 			G.settings.part_put_away_sec,
 		).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN).set_delay(
 			index * 0.06
@@ -410,20 +464,24 @@ func _sink_part(part: Part) -> void:
 	down_tween.tween_property(
 		part,
 		"global_position",
-		get_random_interior_global_position(),
+		get_stored_global_position(part),
 		G.settings.part_put_away_sec,
 	)
 	await down_tween.finished
 
 
 ## Files a part away inside this drawer and hides it until the
-## drawer opens again.
+## drawer opens again. The part goes back to the turn of its
+## drawer spot, so it rests the same way every time this drawer
+## opens for the item.
 func _store_part(part: Part) -> void:
 	G.audio.play_sound(&"click")
 	part.is_stored = true
 	part.is_returning = false
 	part.drawer_index = drawer_index
 	part.z_index = 10
+	if part.has_drawer_spot():
+		part.rotation = part.drawer_spot_rotation
 	part.hide()
 
 

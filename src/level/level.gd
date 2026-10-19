@@ -6,6 +6,16 @@ const _GAME_OVER_RESTART_DELAY_SEC := 1.5
 
 const _PLAYER_CAMERA_OFFSET := Vector2.ZERO
 
+## How many candidate spots the drawer layout tries per part
+## before it keeps the best-spaced one (see
+## `_layout_drawer_spots()`).
+const _DRAWER_SPOT_TRIES := 48
+## How much of two drawer-mates' combined reach their spots
+## keep between them: 1.0 would keep their widest extents from
+## ever touching, which a small drawer cannot fit, so spots
+## may let the extents overlap by the rest.
+const _DRAWER_SPOT_SPACING := 0.8
+
 ## A bench return is flying in under gravity toward its
 ## landing point inside the workable area.
 const _RETURN_FLYING := 0
@@ -605,11 +615,13 @@ func get_part_of_type_in_drawer(
 
 
 ## Restocks the drawers for an item that just landed: the old loose
-## parts go away, and a fresh set is hidden at random across the
-## drawers. The set holds one of every part kind in the game, plus
+## parts go away, and a fresh set is dealt across the drawers.
+## The set holds one of every part kind in the game, plus
 ## extra copies per socket the item needs, plus decoys, shuffled
-## so hunting takes opening more than one drawer. It resets for
-## each repairable.
+## so hunting takes opening more than one drawer. Each part's
+## spot and turn inside its drawer are chosen here, once
+## (`_layout_drawer_spots()`), and kept until the next item. It
+## resets for each repairable.
 func restock_parts(item: Repairable) -> void:
 	for drawer in get_drawers():
 		drawer.reset_closed()
@@ -661,19 +673,92 @@ func restock_parts(item: Repairable) -> void:
 	var drawers := get_drawers()
 	if drawers.is_empty():
 		return
-	for part_type in part_types:
-		var scene := G.settings.get_part_scene_from_type(part_type)
+	# Dealt round-robin out of the shuffled set, so every
+	# drawer holds about as many parts as the others and the
+	# layout below has room to space them out.
+	var stocked: Array[Part] = []
+	for index in part_types.size():
+		var scene := G.settings.get_part_scene_from_type(
+			part_types[index]
+		)
 		if not is_instance_valid(scene):
 			scene = part_scene
 		G.check(is_instance_valid(scene))
 		var part := scene.instantiate() as Part
 		G.check(is_instance_valid(part))
 		add_child(part)
-		part.setup(part_type)
+		part.setup(part_types[index])
 		part.is_stored = true
-		part.drawer_index = randi_range(0, drawers.size() - 1)
+		part.drawer_index = index % drawers.size()
 		part.hide()
 		_drawer_parts.append(part)
+		stocked.append(part)
+	for drawer in drawers:
+		_layout_drawer_spots(drawer, stocked)
+
+
+## Chooses where each of a drawer's stocked parts rests inside
+## it for this item, and the turn each rests at. Every part in
+## turn takes the best-spaced of `_DRAWER_SPOT_TRIES` random
+## spots in the drawer's interior: the one whose reach (in the
+## world pixels the open drawer will show) clears its already
+## placed drawer-mates' reaches by the most, so parts spread
+## out instead of piling up. The spots are kept on the parts
+## (`Part.drawer_spot_local`), and the drawer reopens to them
+## for the whole item.
+func _layout_drawer_spots(drawer: Drawer, stocked: Array[Part]) -> void:
+	var interior := drawer.get_interior_local_rect()
+	var world_per_local := drawer.get_open_interior_world_per_local()
+	var placed_spots: Array[Vector2] = []
+	var placed_reaches: Array[float] = []
+	for part in stocked:
+		if part.drawer_index != drawer.drawer_index:
+			continue
+		var reach := part.get_radius_px()
+		# Keep this part's own reach inside the rim, per axis:
+		# its spot may only roam what its extent fits in. An
+		# axis the part is too big for collapses to the middle
+		# of that axis only, so it can still spread along the
+		# other one.
+		var inset := Vector2(
+			reach / maxf(world_per_local.x, 0.0001),
+			reach / maxf(world_per_local.y, 0.0001),
+		)
+		var near := interior.position + inset
+		var far := interior.end - inset
+		if far.x < near.x:
+			near.x = interior.get_center().x
+			far.x = near.x
+		if far.y < near.y:
+			near.y = interior.get_center().y
+			far.y = near.y
+		var room := Rect2(near, far - near)
+		var best_spot := interior.get_center()
+		var best_clearance := -INF
+		for _try in _DRAWER_SPOT_TRIES:
+			var candidate := Vector2(
+				randf_range(room.position.x, room.end.x),
+				randf_range(room.position.y, room.end.y),
+			)
+			var clearance := INF
+			for placed_index in placed_spots.size():
+				var apart := (
+					(candidate - placed_spots[placed_index])
+					* world_per_local
+				).length()
+				var wanted := (
+					(reach + placed_reaches[placed_index])
+					* _DRAWER_SPOT_SPACING
+				)
+				clearance = minf(clearance, apart - wanted)
+			if clearance > best_clearance:
+				best_clearance = clearance
+				best_spot = candidate
+		part.drawer_spot_local = best_spot
+		part.drawer_spot_rotation = randf_range(0.0, TAU)
+		part.rotation = part.drawer_spot_rotation
+		placed_spots.append(best_spot)
+		placed_reaches.append(reach)
 
 
 ## Puts every part left out on the bench away into one drawer,
@@ -702,6 +787,11 @@ func cleanup_loose_parts() -> void:
 ## The loose part nearest a world position within grab range, or
 ## null.
 func _get_part_at(global_point: Vector2) -> Part:
+	# A press on a part's authored Shape takes it, wherever on
+	# the part it lands; the nearest center wins among overlaps.
+	# A part with no Shape keeps the old center reach.
+	var shaped: Part = null
+	var shaped_distance := INF
 	var best: Part = null
 	var best_distance := G.settings.part_grab_radius_px
 	for entry: Variant in _drawer_parts:
@@ -711,10 +801,14 @@ func _get_part_at(global_point: Vector2) -> Part:
 		if part.is_installed or not part.is_visible_in_tree():
 			continue
 		var distance := part.global_position.distance_to(global_point)
-		if distance <= best_distance:
+		if part.is_point_in_shape(global_point):
+			if distance < shaped_distance:
+				shaped_distance = distance
+				shaped = part
+		elif not part.has_shape() and distance <= best_distance:
 			best_distance = distance
 			best = part
-	return best
+	return shaped if is_instance_valid(shaped) else best
 
 
 ## Where layers wait while they are off the item.
@@ -1916,20 +2010,23 @@ func _prune_bench_dust() -> void:
 
 
 ## Builds the played order from the authored queue and the
-## first-repairable override: the override (if any) goes
-## first, and its authored slot is skipped.
+## first-repairable override: the schedule skips ahead to the
+## override's slot, dropping everything before it, and plays
+## from there. No override (or one the queue doesn't hold)
+## plays the queue as authored.
 func _build_effective_queue() -> void:
 	_effective_queue.clear()
+	var start_index := 0
 	var override := G.settings.get_first_repairable_override()
-	var has_override := override >= 0
-	var override_type: Repairable.Type = Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE
-	if has_override:
-		override_type = override
-		_effective_queue.append(override_type)
-	for type in G.settings.item_queue:
-		if has_override and type == override_type:
-			continue
-		_effective_queue.append(type)
+	if override >= 0:
+		var override_type: Repairable.Type = override
+		var found_index := G.settings.item_queue.find(override_type)
+		if found_index >= 0:
+			start_index = found_index
+	for index in range(
+		start_index, G.settings.item_queue.size()
+	):
+		_effective_queue.append(G.settings.item_queue[index])
 
 
 ## True once every item of the day's order has been spawned.
@@ -2053,12 +2150,14 @@ func _on_item_departed(item: Repairable) -> void:
 
 
 ## A drawer finished opening in the center: its stored parts
-## fade in at random spots inside it.
+## fade in at the drawer spots chosen when this item was
+## stocked (see `restock_parts()`), at the turns chosen then,
+## so a drawer looks the same every time it opens for an item.
 func _on_drawer_opened(drawer: Drawer) -> void:
 	for part in get_parts_in_drawer(drawer):
-		part.global_position = (
-			drawer.get_random_interior_global_position()
-		)
+		part.global_position = drawer.get_stored_global_position(part)
+		if part.has_drawer_spot():
+			part.rotation = part.drawer_spot_rotation
 		part.z_index = 16
 	_fade_drawer_parts(drawer, true)
 

@@ -117,13 +117,30 @@ var is_stored := false
 ## The drawer the part is stored in, or its last drawer while it is
 ## out on the bench. -1 when it has never been stored.
 var drawer_index := -1
+## Where this part rests inside its drawer for the current item,
+## in the drawer's interior-local coordinates (see
+## `Drawer.get_interior_local_rect()`), and the turn it rests at.
+## The level chooses both when it restocks for an item, spaced so
+## drawer-mates do not pile up, and the drawer goes back to this
+## same spot and turn every time it opens for that item.
+## `Vector2.INF` while the part has no spot yet.
+var drawer_spot_local := Vector2.INF
+var drawer_spot_rotation := 0.0
 ## True while a drawer is putting the part away. A returning part
 ## cannot be grabbed.
 var is_returning := false
 
+
+## True once the level has chosen this part's drawer spot for
+## the current item (see `drawer_spot_local`).
+func has_drawer_spot() -> bool:
+	return drawer_spot_local != Vector2.INF
+
 var _shake_tween: Tween
 var _turn_tween: Tween
 var _hint_hint: OutlineHint
+var _outlined_sprite: Sprite2D
+var _sprite_material_before_hint: Material
 var _is_hint_active := false
 
 
@@ -159,6 +176,21 @@ func _configure_shape() -> void:
 	shape.collision_mask = 0
 	shape.monitoring = false
 	shape.monitorable = false
+
+
+## True when the part has a usable authored Shape: a polygon
+## with at least three points, or a collision shape.
+func has_shape() -> bool:
+	if not is_instance_valid(shape):
+		return false
+	for child in shape.get_children():
+		if child is CollisionPolygon2D:
+			if (child as CollisionPolygon2D).polygon.size() >= 3:
+				return true
+		elif child is CollisionShape2D:
+			if is_instance_valid((child as CollisionShape2D).shape):
+				return true
+	return false
 
 
 ## True when a world point lands on the part's Shape: any
@@ -345,27 +377,58 @@ func nope() -> void:
 	_shake_tween.tween_property(%Art, "position", Vector2.ZERO, step_sec)
 
 
-## Shows or hides the idle hint outline around this part, in the
-## shape of its kind. The tracker highlights a stored part's drawer
-## instead, and this part once it is out on the bench.
+## Shows or hides the idle hint outline on this part. It goes
+## over the sprite: a kind with real art gets the shader outline
+## on its sprite, the way a layer's does; only a kind still on
+## its placeholder art gets the drawn rim, over that art. The
+## tracker highlights a stored part's drawer instead, and this
+## part once it is out on the bench.
 func set_hint_active(is_active: bool) -> void:
 	_is_hint_active = is_active
 	if is_active:
-		if not is_instance_valid(_hint_hint):
-			_hint_hint = OutlineHint.new()
-			add_child(_hint_hint)
-			_hint_hint.polygon = get_polygon(type)
-		_hint_hint.set_active(true)
+		_start_hint()
 	elif is_instance_valid(_hint_hint):
 		_hint_hint.set_active(false)
+	if not is_active and is_instance_valid(_outlined_sprite):
+		OutlineHint.remove_from_sprite(
+			_outlined_sprite, _sprite_material_before_hint
+		)
+		_outlined_sprite = null
+		_sprite_material_before_hint = null
+
+
+func _start_hint() -> void:
+	var sprite := get_node("%Sprite") as Sprite2D
+	if (
+		is_instance_valid(sprite)
+		and sprite.visible
+		and is_instance_valid(sprite.texture)
+	):
+		if not is_instance_valid(_outlined_sprite):
+			_outlined_sprite = sprite
+			_sprite_material_before_hint = (
+				OutlineHint.apply_to_sprite(sprite)
+			)
+		if is_instance_valid(_hint_hint):
+			_hint_hint.set_active(false)
+		return
+	if not is_instance_valid(_hint_hint):
+		_hint_hint = OutlineHint.new()
+		add_child(_hint_hint)
+		_hint_hint.polygon = OutlineHint.get_art_polygon(
+			get_node("%Art")
+		)
+	_hint_hint.set_active(true)
 
 
 ## True while the idle hint outline shows on this part.
 func is_hint_active() -> bool:
+	if not _is_hint_active:
+		return false
+	if is_instance_valid(_outlined_sprite):
+		return true
 	return (
-		_is_hint_active
-		and is_instance_valid(_hint_hint)
-		and _hint_hint.is_active()
+		is_instance_valid(_hint_hint) and _hint_hint.is_active()
 	)
 
 
