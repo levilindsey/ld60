@@ -26,6 +26,7 @@ scale = Vector2(0.11, 0.11)
 script = ExtResource("1_item")
 item_name = "Pianoman"
 shadow_style = 1
+shadow_offset = Vector2(3, 8)
 shape = NodePath("Shape")
 ticket = "I told Flora to lay off the arpeggios, but nooo"
 

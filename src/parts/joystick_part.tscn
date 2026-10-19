@@ -1,32 +1,33 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://b3lginqywil2b"]
 
-[ext_resource type="Script" path="res://src/parts/joystick_part.gd" id="1_part"]
-[ext_resource type="Texture2D" path="res://assets/images/repairables/atari_joystick_good.png" id="2_tex"]
+[ext_resource type="Script" uid="uid://fg86o4hv6l68" path="res://src/parts/joystick_part.gd" id="1_part"]
+[ext_resource type="Texture2D" uid="uid://du62c2fga02r4" path="res://assets/images/repairables/atari_joystick_good.png" id="2_tex"]
 
-[node name="JoystickPart" type="Node2D" node_paths=PackedStringArray("shape")]
+[node name="JoystickPart" type="Node2D" unique_id=1222615594 node_paths=PackedStringArray("shape")]
 z_index = 10
 z_as_relative = false
 script = ExtResource("1_part")
 shape = NodePath("Shape")
 
-[node name="Art" type="Polygon2D" parent="."]
+[node name="Art" type="Polygon2D" parent="." unique_id=774813635]
 unique_name_in_owner = true
 visible = false
 color = Color(0.8, 0.25, 0.25, 1)
 polygon = PackedVector2Array(-6, -20, 6, -20, 6, 2, 16, 2, 16, 14, -16, 14, -16, 2, -6, 2)
 
-[node name="Sprite" type="Sprite2D" parent="."]
+[node name="Sprite" type="Sprite2D" parent="." unique_id=1260910301]
 unique_name_in_owner = true
 scale = Vector2(0.159799, 0.159799)
 texture = ExtResource("2_tex")
 region_enabled = true
 region_rect = Rect2(1235, 467, 836, 995)
 
-[node name="Shape" type="Area2D" parent="."]
+[node name="Shape" type="Area2D" parent="." unique_id=1473240108]
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape"]
-polygon = PackedVector2Array(-66.796, -79.5, 66.796, -79.5, 66.796, 79.5, -66.796, 79.5)
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape" unique_id=623344998]
+position = Vector2(-1, 0)
+polygon = PackedVector2Array(-17, 20, -8, 15, 6, 10, 15, 8, 14, -25, 13, -71, 15, -75, 20, -78, 25, -79, 36, -79, 43, -76, 47, -71, 47, -44, 40, 12, 55, 20, 67, 37, 66.795975, 55.11661, 64, 63, 55, 73, 40, 79, 14, 79, -2, 75, -11, 64, -17, 52, -58, 53, -67, 46, -66.98875, 39.0782, -63, 31, -58, 28, -19, 28)

@@ -1,15 +1,17 @@
 class_name BirdController
 extends Node
-## Bread the bird. Once the player has got
-## `REPAIRABLES_BEFORE_SMACK` repairables through the outbox, the
-## bird smacks into the window `SMACK_DELAY_SEC` seconds into the
-## next repairable. From then on it peeks out of the tree every
-## so often for the rest of the session; it never peeks before
-## the smack. The two animations are the `%BirdSmack` and
-## `%BirdPeak` scene instances outside the window.
+## Bread the bird. When the repairable at `SMACK_ITEM_INDEX`
+## in the played order lands, the bird smacks into the window
+## `SMACK_DELAY_SEC` seconds into it. From then on it peeks
+## out of the tree every so often for the rest of the session;
+## it never peeks before the smack. The two animations are the
+## `%BirdSmack` and `%BirdPeak` scene instances outside the
+## window.
 
 
-const REPAIRABLES_BEFORE_SMACK := 0
+## The played-order index of the repairable the smack is
+## scheduled for (0 is the first item, so 2 is the third).
+const SMACK_ITEM_INDEX := 2
 #const SMACK_DELAY_SEC := 8.0
 const SMACK_DELAY_SEC := 1.0
 ## Seconds into the smack animation when the bird reaches the
@@ -28,8 +30,8 @@ const PEAK_FADE_SEC := 0.5
 ## Each hop of the shake is shorter and weaker.
 const WINDOW_SHAKE_PX := 9.0
 
-var _completed_count := 0
 var _has_smacked := false
+var _start_slam_checked := false
 var _item: Repairable
 var _window_home := Vector2.ZERO
 var _window_tween: Tween
@@ -45,6 +47,13 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(G.level):
 		return
+	# The level is built behind the title screen, so the
+	# at-start flag is read on the first frame of actual play,
+	# not in `_ready()` (which fires while the title is up).
+	if not _start_slam_checked:
+		_start_slam_checked = true
+		if G.settings.show_bird_slam_at_start:
+			G.time.set_timeout(_play_smack, SMACK_DELAY_SEC)
 	var item := G.level.active_repairable
 	if item == _item:
 		return
@@ -52,17 +61,14 @@ func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(item):
 		return
 	item.landed.connect(_on_item_landed, CONNECT_ONE_SHOT)
-	item.departed.connect(_on_item_departed, CONNECT_ONE_SHOT)
-
-
-## A repairable went out the outbox: one more got through. Once
-## enough are through, the next landing arms the smack.
-func _on_item_departed() -> void:
-	_completed_count += 1
 
 
 func _on_item_landed() -> void:
-	if _has_smacked or _completed_count < REPAIRABLES_BEFORE_SMACK:
+	if _has_smacked:
+		return
+	if not is_instance_valid(G.level):
+		return
+	if G.level.get_active_item_index() != SMACK_ITEM_INDEX:
 		return
 	G.time.set_timeout(_play_smack, SMACK_DELAY_SEC)
 

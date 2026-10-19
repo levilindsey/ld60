@@ -19,6 +19,14 @@ enum PhysicsLayer {
 @export var show_debug_console := false
 
 @export var start_in_game := true
+## Play the bird's window slam as soon as the game starts
+## instead of waiting for its scheduled repairable. A
+## playtesting convenience; the peeks follow as usual.
+@export var show_bird_slam_at_start := false
+## Show the credits card as soon as the game starts, the way
+## winning does, instead of playing the day through. A
+## playtesting convenience.
+@export var show_credits_at_start := false
 @export var full_screen := false
 @export var move_preview_windows_to_other_display := true
 @export var mute_music := false
@@ -222,13 +230,14 @@ enum PhysicsLayer {
 ## won after the last one goes into the outbox.
 @export var item_queue: Array[Repairable.Type] = []
 
-## Which single repairable, if any, jumps to the front as the
-## first thing handled, ahead of `item_queue`. A playtesting
-## convenience: pick one here and it is the first item on the
-## bench, then the day's order follows (skipping that item's
-## later slot). `None` plays the queue as authored. The two
-## test boxes stay on the list: the flat-head one exercises
-## every interaction mechanic.
+## Which repairable, if any, the schedule skips ahead to. A
+## playtesting convenience: pick one here and the day starts
+## at its slot in `item_queue`, dropping everything before
+## it, and plays from there. Pick the last item to skip to
+## the end. `None` (or an item the queue doesn't hold) plays
+## the queue as authored. The two test boxes stay on the
+## list: the flat-head one exercises every interaction
+## mechanic.
 enum FirstRepairable {
 	NONE,
 	TEST_FLAT_HEAD,
@@ -584,8 +593,8 @@ func get_defect_points(defect: RepairQuality.Defect) -> int:
 	return points
 
 
-## The override repairable for the front of the queue, as
-## a `Repairable.Type`, or -1 when the override is `NONE`.
+## The repairable the schedule skips ahead to, as a
+## `Repairable.Type`, or -1 when the override is `NONE`.
 func get_first_repairable_override() -> int:
 	match first_repairable_override:
 		FirstRepairable.TEST_FLAT_HEAD:

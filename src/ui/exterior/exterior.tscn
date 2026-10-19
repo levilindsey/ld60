@@ -23,20 +23,34 @@ centered = false
 unique_name_in_owner = true
 script = ExtResource("4_door_script")
 
-[node name="SignTitle" type="Label" parent="Zoom"]
+[node name="SignViewport" type="SubViewport" parent="."]
 unique_name_in_owner = true
+transparent_bg = true
+gui_disable_input = true
+size = Vector2i(630, 474)
+
+[node name="SignTitle" type="Label" parent="SignViewport"]
+unique_name_in_owner = true
+offset_left = 18.0
+offset_top = 54.0
+offset_right = 648.0
+offset_bottom = 310.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.23, 0.15, 0.08, 1)
 theme_override_fonts/font = ExtResource("5_font")
-theme_override_font_sizes/font_size = 36
+theme_override_font_sizes/font_size = 120
 text = "Repair Shop"
 horizontal_alignment = 1
 
-[node name="SignSub" type="Label" parent="Zoom"]
+[node name="SignSub" type="Label" parent="SignViewport"]
 unique_name_in_owner = true
+offset_left = 18.0
+offset_top = 284.0
+offset_right = 648.0
+offset_bottom = 445.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.23, 0.15, 0.08, 0.85)
 theme_override_fonts/font = ExtResource("5_font")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 64
 text = "Come on in"
 horizontal_alignment = 1

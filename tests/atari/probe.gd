@@ -132,7 +132,15 @@ func _yank_and_refit() -> void:
 	await _open_drawer(drawer)
 	if not _expect(part.visible, "the new joystick shows in its drawer"):
 		return
+	# Grab the part on its authored shape, not its centre: the
+	# stick's centre is the ring gap, off the shape.
 	var part_position := part.global_position
+	var shape_points := part.get_shape_world_polygon()
+	if not shape_points.is_empty():
+		var centroid := Vector2.ZERO
+		for point in shape_points:
+			centroid += point
+		part_position = centroid / shape_points.size()
 	await _press_down(part_position)
 	await _move_to(_socket.global_position)
 	await _release_at(_socket.global_position)
@@ -141,6 +149,12 @@ func _yank_and_refit() -> void:
 			func() -> bool: return _socket.mode == InteractionPoint.Mode.FINISHED
 		),
 		"the new joystick fits the socket",
+	)
+	var good_stick := _socket.get_node("GoodStick") as CanvasItem
+	_expect(
+		good_stick.visible and not part.visible,
+		"only the fitted stick shows once the new joystick lands"
+		+ " (the drawer part hides behind its fitted sprite)",
 	)
 
 

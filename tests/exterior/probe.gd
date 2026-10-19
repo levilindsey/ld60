@@ -37,6 +37,10 @@ func _run() -> void:
 		"the game boots to the title",
 	):
 		return
+	_expect(
+		is_instance_valid(G.level) and not G.level.visible,
+		"the level is built and hidden behind the title",
+	)
 	var exterior := (
 		G.hud.get_node("TitleOverlay/Exterior") as Exterior
 	)
@@ -49,8 +53,8 @@ func _run() -> void:
 		== "res://assets/images/repairables/exterior_wall.png",
 		"the exterior shows the wall art",
 	)
-	var sign_title := exterior.get_node("Zoom/SignTitle") as Label
-	var sign_sub := exterior.get_node("Zoom/SignSub") as Label
+	var sign_title := exterior.get_node("SignViewport/SignTitle") as Label
+	var sign_sub := exterior.get_node("SignViewport/SignSub") as Label
 	_expect(
 		sign_title.text == "Repair Shop"
 		and sign_sub.text == "Come on in",
@@ -78,6 +82,10 @@ func _run() -> void:
 		G.state.state == StateMain.State.TITLE
 		and door.get_open_amount() > 0.05,
 		"the tap opens the door before the game starts",
+	)
+	_expect(
+		is_instance_valid(G.level) and G.level.visible,
+		"the shop is already showing under the fade",
 	)
 	await _shot("door_opening")
 	var waited_sec := 0.0

@@ -1,32 +1,32 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://b6xytyybe6yji"]
 
-[ext_resource type="Script" path="res://src/parts/crystal_part.gd" id="1_part"]
-[ext_resource type="Texture2D" path="res://assets/images/repairables/shrinkray_fixed_crystal.png" id="2_tex"]
+[ext_resource type="Script" uid="uid://dwy7eje86rf4e" path="res://src/parts/crystal_part.gd" id="1_part"]
+[ext_resource type="Texture2D" uid="uid://cmj5ufmoe5yds" path="res://assets/images/repairables/shrinkray_fixed_crystal.png" id="2_tex"]
 
-[node name="CrystalPart" type="Node2D" node_paths=PackedStringArray("shape")]
+[node name="CrystalPart" type="Node2D" unique_id=1380154561 node_paths=PackedStringArray("shape")]
 z_index = 10
 z_as_relative = false
 script = ExtResource("1_part")
 shape = NodePath("Shape")
 
-[node name="Art" type="Polygon2D" parent="."]
+[node name="Art" type="Polygon2D" parent="." unique_id=1659890571]
 unique_name_in_owner = true
 visible = false
 color = Color(0.9, 0.35, 0.9, 1)
 polygon = PackedVector2Array(0, -17, 14, 0, 0, 17, -14, 0)
 
-[node name="Sprite" type="Sprite2D" parent="."]
+[node name="Sprite" type="Sprite2D" parent="." unique_id=1676200761]
 unique_name_in_owner = true
-scale = Vector2(0.60344828, 0.60344828)
+scale = Vector2(0.6034483, 0.6034483)
 texture = ExtResource("2_tex")
 region_enabled = true
 region_rect = Rect2(329, 166, 53, 58)
 
-[node name="Shape" type="Area2D" parent="."]
+[node name="Shape" type="Area2D" parent="." unique_id=827181149]
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape"]
-polygon = PackedVector2Array(-15.9914, -17.5, 15.9914, -17.5, 15.9914, 17.5, -15.9914, 17.5)
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape" unique_id=563904453]
+polygon = PackedVector2Array(-15, -4, -5.276146, -17.499998, 10, -15, 15, -9, 14, 9, 9, 14, 0, 17, -10, 13, -15, 4)

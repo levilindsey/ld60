@@ -67,6 +67,7 @@ const _BENCH_DUST_ON_ITEM_SHARE := 0.25
 
 var has_started := false
 var has_won := false
+var _start_credits_checked := false
 
 ## Times the current repair step and lights its target, then
 ## its tool, when the player stalls. See HintTracker.
@@ -81,6 +82,10 @@ var next_item_index := 0
 ## the settings' first-repairable override (if any) moved
 ## to the front. Built once when the level starts.
 var _effective_queue: Array[Repairable.Type] = []
+## The authored queue and override this level built its played
+## order from, so a mismatch can be spotted (see below).
+var _queue_at_build: Array[Repairable.Type] = []
+var _override_at_build := -2
 
 ## The player's hand: what is held, the cursor and press routing.
 var hand: Hand:
@@ -205,7 +210,15 @@ func _ready() -> void:
 		_spawn_next_item()
 
 
+
 func _physics_process(delta: float) -> void:
+	# The level is built behind the title screen, so the
+	# at-start flag is read on the first frame of actual play,
+	# not in `_ready()` (which fires while the title is up).
+	if not _start_credits_checked:
+		_start_credits_checked = true
+		if G.settings.show_credits_at_start:
+			win.call_deferred()
 	_step_bench_returns(delta)
 	_bounce_shop_radio()
 
@@ -2016,8 +2029,10 @@ func _prune_bench_dust() -> void:
 ## plays the queue as authored.
 func _build_effective_queue() -> void:
 	_effective_queue.clear()
+	_queue_at_build = G.settings.item_queue.duplicate()
 	var start_index := 0
 	var override := G.settings.get_first_repairable_override()
+	_override_at_build = override
 	if override >= 0:
 		var override_type: Repairable.Type = override
 		var found_index := G.settings.item_queue.find(override_type)
@@ -2027,6 +2042,24 @@ func _build_effective_queue() -> void:
 		start_index, G.settings.item_queue.size()
 	):
 		_effective_queue.append(G.settings.item_queue[index])
+
+
+## The played-order index of the item last spawned (0 for the
+## first), so the item on the bench is this index once it lands.
+func get_active_item_index() -> int:
+	return next_item_index - 1
+
+
+## True when settings' queue or first-repairable override has
+## changed since this level built its played order. A level
+## warmed up behind the title can go stale this way when a
+## probe retunes the schedule after boot.
+func is_schedule_stale() -> bool:
+	return (
+		_queue_at_build != G.settings.item_queue
+		or _override_at_build
+		!= G.settings.get_first_repairable_override()
+	)
 
 
 ## True once every item of the day's order has been spawned.

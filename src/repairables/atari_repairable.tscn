@@ -19,6 +19,7 @@ script = ExtResource("1_item")
 item_name = "Atari joystick"
 shape = NodePath("Shape")
 shadow_style = 1
+shadow_offset = Vector2(3, 8)
 ticket = "hi i movd it to strong and now it dont werk
 :("
 

@@ -33,7 +33,17 @@ func _ready() -> void:
 	_hand = G.level.hand
 	_expect(
 		G.level.active_repairable.item_name == "TV",
-		"the first-repairable override puts the TV first",
+		"the first-repairable override starts at the TV",
+	)
+	# Skipping ahead drops everything scheduled before the TV:
+	# the played order is the authored queue from the TV on.
+	var queue := G.settings.item_queue
+	var tv_index := queue.find(Repairable.Type.TV)
+	_expect(
+		tv_index > 0
+		and G.level._effective_queue == queue.slice(tv_index),
+		"the schedule skips ahead to the TV (order %s)"
+		% [G.level._effective_queue],
 	)
 	G.settings.first_repairable_override = Settings.FirstRepairable.NONE
 	await _check_tv()

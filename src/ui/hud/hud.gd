@@ -28,6 +28,8 @@ func handle_state_transition(to_state: StateMain.State) -> void:
 	match to_state:
 		StateMain.State.TITLE:
 			%Exterior.reset_exterior()
+			if is_instance_valid(G.game_panel):
+				G.game_panel.preload_level()
 			fade_in(%TitleOverlay)
 			fade_out(%PauseOverlay)
 			fade_out(%CreditsOverlay)
@@ -54,6 +56,8 @@ func request_enter() -> bool:
 	if not is_instance_valid(%Exterior):
 		return false
 	%Exterior.enter()
+	if is_instance_valid(G.game_panel):
+		G.game_panel.reveal_preloaded_level()
 	return true
 
 

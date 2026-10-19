@@ -85,7 +85,7 @@ enum ShadowStyle {
 @export var bench_radius_px := 50.0
 ## The bench shadow's size, and where it sits from the item's middle.
 @export var shadow_size := Vector2(170.0, 32.0)
-@export var shadow_offset := Vector2(5.0, 62.0)
+@export var shadow_offset := Vector2(5.0, 18.0)
 
 var mode := Mode.ENTERING
 ## True while the level is bringing this finished item back
@@ -141,7 +141,7 @@ func _ready() -> void:
 			if is_instance_valid(layer.art):
 				arts.append(layer.art)
 		DropShadow.attach_silhouette(
-			self, arts, shadow_offset, show_shadow, 1.0, true
+			self, arts, shadow_offset, show_shadow, 0.92, true
 		)
 	else:
 		DropShadow.attach(

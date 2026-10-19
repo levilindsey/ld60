@@ -26,16 +26,36 @@ func _ready() -> void:
 
 func _run() -> void:
 	await _seconds(0.3)
+	# A second run of this probe (`--credits-at-start` in
+	# tests/run.ps1) flips the settings flag instead: the
+	# credits then show at the start, with no win called.
+	var at_start := OS.get_cmdline_user_args().has("--credits-at-start")
+	G.settings.show_credits_at_start = at_start
 	G.state.transition(StateMain.State.GAME)
 	await _seconds(0.8)
 	if not _expect(is_instance_valid(G.level), "the level is running"):
 		return
-	if not _expect(await _wait_for_landing(), "the first item lands"):
-		return
-	_hand = G.level.hand
 	var card := G.level.get_node("CreditsCard") as CreditsCard
-	_expect(not card.visible, "the credits card starts hidden")
-	G.level.win()
+	if at_start:
+		_expect(
+			await _wait_until(
+				func() -> bool:
+					return (
+						G.state.state == StateMain.State.CREDITS
+						and card.visible
+					),
+				roundi(5.0 * Engine.physics_ticks_per_second),
+			),
+			"the credits show at the start with the flag on",
+		)
+	else:
+		if not _expect(
+			await _wait_for_landing(), "the first item lands"
+		):
+			return
+		_expect(not card.visible, "the credits card starts hidden")
+		G.level.win()
+	_hand = G.level.hand
 	_expect(
 		G.state.state == StateMain.State.CREDITS,
 		"winning enters the credits state",

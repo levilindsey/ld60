@@ -20,6 +20,14 @@ const _ROCK_SHIFT_PX := 20.0
 ## heading whatever the item's scale and turn.
 const _INDICATOR_OFFSET_PX := 64.0
 const _INDICATOR_HALF_SPAN_PX := 30.0
+## How long the popped scrap's flight off screen takes.
+const _FLING_SEC := 0.55
+## How far above where it came loose the scrap exits.
+const _FLING_UP_PX := 420.0
+## How far past the viewport edge the scrap flies before it goes.
+const _FLING_MARGIN_PX := 160.0
+## How far the scrap spins on its way out, in radians.
+const _FLING_SPIN_RAD := 9.0
 
 ## The part kind this socket takes.
 @export var accepted_part := Part.Type.GEAR
@@ -64,8 +72,6 @@ var _yank_time := 0.0
 func _ready() -> void:
 	super._ready()
 	type = Type.PART_SOCKET
-	%Outline.polygon = Part.get_polygon(accepted_part)
-	%Outline.scale = Vector2(1.2, 1.2)
 	has_broken_part = starts_with_broken_part
 	%BrokenArt.polygon = Part.get_polygon(accepted_part)
 	%BrokenArt.color = Part.get_color(accepted_part).darkened(0.45)
@@ -78,6 +84,12 @@ func _ready() -> void:
 		%BrokenPart.add_child(broken_sprite)
 		%BrokenArt.hide()
 	%BrokenPart.visible = has_broken_part
+	# The ghost outline traces the part's real art, not its
+	# placeholder polygon: the polygon is tens of pixels across
+	# where the fitted stick stands well over a hundred, so the
+	# outline all but vanished against the real thing.
+	%Outline.polygon = _get_art_outline_points()
+	%Outline.scale = Vector2.ONE
 	if is_instance_valid(installed_art):
 		installed_art.hide()
 	_broken_part_home_position = %BrokenPart.position
@@ -215,6 +227,14 @@ func on_part_installed() -> void:
 	_refresh_yank_indicator()
 	if is_instance_valid(installed_art):
 		installed_art.show()
+		# The fitted sprite is the part as the item's own art
+		# draws it, at the item's scale and spot. The drawer
+		# part that just landed keeps its bench size and sits
+		# centred on the socket, so leaving it drawn shows the
+		# piece twice, offset (the Atari's two sticks).
+		for child in get_children():
+			if child is Part:
+				(child as Part).hide()
 	G.audio.play_sound(&"click")
 	# The locking fastener goes back in over the new part,
 	# so it must count as unfinished again before this
@@ -222,6 +242,56 @@ func on_part_installed() -> void:
 	if is_instance_valid(locking_fastener):
 		locking_fastener.set_install_mode()
 	finish()
+
+
+## The hint outline follows the fitted art too, not the
+## socket's small hit circle.
+func _get_hint_polygon() -> PackedVector2Array:
+	var points := _get_art_outline_points()
+	if points.size() >= 3:
+		return points
+	return super._get_hint_polygon()
+
+
+## Where this socket's part sits, as a rectangle in socket
+## space traced from the real art: the fitted sprite when the
+## scene gives one, the broken part's sprite otherwise, grown
+## a touch so the line clears the art. Kinds with neither
+## keep the placeholder polygon, a little larger than the
+## part, as before.
+func _get_art_outline_points() -> PackedVector2Array:
+	var rect := Rect2()
+	var has_rect := false
+	if installed_art is Sprite2D:
+		var fitted := installed_art as Sprite2D
+		rect = fitted.transform * fitted.get_rect()
+		has_rect = true
+	else:
+		for child in %BrokenPart.get_children():
+			if child is Sprite2D:
+				var broken := child as Sprite2D
+				rect = (
+					(%BrokenPart as Node2D).transform
+					* broken.transform
+					* broken.get_rect()
+				)
+				has_rect = true
+				break
+	if not has_rect:
+		var points := Part.get_polygon(accepted_part)
+		var scaled := PackedVector2Array()
+		for point in points:
+			scaled.append(point * 1.2)
+		return scaled
+	rect = rect.grow(4.0)
+	return PackedVector2Array(
+		[
+			rect.position,
+			Vector2(rect.end.x, rect.position.y),
+			rect.end,
+			Vector2(rect.position.x, rect.end.y),
+		]
+	)
 
 
 ## Builds the two yank arrows in code, one each side.
@@ -290,17 +360,38 @@ func _pop_out() -> void:
 			)
 	%BrokenPart.rotation = 0.0
 	var scrap: Node2D = %BrokenPart
-	var scrap_target: Vector2 = scrap.global_position + Vector2(-260.0, 180.0)
+	var start_position := scrap.global_position
 	scrap.reparent(G.level)
 	scrap.reset_physics_interpolation()
+	# Flung fast, up and off the nearest side of the viewport,
+	# spinning, with no fade. It goes once it is past the edge.
+	var canvas_inverse := get_canvas_transform().affine_inverse()
+	var world_left := (canvas_inverse * Vector2.ZERO).x
+	var world_right := (
+		canvas_inverse * Vector2(get_viewport_rect().size.x, 0.0)
+	).x
+	var side := 1.0
+	if start_position.x - world_left < world_right - start_position.x:
+		side = -1.0
+	var scrap_target := Vector2(
+		(
+			world_right + _FLING_MARGIN_PX
+			if side > 0.0
+			else world_left - _FLING_MARGIN_PX
+		),
+		start_position.y - _FLING_UP_PX,
+	)
 	if is_instance_valid(_pop_tween):
 		_pop_tween.kill()
 	_pop_tween = create_tween()
 	_pop_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	_pop_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	_pop_tween.tween_property(scrap, "global_position", scrap_target, 0.4)
-	_pop_tween.parallel().tween_property(scrap, "rotation", 5.0, 0.4)
-	_pop_tween.parallel().tween_property(scrap, "modulate:a", 0.0, 0.4)
+	_pop_tween.tween_property(
+		scrap, "global_position", scrap_target, _FLING_SEC
+	)
+	_pop_tween.parallel().tween_property(
+		scrap, "rotation", side * _FLING_SPIN_RAD, _FLING_SEC
+	)
 	_pop_tween.tween_callback(scrap.queue_free)
 
 

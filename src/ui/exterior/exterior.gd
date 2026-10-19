@@ -37,11 +37,6 @@ const _ENTER_AT_SEC := 0.95
 var _is_entering := false
 var _has_entered := false
 var _enter_tween: Tween
-## The sign labels' resting rects and the door's rect, in Zoom
-## space, so the lettering can ride the door as it swings.
-var _sign_title_base := Rect2()
-var _sign_sub_base := Rect2()
-var _door_rect_local := Rect2()
 
 
 func _ready() -> void:
@@ -103,42 +98,6 @@ func _emit_entered() -> void:
 
 func _apply_door_open(amount: float) -> void:
 	%Door.set_open_amount(amount)
-	# The lettering is painted on the door, so it rides the face:
-	# squashed toward the hinge and darkened as the door turns,
-	# the same fake 3D the door slices use.
-	var angle: float = %Door.get_open_angle_rad()
-	var squish := cos(angle)
-	var hinge_x := _door_rect_local.end.x
-	var door_center_y := _door_rect_local.get_center().y
-	var brightness := 1.0 - 0.35 * sin(angle)
-	_ride_sign(%SignTitle, _sign_title_base, hinge_x, door_center_y, squish, angle, brightness)
-	_ride_sign(%SignSub, _sign_sub_base, hinge_x, door_center_y, squish, angle, brightness)
-
-
-func _ride_sign(
-	label: Label,
-	base: Rect2,
-	hinge_x: float,
-	door_center_y: float,
-	squish: float,
-	angle: float,
-	brightness: float,
-) -> void:
-	if base.size.x <= 0.0:
-		return
-	var depth_share := clampf(
-		(hinge_x - base.get_center().x)
-		/ maxf(_door_rect_local.size.x, 1.0),
-		0.0,
-		1.0,
-	)
-	var recede := 1.0 - 0.16 * sin(angle) * depth_share
-	label.position = Vector2(
-		hinge_x - (hinge_x - base.position.x) * squish,
-		door_center_y + (base.position.y - door_center_y) * recede,
-	)
-	label.scale = Vector2(squish, recede)
-	label.modulate = Color(brightness, brightness, brightness)
 
 
 ## Fits the wall over the viewport and puts the door, and the
@@ -168,30 +127,17 @@ func _layout() -> void:
 	%Door.door_size = _DOOR_IMAGE_RECT.size * image_scale
 	%Door.set_open_amount(0.0)
 
-	_door_rect_local = Rect2(
-		%Door.position, _DOOR_IMAGE_RECT.size * image_scale
-	)
-
-	var plate := Rect2(
-		wall_origin + _PLATE_IMAGE_RECT.position * image_scale,
+	# The lettering renders into the sign viewport at plate
+	# resolution; the door slice-draws it with the face.
+	%Door.sign_texture = %SignViewport.get_texture()
+	%Door.sign_rect = Rect2(
+		(_PLATE_IMAGE_RECT.position - _DOOR_IMAGE_RECT.position)
+		* image_scale,
 		_PLATE_IMAGE_RECT.size * image_scale,
 	)
-	_sign_title_base = Rect2(
-		plate.position + Vector2(0.0, plate.size.y * 0.06)
-		- door_center,
-		Vector2(plate.size.x, plate.size.y * 0.54),
-	)
-	%SignTitle.position = _sign_title_base.position
-	%SignTitle.size = _sign_title_base.size
-	_fit_sign_font(%SignTitle, plate.size, 0.30)
-	_sign_sub_base = Rect2(
-		plate.position + Vector2(0.0, plate.size.y * 0.60)
-		- door_center,
-		Vector2(plate.size.x, plate.size.y * 0.34),
-	)
-	%SignSub.position = _sign_sub_base.position
-	%SignSub.size = _sign_sub_base.size
-	_fit_sign_font(%SignSub, plate.size, 0.17)
+	var plate_size := Vector2(%SignViewport.size)
+	_fit_sign_font(%SignTitle, plate_size, 0.30)
+	_fit_sign_font(%SignSub, plate_size, 0.17)
 
 
 ## Sizes a sign label's font to its plate: as tall as the given

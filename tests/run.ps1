@@ -61,7 +61,9 @@ $Runs = @(
 @{ Name = "exterior"; Probe = "exterior"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
     @{ Name = "bench_drag"; Probe = "bench_drag"; UserArguments = @(); TimeoutSeconds = 150; WindowedArguments = @() }
     @{ Name = "bird"; Probe = "bird"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
+    @{ Name = "bird_start"; Probe = "bird"; UserArguments = @("--bird-at-start"); TimeoutSeconds = 90; WindowedArguments = @() }
     @{ Name = "credits"; Probe = "credits"; UserArguments = @(); TimeoutSeconds = 60; WindowedArguments = @() }
+    @{ Name = "credits_start"; Probe = "credits"; UserArguments = @("--credits-at-start"); TimeoutSeconds = 60; WindowedArguments = @() }
     @{ Name = "workable"; Probe = "workable"; UserArguments = @(); TimeoutSeconds = 150; WindowedArguments = @() }
     @{ Name = "radio"; Probe = "radio"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
     @{ Name = "hints"; Probe = "hints"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }

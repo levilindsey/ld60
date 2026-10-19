@@ -82,6 +82,7 @@ func _run() -> void:
 	await _check_wrong_part()
 	await _check_cleanup()
 	await _check_dropped_part_shadow()
+	await _check_shape_grab()
 
 
 ## The drawers hold one of every part kind in the game, plus
@@ -353,6 +354,33 @@ func _check_wiggle_out() -> void:
 	_expect(
 		_socket.mode == InteractionPoint.Mode.UNSTARTED,
 		"the socket is empty after the wiggle-out",
+	)
+
+	# The loose piece is flung up and off a side, unfaded, and
+	# removed once it is past the edge.
+	var start_position := broken_part.global_position
+	var rose := false
+	var went_sideways := false
+	var stayed_opaque := true
+	var frames := 0
+	while is_instance_valid(broken_part) and frames < 120:
+		if broken_part.global_position.y < start_position.y - 20.0:
+			rose = true
+		if (
+			absf(broken_part.global_position.x - start_position.x)
+			> 250.0
+		):
+			went_sideways = true
+		if broken_part.modulate.a < 0.99:
+			stayed_opaque = false
+		await _physics_frames(1)
+		frames += 1
+	_expect(rose, "the loose piece is flung upward")
+	_expect(went_sideways, "the loose piece flies off to a side")
+	_expect(stayed_opaque, "the loose piece does not fade as it flies")
+	_expect(
+		not is_instance_valid(broken_part),
+		"the loose piece is removed after flying off",
 	)
 
 
@@ -661,6 +689,94 @@ func _check_dropped_part_shadow() -> void:
 		"a dropped part's shadow copies carry the part sprite's"
 		+ " texture (%d of %d copies)"
 		% [textured_copy_count, sprite_copy_count],
+	)
+	# The silhouette must be the sprite's shape at a uniform
+	# scale, never squashed per axis: a squashed copy reads as
+	# the wrong orientation when the part turns. Compare how
+	# much the copy's basis stretches each of the sprite's axes.
+	var source_basis := sprite.get_global_transform()
+	var keeps_proportions := sprite_copy_count > 0
+	for pair in shadow._copies:
+		var copy := pair[0] as CanvasItem
+		var source := pair[1] as CanvasItem
+		if not (copy is Sprite2D and source == sprite):
+			continue
+		var copy_basis := (copy as Node2D).get_global_transform()
+		var stretch_x := (
+			copy_basis.x.length()
+			/ maxf(source_basis.x.length(), 0.0001)
+		)
+		var stretch_y := (
+			copy_basis.y.length()
+			/ maxf(source_basis.y.length(), 0.0001)
+		)
+		if absf(stretch_x - stretch_y) > 0.02 * maxf(stretch_x, stretch_y):
+			keeps_proportions = false
+	_expect(
+		keeps_proportions,
+		"a dropped part's shadow keeps the sprite's proportions"
+		+ " (a per-axis grow squashes it, which reads as the"
+		+ " wrong orientation when the part turns)",
+	)
+	scene_part.queue_free()
+	await _physics_frames(2)
+
+
+## A loose part is grabbed by its authored Shape, not by how
+## near the press lands to its center: a press out on the part,
+## well past the old center reach, still takes it. Its hint
+## highlight goes over the sprite, not the placeholder art.
+func _check_shape_grab() -> void:
+	var scene_part := _find_stored_part(Part.Type.TUBE)
+	if not _expect(
+		is_instance_valid(scene_part), "a shape-grab part is stocked"
+	):
+		return
+	scene_part.is_stored = false
+	scene_part.is_installed = false
+	scene_part.drawer_index = -1
+	scene_part.rotation = 0.0
+	scene_part.global_position = Vector2(-300.0, -160.0)
+	scene_part.show()
+	await _physics_frames(4)
+
+	# The far end of the shape, pulled a little inside.
+	var far_point := scene_part.global_position
+	var far_distance := 0.0
+	for point in scene_part.get_shape_world_polygon():
+		var distance := point.distance_to(scene_part.global_position)
+		if distance > far_distance:
+			far_distance = distance
+			far_point = point
+	far_point = scene_part.global_position + (
+		(far_point - scene_part.global_position) * 0.8
+	)
+	_expect(
+		far_distance * 0.8 > G.settings.part_grab_radius_px,
+		"the shape reaches past the old center grab reach",
+	)
+	_expect(
+		_level.get_loose_part_at(far_point) == scene_part,
+		"a press on the shape away from the center finds the part",
+	)
+	await _press_down(far_point)
+	_expect(
+		_hand.get_loose_part() == scene_part,
+		"pressing the shape away from the center grabs the part",
+	)
+	await _release_at(far_point)
+
+	scene_part.set_hint_active(true)
+	var sprite := scene_part.get_node("%Sprite") as Sprite2D
+	_expect(
+		scene_part.is_hint_active()
+		and sprite.material == G.settings.outline_hint_material,
+		"the part's highlight goes over its sprite",
+	)
+	scene_part.set_hint_active(false)
+	_expect(
+		sprite.material != G.settings.outline_hint_material,
+		"the part's sprite is restored when the highlight stops",
 	)
 	scene_part.queue_free()
 	await _physics_frames(2)

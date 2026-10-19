@@ -28,6 +28,12 @@ var texture: Texture2D
 var source_rect := Rect2()
 ## The door's size on screen, in pixels.
 var door_size := Vector2.ZERO
+## The sign lettering, rendered to a texture (a SubViewport, the
+## way the manual renders its pages), and where its plate sits
+## in door space. Drawn slice by slice with the face, so the
+## words skew the way the sign does.
+var sign_texture: Texture2D
+var sign_rect := Rect2()
 
 var _open_amount := 0.0
 
@@ -54,72 +60,103 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, door_size), _DOORWAY_COLOR)
 
 	var angle := _MAX_OPEN_RAD * _open_amount
-	var hinge_x := door_size.x
-	var center_y := door_size.y * 0.5
 	var brightness := 1.0 - _MAX_SHADE * sin(angle)
+	var face_color := Color(brightness, brightness, brightness)
 
-	# Slice edge positions, from the hinge to the free edge. x is
-	# compressed by the swing; the receding edge also shrinks a
-	# little, which sells the depth.
-	var xs := PackedFloat32Array()
-	var half_heights := PackedFloat32Array()
-	for i in _SLICE_COUNT + 1:
-		var share := float(i) / _SLICE_COUNT
-		var depth := door_size.x * share
-		xs.append(hinge_x - depth * cos(angle))
-		var recede := 1.0 - _RECESS_SHRINK * sin(angle) * share
-		half_heights.append(center_y * recede)
-
+	# Slice the face from the hinge (the door's right edge in the
+	# image) to the free (knob) edge on the left.
 	var texture_size := texture.get_size()
+	var u_hinge := (
+		(source_rect.position.x + source_rect.size.x) / texture_size.x
+	)
+	var u_span := source_rect.size.x / texture_size.x
+	var v_top := source_rect.position.y / texture_size.y
+	var v_bottom := (
+		(source_rect.position.y + source_rect.size.y) / texture_size.y
+	)
 	for i in _SLICE_COUNT:
+		var local_left := door_size.x * (1.0 - float(i + 1) / _SLICE_COUNT)
+		var local_right := door_size.x * (1.0 - float(i) / _SLICE_COUNT)
 		var points := PackedVector2Array([
-			Vector2(xs[i], center_y - half_heights[i]),
-			Vector2(xs[i + 1], center_y - half_heights[i + 1]),
-			Vector2(xs[i + 1], center_y + half_heights[i + 1]),
-			Vector2(xs[i], center_y + half_heights[i]),
+			_face_point(local_right, 0.0, angle),
+			_face_point(local_left, 0.0, angle),
+			_face_point(local_left, door_size.y, angle),
+			_face_point(local_right, door_size.y, angle),
 		])
-		# The hinge is the door's right edge in the image; slices
-		# run from there to the free (knob) edge on the left.
-		var u_hinge := (
-			(source_rect.position.x + source_rect.size.x)
-			/ texture_size.x
-		)
-		var u_span := source_rect.size.x / texture_size.x
 		var u_start := u_hinge - u_span * float(i) / _SLICE_COUNT
 		var u_end := u_hinge - u_span * float(i + 1) / _SLICE_COUNT
-		var v_top := source_rect.position.y / texture_size.y
-		var v_bottom := (
-			(source_rect.position.y + source_rect.size.y)
-			/ texture_size.y
-		)
 		var uvs := PackedVector2Array([
 			Vector2(u_start, v_top),
 			Vector2(u_end, v_top),
 			Vector2(u_end, v_bottom),
 			Vector2(u_start, v_bottom),
 		])
-		draw_polygon(
-			points,
-			PackedColorArray([
-				Color(brightness, brightness, brightness)
-			]),
-			uvs,
-			texture,
-		)
+		draw_polygon(points, PackedColorArray([face_color]), uvs, texture)
+
+	_draw_sign(angle, face_color)
 
 	# The slab side at the free edge: a dark strip that widens as
 	# the door turns, so the slab reads as thick, not paper.
 	if angle > 0.02:
-		var free_x := xs[_SLICE_COUNT]
-		var free_half := half_heights[_SLICE_COUNT]
-		var edge := _EDGE_PX * sin(angle)
+		var free_top := _face_point(0.0, 0.0, angle)
+		var free_bottom := _face_point(0.0, door_size.y, angle)
+		var edge := Vector2(_EDGE_PX * sin(angle), 0.0)
+		var center_y := door_size.y * 0.5
 		var slab := PackedVector2Array([
-			Vector2(free_x, center_y - free_half),
-			Vector2(free_x, center_y + free_half),
-			Vector2(free_x + edge, center_y + free_half * 0.98),
-			Vector2(free_x + edge, center_y - free_half * 0.98),
+			free_top,
+			free_bottom,
+			free_bottom + edge + Vector2(0.0, -0.02 * center_y),
+			free_top + edge + Vector2(0.0, 0.02 * center_y),
 		])
 		draw_polygon(
 			slab,
 			PackedColorArray([_SLAB_COLOR * brightness]),
 		)
+
+
+## Where a point of the shut door (in door space) lands with the
+## door swung by `angle`: compressed toward the hinge, and
+## shrunk a little toward the middle as it recedes.
+func _face_point(local_x: float, local_y: float, angle: float) -> Vector2:
+	var depth := door_size.x - local_x
+	var center_y := door_size.y * 0.5
+	var recede := (
+		1.0 - _RECESS_SHRINK * sin(angle) * depth / door_size.x
+	)
+	return Vector2(
+		door_size.x - depth * cos(angle),
+		center_y + (local_y - center_y) * recede,
+	)
+
+
+## The sign lettering, in the same slices as the face, clipped
+## to the plate. The words skew exactly the way the sign does.
+func _draw_sign(angle: float, face_color: Color) -> void:
+	if not is_instance_valid(sign_texture) or sign_rect.size.x <= 0.0:
+		return
+	for i in _SLICE_COUNT:
+		var local_left := door_size.x * (1.0 - float(i + 1) / _SLICE_COUNT)
+		var local_right := door_size.x * (1.0 - float(i) / _SLICE_COUNT)
+		var sign_left := maxf(local_left, sign_rect.position.x)
+		var sign_right := minf(local_right, sign_rect.end.x)
+		if sign_right - sign_left < 0.5:
+			continue
+		var points := PackedVector2Array([
+			_face_point(sign_right, sign_rect.position.y, angle),
+			_face_point(sign_left, sign_rect.position.y, angle),
+			_face_point(sign_left, sign_rect.end.y, angle),
+			_face_point(sign_right, sign_rect.end.y, angle),
+		])
+		var u_start := (
+			(sign_left - sign_rect.position.x) / sign_rect.size.x
+		)
+		var u_end := (
+			(sign_right - sign_rect.position.x) / sign_rect.size.x
+		)
+		var uvs := PackedVector2Array([
+			Vector2(u_end, 0.0),
+			Vector2(u_start, 0.0),
+			Vector2(u_start, 1.0),
+			Vector2(u_end, 1.0),
+		])
+		draw_polygon(points, PackedColorArray([face_color]), uvs, sign_texture)

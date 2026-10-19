@@ -1,10 +1,10 @@
 extends "res://tests/probe_base.gd"
 ## Bread the bird. Boots the game, checks the bird stays hidden
-## until enough repairables are through, then (standing in for
-## the outbox) tells the controller the quota is met and the
-## next item has landed: the smack plays, falls to its marker,
-## cleans itself up, and arms the peeks. One peek is then
-## played directly to check its scene.
+## on the first repairable, then (standing in for the schedule)
+## puts the bench at the smack's repairable index and lands an
+## item there: the smack plays, falls to its marker, cleans
+## itself up, and arms the peeks. One peek is then played
+## directly to check its scene.
 ##
 ## Run it with `tests/run.ps1 -Name bird`, or from the repo root
 ## (PowerShell):
@@ -31,6 +31,11 @@ func _ready() -> void:
 
 func _run() -> void:
 	await _seconds(0.3)
+	# A second run of this probe (`--bird-at-start` in
+	# tests/run.ps1) flips the settings flag instead: the slam
+	# then plays at the start, on the first repairable.
+	var at_start := OS.get_cmdline_user_args().has("--bird-at-start")
+	G.settings.show_bird_slam_at_start = at_start
 	G.state.transition(StateMain.State.GAME)
 	await _seconds(0.8)
 	if not _expect(is_instance_valid(G.level), "the level is running"):
@@ -51,28 +56,51 @@ func _run() -> void:
 		"the bird controller and both animations are in the level",
 	):
 		return
-	_expect(
-		not _smack.visible and not _peak.visible,
-		"the bird starts hidden, before any repairable is through",
-	)
-	# Stand in for the outbox: the quota of repairables gets
-	# through, then the next one lands. The smack follows a few
-	# seconds into it.
-	for repairable in BirdController.REPAIRABLES_BEFORE_SMACK:
-		_controller._on_item_departed()
-	_controller._on_item_landed()
-	_expect(
-		not _peak.visible,
-		"the bird never peeks before the smack",
-	)
-	var smack_started := await _wait_until(
-		func() -> bool: return _smack.visible,
-		roundi(
-			(BirdController.SMACK_DELAY_SEC + 3.0)
-			* Engine.physics_ticks_per_second
-		),
-	)
-	_expect(smack_started, "the smack plays into the next repairable")
+	if at_start:
+		# The flag plays the slam at the start: it lands on the
+		# first repairable, with no schedule stand-in at all.
+		var slam_started := await _wait_until(
+			func() -> bool: return _smack.visible,
+			roundi(
+				(BirdController.SMACK_DELAY_SEC + 4.0)
+				* Engine.physics_ticks_per_second
+			),
+		)
+		_expect(slam_started, "the slam plays at the start")
+		_expect(
+			_controller._has_smacked,
+			"the at-start slam is marked as shown",
+		)
+	else:
+		_expect(
+			not _smack.visible and not _peak.visible,
+			"the bird starts hidden, before any repairable is through",
+		)
+		# The first item is before the smack's slot in the schedule:
+		# landing it must not arm anything.
+		_controller._on_item_landed()
+		await _seconds(BirdController.SMACK_DELAY_SEC + 0.6)
+		_expect(
+			not _smack.visible and not _controller._has_smacked,
+			"the smack stays away before its scheduled item",
+		)
+		# Stand in for the schedule: the bench is at the smack's
+		# repairable (index 2, the third item) and it lands. The
+		# smack follows a few seconds into it.
+		G.level.next_item_index = BirdController.SMACK_ITEM_INDEX + 1
+		_controller._on_item_landed()
+		_expect(
+			not _peak.visible,
+			"the bird never peeks before the smack",
+		)
+		var smack_started := await _wait_until(
+			func() -> bool: return _smack.visible,
+			roundi(
+				(BirdController.SMACK_DELAY_SEC + 3.0)
+				* Engine.physics_ticks_per_second
+			),
+		)
+		_expect(smack_started, "the smack plays into the next repairable")
 	_expect(
 		(_smack.get_node("AnimatedSprite2D") as AnimatedSprite2D)
 		.is_playing(),

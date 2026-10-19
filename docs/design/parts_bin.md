@@ -103,8 +103,9 @@ Earlier plans, kept for the record:
   with the rock, and slides a tiny bit out with each counted swing
   (up to 8 px in all). Letting go settles it back into place.
 - A swing counts when the drag reverses after moving at least 12 px.
-  After `swings_needed` (6 by default) the part pops out and flies
-  off into the trash with a spin.
+  After `swings_needed` (6 by default) the part pops out and is
+  flung fast, up and off the nearest side of the screen with a
+  spin, unfaded, and removed once it is past the edge.
 - **Yank:** dragging further than 60 px from the press point pulls
   it out at once: a yanked part defect (-8). (A fast-drag yank, at
   about 2500 px/s, is not built yet.)

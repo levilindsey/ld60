@@ -50,6 +50,8 @@ shader_parameter/outline_enabled = true
 [resource]
 script = ExtResource("1_krfic")
 start_in_game = false
+show_bird_slam_at_start = false
+show_credits_at_start = false
 pauses_on_focus_out = false
 default_level_scene = ExtResource("1_w7hap")
 point_cursor_texture = ExtResource("8_point")

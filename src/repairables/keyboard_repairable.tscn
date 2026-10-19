@@ -29,7 +29,7 @@ item_name = "Computer keyboard"
 shadow_style = 1
 shape = NodePath("Shape")
 ticket = "Lost some keys, and some of my toast, but at least I can touch-type."
-shadow_offset = Vector2(5, 34)
+shadow_offset = Vector2(3, 8)
 
 [node name="DropArea" type="Area2D" parent="." unique_id=1720184209]
 unique_name_in_owner = true
