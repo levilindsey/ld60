@@ -551,33 +551,29 @@ func _check_cleanup() -> void:
 func _check_shadow_turns_with(shadow: DropShadow, part: Part) -> void:
 	if not _expect(
 		is_instance_valid(shadow),
-		"a loose part has a drop shadow to turn with",
+		"a loose part has a drop shadow to check",
 	):
 		return
+	# At rest, then turned a quarter turn: the shadow must
+	# sit at the same world offset and stay upright in both.
 	var rest_rotation := part.rotation
-	part.rotation = rest_rotation + PI * 0.5
-	part.reset_physics_interpolation()
-	await get_tree().process_frame
-	await get_tree().process_frame
-	var expected_offset := shadow.offset_px
-	var actual_offset := (
-		shadow.global_position - part.global_position
-	)
+	var offsets: Array[Vector2] = []
+	for turned in [false, true]:
+		part.rotation = rest_rotation + (PI * 0.5 if turned else 0.0)
+		part.reset_physics_interpolation()
+		await get_tree().process_frame
+		await get_tree().process_frame
+		offsets.append(shadow.global_position - part.global_position)
+		_expect(
+			absf(wrapf(shadow.global_rotation, -PI, PI)) < 0.01,
+			"a loose part's shadow stays upright however it is turned",
+		)
 	_expect(
-		actual_offset.distance_to(expected_offset) < 0.5,
+		offsets[0].distance_to(shadow.offset_px) < 0.5
+		and offsets[1].distance_to(shadow.offset_px) < 0.5,
 		"a loose part's shadow bears down-screen at the same"
 		+ " world offset however it is turned"
-		+ " (offset %s, want %s)" % [actual_offset, expected_offset],
-	)
-	_expect(
-		absf(
-			wrapf(
-				shadow.global_rotation - part.global_rotation,
-				-PI,
-				PI,
-			),
-		) < 0.01,
-		"a loose part's shadow shape turns with it",
+		+ " (offsets %s, want %s)" % [offsets, shadow.offset_px],
 	)
 	part.rotation = rest_rotation
 	part.reset_physics_interpolation()

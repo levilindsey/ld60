@@ -15,8 +15,8 @@ extends Node2D
 ## outline hint learned, so a scaled-down prop does not shrink
 ## its shadow. The offset stays in the world frame (see
 ## `offset_px`): the light is above, so the shadow always
-## sits down-screen from the host. A silhouette's shape still
-## turns with the host so it matches the rotated sprite.
+## sits down-screen from the host, and it never turns with
+## the host either.
 ## Only shown while its `show_when` callable says the host is at
 ## rest and not being held or carried, fading in and out.
 
@@ -166,13 +166,15 @@ func _process(delta: float) -> void:
 	var centre: Vector2 = host_node.global_position
 	if is_instance_valid(anchor):
 		centre = anchor.global_position
-	# The offset is in the world frame: the light is above,
-	# so the shadow always sits down-screen from the host
-	# however the host itself is turned. The shadow's own
-	# turn still follows the host, so a silhouette's shape
-	# matches the rotated sprite.
+	# The offset is in the world frame, and the shadow never
+	# turns with the host: the light is above, so the shadow
+	# sits at the same down-screen offset, in the same
+	# upright shape, however the host itself is turned. (A
+	# silhouette that turned with the host swung its bulk
+	# around the host's origin, so a turned screw's shadow
+	# landed on a different side every time.)
 	global_position = centre + offset_px
-	global_rotation = host_node.global_rotation
+	global_rotation = 0.0
 	_sync_silhouette()
 	_update_clip()
 	var should_show := (
@@ -446,12 +448,15 @@ func _sync_silhouette() -> void:
 	if kind != Kind.SILHOUETTE or _copies.is_empty():
 		return
 	var host_transform := _host.get_global_transform()
+	# The host's scale, without its turn: the copies keep
+	# their size but not the host's rotation.
+	var host_scale := host_transform.get_scale()
 	for layer in _layers:
 		# No grow here: each copy carries its own scale factor,
 		# applied around the art's centre at build time.
 		layer.global_transform = Transform2D(
-			host_transform.x,
-			host_transform.y,
+			Vector2(host_scale.x, 0.0),
+			Vector2(0.0, host_scale.y),
 			global_position,
 		)
 	for pair in _copies:
