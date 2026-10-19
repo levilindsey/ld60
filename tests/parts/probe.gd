@@ -554,8 +554,9 @@ func _check_shadow_turns_with(shadow: DropShadow, part: Part) -> void:
 		"a loose part has a drop shadow to check",
 	):
 		return
-	# At rest, then turned a quarter turn: the shadow must
-	# sit at the same world offset and stay upright in both.
+	# At rest, then turned a quarter turn: the shadow stays
+	# at the same world offset, and its shape turns with the
+	# part, around its own centre.
 	var rest_rotation := part.rotation
 	var offsets: Array[Vector2] = []
 	for turned in [false, true]:
@@ -564,9 +565,17 @@ func _check_shadow_turns_with(shadow: DropShadow, part: Part) -> void:
 		await get_tree().process_frame
 		await get_tree().process_frame
 		offsets.append(shadow.global_position - part.global_position)
+		var copy := _first_shadow_copy(shadow)
 		_expect(
-			absf(wrapf(shadow.global_rotation, -PI, PI)) < 0.01,
-			"a loose part's shadow stays upright however it is turned",
+			is_instance_valid(copy)
+			and absf(
+				wrapf(
+					copy.global_rotation - part.global_rotation,
+					-PI,
+					PI,
+				),
+			) < 0.05,
+			"a loose part's shadow shape turns with it",
 		)
 	_expect(
 		offsets[0].distance_to(shadow.offset_px) < 0.5
@@ -579,6 +588,17 @@ func _check_shadow_turns_with(shadow: DropShadow, part: Part) -> void:
 	part.reset_physics_interpolation()
 	await get_tree().process_frame
 	await get_tree().process_frame
+
+
+## The first drawn copy under a shadow, or null.
+func _first_shadow_copy(shadow: DropShadow) -> Node2D:
+	var stack: Array[Node] = [shadow]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		if node is Sprite2D or node is Polygon2D:
+			return node as Node2D
+		stack.append_array(node.get_children())
+	return null
 
 
 ## Drops a part with real art loose on the bench and checks

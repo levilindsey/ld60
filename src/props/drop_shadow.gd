@@ -1,4 +1,4 @@
-class_name DropShadow
+﻿class_name DropShadow
 extends Node2D
 ## A bench shadow under a thing that is resting there. Two kinds:
 ##
@@ -15,8 +15,9 @@ extends Node2D
 ## outline hint learned, so a scaled-down prop does not shrink
 ## its shadow. The offset stays in the world frame (see
 ## `offset_px`): the light is above, so the shadow always
-## sits down-screen from the host, and it never turns with
-## the host either.
+## sits down-screen from the host. Its shape turns with the
+## host, around the art's centre, which stays at that
+## offset.
 ## Only shown while its `show_when` callable says the host is at
 ## rest and not being held or carried, fading in and out.
 
@@ -96,6 +97,12 @@ var _host: CanvasItem
 var _fade := 0.0
 var _layers: Array[Node2D] = []
 var _copies: Array = []
+## The middle of the host's art, in the host's own units.
+## The silhouette turns around this point (not the host's
+## origin), and this point sits at the shadow's world
+## offset: the shape matches the host's turn, while its
+## centre stays at the same down-screen offset.
+var _centre_local := Vector2.ZERO
 var _clip_material: ShaderMaterial
 
 
@@ -166,13 +173,13 @@ func _process(delta: float) -> void:
 	var centre: Vector2 = host_node.global_position
 	if is_instance_valid(anchor):
 		centre = anchor.global_position
-	# The offset is in the world frame, and the shadow never
-	# turns with the host: the light is above, so the shadow
-	# sits at the same down-screen offset, in the same
-	# upright shape, however the host itself is turned. (A
-	# silhouette that turned with the host swung its bulk
-	# around the host's origin, so a turned screw's shadow
-	# landed on a different side every time.)
+	# The offset is in the world frame: the light is above,
+	# so the art's centre sits at the same down-screen
+	# offset however the host is turned. The silhouette
+	# turns with the host, but around the art's centre (see
+	# `_centre_local`), not the host's origin: turning
+	# around the origin swung the shadow's bulk to a
+	# different side at every orientation.
 	global_position = centre + offset_px
 	global_rotation = 0.0
 	_sync_silhouette()
@@ -285,6 +292,54 @@ func _rebuild() -> void:
 				],
 			)
 	_update_clip()
+	_update_centre_local()
+
+
+## The middle of the shadow's art, measured from the copies
+## as they are actually drawn in their layer (so wrapper
+## scales and reparented art cannot skew it). The layer's
+## space is the host's own units, so this is also the
+## art's centre in host units.
+func _update_centre_local() -> void:
+	if _copies.is_empty():
+		return
+	var bounds := Rect2()
+	var first := true
+	for entry in _copies:
+		var copy := entry[0] as Node2D
+		if not is_instance_valid(copy):
+			continue
+		var rects: Array[Rect2] = []
+		if copy is Sprite2D:
+			rects.append((copy as Sprite2D).get_rect())
+		elif copy is Polygon2D:
+			var polygon := (copy as Polygon2D).polygon
+			if not polygon.is_empty():
+				var poly_bounds := Rect2(polygon[0], Vector2.ZERO)
+				for point in polygon:
+					poly_bounds = poly_bounds.expand(point)
+				rects.append(poly_bounds)
+		else:
+			var info := _get_grow(entry[1] as CanvasItem, Vector2.ZERO)
+			var centre := info[1] as Vector2
+			var size := info[2] as Vector2
+			if size.x > 0.0 and size.y > 0.0:
+				rects.append(Rect2(centre - size * 0.5, size))
+		for rect in rects:
+			for corner in [
+				rect.position,
+				rect.end,
+				Vector2(rect.position.x, rect.end.y),
+				Vector2(rect.end.x, rect.position.y),
+			]:
+				var local_point: Vector2 = copy.transform * corner
+				if first:
+					bounds = Rect2(local_point, Vector2.ZERO)
+					first = false
+				else:
+					bounds = bounds.expand(local_point)
+	if not first:
+		_centre_local = bounds.get_center()
 
 
 ## The per-axis scale that grows `source`'s art by `margin`
@@ -334,7 +389,7 @@ func _get_grow(source: CanvasItem, margin: Vector2) -> Array:
 					top_left -= sprite_source.texture.get_size() * 0.5
 				centre = top_left + size * 0.5
 	if size.x <= 0.0 or size.y <= 0.0:
-		return [Vector2.ONE, Vector2.ZERO]
+		return [Vector2.ONE, Vector2.ZERO, Vector2.ZERO]
 	var basis := source.get_global_transform()
 	var world_size := Vector2(
 		size.x * basis.x.length(),
@@ -344,7 +399,7 @@ func _get_grow(source: CanvasItem, margin: Vector2) -> Array:
 		1.0 + 2.0 * margin.x / maxf(world_size.x, 0.001),
 		1.0 + 2.0 * margin.y / maxf(world_size.y, 0.001),
 	)
-	return [factor, centre]
+	return [factor, centre, size]
 
 
 static var _used_rects: Dictionary = {}
@@ -448,16 +503,16 @@ func _sync_silhouette() -> void:
 	if kind != Kind.SILHOUETTE or _copies.is_empty():
 		return
 	var host_transform := _host.get_global_transform()
-	# The host's scale, without its turn: the copies keep
-	# their size but not the host's rotation.
-	var host_scale := host_transform.get_scale()
 	for layer in _layers:
-		# No grow here: each copy carries its own scale factor,
-		# applied around the art's centre at build time.
+		# Turn with the host, around the art's centre: the
+		# layer's origin backs the centre out, so the copies
+		# (laid out in host units) spin in place at the
+		# shadow's offset instead of orbiting the origin.
 		layer.global_transform = Transform2D(
-			Vector2(host_scale.x, 0.0),
-			Vector2(0.0, host_scale.y),
-			global_position,
+			host_transform.x,
+			host_transform.y,
+			global_position
+			- host_transform.basis_xform(_centre_local),
 		)
 	for pair in _copies:
 		var copy := pair[0] as CanvasItem
@@ -568,6 +623,7 @@ func _refresh_grow(pair: Array) -> void:
 		Vector2.ZERO,
 	).basis_xform(shift)
 	copy.rotation = relative.get_rotation()
+	_update_centre_local()
 
 
 func _update_clip() -> void:
