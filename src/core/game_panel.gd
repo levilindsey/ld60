@@ -25,7 +25,7 @@ func start_game() -> void:
 		# fresh build.
 		_is_level_preloaded = false
 		if is_instance_valid(level) and not level.is_schedule_stale():
-			level.show()
+			level.show_with_camera()
 		else:
 			_rebuild_level_now()
 	elif is_instance_valid(level):
@@ -56,7 +56,7 @@ func preload_level() -> void:
 ## showing underneath the last of the fade.
 func reveal_preloaded_level() -> void:
 	if _is_level_preloaded and is_instance_valid(level):
-		level.show()
+		level.show_with_camera()
 
 
 func end_game() -> void:

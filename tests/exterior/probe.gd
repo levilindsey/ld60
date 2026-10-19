@@ -87,6 +87,16 @@ func _run() -> void:
 		is_instance_valid(G.level) and G.level.visible,
 		"the shop is already showing under the fade",
 	)
+	# The tree is still paused here, and a paused tree does
+	# not apply the camera on its own (physics interpolation):
+	# without the forced scroll update the revealed shop draws
+	# from the top-left until the game unpauses.
+	_expect(
+		G.level.get_canvas_transform().origin.distance_to(
+			Vector2(640.0, 360.0)
+		) < 2.0,
+		"the revealed shop is camera-framed under the fade",
+	)
 	await _shot("door_opening")
 	var waited_sec := 0.0
 	while G.state.state != StateMain.State.GAME and waited_sec < 4.0:

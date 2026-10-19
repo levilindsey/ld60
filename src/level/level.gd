@@ -230,6 +230,18 @@ func start_game() -> void:
 	has_won = false
 
 
+## Shows the level with its camera framing in place from the
+## first frame. The level is revealed behind the title's fade
+## while the tree is still paused, and with physics
+## interpolation on, a paused tree never applies the camera's
+## transform: the shop would draw uncentred, in the top-left,
+## until the game unpauses and the camera snaps in. Forcing
+## the scroll update applies the framing immediately.
+func show_with_camera() -> void:
+	show()
+	(%Camera2D as Camera2D).force_update_scroll()
+
+
 ## Call when the player wins. The credits card floats down over
 ## the bench; the credits state is terminal, so nothing on the
 ## bench can be clicked or restarted from there.
