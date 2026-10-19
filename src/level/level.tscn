@@ -28,7 +28,7 @@ radius = 34.058773
 script = ExtResource("1_la7um")
 part_scene = ExtResource("10_part")
 
-[node name="Background" type="Node" parent="." unique_id=350321910]
+[node name="Background" type="Node2D" parent="." unique_id=350321910]
 
 [node name="Room" type="Sprite2D" parent="Background" unique_id=1576706779]
 position = Vector2(7, 2)
