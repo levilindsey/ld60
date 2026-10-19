@@ -9,7 +9,6 @@
 [ext_resource type="PackedScene" uid="uid://bry3apjrmmi0f" path="res://src/interaction_points/broken_piece.tscn" id="10_piece"]
 [ext_resource type="Texture2D" uid="uid://b2akbahvtejg6" path="res://assets/images/repairables/piano_with_gaps.png" id="body_tex"]
 [ext_resource type="Texture2D" uid="uid://cu5oa7bfurap4" path="res://assets/images/repairables/piano_good_led.png" id="good_led_tex"]
-[ext_resource type="Texture2D" uid="uid://c04fh0fh42fcl" path="res://assets/images/repairables/piano_busted_led.png" id="busted_led_tex"]
 [ext_resource type="Texture2D" uid="uid://b7240m7x1pl2j" path="res://assets/images/repairables/piano_broken_key.png" id="key_tex"]
 
 [sub_resource type="RectangleShape2D" id="surface_shape"]
@@ -83,9 +82,11 @@ polygon = PackedVector2Array(52.5, -262.5, 46.5, -238.5, 8.5, -213.5, 6.5, -188.
 
 [node name="GrimeA" parent="Layers/Body" unique_id=728618149 instance=ExtResource("6_grime")]
 position = Vector2(-1054, -340)
+amount = 3.0
 
 [node name="GrimeB" parent="Layers/Body" unique_id=1915214150 instance=ExtResource("6_grime")]
 position = Vector2(646, -240)
+toughness = 2.0
 
 [node name="Led" parent="Layers/Body" unique_id=984844396 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
 position = Vector2(-1319, -466)
@@ -95,12 +96,6 @@ installed_art = NodePath("GoodLed")
 [node name="GoodLed" type="Sprite2D" parent="Layers/Body/Led" unique_id=2041530734]
 scale = Vector2(2, 2)
 texture = ExtResource("good_led_tex")
-region_enabled = true
-region_rect = Rect2(113.5, 359, 209, 55)
-
-[node name="BustedLed" type="Sprite2D" parent="Layers/Body/Led/BrokenPart" unique_id=1123583705]
-scale = Vector2(2, 2)
-texture = ExtResource("busted_led_tex")
 region_enabled = true
 region_rect = Rect2(113.5, 359, 209, 55)
 

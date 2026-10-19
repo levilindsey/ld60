@@ -11,7 +11,6 @@
 [ext_resource type="Texture2D" uid="uid://iyhhgd8idgey" path="res://assets/images/repairables/radio_dial.png" id="dial_tex"]
 [ext_resource type="Texture2D" uid="uid://dce70xpdrp18y" path="res://assets/images/repairables/radio_front_with_gaps.png" id="front_tex"]
 [ext_resource type="Texture2D" uid="uid://2tb724cejrw0" path="res://assets/images/repairables/radio_good_bulb.png" id="good_tex"]
-[ext_resource type="Texture2D" uid="uid://5lq8n6qwe2yw" path="res://assets/images/repairables/radio_bad_bulb.png" id="bad_tex"]
 [ext_resource type="Texture2D" uid="uid://bjm15dp86ks2j" path="res://assets/images/repairables/radio_inside.png" id="inside_tex"]
 
 [node name="RadioRepairable" type="Node2D" unique_id=500848219 node_paths=PackedStringArray("shape")]
@@ -58,19 +57,18 @@ texture = ExtResource("good_tex")
 region_enabled = true
 region_rect = Rect2(1059, 587.5, 227.5, 497)
 
-[node name="BustedBulb" type="Sprite2D" parent="Layers/Inside/Bulb/BrokenPart" unique_id=162835108]
-position = Vector2(1.5, 9)
-scale = Vector2(2, 2)
-texture = ExtResource("bad_tex")
-region_enabled = true
-region_rect = Rect2(1057, 584, 233, 513)
-
 [node name="DustA" parent="Layers/Inside" unique_id=348260882 instance=ExtResource("7_dust")]
 position = Vector2(-954, -40)
 is_required = false
 
+[node name="DustA2" parent="Layers/Inside" unique_id=787423280 instance=ExtResource("7_dust")]
+position = Vector2(258.33325, -17.000015)
+amount = 8.0
+is_required = false
+
 [node name="DustB" parent="Layers/Inside" unique_id=1774727091 instance=ExtResource("7_dust")]
 position = Vector2(46, 760)
+amount = 4.0
 is_required = false
 
 [node name="Front" type="Node2D" parent="Layers" unique_id=391483119 node_paths=PackedStringArray("art", "shape")]

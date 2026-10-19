@@ -32,6 +32,8 @@ func _ready() -> void:
 	super()
 	%Jam.visible = false
 	_home_scale = scale
+	# The crystal stays seated until the blast shakes it loose.
+	%Crystal.is_sealed = true
 	add_to_group(Hammer.STRIKABLE_PROPS_GROUP)
 
 
@@ -50,6 +52,7 @@ func is_struck_at(global_point: Vector2) -> bool:
 func on_struck(_charge: float) -> void:
 	has_fired = true
 	%Jam.visible = true
+	%Crystal.is_sealed = false
 	G.audio.play_sound(&"thud", true)
 	G.audio.play_sound(&"blast", true)
 	G.level.shake_camera(8.0, 0.25)

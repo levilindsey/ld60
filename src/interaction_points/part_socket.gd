@@ -185,6 +185,12 @@ func is_covered() -> bool:
 	)
 
 
+## True while the item itself seals this socket (the shrink
+## ray's crystal cannot be pulled until the ray has fired).
+## The item sets and clears it; nothing else writes it.
+var is_sealed := false
+
+
 ## True while a broken part sits here for the hand to tug out.
 func has_tuggable_part() -> bool:
 	return (
@@ -192,6 +198,7 @@ func has_tuggable_part() -> bool:
 		and mode != Mode.FINISHED
 		and not is_locked()
 		and not is_covered()
+		and not is_sealed
 	)
 
 

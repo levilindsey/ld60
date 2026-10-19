@@ -7,7 +7,6 @@
 [ext_resource type="PackedScene" path="res://src/interaction_points/dust_clump.tscn" id="7_dust"]
 [ext_resource type="Texture2D" uid="uid://bf07lv0swan6r" path="res://assets/images/repairables/keyss_with_gaps.png" id="body_tex"]
 [ext_resource type="Texture2D" uid="uid://ck6msk1nmmndq" path="res://assets/images/repairables/keyss_spacebar.png" id="good_space_tex"]
-[ext_resource type="Texture2D" uid="uid://7wo0ua7mj4o2" path="res://assets/images/repairables/keyss_bad_spacebar.png" id="bad_tex"]
 [ext_resource type="Texture2D" uid="uid://c2b23walsit0v" path="res://assets/images/repairables/keyss_letter_key.png" id="letter_tex"]
 
 [node name="KeyboardRepairable" type="Node2D" unique_id=1025452835 node_paths=PackedStringArray("shape")]
@@ -74,23 +73,19 @@ texture = ExtResource("good_space_tex")
 region_enabled = true
 region_rect = Rect2(648, 781, 454, 50)
 
-[node name="BustedSpacebar" type="Sprite2D" parent="Layers/Body/Spacebar/BrokenPart" unique_id=1968967573]
-position = Vector2(-1, 24)
-scale = Vector2(2, 2)
-texture = ExtResource("bad_tex")
-region_enabled = true
-region_rect = Rect2(645, 791, 459, 54)
-
 [node name="DustA" parent="Layers/Body" unique_id=926858815 instance=ExtResource("7_dust")]
 position = Vector2(-954, 260)
+amount = 6.0
 is_required = false
 
 [node name="DustB" parent="Layers/Body" unique_id=1491367719 instance=ExtResource("7_dust")]
 position = Vector2(246, 210)
+amount = 8.0
 is_required = false
 
 [node name="DustC" parent="Layers/Body" unique_id=381079909 instance=ExtResource("7_dust")]
 position = Vector2(846, 460)
+amount = 4.0
 is_required = false
 
 [node name="Shape" type="Area2D" parent="." unique_id=1262051527]

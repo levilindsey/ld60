@@ -216,6 +216,7 @@ func _find_shape_target(global_point: Vector2) -> StrikablePoint:
 				layer_point is StuckPart
 				and layer_point.mode != InteractionPoint.Mode.FINISHED
 				and layer_point.is_exposed()
+				and layer_point.is_visible_in_tree()
 			):
 				return layer_point as StrikablePoint
 	return null

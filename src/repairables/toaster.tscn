@@ -70,14 +70,19 @@ position = Vector2(-10, 0)
 hits_needed = 2
 
 [node name="GrimeTop" parent="Layers/Body" unique_id=1401155333 instance=ExtResource("10_grime")]
-position = Vector2(-60, -45)
+position = Vector2(-59, -24)
+amount = 3.0
+toughness = 2.4
 
 [node name="GrimeSide" parent="Layers/Body" unique_id=1753542852 instance=ExtResource("10_grime")]
 position = Vector2(60, -20)
+amount = 2.0
+toughness = 1.5
 texture_set = 1
 
 [node name="GrimeLow" parent="Layers/Body" unique_id=426920468 instance=ExtResource("10_grime")]
-position = Vector2(45, 45)
+position = Vector2(42, 45)
+amount = 2.0
 
 [node name="FirstWheelPoint" parent="Layers/Body" unique_id=1665899958 instance=ExtResource("7_broken_point")]
 unique_name_in_owner = true

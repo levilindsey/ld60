@@ -46,8 +46,21 @@ func _run() -> void:
 		"Layers/Body/Crystal/BrokenPart/BustedCrystal"
 	) as Sprite2D
 	var crystal_home: Vector2 = crystal.scale
+	var socket := ray.get_node(
+		"Layers/Body/Crystal"
+	) as PartSocket
+	(ray.get_node("Layers/Body/CrystalGrime") as GrimeSpot).finish()
+	await _physics_frames(2)
+	_expect(
+		not socket.has_tuggable_part(),
+		"the crystal cannot be pulled before the ray fires",
+	)
 	ray.on_struck(0.5)
 	_expect(ray.has_fired, "the first hit sets the ray off")
+	_expect(
+		socket.has_tuggable_part(),
+		"the crystal can be pulled once the ray has fired",
+	)
 	await _seconds(0.12)
 	_expect(
 		ray.scale.x < ray_home.x * 0.99

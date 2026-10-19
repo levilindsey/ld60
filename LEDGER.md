@@ -33,7 +33,7 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 - **LX56** · Recurring itch deploys until Mon 2026-10-19 13:00 PDT:
   Muse cron job `90714525` (every 2 h at :17) pushes the working
-  tree to `levilindsey/repair-shop:html5` via `scripts/deploy_itch.ps1`,
+  tree to `levilindsey/loose-screw:html5` via `scripts/deploy_itch.ps1`,
   gated on `scripts/check.ps1 -Tests` and skipped when the tree is
   unchanged (`build/last-itch-push.txt`); it deletes itself after the
   deadline. Stop early with `cron_delete 90714525`. Still Levi's, on

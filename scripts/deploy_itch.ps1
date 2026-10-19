@@ -1,5 +1,5 @@
 # Exports the LD60 web build and pushes it to itch.io with Butler:
-#   levilindsey/repair-shop, channel "html5" (the playable-in-browser build).
+#   levilindsey/loose-screw, channel "html5" (the playable-in-browser build).
 #
 # One-time setup (per machine):
 #   1. Install Butler (https://itchio.itch.io/butler). On Levi's machines
@@ -32,7 +32,7 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $ExportDir = Join-Path $RepoRoot "build\web"
 $IndexHtml = Join-Path $ExportDir "index.html"
-$Target = "levilindsey/repair-shop:html5"
+$Target = "levilindsey/loose-screw:html5"
 
 # Find Butler: PATH first, then the per-machine Tools folder.
 $butler = $null
@@ -89,7 +89,7 @@ if ($LASTEXITCODE -ne 0) {
 if ($DryRun) {
     Write-Host "Dry run complete: nothing was uploaded." -ForegroundColor Green
 } else {
-    Write-Host "Pushed version $Version to https://levilindsey.itch.io/repair-shop" -ForegroundColor Green
+    Write-Host "Pushed version $Version to https://levilindsey.itch.io/loose-screw" -ForegroundColor Green
     Write-Host "One-time page setup (itch dashboard, Edit game - Butler cannot do this):"
     Write-Host "  1. Set 'Kind of project' to HTML."
     Write-Host "  2. On the html5 upload, tick 'This file will be played in the browser'"
