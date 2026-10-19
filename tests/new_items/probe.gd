@@ -117,6 +117,10 @@ func _check_tv() -> void:
 	var controls := _find_socket(item, Part.Type.TV_CONTROLS)
 	_expect(is_instance_valid(controls), "the TV has a controls socket")
 	if is_instance_valid(controls):
+		_expect(
+			_has_broken_sprite(controls),
+			"the TV's bad controls sprite shows before the yank",
+		)
 		controls._pop_out()
 		await _seconds(0.6)
 		var scene_part := (
@@ -230,6 +234,10 @@ func _check_atari() -> void:
 		and socket.locking_fastener == screw,
 		"the Atari's tab screw locks its joystick socket",
 	)
+	_expect(
+		is_instance_valid(socket) and _has_broken_sprite(socket),
+		"the Atari's bent stick sprite shows before the yank",
+	)
 	item.queue_free()
 	await _physics_frames(2)
 
@@ -257,9 +265,14 @@ func _check_game_n_watch() -> void:
 		covered_count == 2,
 		"both Game n Watch screws start under grime",
 	)
+	var chip := _find_socket(item, Part.Type.CIRCUIT)
 	_expect(
-		is_instance_valid(_find_socket(item, Part.Type.CIRCUIT)),
+		is_instance_valid(chip),
 		"the Game n Watch has a circuit socket to yank and refit",
+	)
+	_expect(
+		is_instance_valid(chip) and _has_broken_sprite(chip),
+		"the Game n Watch's bad chip sprite shows before the yank",
 	)
 	_expect(
 		Part.has_art(Part.Type.CIRCUIT),
@@ -296,6 +309,16 @@ func _check_placeholders() -> void:
 		)
 		item.queue_free()
 		await _physics_frames(2)
+
+
+## True when the socket's broken part carries a real sprite
+## (not just the placeholder polygon the socket ships with).
+func _has_broken_sprite(socket: PartSocket) -> bool:
+	var broken := socket.get_node("BrokenPart")
+	for child in broken.get_children():
+		if child is Sprite2D and (child as CanvasItem).visible:
+			return true
+	return false
 
 
 func _spawn(scene_path: String) -> Repairable:

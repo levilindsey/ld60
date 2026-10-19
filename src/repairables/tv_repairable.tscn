@@ -14,12 +14,16 @@
 [ext_resource type="Texture2D" uid="uid://wnluu85ums1p" path="res://assets/images/repairables/tv_fixed_channel_1.png" id="fixed1_tex"]
 [ext_resource type="Texture2D" uid="uid://bvjdk81a1qia0" path="res://assets/images/repairables/tv_fixed_channel_2.png" id="fixed2_tex"]
 [ext_resource type="Texture2D" uid="uid://cly16lbogiq7x" path="res://assets/images/repairables/tv_straight_antenna.png" id="straight_tex"]
+[ext_resource type="Texture2D" uid="uid://dyj7f66igylpa" path="res://assets/images/repairables/tv_bad_controls.png" id="bad_tex"]
 
 [sub_resource type="RectangleShape2D" id="drop_shape"]
 size = Vector2(2341, 1850)
 
 [sub_resource type="RectangleShape2D" id="surface_shape"]
 size = Vector2(2341, 1850)
+
+[sub_resource type="CircleShape2D" id="controls_shape"]
+radius = 330.0
 
 [node name="TvRepairable" type="Node2D" unique_id=550236401 node_paths=PackedStringArray("screen", "shape")]
 scale = Vector2(0.13, 0.13)
@@ -95,6 +99,20 @@ installed_art = NodePath("GoodControls")
 
 [node name="GoodControls" type="Sprite2D" parent="Layers/Body/Controls" unique_id=1312169053]
 texture = ExtResource("good_tex")
+region_enabled = true
+region_rect = Rect2(2217, 919, 567, 1015)
+
+[node name="CollisionShape2D" parent="Layers/Body/Controls" index="0"]
+shape = SubResource("controls_shape")
+
+[node name="Outline" parent="Layers/Body/Controls" index="1"]
+visible = false
+
+[node name="BrokenArt" parent="Layers/Body/Controls/BrokenPart" index="0"]
+visible = false
+
+[node name="BadControls" type="Sprite2D" parent="Layers/Body/Controls/BrokenPart"]
+texture = ExtResource("bad_tex")
 region_enabled = true
 region_rect = Rect2(2217, 919, 567, 1015)
 

@@ -12,9 +12,13 @@
 [ext_resource type="Texture2D" uid="uid://qaonmntramda" path="res://assets/images/repairables/gamenwatch_front_gaps.png" id="front_tex"]
 [ext_resource type="Texture2D" uid="uid://dp17n3vc0fto1" path="res://assets/images/repairables/gamenwatch_chip_good.png" id="good_tex"]
 [ext_resource type="Texture2D" uid="uid://kxlv2p5r08cr" path="res://assets/images/repairables/gamenwatch_insides_gap.png" id="inside_tex"]
+[ext_resource type="Texture2D" uid="uid://dr8dd4jd12bvm" path="res://assets/images/repairables/gamenwatch_chip_bad.png" id="bad_tex"]
 
 [sub_resource type="RectangleShape2D" id="drop_shape"]
 size = Vector2(2214, 1127)
+
+[sub_resource type="CircleShape2D" id="chip_shape"]
+radius = 280.0
 
 [node name="GameNWatchRepairable" type="Node2D" unique_id=516475280 node_paths=PackedStringArray("shape")]
 scale = Vector2(0.13, 0.13)
@@ -51,6 +55,20 @@ installed_art = NodePath("GoodChip")
 
 [node name="GoodChip" type="Sprite2D" parent="Layers/Inside/Chip" unique_id=580524989]
 texture = ExtResource("good_tex")
+region_enabled = true
+region_rect = Rect2(839, 809, 537, 765)
+
+[node name="CollisionShape2D" parent="Layers/Inside/Chip" index="0"]
+shape = SubResource("chip_shape")
+
+[node name="Outline" parent="Layers/Inside/Chip" index="1"]
+visible = false
+
+[node name="BrokenArt" parent="Layers/Inside/Chip/BrokenPart" index="0"]
+visible = false
+
+[node name="BadChip" type="Sprite2D" parent="Layers/Inside/Chip/BrokenPart"]
+texture = ExtResource("bad_tex")
 region_enabled = true
 region_rect = Rect2(839, 809, 537, 765)
 

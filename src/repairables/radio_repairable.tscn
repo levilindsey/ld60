@@ -12,9 +12,13 @@
 [ext_resource type="Texture2D" uid="uid://dce70xpdrp18y" path="res://assets/images/repairables/radio_front_with_gaps.png" id="front_tex"]
 [ext_resource type="Texture2D" uid="uid://2tb724cejrw0" path="res://assets/images/repairables/radio_good_bulb.png" id="good_tex"]
 [ext_resource type="Texture2D" uid="uid://bjm15dp86ks2j" path="res://assets/images/repairables/radio_inside.png" id="inside_tex"]
+[ext_resource type="Texture2D" uid="uid://5lq8n6qwe2yw" path="res://assets/images/repairables/radio_bad_bulb.png" id="bad_tex"]
 
 [sub_resource type="RectangleShape2D" id="drop_shape"]
 size = Vector2(3022, 2437)
+
+[sub_resource type="CircleShape2D" id="bulb_shape"]
+radius = 280.0
 
 [node name="RadioRepairable" type="Node2D" unique_id=500848219 node_paths=PackedStringArray("shape")]
 scale = Vector2(0.12, 0.12)
@@ -56,6 +60,20 @@ installed_art = NodePath("GoodBulb")
 texture = ExtResource("good_tex")
 region_enabled = true
 region_rect = Rect2(2118, 1175, 455, 994)
+
+[node name="CollisionShape2D" parent="Layers/Inside/Bulb" index="0"]
+shape = SubResource("bulb_shape")
+
+[node name="Outline" parent="Layers/Inside/Bulb" index="1"]
+visible = false
+
+[node name="BrokenArt" parent="Layers/Inside/Bulb/BrokenPart" index="0"]
+visible = false
+
+[node name="BadBulb" type="Sprite2D" parent="Layers/Inside/Bulb/BrokenPart"]
+texture = ExtResource("bad_tex")
+region_enabled = true
+region_rect = Rect2(2119, 1174, 455, 1020)
 
 [node name="DustA" parent="Layers/Inside" unique_id=348260882 instance=ExtResource("7_dust")]
 position = Vector2(-954, -40)

@@ -8,12 +8,19 @@
 [ext_resource type="Texture2D" uid="uid://bf07lv0swan6r" path="res://assets/images/repairables/keyss_with_gaps.png" id="body_tex"]
 [ext_resource type="Texture2D" uid="uid://ck6msk1nmmndq" path="res://assets/images/repairables/keyss_spacebar.png" id="good_space_tex"]
 [ext_resource type="Texture2D" uid="uid://c2b23walsit0v" path="res://assets/images/repairables/keyss_letter_key.png" id="letter_tex"]
+[ext_resource type="Texture2D" uid="uid://7wo0ua7mj4o2" path="res://assets/images/repairables/keyss_bad_spacebar.png" id="bad_space_tex"]
 
 [sub_resource type="RectangleShape2D" id="drop_shape"]
 size = Vector2(2610, 545)
 
 [sub_resource type="RectangleShape2D" id="surface_shape"]
 size = Vector2(2610, 545)
+
+[sub_resource type="CircleShape2D" id="key_shape"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="space_shape"]
+radius = 470.0
 
 [node name="KeyboardRepairable" type="Node2D" unique_id=1025452835 node_paths=PackedStringArray("shape")]
 scale = Vector2(0.13, 0.13)
@@ -65,6 +72,20 @@ texture = ExtResource("letter_tex")
 region_enabled = true
 region_rect = Rect2(1120, 1501, 120, 94)
 
+[node name="CollisionShape2D" parent="Layers/Body/LetterKey" index="0"]
+shape = SubResource("key_shape")
+
+[node name="Outline" parent="Layers/Body/LetterKey" index="1"]
+visible = false
+
+[node name="BrokenArt" parent="Layers/Body/LetterKey/BrokenPart" index="0"]
+visible = false
+
+[node name="BadLetter" type="Sprite2D" parent="Layers/Body/LetterKey/BrokenPart"]
+texture = ExtResource("letter_tex")
+region_enabled = true
+region_rect = Rect2(1120, 1501, 120, 94)
+
 [node name="Spacebar" parent="Layers/Body" unique_id=1223335619 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
 position = Vector2(-4, 372)
 accepted_part = 5
@@ -74,6 +95,20 @@ installed_art = NodePath("GoodSpacebar")
 texture = ExtResource("good_space_tex")
 region_enabled = true
 region_rect = Rect2(1296, 1562, 908, 100)
+
+[node name="CollisionShape2D" parent="Layers/Body/Spacebar" index="0"]
+shape = SubResource("space_shape")
+
+[node name="Outline" parent="Layers/Body/Spacebar" index="1"]
+visible = false
+
+[node name="BrokenArt" parent="Layers/Body/Spacebar/BrokenPart" index="0"]
+visible = false
+
+[node name="BadSpacebar" type="Sprite2D" parent="Layers/Body/Spacebar/BrokenPart"]
+texture = ExtResource("bad_space_tex")
+region_enabled = true
+region_rect = Rect2(1296, 1586, 908, 100)
 
 [node name="DustA" parent="Layers/Body" unique_id=926858815 instance=ExtResource("7_dust")]
 position = Vector2(-954, 260)

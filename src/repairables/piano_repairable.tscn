@@ -10,12 +10,16 @@
 [ext_resource type="Texture2D" uid="uid://b2akbahvtejg6" path="res://assets/images/repairables/piano_with_gaps.png" id="body_tex"]
 [ext_resource type="Texture2D" uid="uid://cu5oa7bfurap4" path="res://assets/images/repairables/piano_good_led.png" id="good_led_tex"]
 [ext_resource type="Texture2D" uid="uid://b7240m7x1pl2j" path="res://assets/images/repairables/piano_broken_key.png" id="key_tex"]
+[ext_resource type="Texture2D" uid="uid://c04fh0fh42fcl" path="res://assets/images/repairables/piano_busted_led.png" id="bad_led_tex"]
 
 [sub_resource type="RectangleShape2D" id="drop_shape"]
 size = Vector2(3362, 1404)
 
 [sub_resource type="RectangleShape2D" id="surface_shape"]
 size = Vector2(3362, 1404)
+
+[sub_resource type="CircleShape2D" id="led_shape"]
+radius = 230.0
 
 [node name="PianoRepairable" type="Node2D" unique_id=575242876 node_paths=PackedStringArray("shape")]
 scale = Vector2(0.11, 0.11)
@@ -85,6 +89,20 @@ installed_art = NodePath("GoodLed")
 texture = ExtResource("good_led_tex")
 region_enabled = true
 region_rect = Rect2(227, 718, 418, 110)
+
+[node name="CollisionShape2D" parent="Layers/Body/Led" index="0"]
+shape = SubResource("led_shape")
+
+[node name="Outline" parent="Layers/Body/Led" index="1"]
+visible = false
+
+[node name="BrokenArt" parent="Layers/Body/Led/BrokenPart" index="0"]
+visible = false
+
+[node name="BadLed" type="Sprite2D" parent="Layers/Body/Led/BrokenPart"]
+texture = ExtResource("bad_led_tex")
+region_enabled = true
+region_rect = Rect2(227, 721, 417, 109)
 
 [node name="Shape" type="Area2D" parent="." unique_id=649372155]
 
