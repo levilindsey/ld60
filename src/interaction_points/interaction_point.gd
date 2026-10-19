@@ -64,9 +64,14 @@ var _pulse_tween: Tween
 var _poke_tween: Tween
 var _hint_hint: OutlineHint
 var _is_hint_active := false
+## The scale this point was authored at, captured at ready.
+## Points on scaled items are placed big (a screw at 8x), and
+## the pulse grows from this, never back to 1.
+var _home_scale := Vector2.ONE
 
 
 func _ready() -> void:
+	_home_scale = scale
 	_configure_shape_area(shape)
 	G.check(monitorable)
 	G.check(collision_layer == Settings.PhysicsLayer.INTERACTION_POINTS)
@@ -212,19 +217,21 @@ func on_poked() -> void:
 
 
 ## One short pulse that shows this point still needs work.
+## It grows from the authored scale and returns to it, so a
+## point placed big on a scaled item keeps its size.
 func pulse() -> void:
 	if is_instance_valid(_pulse_tween):
 		_pulse_tween.kill()
-	scale = Vector2.ONE
+	scale = _home_scale
 	_pulse_tween = create_tween().set_trans(Tween.TRANS_QUAD)
 	var half_sec := G.settings.point_pulse_sec * 0.5
 	_pulse_tween.tween_property(
 		self,
 		"scale",
-		Vector2.ONE * _PULSE_SCALE,
+		_home_scale * _PULSE_SCALE,
 		half_sec,
 	)
-	_pulse_tween.tween_property(self, "scale", Vector2.ONE, half_sec)
+	_pulse_tween.tween_property(self, "scale", _home_scale, half_sec)
 
 
 ## Shows or hides the idle hint outline around this point. The

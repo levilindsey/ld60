@@ -34,22 +34,84 @@ var alpha_scale := 1.0:
 		alpha_scale = value
 		queue_redraw()
 
+## Scales the shared band width. Above 1 draws a bolder rim
+## than the usual hint (the finished item uses this).
+var width_scale := 1.0:
+	set(value):
+		width_scale = value
+		queue_redraw()
+
 var _is_active := false
 
 
-## Applies the shared outline material to a sprite. Returns the
-## material the sprite had, so `remove_from_sprite()` can restore it.
-static func apply_to_sprite(art: Sprite2D) -> Material:
+## Applies the outline material to a sprite (the shared one,
+## unless another is given). Returns the material the sprite
+## had, so `remove_from_sprite()` can restore it.
+static func apply_to_sprite(
+	art: Sprite2D, material: Material = null
+) -> Material:
 	var previous := art.material
-	if is_instance_valid(G.settings.outline_hint_material):
-		art.material = G.settings.outline_hint_material
+	var chosen := material
+	if not is_instance_valid(chosen):
+		chosen = G.settings.outline_hint_material
+	if is_instance_valid(chosen):
+		art.material = chosen
 	return previous
+
+
+## The shared outline's band width in world pixels.
+static func get_shared_width() -> float:
+	var material := G.settings.outline_hint_material
+	if not is_instance_valid(material):
+		return _DEFAULT_WIDTH
+	var value: Variant = material.get_shader_parameter(
+		&"outline_width_px"
+	)
+	if value is float:
+		return value
+	if value is int:
+		return float(value)
+	return _DEFAULT_WIDTH
+
+
+## A world polygon in an art node's local points, for drawing
+## a rim on the art with an `OutlineHint` child.
+static func world_polygon_to_local(
+	art: CanvasItem, world_points: PackedVector2Array
+) -> PackedVector2Array:
+	var inverse := art.get_global_transform().affine_inverse()
+	var local_points := PackedVector2Array()
+	for point in world_points:
+		local_points.append(inverse * point)
+	return local_points
 
 
 ## Restores a sprite's material after `apply_to_sprite()`.
 static func remove_from_sprite(art: Sprite2D, previous: Material) -> void:
 	if is_instance_valid(art):
 		art.material = previous
+
+
+## How wide a rim the outline shader can actually paint on
+## this sprite, in world pixels: the shader only draws inside
+## the texture, so the transparent margin around the used art
+## caps it. Audit (Oct 2026): most layer art fits the full
+## width, but the piano Keys texture touches its top and
+## bottom edges (no rim there at all), the piano Bottom fits
+## ~6 px and the shrink ray SwitchBody ~6 px.
+static func get_sprite_rim_world(art: Sprite2D) -> float:
+	if not is_instance_valid(art) or not art.texture:
+		return 0.0
+	var used := DecalSpawner.get_visible_rect(art.texture)
+	var tex_size := Vector2(art.texture.get_size())
+	var scale := art.get_global_transform().get_scale()
+	var margin := Vector2(
+		minf(used.position.x, tex_size.x - used.end.x)
+		* absf(scale.x),
+		minf(used.position.y, tex_size.y - used.end.y)
+		* absf(scale.y),
+	)
+	return minf(margin.x, margin.y)
 
 
 ## The outline shape of art that the shader cannot reach, in the
@@ -154,7 +216,7 @@ func _draw() -> void:
 		material,
 		&"outline_width_px",
 		_DEFAULT_WIDTH,
-	)
+	) * width_scale
 	var gradient_power := _get_float_parameter(
 		material,
 		&"gradient_power",

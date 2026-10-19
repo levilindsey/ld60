@@ -29,23 +29,36 @@ transparent_bg = true
 gui_disable_input = true
 size = Vector2i(630, 474)
 
+[node name="SignWelcome" type="Label" parent="SignViewport"]
+unique_name_in_owner = true
+offset_left = 18.0
+offset_top = 30.0
+offset_right = 648.0
+offset_bottom = 112.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.23, 0.15, 0.08, 0.85)
+theme_override_fonts/font = ExtResource("5_font")
+theme_override_font_sizes/font_size = 52
+text = "Welcome to"
+horizontal_alignment = 1
+
 [node name="SignTitle" type="Label" parent="SignViewport"]
 unique_name_in_owner = true
 offset_left = 18.0
-offset_top = 72.0
+offset_top = 104.0
 offset_right = 648.0
-offset_bottom = 328.0
+offset_bottom = 300.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.23, 0.15, 0.08, 1)
 theme_override_fonts/font = ExtResource("5_font")
-theme_override_font_sizes/font_size = 120
-text = "Repair Shop"
+theme_override_font_sizes/font_size = 132
+text = "Fix It"
 horizontal_alignment = 1
 
 [node name="SignSub" type="Label" parent="SignViewport"]
 unique_name_in_owner = true
 offset_left = 18.0
-offset_top = 284.0
+offset_top = 302.0
 offset_right = 648.0
 offset_bottom = 445.0
 mouse_filter = 2

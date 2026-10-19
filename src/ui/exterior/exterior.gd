@@ -1,7 +1,7 @@
 class_name Exterior
 extends Node2D
 ## The shop's outside, and the title screen: the wall and door
-## fill the screen, and the old title message ("Repair Shop" /
+## fill the screen, and the shop name ("Welcome to" / "Fix It" /
 ## "Come on in") is lettered on the door's sign in Young Serif.
 ##
 ## On the enter tap, the door swings open (ExteriorDoor), the
@@ -136,7 +136,8 @@ func _layout() -> void:
 		_PLATE_IMAGE_RECT.size * image_scale,
 	)
 	var plate_size := Vector2(%SignViewport.size)
-	_fit_sign_font(%SignTitle, plate_size, 0.30)
+	_fit_sign_font(%SignWelcome, plate_size, 0.15)
+	_fit_sign_font(%SignTitle, plate_size, 0.34)
 	_fit_sign_font(%SignSub, plate_size, 0.17)
 
 

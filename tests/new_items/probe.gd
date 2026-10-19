@@ -379,7 +379,10 @@ func _check_game_n_watch() -> void:
 	)
 	var has_dpad := false
 	var dust_count := 0
+	var front_layer: RepairLayer = null
 	for layer in item.layers:
+		if layer.name == "Front":
+			front_layer = layer
 		for point in layer.get_points():
 			if point is BrokenPoint:
 				has_dpad = true
@@ -387,8 +390,127 @@ func _check_game_n_watch() -> void:
 				dust_count += 1
 	_expect(has_dpad, "the Game n Watch has a D-pad to glue back on")
 	_expect(dust_count >= 2, "the Game n Watch has dirt to blow away")
+	# Clear of the item under repair, so its points cannot
+	# shadow this one's in the hand's searches.
+	item.global_position = Vector2(380, 110)
+	await _physics_frames(2)
+	await _check_pulse_keeps_point_size(covered_screw)
+	_check_gnw_dirt_is_bench_sized(covered_screw)
 	await _check_gnw_phillips_engages(covered_screw)
+	await _check_gnw_glue_smears(item, front_layer)
 	item.queue_free()
+	await _physics_frames(2)
+
+
+## A hint pulse on a point placed big on a scaled item
+## grows it and gives it its authored scale back, instead of
+## leaving it shrunk to 1.
+func _check_pulse_keeps_point_size(point: InteractionPoint) -> void:
+	if not _expect(
+		is_instance_valid(point),
+		"the Game n Watch point to pulse is there",
+	):
+		return
+	var home_scale := point.scale
+	point.pulse()
+	await _seconds(0.6)
+	_expect(
+		point.scale.is_equal_approx(home_scale),
+		"a pulse leaves the point at its authored size"
+		+ " (scale %s, home %s)" % [point.scale, home_scale],
+	)
+
+
+## The grime on a scaled item still reads at bench size: its
+## decal and its hit circle are world sizes, not a few pixels
+## shrunk by the item's 0.13 authoring scale.
+func _check_gnw_dirt_is_bench_sized(screw: PhillipsScrew) -> void:
+	if not _expect(
+		is_instance_valid(screw)
+		and is_instance_valid(screw.covering_grime),
+		"the Game n Watch grime to measure is on its screw",
+	):
+		return
+	var grime := screw.covering_grime
+	var world_size := Vector2.ZERO
+	if is_instance_valid(grime.art) and grime.art.texture:
+		world_size = (
+			grime.art.get_global_transform().get_scale()
+			* Vector2(grime.art.region_rect.size)
+		)
+	_expect(
+		maxf(world_size.x, world_size.y) >= 20.0,
+		"the Game n Watch grime decal is bench-sized"
+		+ " (%.0f world px)" % maxf(world_size.x, world_size.y),
+	)
+	var hit_radius := 0.0
+	for child in grime.get_children():
+		if child is CollisionShape2D:
+			var shape := (child as CollisionShape2D).shape
+			if shape is CircleShape2D:
+				hit_radius = (
+					(shape as CircleShape2D).radius
+					* (child as CollisionShape2D)
+					.global_transform.get_scale().x
+				)
+	_expect(
+		hit_radius >= 8.0,
+		"the Game n Watch grime hit circle is bench-sized"
+		+ " (%.0f world px)" % hit_radius,
+	)
+
+
+## Squeezing the glue on blank Game n Watch front art leaves
+## a smear point there.
+func _check_gnw_glue_smears(
+	item: Repairable, front: RepairLayer
+) -> void:
+	if not _expect(
+		is_instance_valid(front), "the Game n Watch front to smear"
+	):
+		return
+	var glue := G.level.tools_by_type[Tool.Type.GLUE] as Tool
+	await _press_at(glue.global_position)
+	if not _expect(_hand.held == glue, "the hand holds the glue"):
+		return
+	# Glue only smears on the item under repair, so the
+	# spawned item stands in as the active one for the squeeze.
+	var previous_item := G.level.active_repairable
+	G.level.active_repairable = item
+	await _seconds(1.0)
+	var nozzle_offset: Vector2 = (
+		glue.get_work_end_position() - glue.get_tip_position()
+	)
+	# Squeeze on blank front art until the squeeze starts;
+	# a spot whose cursor lands on something else (a resting
+	# screw, the rack) is spent on that instead, so try the
+	# next one, the way a player would.
+	var squeezed := false
+	for blank_offset in [
+		Vector2(30, -45),
+		Vector2(-90, -30),
+		Vector2(-20, 20),
+	]:
+		var blank: Vector2 = item.global_position + blank_offset
+		await _press_down(blank - nozzle_offset)
+		if glue._is_squeezing:
+			squeezed = true
+			await _seconds(0.9)
+			await _release_at(blank - nozzle_offset)
+			break
+		await _release_at(blank - nozzle_offset)
+	_expect(squeezed, "the glue squeeze starts on the front")
+	await _physics_frames(4)
+	var smear: GlueSmear = null
+	for point in front.get_points():
+		if point is GlueSmear:
+			smear = point as GlueSmear
+	_expect(
+		is_instance_valid(smear),
+		"glue smears on the Game n Watch front art",
+	)
+	G.level.active_repairable = previous_item
+	glue.put_away()
 	await _physics_frames(2)
 
 

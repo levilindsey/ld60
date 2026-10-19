@@ -12,8 +12,7 @@ extends Node
 ## The played-order index of the repairable the smack is
 ## scheduled for (0 is the first item, so 2 is the third).
 const SMACK_ITEM_INDEX := 2
-#const SMACK_DELAY_SEC := 8.0
-const SMACK_DELAY_SEC := 1.0
+const SMACK_DELAY_SEC := 9.0
 ## Seconds into the smack animation when the bird reaches the
 ## glass. It grows until frame 15 of the art (the 15th frame
 ## shown; the splat near the end is the aftermath), so at

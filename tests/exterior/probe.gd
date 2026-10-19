@@ -1,6 +1,6 @@
 extends "res://tests/probe_base.gd"
 ## The exterior title screen. Boots the game to the title, checks
-## the wall and door are showing with the old title message on
+## the wall and door are showing with the shop name on
 ## the door's sign in Young Serif, then taps and checks the walk
 ## inside plays (door opens, no instant start) and lands in the
 ## game with a level running.
@@ -53,12 +53,21 @@ func _run() -> void:
 		== "res://assets/images/repairables/exterior_wall.png",
 		"the exterior shows the wall art",
 	)
+	var sign_welcome := exterior.get_node(
+		"SignViewport/SignWelcome"
+	) as Label
 	var sign_title := exterior.get_node("SignViewport/SignTitle") as Label
 	var sign_sub := exterior.get_node("SignViewport/SignSub") as Label
 	_expect(
-		sign_title.text == "Repair Shop"
+		sign_welcome.text == "Welcome to"
+		and sign_title.text == "Fix It"
 		and sign_sub.text == "Come on in",
-		"the sign carries the old title message",
+		"the sign carries the shop name on three lines",
+	)
+	_expect(
+		sign_title.get_theme_font_size("font_size")
+		> sign_welcome.get_theme_font_size("font_size"),
+		"the shop name is lettered bigger than its welcome",
 	)
 	var sign_font := sign_title.get_theme_font("font")
 	_expect(

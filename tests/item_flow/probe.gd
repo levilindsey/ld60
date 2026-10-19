@@ -200,6 +200,14 @@ func _check_ticket_dismiss() -> void:
 	)
 	if not _expect(is_resting, "the ticket comes to rest"):
 		return
+	var fall_elapsed_sec := (
+		(Time.get_ticks_msec() - _landed_msec) / 1000.0
+	)
+	_expect(
+		fall_elapsed_sec >= 1.9,
+		"the ticket waits a beat, then flutters down"
+		+ " (%.2f s after the landing)" % fall_elapsed_sec,
+	)
 	await _press_at(ticket.global_position)
 	var is_open := await _wait_until(
 		func() -> bool: return ticket.state == TicketCard.State.OPEN,
@@ -219,6 +227,42 @@ func _check_ticket_dismiss() -> void:
 	_expect(
 		is_resting_again,
 		"tapping outside sets the ticket back down",
+	)
+	await _check_radio_fling(ticket)
+
+
+## The radio's ticket is the special one (the level shows it
+## with `show_item(.., true)` when the shop radio lands): it
+## waits a longer beat, then tosses up from below, coming in
+## from the left as it rises.
+func _check_radio_fling(ticket: TicketCard) -> void:
+	ticket.show_item(_item.ticket, true)
+	var samples: Array[Vector2] = []
+	var waited := 0.0
+	while waited < 4.0 and ticket.state != TicketCard.State.RESTING:
+		await get_tree().physics_frame
+		waited += get_physics_process_delta_time()
+		if ticket.visible:
+			samples.append(ticket.global_position)
+	_expect(
+		ticket.state == TicketCard.State.RESTING,
+		"the radio ticket comes to rest",
+	)
+	_expect(
+		waited >= 1.35,
+		"the radio ticket waits its extra beat before landing"
+		+ " (%.2f s)" % waited,
+	)
+	var rest_position := ticket.global_position
+	var furthest_left := 0.0
+	for sample in samples:
+		furthest_left = maxf(
+			furthest_left, rest_position.x - sample.x
+		)
+	_expect(
+		furthest_left >= 100.0,
+		"the radio ticket comes in from the left"
+		+ " (started %.0f px left of its spot)" % furthest_left,
 	)
 
 
@@ -264,6 +308,24 @@ func _check_finish() -> void:
 	_expect(
 		_item.is_showing_outline() and _item.modulate == Color.WHITE,
 		"3. the finished item shows the outline, not a modulate glow",
+	)
+	var celebration_is_wide := false
+	if (
+		is_instance_valid(_item._outlined_art)
+		and _item._outlined_art.material is ShaderMaterial
+	):
+		var finish_width: float = (
+			(_item._outlined_art.material as ShaderMaterial
+			).get_shader_parameter("outline_width_px")
+		)
+		celebration_is_wide = (
+			finish_width > OutlineHint.get_shared_width()
+		)
+	elif is_instance_valid(_item._outline_hint):
+		celebration_is_wide = _item._outline_hint.width_scale > 1.5
+	_expect(
+		celebration_is_wide,
+		"3. the finished item's outline is wider than a hint rim",
 	)
 	_expect(
 		G.level.is_outbox_outline_shown(),

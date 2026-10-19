@@ -30,7 +30,12 @@ enum TextureSet {
 @export var texture_set := TextureSet.FIRST
 ## A color laid over the set's own tint. White keeps the set's look.
 @export var tint := Color.WHITE
-## The visible art's longer side, in pixels.
+## The visible art's longer side, in world pixels. Items are
+## authored at texture scale (a Game n Watch at 0.13), so the
+## art and the hit circle are scaled back up by the item's
+## scale at ready; otherwise a scaled-down item shrinks its
+## dirt to a few invisible pixels (the drop shadow learned
+## the same lesson).
 @export var art_size_px := 40.0
 
 ## The scale the art rests at, from `art_size_px` and the texture.
@@ -39,6 +44,35 @@ var _art_home_scale := Vector2.ONE
 var _art_home_rotation := 0.0
 ## The alpha the configured colors give the art before any fading.
 var _base_alpha := 1.0
+## 1 over this point's global scale, captured at ready.
+var _scale_compensation := 1.0
+
+
+func _ready() -> void:
+	super._ready()
+	_scale_compensation = _get_scale_compensation()
+	_compensate_hit_shapes()
+
+
+## The factor that turns this point's local sizes back into
+## world sizes on a scaled item.
+func _get_scale_compensation() -> float:
+	var global_scale := absf(global_transform.get_scale().x)
+	if global_scale <= 0.0001:
+		return 1.0
+	return 1.0 / global_scale
+
+
+## Scales this point's own hit shapes up by the compensation,
+## so the authored circle keeps its world size on a scaled
+## item. Shape resources are shared between points; the
+## shape nodes are not.
+func _compensate_hit_shapes() -> void:
+	for child in get_children():
+		if child is CollisionShape2D:
+			(child as CollisionShape2D).scale *= (
+				_scale_compensation
+			)
 
 
 ## The set this point wears.
@@ -66,7 +100,9 @@ func _set_up_art() -> void:
 	var longer_side := maxf(visible_rect.size.x, visible_rect.size.y)
 	var scale_factor := 1.0
 	if longer_side > 0.0:
-		scale_factor = art_size_px / longer_side
+		scale_factor = (
+			art_size_px * _scale_compensation / longer_side
+		)
 	scale_factor *= randf_range(
 		decal_set.scale_range.x, decal_set.scale_range.y
 	)

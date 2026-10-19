@@ -185,6 +185,13 @@ func _ready() -> void:
 	# follow logic in _physics_process.
 	%Camera2D.anchor_mode = Camera2D.ANCHOR_MODE_DRAG_CENTER
 
+	# The manual is toggled in settings; while it is off it
+	# leaves the bench entirely, so it cannot be seen or tapped.
+	if not G.settings.show_instruction_manual:
+		var manual := get_node_or_null("InstructionManual")
+		if is_instance_valid(manual):
+			manual.queue_free()
+
 	_cache_area_polygons()
 
 	var drawers := get_drawers()

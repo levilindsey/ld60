@@ -32,6 +32,11 @@ enum State {
 }
 
 
+## The beat every ticket waits after its item lands before it
+## comes in.
+const _CARD_DELAY_SEC := 0.3
+## The radio's ticket waits this much longer on top of that.
+const _FLING_EXTRA_DELAY_SEC := 0.3
 const _FALL_DURATION_SEC := 1.8
 ## How high above its desk spot the ticket starts falling.
 const _FALL_HEIGHT_PX := 700.0
@@ -45,6 +50,9 @@ const _FALL_ROCK_RADIANS := 0.35
 const _FLING_DURATION_SEC := 0.9
 ## How far below its desk spot the ticket starts its toss.
 const _FLING_DEPTH_PX := 600.0
+## How far left of its desk spot the toss starts, gliding
+## right as it rises.
+const _FLING_FROM_LEFT_PX := 200.0
 ## How high above its desk spot the toss peaks.
 const _FLING_PEAK_PX := 120.0
 ## How far the ticket spins on the way up, settling flat as it lands.
@@ -117,6 +125,11 @@ func show_item(complaint: String, flings_up := false) -> void:
 	var motion := "_set_fling" if flings_up else "_set_fall"
 	call(motion, 0.0)
 	reset_physics_interpolation()
+	# Every ticket waits a beat before it comes in; the
+	# radio's waits a little longer.
+	var delay := _CARD_DELAY_SEC
+	if flings_up:
+		delay += _FLING_EXTRA_DELAY_SEC
 	_motion_tween_id = G.time.tween_method(
 		self,
 		motion,
@@ -124,7 +137,7 @@ func show_item(complaint: String, flings_up := false) -> void:
 		1.0,
 		_FLING_DURATION_SEC if flings_up else _FALL_DURATION_SEC,
 		"linear",
-		0.0,
+		delay,
 		TimeType.PLAY_PHYSICS,
 		_on_landed,
 	)
@@ -429,8 +442,9 @@ func _set_fall(progress: float) -> void:
 	global_rotation += _FALL_ROCK_RADIANS * cos(swing_angle) * remaining
 
 
-## 0 is below the desk spot, off screen; 1 has landed on it. The ticket
-## flies up past its spot like a thrown thing, spinning, peaks at
+## 0 is below the desk spot and left of it, off screen; 1 has
+## landed on it. The ticket flies up past its spot like a
+## thrown thing, spinning, gliding right as it rises, peaks at
 ## `_FLING_PEAK_PX` and drops back onto it.
 func _set_fling(progress: float) -> void:
 	_set_lift(0.0)
@@ -442,6 +456,9 @@ func _set_fling(progress: float) -> void:
 	)
 	var launch := -depth - gravity
 	global_position.y += gravity * progress * progress + launch * progress + depth
+	global_position.x -= (
+		_FLING_FROM_LEFT_PX * pow(1.0 - progress, 2.0)
+	)
 	global_rotation += _FLING_SPIN_RADIANS * pow(1.0 - progress, 2.0)
 
 

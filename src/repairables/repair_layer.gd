@@ -313,7 +313,7 @@ func take_off_for_drag() -> void:
 	is_moving = true
 	z_index = 10
 	_stop_outline()
-	G.audio.play_sound(&"pop")
+	G.audio.play_sound(&"lid_pop")
 	_home_global_rotation = kept_rotation
 	reparent(spot)
 	global_position = kept_global
@@ -664,7 +664,7 @@ func _on_put_back() -> void:
 	is_moving = false
 	for fastener in get_fasteners():
 		fastener.set_install_mode()
-	G.audio.play_sound(&"thud")
+	G.audio.play_sound(&"rattle_snap")
 	item.on_layer_installed(self)
 
 
@@ -707,6 +707,7 @@ func _start_outline() -> void:
 		_art_material_before_outline = OutlineHint.apply_to_sprite(
 			_outlined_art,
 		)
+		_add_shape_rim_if_clipped(OutlineHint.get_shared_width())
 		return
 	if not is_instance_valid(_outline_hint):
 		var points := OutlineHint.get_art_polygon(art)
@@ -715,6 +716,28 @@ func _start_outline() -> void:
 		_outline_hint = OutlineHint.new()
 		art.add_child(_outline_hint)
 		_outline_hint.polygon = points
+	_outline_hint.set_active(true)
+
+
+## The outline shader can only paint inside the art's
+## texture, so on art whose texture touches its edges (the
+## piano Keys) the rim would be clipped away on those sides.
+## When the texture's margin fits less than the rim, the
+## layer's authored Shape carries an outside rim as well.
+func _add_shape_rim_if_clipped(width: float) -> void:
+	if not (art is Sprite2D):
+		return
+	if OutlineHint.get_sprite_rim_world(art as Sprite2D) >= width:
+		return
+	var world_points := get_shape_world_polygon()
+	if world_points.size() < 3:
+		return
+	if not is_instance_valid(_outline_hint):
+		_outline_hint = OutlineHint.new()
+		art.add_child(_outline_hint)
+	_outline_hint.polygon = OutlineHint.world_polygon_to_local(
+		art, world_points
+	)
 	_outline_hint.set_active(true)
 
 

@@ -56,6 +56,10 @@ const _ARRIVAL_BOUNCE_DECAY := 0.4
 ## Above the level's drawers (z_index 15), so a leaving item slides over
 ## them into the outbox.
 const _LEAVING_Z_INDEX := 16
+## World width of the finished item's outline. Wider than
+## the shared hint rim: the hint width reads thin around a
+## whole item.
+const _FINISH_OUTLINE_WIDTH_PX := 14.0
 
 @export var item_name := ""
 ## The object's own outline, an Area2D with polygon/shape
@@ -117,6 +121,7 @@ var _arrival_impact_count := 0
 var _outline_hint: OutlineHint
 var _outlined_art: Sprite2D
 var _art_material_before_outline: Material
+var _finish_outline_material: Material
 
 
 func _ready() -> void:
@@ -760,8 +765,12 @@ func _start_outline() -> void:
 			if is_instance_valid(G.settings.outline_hint_material):
 				_outlined_art = layer.art as Sprite2D
 				_art_material_before_outline = (
-					OutlineHint.apply_to_sprite(_outlined_art)
+					OutlineHint.apply_to_sprite(
+						_outlined_art,
+						_get_finish_outline_material(),
+					)
 				)
+				_add_finish_shape_rim_if_clipped(layer)
 		else:
 			if not is_instance_valid(_outline_hint):
 				var points := OutlineHint.get_art_polygon(layer.art)
@@ -770,9 +779,56 @@ func _start_outline() -> void:
 					layer.art.add_child(_outline_hint)
 					_outline_hint.polygon = points
 			if is_instance_valid(_outline_hint):
+				_outline_hint.width_scale = (
+					_FINISH_OUTLINE_WIDTH_PX
+					/ OutlineHint.get_shared_width()
+				)
 				_outline_hint.set_active(true)
 	if is_instance_valid(G.level):
 		G.level.set_outbox_outline_shown(true)
+
+
+## The finished item's rim, a copy of the shared outline
+## material with a wider band: the shared hint width reads
+## thin around a whole item. Duplicated once, the first time
+## an item finishes.
+func _get_finish_outline_material() -> Material:
+	if not is_instance_valid(_finish_outline_material):
+		var shared := G.settings.outline_hint_material
+		if is_instance_valid(shared):
+			_finish_outline_material = shared.duplicate()
+			(_finish_outline_material as ShaderMaterial
+			).set_shader_parameter(
+				&"outline_width_px", _FINISH_OUTLINE_WIDTH_PX
+			)
+	return _finish_outline_material
+
+
+## Like the layers' own clipped-rim fallback: if the finished
+## art's texture fits less than the (wider) finished rim,
+## the outlined layer's authored Shape carries an outside
+## rim too.
+func _add_finish_shape_rim_if_clipped(layer: RepairLayer) -> void:
+	if not is_instance_valid(_outlined_art):
+		return
+	if (
+		OutlineHint.get_sprite_rim_world(_outlined_art)
+		>= _FINISH_OUTLINE_WIDTH_PX
+	):
+		return
+	var world_points := layer.get_shape_world_polygon()
+	if world_points.size() < 3:
+		return
+	if not is_instance_valid(_outline_hint):
+		_outline_hint = OutlineHint.new()
+		_outlined_art.add_child(_outline_hint)
+	_outline_hint.polygon = OutlineHint.world_polygon_to_local(
+		_outlined_art, world_points
+	)
+	_outline_hint.width_scale = (
+		_FINISH_OUTLINE_WIDTH_PX / OutlineHint.get_shared_width()
+	)
+	_outline_hint.set_active(true)
 
 
 func _stop_outline() -> void:
