@@ -29,7 +29,7 @@ radius = 150.0
 scale = Vector2(0.13, 0.13)
 script = ExtResource("1_item")
 item_name = "Computer keyboard"
-ticket = "A couple of keys are shot. Blow the crumbs out."
+ticket = "Lost some keys, and some of my toast, but at least I can touch-type."
 
 [node name="DropArea" type="Area2D" parent="."]
 unique_name_in_owner = true

@@ -10,7 +10,7 @@ size = Vector2(220, 140)
 [node name="ShrinkRayRepairable" type="Node2D"]
 script = ExtResource("1_item")
 item_name = "Shrink ray"
-ticket = "Careful: it might go off."
+ticket = "The pawn guy doesn't remember where he got it. Careful, it might go off."
 
 [node name="DropArea" type="Area2D" parent="."]
 unique_name_in_owner = true

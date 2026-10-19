@@ -10,7 +10,7 @@ size = Vector2(220, 140)
 [node name="GameNWatchRepairable" type="Node2D"]
 script = ExtResource("1_item")
 item_name = "Game n Watch"
-ticket = "Faceplate screws, dirt, a circuit and a button."
+ticket = "How do you get this thing open?? --Gertrude"
 
 [node name="DropArea" type="Area2D" parent="."]
 unique_name_in_owner = true

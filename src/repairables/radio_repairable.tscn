@@ -29,7 +29,7 @@ radius = 220.0
 scale = Vector2(0.12, 0.12)
 script = ExtResource("1_item")
 item_name = "Radio"
-ticket = "Open it up, swap the bulb, blow it out, whack it, glue the dial."
+ticket = "Son of a $!#@ this $@!# radio!"
 
 [node name="DropArea" type="Area2D" parent="."]
 unique_name_in_owner = true

@@ -31,7 +31,7 @@ radius = 230.0
 scale = Vector2(0.13, 0.13)
 script = ExtResource("1_item")
 item_name = "TV"
-ticket = "Antenna's bent, controls are shot. Whack it back to life at the end."
+ticket = "Grandpa just says it needs a good whack, but I don't think that's enough..."
 
 [node name="DropArea" type="Area2D" parent="."]
 unique_name_in_owner = true

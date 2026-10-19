@@ -31,7 +31,7 @@ radius = 200.0
 scale = Vector2(0.11, 0.11)
 script = ExtResource("1_item")
 item_name = "Pianoman"
-ticket = "Middle key fell off, LED is busted, and it is filthy."
+ticket = "I told Flora to lay off the arpeggios, but nooo"
 
 [node name="DropArea" type="Area2D" parent="."]
 unique_name_in_owner = true

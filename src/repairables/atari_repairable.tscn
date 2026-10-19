@@ -11,7 +11,7 @@ size = Vector2(220, 140)
 [node name="AtariRepairable" type="Node2D"]
 script = ExtResource("1_item")
 item_name = "Atari joystick"
-ticket = "Unscrew it, yank the dead stick, fit a new one, screw it shut."
+ticket = "hi i movd it to strong and now it dont werk :("
 
 [node name="DropArea" type="Area2D" parent="."]
 unique_name_in_owner = true
