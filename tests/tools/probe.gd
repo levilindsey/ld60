@@ -56,7 +56,7 @@ func _run() -> void:
 		and G.level.tools_by_type.has(Tool.Type.HAMMER),
 		"rag, air blower and hammer are on the rack",
 	)
-	_check_holder_shadows()
+	await _check_holder_shadows()
 	_check_driver_art()
 	await _check_holder_return()
 	await _check_rag()
@@ -101,7 +101,7 @@ func _check_driver_art() -> void:
 
 ## Each stored tool's shadow follows its holder treatment: the
 ## glue's ellipse sits at its holder contact, the rag casts its
-## full shape, and the drivers cast only below their necks.
+## full shape, and the hanging drivers cast no shadow at all.
 func _check_holder_shadows() -> void:
 	var glue := G.level.tools_by_type[Tool.Type.GLUE] as Tool
 	var rag := G.level.tools_by_type[Tool.Type.RAG] as Tool
@@ -117,36 +117,15 @@ func _check_holder_shadows() -> void:
 	_expect(
 		rag.holder_shadow == Tool.HolderShadow.SILHOUETTE
 		and rag._drop_shadow.kind == DropShadow.Kind.SILHOUETTE
-		and not is_instance_valid(rag._drop_shadow.clip_holder)
 		and rag._drop_shadow.get_copy_count() > 0,
 		"the hanging rag casts its full shape (%d copies)"
 		% rag._drop_shadow.get_copy_count(),
 	)
+	await _physics_frames(30)
 	_expect(
-		driver.holder_shadow
-		== Tool.HolderShadow.SILHOUETTE_BELOW_HOLDER
-		and driver._drop_shadow.kind == DropShadow.Kind.SILHOUETTE
-		and driver._drop_shadow.clip_holder
-		== driver._get_holder_shape()
-		and driver._drop_shadow.get_copy_count() > 0,
-		"the stored driver casts only below its neck (%d copies)"
-		% driver._drop_shadow.get_copy_count(),
-	)
-	var art_rect := _union_canvas_rect(driver)
-	var shadow_rect := Rect2()
-	var shadow_found := false
-	for pair in driver._drop_shadow._copies:
-		var copy_rect := _canvas_world_rect(pair[0] as CanvasItem)
-		shadow_rect = (
-			copy_rect if not shadow_found else shadow_rect.merge(copy_rect)
-		)
-		shadow_found = true
-	_expect(
-		shadow_found
-		and shadow_rect.position.x < art_rect.position.x - 1.0
-		and shadow_rect.end.x > art_rect.end.x + 1.0,
-		"the stored driver's shadow peeks out on both sides"
-		+ " (art %s, shadow %s)" % [art_rect, shadow_rect],
+		driver.holder_shadow == Tool.HolderShadow.NONE
+		and not driver._drop_shadow.visible,
+		"the stored driver casts no shadow below its shoulders",
 	)
 
 

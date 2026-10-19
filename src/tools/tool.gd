@@ -25,13 +25,12 @@ enum Mode {
 ## picked from where the tool meets the holder at `holder_area`:
 ## the glue bottle sits on a shelf (an ellipse under the contact),
 ## the rag hangs on a hook (its full shape, offset down), and the
-## rest rest on shoulders at a neck (only the shape at and below
-## the contact casts). A tool casts no shadow while it is held or
-## in use.
+## rest of the hanging tools cast none. A tool also casts no
+## shadow while it is held or in use.
 enum HolderShadow {
 	ELLIPSE_AT_HOLDER,
 	SILHOUETTE,
-	SILHOUETTE_BELOW_HOLDER,
+	NONE,
 }
 
 const ROTATE_DURATION_SEC := 0.3
@@ -56,8 +55,8 @@ const _NOPE_SHAKE_STEPS := 4
 @export var held_rotation_deg := 0.0
 ## The in-holder shadow treatment for this tool (see HolderShadow).
 ## Set per tool scene: glue is ELLIPSE_AT_HOLDER, the rag is
-## SILHOUETTE, the rest are SILHOUETTE_BELOW_HOLDER.
-@export var holder_shadow := HolderShadow.SILHOUETTE_BELOW_HOLDER
+## SILHOUETTE, the rest are NONE.
+@export var holder_shadow := HolderShadow.NONE
 
 var mode := Mode.ENTERING:
 	set(to_mode):
@@ -111,7 +110,10 @@ func _ready() -> void:
 		[],
 		Vector2(0.0, 6.0),
 		func() -> bool:
-			return mode == Mode.ENTERING or mode == Mode.STORED,
+			return (
+				holder_shadow != HolderShadow.NONE
+				and (mode == Mode.ENTERING or mode == Mode.STORED)
+			),
 	)
 	_update_drop_shadow()
 
@@ -172,20 +174,15 @@ func _update_drop_shadow() -> void:
 			match holder_shadow:
 				HolderShadow.ELLIPSE_AT_HOLDER:
 					_drop_shadow.anchor = holder_area
-					_drop_shadow.clip_holder = null
 					_drop_shadow.size_px = Vector2(100.0, 24.0)
 					_drop_shadow.offset_px = Vector2(0.0, -4.0)
 					_drop_shadow.kind = DropShadow.Kind.ELLIPSE
 				HolderShadow.SILHOUETTE:
 					_drop_shadow.anchor = null
-					_drop_shadow.clip_holder = null
 					_drop_shadow.offset_px = Vector2(0.0, 8.0)
 					_drop_shadow.kind = DropShadow.Kind.SILHOUETTE
-				HolderShadow.SILHOUETTE_BELOW_HOLDER:
-					_drop_shadow.anchor = null
-					_drop_shadow.clip_holder = _get_holder_shape()
-					_drop_shadow.offset_px = Vector2(0.0, 6.0)
-					_drop_shadow.kind = DropShadow.Kind.SILHOUETTE
+				HolderShadow.NONE:
+					pass
 
 
 func _set_mode(to_mode: Mode, _from_mode: Mode) -> void:

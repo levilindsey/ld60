@@ -6,9 +6,6 @@ extends Node2D
 ## - SILHOUETTE: dark copies of the host's sprites, scaled up a
 ##   little about the art's centre so a rim peeks out on every
 ##   side, following the host's position and rotation.
-##   Optionally clipped to the part of the shape at and below a
-##   holder's contact point (a tool resting on its shoulders:
-##   only what hangs below the neck shadows).
 ##
 ## Sizes and offset lengths are world pixels: the drawing
 ## compensates for any scale above it, the same lesson the
@@ -38,22 +35,9 @@ enum Kind {
 ## sits in mostly transparent padding, and a percentage of the
 ## canvas would barely grow the art itself.
 const _GROW_LAYERS: Array = [[20.0, 3.0, 0.45], [10.0, 1.5, 0.8]]
-const _CLIP_SHADER := """
+const _SILHOUETTE_SHADER := """
 shader_type canvas_item;
-uniform vec2 holder_pos = vec2(0.0, 0.0);
-uniform vec2 holder_axis = vec2(0.0, 1.0);
-uniform float clip_enabled = 0.0;
-varying vec2 world_pos;
-void vertex() {
-	world_pos = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy;
-}
 void fragment() {
-	if (
-		clip_enabled > 0.5
-		&& dot(world_pos - holder_pos, holder_axis) < 0.0
-	) {
-		discard;
-	}
 	COLOR = vec4(0.0, 0.0, 0.0, texture(TEXTURE, UV).a * COLOR.a);
 }
 """
@@ -76,14 +60,6 @@ var kind := Kind.ELLIPSE:
 	set(value):
 		kind = value
 		_rebuild()
-## When set, silhouette fragments on the up side of this node
-## (against the host's local down axis) are clipped away. Set it
-## to a tool's holder shape while the tool rests in its holder;
-## clear it (null) for the full shape.
-var clip_holder: Node2D:
-	set(value):
-		clip_holder = value
-		_update_clip()
 ## When set, the shadow centres on this node instead of the host
 ## (an ellipse aligned with a tool's holder contact, say).
 var anchor: Node2D
@@ -104,7 +80,7 @@ var _copies: Array = []
 ## offset: the shape matches the host's turn, while its
 ## centre stays at the same down-screen offset.
 var _centre_local := Vector2.ZERO
-var _clip_material: ShaderMaterial
+var _silhouette_material: ShaderMaterial
 
 
 ## Attaches an ellipse shadow to `host` and returns it.
@@ -184,7 +160,6 @@ func _process(delta: float) -> void:
 	global_position = centre + offset_px
 	global_rotation = 0.0
 	_sync_silhouette()
-	_update_clip()
 	var should_show := (
 		_host.is_visible_in_tree()
 		and show_when.is_valid()
@@ -247,11 +222,11 @@ func _rebuild() -> void:
 			_collect_sprites(_host, sources)
 	if sources.is_empty():
 		return
-	if not is_instance_valid(_clip_material):
-		_clip_material = ShaderMaterial.new()
+	if not is_instance_valid(_silhouette_material):
+		_silhouette_material = ShaderMaterial.new()
 		var shader := Shader.new()
-		shader.code = _CLIP_SHADER
-		_clip_material.shader = shader
+		shader.code = _SILHOUETTE_SHADER
+		_silhouette_material.shader = shader
 	var grow_layers: Array = _GROW_LAYERS
 	if single_layer:
 		grow_layers = [_GROW_LAYERS[_GROW_LAYERS.size() - 1]]
@@ -264,7 +239,7 @@ func _rebuild() -> void:
 			if not is_instance_valid(copy):
 				continue
 			if copy is Sprite2D or copy is AnimatedSprite2D:
-				copy.material = _clip_material
+				copy.material = _silhouette_material
 			layer.add_child(copy)
 			var base_scale: Vector2 = (copy as Node2D).scale
 			var grow_info := _get_grow(
@@ -292,7 +267,6 @@ func _rebuild() -> void:
 					Vector2(float(grow[0]), float(grow[1])),
 				],
 			)
-	_update_clip()
 	_update_centre_local()
 
 
@@ -654,25 +628,3 @@ func _refresh_grow(pair: Array) -> void:
 	).basis_xform(shift)
 	copy.rotation = relative.get_rotation()
 	_update_centre_local()
-
-
-func _update_clip() -> void:
-	if not is_instance_valid(_clip_material):
-		return
-	var is_clipped := is_instance_valid(clip_holder)
-	_clip_material.set_shader_parameter(
-		"clip_enabled",
-		1.0 if is_clipped else 0.0,
-	)
-	if is_clipped:
-		# Keep the shape on the holder's own down side: past the
-		# contact point along the host's local down axis, whatever
-		# way the host is turned.
-		_clip_material.set_shader_parameter(
-			"holder_pos",
-			clip_holder.global_position,
-		)
-		_clip_material.set_shader_parameter(
-			"holder_axis",
-			_host.get_global_transform().y.normalized(),
-		)
