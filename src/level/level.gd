@@ -207,14 +207,16 @@ func start_game() -> void:
 	has_won = false
 
 
-## Call when the player wins. Shows the credits overlay; pressing
-## jump/ability there starts a fresh run.
+## Call when the player wins. The credits card floats down over
+## the bench; the credits state is terminal, so nothing on the
+## bench can be clicked or restarted from there.
 func win() -> void:
 	if has_won:
 		return
 	G.print("Game won", ScaffolderLog.CATEGORY_GAME_STATE)
 	has_won = true
 	G.audio.play_sound(&"sigh_relief")
+	(%CreditsCard as CreditsCard).show_credits()
 	G.state.transition(StateMain.State.CREDITS)
 
 

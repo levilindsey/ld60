@@ -13,6 +13,7 @@ func _ready() -> void:
 	%TitleOverlay.modulate.a = 0.0
 	%PauseOverlay.modulate.a = 0.0
 	%CreditsOverlay.modulate.a = 0.0
+	%Exterior.entered.connect(_on_exterior_entered)
 
 	# Wait for G.settings to be assigned.
 	await get_tree().process_frame
@@ -26,6 +27,7 @@ func _ready() -> void:
 func handle_state_transition(to_state: StateMain.State) -> void:
 	match to_state:
 		StateMain.State.TITLE:
+			%Exterior.reset_exterior()
 			fade_in(%TitleOverlay)
 			fade_out(%PauseOverlay)
 			fade_out(%CreditsOverlay)
@@ -38,9 +40,25 @@ func handle_state_transition(to_state: StateMain.State) -> void:
 		StateMain.State.CREDITS:
 			fade_out(%TitleOverlay)
 			fade_out(%PauseOverlay)
-			fade_in(%CreditsOverlay)
+			# The credits card in the level shows the credits;
+			# this overlay stays down.
+			fade_out(%CreditsOverlay)
 		_:
 			G.error()
+
+
+## The title screen's tap: the exterior plays the walk inside,
+## and the game state follows when it signals. False when there
+## is no exterior to play it, so the caller can just start.
+func request_enter() -> bool:
+	if not is_instance_valid(%Exterior):
+		return false
+	%Exterior.enter()
+	return true
+
+
+func _on_exterior_entered() -> void:
+	G.state.transition(StateMain.State.GAME)
 
 
 func fade_in(node: CanvasItem) -> void:

@@ -26,7 +26,12 @@ func _unhandled_input(event: InputEvent) -> void:
 				event.is_action_pressed("jump")
 				or event.is_action_pressed("ability")
 			):
-				transition(State.GAME)
+				# The exterior plays the walk inside first; the
+				# GAME transition follows its `entered` signal.
+				if not (
+					is_instance_valid(G.hud) and G.hud.request_enter()
+				):
+					transition(State.GAME)
 		State.GAME:
 			if event.is_action_pressed("pause"):
 				transition(State.PAUSE)

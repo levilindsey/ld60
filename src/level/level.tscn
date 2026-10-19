@@ -23,6 +23,7 @@
 [ext_resource type="PackedScene" uid="uid://bc01nx4u2v57p" path="res://src/level/bird_smack.tscn" id="20_bird_smack"]
 [ext_resource type="PackedScene" uid="uid://caiftnrbdnonl" path="res://src/level/bird_peak.tscn" id="21_bird_peak"]
 [ext_resource type="Script" uid="uid://bsynr24m7gyko" path="res://src/level/bird_controller.gd" id="22_bird_controller"]
+[ext_resource type="PackedScene" path="res://src/props/credits_card.tscn" id="23_credits_card"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 34.058773
@@ -310,6 +311,9 @@ done_spot = NodePath("../ReceiptSpot")
 open_spot = NodePath("../TicketOpenSpot")
 desk_corners = PackedVector2Array(-259.4, -145.5, 382.1, -92.8, 337.3, 189.2, -448, 108.8)
 resting_draw_before = NodePath("../Repairables")
+
+[node name="CreditsCard" parent="." unique_id=2100002005 instance=ExtResource("23_credits_card")]
+unique_name_in_owner = true
 
 [node name="WorkableArea" type="Area2D" parent="." unique_id=181084016]
 unique_name_in_owner = true

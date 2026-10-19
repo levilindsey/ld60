@@ -1,0 +1,42 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/ui/exterior/exterior.gd" id="1_exterior"]
+[ext_resource type="Texture2D" path="res://assets/images/repairables/exterior_wall.png" id="2_wall"]
+[ext_resource type="Texture2D" path="res://assets/images/repairables/exterior_door.png" id="3_door"]
+[ext_resource type="Script" path="res://src/ui/exterior/exterior_door.gd" id="4_door_script"]
+[ext_resource type="FontFile" path="res://assets/fonts/young_serif/YoungSerif-Regular.ttf" id="5_font"]
+
+[node name="Exterior" type="Node2D"]
+process_mode = 3
+script = ExtResource("1_exterior")
+wall_texture = ExtResource("2_wall")
+door_texture = ExtResource("3_door")
+
+[node name="Zoom" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Wall" type="Sprite2D" parent="Zoom"]
+unique_name_in_owner = true
+centered = false
+
+[node name="Door" type="Node2D" parent="Zoom"]
+unique_name_in_owner = true
+script = ExtResource("4_door_script")
+
+[node name="SignTitle" type="Label" parent="Zoom"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.23, 0.15, 0.08, 1)
+theme_override_fonts/font = ExtResource("5_font")
+theme_override_font_sizes/font_size = 36
+text = "Repair Shop"
+horizontal_alignment = 1
+
+[node name="SignSub" type="Label" parent="Zoom"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.23, 0.15, 0.08, 0.85)
+theme_override_fonts/font = ExtResource("5_font")
+theme_override_font_sizes/font_size = 20
+text = "Come on in"
+horizontal_alignment = 1

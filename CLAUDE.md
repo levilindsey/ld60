@@ -123,7 +123,8 @@ transition leaves it, so a run cannot start again in the same
 session. `transition()` branches are deliberately idempotent;
 there is no same-state early return.
 
-Game flow helpers: `G.level.win()` -> CREDITS overlay;
+Game flow helpers: `G.level.win()` -> the credits card floats
+down (the CREDITS state is terminal; the HUD overlay is unused);
 `G.game_panel.restart_level()` -> a fresh Level instance.
 
 ## Core APIs Worth Knowing
