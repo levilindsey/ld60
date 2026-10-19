@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dwv1t1pd3n7li"]
 
 [ext_resource type="Script" uid="uid://c3wda6ko0caqc" path="res://src/props/radio.gd" id="1_radio"]
-[ext_resource type="Texture2D" uid="uid://bu0iy5e8r5hge" path="res://assets/images/repairables/radio.png" id="2_texture"]
+[ext_resource type="Texture2D" uid="uid://8aaa5q1tdpsf" path="res://assets/images/repairables/radio.png" id="2_texture"]
 [ext_resource type="AudioStream" uid="uid://dknug6bkt2o8v" path="res://assets/audio/radio_static.ogg" id="3_static"]
 
 [node name="Radio" type="Node2D" unique_id=876580089 groups=["strikable_props"]]
