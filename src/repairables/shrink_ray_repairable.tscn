@@ -75,7 +75,7 @@ visible = false
 [node name="Crystal" parent="Layers/Body" node_paths=PackedStringArray("installed_art", "covering_grime") instance=ExtResource("6_socket")]
 unique_name_in_owner = true
 position = Vector2(53.7, -41.1)
-accepted_part = 9
+accepted_part = 8
 installed_art = NodePath("GoodCrystal")
 covering_grime = NodePath("../CrystalGrime")
 
@@ -100,9 +100,9 @@ texture = ExtResource("5_crystal_good")
 region_enabled = true
 region_rect = Rect2(326, 160, 60, 68)
 
-[node name="Spring" parent="Layers/Body" instance=ExtResource("6_socket")]
+[node name="Bolt" parent="Layers/Body" instance=ExtResource("6_socket")]
 position = Vector2(20, 2)
-accepted_part = 2
+accepted_part = 10
 
 [node name="CrystalGrime" parent="Layers/Body" instance=ExtResource("8_grime")]
 position = Vector2(53.7, -41.1)

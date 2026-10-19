@@ -93,7 +93,7 @@ position = Vector2(646, -240)
 
 [node name="Led" parent="Layers/Body" unique_id=984844396 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
 position = Vector2(-1319, -466)
-accepted_part = 6
+accepted_part = 5
 installed_art = NodePath("GoodLed")
 
 [node name="GoodLed" type="Sprite2D" parent="Layers/Body/Led" unique_id=2041530734]

@@ -13,7 +13,6 @@ extends Node2D
 enum Type {
 	GEAR,
 	TUBE,
-	SPRING,
 	TV_CONTROLS,
 	LETTER_KEY,
 	SPACEBAR,
@@ -21,6 +20,8 @@ enum Type {
 	JOYSTICK,
 	CIRCUIT,
 	CRYSTAL,
+	BOLT,
+	NUT,
 }
 
 ## Seconds the part takes to snap into a socket.
@@ -42,6 +43,11 @@ const _TURN_MAX_RAD := 0.5
 ## the placeholder polygon. A new kind gets art by adding a
 ## row here; nothing else needs to change.
 const _ART := {
+	Type.GEAR: [
+		"res://assets/images/repairables/gear.png",
+		Rect2(1134, 633, 1230, 1219),
+		76.0,
+	],
 	Type.TUBE: [
 		"res://assets/images/repairables/radio_good_bulb.png",
 		Rect2(2118, 1175, 455, 994),
@@ -81,6 +87,16 @@ const _ART := {
 		"res://assets/images/repairables/shrinkray_fixed_crystal.png",
 		Rect2(329, 166, 53, 58),
 		35.0,
+	],
+	Type.BOLT: [
+		"res://assets/images/repairables/bolt.png",
+		Rect2(1292, 591, 472, 829),
+		92.0,
+	],
+	Type.NUT: [
+		"res://assets/images/repairables/nut.png",
+		Rect2(1908, 531, 347, 371),
+		58.0,
 	],
 }
 
@@ -127,6 +143,7 @@ func _ready() -> void:
 				and G.level.hand.held != self
 			),
 		0.8,
+		true,
 	)
 
 
@@ -422,8 +439,6 @@ static func get_display_name(part_type: Type) -> String:
 			return "Gear"
 		Type.TUBE:
 			return "Tube"
-		Type.SPRING:
-			return "Spring"
 		Type.TV_CONTROLS:
 			return "TV controls"
 		Type.LETTER_KEY:
@@ -438,6 +453,10 @@ static func get_display_name(part_type: Type) -> String:
 			return "Circuit"
 		Type.CRYSTAL:
 			return "Crystal"
+		Type.BOLT:
+			return "Bolt"
+		Type.NUT:
+			return "Nut"
 		_:
 			G.fatal()
 			return ""
@@ -449,8 +468,6 @@ static func get_color(part_type: Type) -> Color:
 			return Color(0.85, 0.65, 0.2)
 		Type.TUBE:
 			return Color(0.45, 0.65, 0.85)
-		Type.SPRING:
-			return Color(0.55, 0.8, 0.5)
 		Type.TV_CONTROLS:
 			return Color(0.75, 0.45, 0.3)
 		Type.LETTER_KEY:
@@ -465,6 +482,10 @@ static func get_color(part_type: Type) -> Color:
 			return Color(0.25, 0.65, 0.35)
 		Type.CRYSTAL:
 			return Color(0.9, 0.35, 0.9)
+		Type.BOLT:
+			return Color(0.6, 0.62, 0.68)
+		Type.NUT:
+			return Color(0.7, 0.68, 0.6)
 		_:
 			G.fatal()
 			return Color.WHITE
@@ -490,23 +511,25 @@ static func get_polygon(part_type: Type) -> PackedVector2Array:
 					Vector2(-20, 9),
 				]
 			)
-		Type.SPRING:
+		Type.BOLT:
 			return PackedVector2Array(
 				[
-					Vector2(-20, 4),
-					Vector2(-12, -8),
-					Vector2(-4, 4),
-					Vector2(4, -8),
-					Vector2(12, 4),
-					Vector2(20, -8),
-					Vector2(20, 2),
-					Vector2(12, 14),
-					Vector2(4, 2),
-					Vector2(-4, 14),
-					Vector2(-12, 2),
-					Vector2(-20, 14),
+					Vector2(-8, -20),
+					Vector2(8, -20),
+					Vector2(8, -6),
+					Vector2(4, -6),
+					Vector2(4, 20),
+					Vector2(-4, 20),
+					Vector2(-4, -6),
+					Vector2(-8, -6),
 				]
 			)
+		Type.NUT:
+			var nut_points := PackedVector2Array()
+			for index in 6:
+				var angle := TAU * index / 6.0
+				nut_points.append(Vector2.from_angle(angle) * 15.0)
+			return nut_points
 		Type.TV_CONTROLS:
 			return PackedVector2Array(
 				[

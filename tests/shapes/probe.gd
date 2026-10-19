@@ -17,7 +17,6 @@ const _TIMEOUT_SEC := 90.0
 const _PART_SCENE_PATHS := {
 	Part.Type.GEAR: "res://src/parts/gear_part.tscn",
 	Part.Type.TUBE: "res://src/parts/tube_part.tscn",
-	Part.Type.SPRING: "res://src/parts/spring_part.tscn",
 	Part.Type.TV_CONTROLS: "res://src/parts/tv_controls_part.tscn",
 	Part.Type.LETTER_KEY: "res://src/parts/letter_key_part.tscn",
 	Part.Type.SPACEBAR: "res://src/parts/spacebar_part.tscn",
@@ -25,6 +24,8 @@ const _PART_SCENE_PATHS := {
 	Part.Type.JOYSTICK: "res://src/parts/joystick_part.tscn",
 	Part.Type.CIRCUIT: "res://src/parts/circuit_part.tscn",
 	Part.Type.CRYSTAL: "res://src/parts/crystal_part.tscn",
+	Part.Type.BOLT: "res://src/parts/bolt_part.tscn",
+	Part.Type.NUT: "res://src/parts/nut_part.tscn",
 }
 
 const _REPAIRABLE_SCENE_PATHS: Array[String] = [

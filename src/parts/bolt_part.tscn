@@ -1,8 +1,8 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://src/parts/spring_part.gd" id="1_part"]
+[ext_resource type="Script" path="res://src/parts/bolt_part.gd" id="1_part"]
 
-[node name="SpringPart" type="Node2D" node_paths=PackedStringArray("shape")]
+[node name="BoltPart" type="Node2D" node_paths=PackedStringArray("shape")]
 z_index = 10
 z_as_relative = false
 script = ExtResource("1_part")
@@ -10,8 +10,8 @@ shape = NodePath("Shape")
 
 [node name="Art" type="Polygon2D" parent="."]
 unique_name_in_owner = true
-color = Color(0.55, 0.8, 0.5, 1)
-polygon = PackedVector2Array(-20, 4, -12, -8, -4, 4, 4, -8, 12, 4, 20, -8, 20, 2, 12, 14, 4, 2, -4, 14, -12, 2, -20, 14)
+color = Color(0.6, 0.62, 0.68, 1)
+polygon = PackedVector2Array(-8, -20, 8, -20, 8, -6, 4, -6, 4, 20, -4, 20, -4, -6, -8, -6)
 
 [node name="Sprite" type="Sprite2D" parent="."]
 unique_name_in_owner = true
@@ -24,4 +24,4 @@ monitoring = false
 monitorable = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape"]
-polygon = PackedVector2Array(-20, 4, -12, -8, -4, 4, 4, -8, 12, 4, 20, -8, 20, 2, 12, 14, 4, 2, -4, 14, -12, 2, -20, 14)
+polygon = PackedVector2Array(-8, -20, 8, -20, 8, -6, 4, -6, 4, 20, -4, 20, -4, -6, -8, -6)

@@ -28,7 +28,8 @@
 [ext_resource type="PackedScene" path="res://src/repairables/shrink_ray_repairable.tscn" id="23_shrink"]
 [ext_resource type="PackedScene" path="res://src/parts/gear_part.tscn" id="24_gear"]
 [ext_resource type="PackedScene" path="res://src/parts/tube_part.tscn" id="25_tube"]
-[ext_resource type="PackedScene" path="res://src/parts/spring_part.tscn" id="26_spring"]
+[ext_resource type="PackedScene" path="res://src/parts/bolt_part.tscn" id="26_bolt"]
+[ext_resource type="PackedScene" path="res://src/parts/nut_part.tscn" id="34_nut"]
 [ext_resource type="PackedScene" path="res://src/parts/tv_controls_part.tscn" id="27_tvctl"]
 [ext_resource type="PackedScene" path="res://src/parts/letter_key_part.tscn" id="28_letter"]
 [ext_resource type="PackedScene" path="res://src/parts/spacebar_part.tscn" id="29_space"]
@@ -68,7 +69,8 @@ radio_repairable_scene = ExtResource("22_radio")
 shrink_ray_repairable_scene = ExtResource("23_shrink")
 gear_part_scene = ExtResource("24_gear")
 tube_part_scene = ExtResource("25_tube")
-spring_part_scene = ExtResource("26_spring")
+bolt_part_scene = ExtResource("26_bolt")
+nut_part_scene = ExtResource("34_nut")
 tv_controls_part_scene = ExtResource("27_tvctl")
 letter_key_part_scene = ExtResource("28_letter")
 spacebar_part_scene = ExtResource("29_space")

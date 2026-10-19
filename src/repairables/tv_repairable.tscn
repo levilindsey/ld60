@@ -105,7 +105,7 @@ region_rect = Rect2(1363, 316, 323, 217)
 
 [node name="Controls" parent="Layers/Body" unique_id=1830129670 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
 position = Vector2(747, 187)
-accepted_part = 3
+accepted_part = 2
 installed_art = NodePath("GoodControls")
 
 [node name="GoodControls" type="Sprite2D" parent="Layers/Body/Controls" unique_id=1312169053]

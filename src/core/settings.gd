@@ -179,7 +179,6 @@ enum PhysicsLayer {
 ## hand.
 @export var gear_part_scene: PackedScene
 @export var tube_part_scene: PackedScene
-@export var spring_part_scene: PackedScene
 @export var tv_controls_part_scene: PackedScene
 @export var letter_key_part_scene: PackedScene
 @export var spacebar_part_scene: PackedScene
@@ -187,6 +186,8 @@ enum PhysicsLayer {
 @export var joystick_part_scene: PackedScene
 @export var circuit_part_scene: PackedScene
 @export var crystal_part_scene: PackedScene
+@export var bolt_part_scene: PackedScene
+@export var nut_part_scene: PackedScene
 @export_group("")
 
 @export_group("Logs")
@@ -644,8 +645,6 @@ func get_part_scene_from_type(type: Part.Type) -> PackedScene:
 			return gear_part_scene
 		Part.Type.TUBE:
 			return tube_part_scene
-		Part.Type.SPRING:
-			return spring_part_scene
 		Part.Type.TV_CONTROLS:
 			return tv_controls_part_scene
 		Part.Type.LETTER_KEY:
@@ -660,6 +659,10 @@ func get_part_scene_from_type(type: Part.Type) -> PackedScene:
 			return circuit_part_scene
 		Part.Type.CRYSTAL:
 			return crystal_part_scene
+		Part.Type.BOLT:
+			return bolt_part_scene
+		Part.Type.NUT:
+			return nut_part_scene
 		_:
 			G.fatal()
 			return null

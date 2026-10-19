@@ -114,15 +114,6 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 - **LX70** · Dragging/repositioning the main repairable body (never
   rotating it) is designed only, not built. Design:
   `docs/design/new_items.md`.
-- **LX71** · Art still needed from Levi/Taryn to replace placeholders:
-  Gear PNG and Spring PNG. Until then GEAR/SPRING parts keep
-  placeholder shapes. Adding a row to `Part._ART` is enough: the
-  drawer part, the fitted part and a socket's darkened broken part
-  all pick it up. (Joystick, radio dial and Game n Watch art
-  landed 2026-10-19 and are wired in; the piano's broken middle
-  key is glued back on, so there is no good key; the TV's
-  controls are its dial replacement, so there is no TV dial.)
-
 ## Residuals (known, not fixed)
 
 - **LX68** · The toaster's late beats (the hammer target that appears
@@ -205,11 +196,19 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX71** · Gear, bolt and nut art wired in as real parts (new
+  BOLT/NUT kinds with dedicated scenes; the shrink ray's hook
+  socket takes a bolt now). There is no spring part: the SPRING
+  kind and its scene are removed, and every socket's serialized
+  `accepted_part` shifted with the enum. Loose parts and broken
+  pieces also cast a single-layer silhouette shadow now, so a
+  small part like the bulb no longer shows two. Done
+  (2026-10-19).
 - **LX72** · Shrink ray (`src/repairables/shrink_ray_repairable.tscn`):
   the first hammer hit sets it off and the beam shrinks the hammer for
   the rest of the run (higher hits, never dents). Then four tiny-hammer
   hits on the jam, wipe the grime off the crystal, and replace the
-  crystal (new CRYSTAL part) and the spring in the hook. Done
+  crystal (new CRYSTAL part) and the bolt in the hook. Done
   (2026-10-19). Zaven still to play it with a mouse (LX41).
 - **LX69** · Radio arc, built differently from the old design: the shop
   radio breaks on its shelf, the music cuts out, it flies down to the

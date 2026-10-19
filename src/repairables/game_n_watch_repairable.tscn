@@ -61,7 +61,7 @@ polygon = PackedVector2Array(-1085, -580, 1129, -580, 1129, 547, -1085, 547)
 
 [node name="Chip" parent="Layers/Inside" unique_id=2042927819 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
 position = Vector2(-647, -49)
-accepted_part = 8
+accepted_part = 7
 installed_art = NodePath("GoodChip")
 
 [node name="GoodChip" type="Sprite2D" parent="Layers/Inside/Chip" unique_id=580524989]

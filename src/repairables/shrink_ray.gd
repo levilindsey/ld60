@@ -5,7 +5,7 @@ extends Repairable
 ## The first hammer hit anywhere on it sets it off: a beam from the crystal
 ## shrinks the hammer for good (`Hammer.shrink()`). After that, the jammed
 ## spot (`%Jam`) takes a few tiny-hammer hits, the grime on the crystal
-## wipes off, and the cracked crystal and the spring in the hook get
+## wipes off, and the cracked crystal and the bolt in the hook get
 ## replaced.
 
 

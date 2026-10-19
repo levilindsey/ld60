@@ -88,6 +88,7 @@ func _attach_shadow() -> void:
 				and G.level.hand.get_loose_broken_piece() != self
 			),
 		0.8,
+		true,
 	)
 
 

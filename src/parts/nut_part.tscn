@@ -1,0 +1,27 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/parts/nut_part.gd" id="1_part"]
+
+[node name="NutPart" type="Node2D" node_paths=PackedStringArray("shape")]
+z_index = 10
+z_as_relative = false
+script = ExtResource("1_part")
+shape = NodePath("Shape")
+
+[node name="Art" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+color = Color(0.7, 0.68, 0.6, 1)
+polygon = PackedVector2Array(15, 0, 7.5, 12.99, -7.5, 12.99, -15, 0, -7.5, -12.99, 7.5, -12.99)
+
+[node name="Sprite" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+visible = false
+
+[node name="Shape" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape"]
+polygon = PackedVector2Array(15, 0, 7.5, 12.99, -7.5, 12.99, -15, 0, -7.5, -12.99, 7.5, -12.99)

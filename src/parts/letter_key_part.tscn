@@ -1,32 +1,32 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://bt85a5wfeku4v"]
 
-[ext_resource type="Script" path="res://src/parts/letter_key_part.gd" id="1_part"]
-[ext_resource type="Texture2D" path="res://assets/images/repairables/keyss_letter_key.png" id="2_tex"]
+[ext_resource type="Script" uid="uid://cs6dmfol5ooym" path="res://src/parts/letter_key_part.gd" id="1_part"]
+[ext_resource type="Texture2D" uid="uid://c2b23walsit0v" path="res://assets/images/repairables/keyss_letter_key.png" id="2_tex"]
 
-[node name="LetterKeyPart" type="Node2D" node_paths=PackedStringArray("shape")]
+[node name="LetterKeyPart" type="Node2D" unique_id=184609972 node_paths=PackedStringArray("shape")]
 z_index = 10
 z_as_relative = false
 script = ExtResource("1_part")
 shape = NodePath("Shape")
 
-[node name="Art" type="Polygon2D" parent="."]
+[node name="Art" type="Polygon2D" parent="." unique_id=1642796959]
 unique_name_in_owner = true
 visible = false
 color = Color(0.9, 0.88, 0.8, 1)
 polygon = PackedVector2Array(-13, -13, 13, -13, 13, 13, -13, 13)
 
-[node name="Sprite" type="Sprite2D" parent="."]
+[node name="Sprite" type="Sprite2D" parent="." unique_id=366579383]
 unique_name_in_owner = true
 scale = Vector2(0.13333333, 0.13333333)
 texture = ExtResource("2_tex")
 region_enabled = true
 region_rect = Rect2(1120, 1501, 120, 94)
 
-[node name="Shape" type="Area2D" parent="."]
+[node name="Shape" type="Area2D" parent="." unique_id=1035029104]
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape"]
-polygon = PackedVector2Array(-8, -6.2667, 8, -6.2667, 8, 6.2667, -8, 6.2667)
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape" unique_id=348109873]
+polygon = PackedVector2Array(-7, -6, 6.0955086, -6.2667, 8, -5, 8, 0.8511877, 7, 6, -8, 6.2667, -8.000002, -1.6703863)
