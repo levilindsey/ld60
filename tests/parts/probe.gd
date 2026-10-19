@@ -421,7 +421,7 @@ func _check_grab_right_part() -> void:
 	await _open_drawer(drawer)
 	if not _expect(part.visible, "the fitting part shows in its drawer"):
 		return
-	var part_position := part.global_position
+	var part_position := _grab_point(part)
 	await _press_down(part_position)
 	_expect(
 		await _wait_until(
@@ -513,12 +513,25 @@ func _check_right_part_fits() -> void:
 
 
 func _check_wrong_part() -> void:
-	var part := _find_wrong_stored_part()
+	# Any wrong part with a spot a press can actually take: a
+	# decoy buried whole under a neighbour's art cannot be
+	# grabbed, by the player or by this probe. Stored parts are
+	# hidden until their drawer opens, so try each in turn.
+	var part: Part = null
+	var drawer: Drawer = null
+	for candidate in _stored_parts():
+		if candidate.type == _socket.accepted_part:
+			continue
+		drawer = _level.get_drawers()[candidate.drawer_index]
+		await _open_drawer(drawer)
+		if _level.get_drawer_part_at(
+			drawer, _grab_point(candidate)
+		) == candidate:
+			part = candidate
+			break
 	if not _expect(is_instance_valid(part), "a decoy part is stocked"):
 		return
-	var drawer := _level.get_drawers()[part.drawer_index]
-	await _open_drawer(drawer)
-	await _drag(part.global_position, Vector2(-100.0, 40.0))
+	await _drag(_grab_point(part), Vector2(-100.0, 40.0))
 	_expect(
 		not part.is_stored and not part.is_installed,
 		"the decoy rests on the bench after its drag",
@@ -533,7 +546,7 @@ func _check_wrong_part() -> void:
 		await _wait_until(func() -> bool: return not part.is_returning),
 		"the decoy dropped above the bench comes to rest inside it",
 	)
-	await _drag(part.global_position, _socket.global_position)
+	await _drag(_grab_point(part), _socket.global_position)
 	_expect(
 		_socket.mode == InteractionPoint.Mode.FINISHED,
 		"the socket stays finished under the wrong part",
@@ -542,9 +555,12 @@ func _check_wrong_part() -> void:
 		not part.is_installed,
 		"the wrong part does not install",
 	)
+	# A part still settling from the last drag cannot be
+	# grabbed again yet.
+	await _wait_until(func() -> bool: return not part.is_returning)
 	# Drag it back over a shut drawer: it is put away.
 	var target := _level.get_drawers()[0]
-	await _drag(part.global_position, target.global_position)
+	await _drag(_grab_point(part), target.global_position)
 	_expect(
 		part.is_returning
 		and not part.z_as_relative
@@ -568,7 +584,7 @@ func _check_cleanup() -> void:
 		return
 	var drawer := _level.get_drawers()[part.drawer_index]
 	await _open_drawer(drawer)
-	await _drag(part.global_position, Vector2(-100.0, 40.0))
+	await _drag(_grab_point(part), Vector2(-100.0, 40.0))
 	_expect(
 		await _wait_until(
 			func() -> bool: return drawer.state == Drawer.State.CLOSED
@@ -820,6 +836,39 @@ func _open_drawer(drawer: Drawer) -> void:
 	)
 
 
+## A point where a press actually takes `part`: its center when
+## nothing covers it, else a spot on its Shape that the level's
+## own topmost-part query hands back as this part. Crowded
+## drawers overlap, and a press under a neighbour's art takes
+## the neighbour — the probe presses what a player could grab.
+func _grab_point(part: Part) -> Vector2:
+	var center := part.global_position
+	var samples: Array[Vector2] = [center]
+	for radius in [12.0, 24.0, 36.0, 48.0, 64.0, 80.0]:
+		for step in range(8):
+			var angle := TAU * float(step) / 8.0
+			samples.append(
+				center + Vector2(cos(angle), sin(angle)) * radius
+			)
+	if is_instance_valid(part.shape):
+		for child in part.shape.get_children():
+			if child is CollisionPolygon2D:
+				var polygon_node := child as CollisionPolygon2D
+				for vertex in polygon_node.polygon:
+					var global_vertex := (
+						polygon_node.global_transform * vertex
+					)
+					samples.append(center.lerp(global_vertex, 0.6))
+	for sample in samples:
+		if part.is_stored:
+			var drawer := _level.get_drawers()[part.drawer_index]
+			if _level.get_drawer_part_at(drawer, sample) == part:
+				return sample
+		elif _level.get_loose_part_at(sample) == part:
+			return sample
+	return center
+
+
 ## Presses at `from`, moves to `to` and releases there.
 func _drag(from: Vector2, to: Vector2) -> void:
 	await _press_down(from)
@@ -837,13 +886,6 @@ func _stored_parts() -> Array[Part]:
 func _find_stored_part(part_type: Part.Type) -> Part:
 	for part in _stored_parts():
 		if part.type == part_type:
-			return part
-	return null
-
-
-func _find_wrong_stored_part() -> Part:
-	for part in _stored_parts():
-		if part.type != _socket.accepted_part:
 			return part
 	return null
 

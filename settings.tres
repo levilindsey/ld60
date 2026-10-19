@@ -78,6 +78,7 @@ game_n_watch_repairable_scene = ExtResource("21_gnw")
 radio_repairable_scene = ExtResource("22_radio")
 shrink_ray_repairable_scene = ExtResource("23_shrink")
 item_queue = Array[int]([3, 4, 5, 6, 7, 8, 2, 9])
+first_repairable_override = 5
 flat_head_screw_driver_scene = ExtResource("2_xmm7k")
 rag_scene = ExtResource("9_rag")
 air_blower_scene = ExtResource("10_blower")

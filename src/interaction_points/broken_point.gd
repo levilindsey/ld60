@@ -80,10 +80,15 @@ func _draw() -> void:
 	_draw_hold()
 
 
-## The scar the piece left behind, ringed once it's mended.
+## The scar the piece left behind: a circled X marking
+## where the piece goes back on. Once the piece is attached
+## the annotation retires with the glue dab — the mended
+## piece speaks for itself.
 ## Drawn at a world size (see `_draw_hold()`): the point's
 ## local units shrink with a scaled item.
 func _draw_scar() -> void:
+	if mode == Mode.FINISHED:
+		return
 	var unit := _local_per_world()
 	var scar := Color(0.12, 0.1, 0.1, 0.9)
 	draw_line(
@@ -98,17 +103,6 @@ func _draw_scar() -> void:
 		Vector2.ZERO, 18.0 * unit, 0.0, TAU, 24, scar,
 		2.0 * unit, true
 	)
-	if mode == Mode.FINISHED:
-		draw_arc(
-			Vector2.ZERO,
-			18.0 * unit,
-			0.0,
-			TAU,
-			24,
-			Color(0.45, 0.95, 0.5, 0.95),
-			3.0 * unit,
-			true,
-		)
 
 
 func _draw_hold() -> void:
@@ -416,3 +410,4 @@ func _complete_hold() -> void:
 		attached.attach_to_point(self)
 	finish()
 	_destroy_glue_decal()
+	queue_redraw()

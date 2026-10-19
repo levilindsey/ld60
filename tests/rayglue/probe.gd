@@ -98,7 +98,7 @@ func _run() -> void:
 	).to_global(Vector2(-60, -60))
 	var smear_press: Vector2 = smear_spot - nozzle_offset
 	await _press_down(smear_press)
-	await _seconds(1.2)
+	await _seconds(0.15)
 	await _release_at(smear_press)
 	await _physics_frames(4)
 	var smear: GlueSmear = null
@@ -110,7 +110,7 @@ func _run() -> void:
 		is_instance_valid(smear)
 		and is_instance_valid(smear.glue_decal)
 		and smear.glue_decal.is_visible_in_tree(),
-		"glue squeezed on plain body art leaves a smear",
+		"a tap on plain body art leaves a smear at once",
 	)
 	glue.put_away()
 	await _physics_frames(2)

@@ -863,7 +863,10 @@ func cleanup_loose_parts() -> void:
 ## null.
 func _get_part_at(global_point: Vector2) -> Part:
 	# A press on a part's authored Shape takes it, wherever on
-	# the part it lands; the nearest center wins among overlaps.
+	# the part it lands. Among the parts the press crosses,
+	# the one drawn on top wins (highest effective z, then
+	# latest in the tree): the player grabbed what they see.
+	# Only parts tied on both fall back to the nearest center.
 	# A part with no Shape keeps the old center reach.
 	var shaped: Part = null
 	var shaped_distance := INF
@@ -877,13 +880,45 @@ func _get_part_at(global_point: Vector2) -> Part:
 			continue
 		var distance := part.global_position.distance_to(global_point)
 		if part.is_point_in_shape(global_point):
-			if distance < shaped_distance:
-				shaped_distance = distance
+			if not is_instance_valid(shaped):
 				shaped = part
+				shaped_distance = distance
+			elif _is_part_above(part, shaped):
+				shaped = part
+				shaped_distance = distance
+			elif (
+				not _is_part_above(shaped, part)
+				and distance < shaped_distance
+			):
+				shaped = part
+				shaped_distance = distance
 		elif not part.has_shape() and distance <= best_distance:
 			best_distance = distance
 			best = part
 	return shaped if is_instance_valid(shaped) else best
+
+
+## True when `a` draws over `b` on the canvas: the higher
+## effective z wins (a relative z rides on its ancestors'
+## until an absolute one stops the climb), and at the same
+## z the later node in the tree draws on top.
+func _is_part_above(a: Part, b: Part) -> bool:
+	var z_a := _effective_z_index(a)
+	var z_b := _effective_z_index(b)
+	if z_a != z_b:
+		return z_a > z_b
+	return a.is_greater_than(b)
+
+
+func _effective_z_index(item: CanvasItem) -> int:
+	var z := 0
+	var node: Node = item
+	while node is CanvasItem:
+		z += (node as CanvasItem).z_index
+		if not (node as CanvasItem).z_as_relative:
+			break
+		node = (node as CanvasItem).get_parent()
+	return z
 
 
 ## Where layers wait while they are off the item.

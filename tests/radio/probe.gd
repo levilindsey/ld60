@@ -1,7 +1,8 @@
 extends "res://tests/probe_base.gd"
-## The desk radio's glitch. Checks it never glitches before an item is
-## fixed, glitches once one is, and that a hammer hit on it fixes the
-## glitch, restores the music and starts the cooldown.
+## The desk radio's glitch. Checks it glitches only during the items
+## listed in `radio_glitch_item_indices` (after the scheduled delay),
+## that a hammer hit fixes it and restores the music, and that it
+## glitches again on the next scheduled item.
 ##
 ## Run it with `tests/run.ps1 -Name radio`, or from the repo root
 ## (PowerShell):
@@ -11,8 +12,6 @@ extends "res://tests/probe_base.gd"
 
 const _MAIN_SCENE_PATH := "res://src/core/main.tscn"
 const _TIMEOUT_SEC := 60.0
-## Short enough that a glitch is all but certain within a few seconds.
-const _FAST_CHANCE_WINDOW_SEC := 0.2
 
 var _radio: Radio
 
@@ -37,18 +36,24 @@ func _run() -> void:
 	if not _expect(is_instance_valid(_radio), "the level has a radio"):
 		return
 
-	G.settings.radio_glitch_chance_window_sec = _FAST_CHANCE_WINDOW_SEC
+	# The probe schedules glitches on items 1 and 2 with a short
+	# delay and cooldown; the day's real schedule (items 2, 3, 4,
+	# 8-16 seconds in) lives in settings.
+	G.settings.radio_glitch_item_indices = [1, 2]
+	G.settings.radio_glitch_delay_min_sec = 0.2
+	G.settings.radio_glitch_delay_max_sec = 0.3
+	G.settings.radio_glitch_cooldown_sec = 0.5
 	await _seconds(1.0)
 	_expect(
 		not _radio.is_glitching,
-		"the radio does not glitch before an item is fixed",
+		"the radio does not glitch during an unscheduled item",
 	)
 
 	G.session.fixed_item_count = 1
-	await _seconds(2.0)
+	await _seconds(1.0)
 	if not _expect(
 		_radio.is_glitching,
-		"the radio glitches once an item is fixed",
+		"the radio glitches into a scheduled item",
 	):
 		return
 	await _seconds(2.5)
@@ -120,5 +125,11 @@ func _run() -> void:
 	)
 	_expect(
 		not _radio.is_glitching,
-		"the cooldown keeps the radio from glitching again right away",
+		"the radio stays fixed until the next scheduled item",
+	)
+	G.session.fixed_item_count = 2
+	await _seconds(1.5)
+	_expect(
+		_radio.is_glitching,
+		"the radio glitches again on the next scheduled item",
 	)

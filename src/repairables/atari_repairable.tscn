@@ -41,6 +41,7 @@ polygon = PackedVector2Array(-91, -13, -2, -64, 18, -64, 96, -9, 100, 2, 93, 45,
 [node name="Joystick" parent="Layers/Body" unique_id=967882368 node_paths=PackedStringArray("installed_art", "locking_fastener", "bad_part_shape", "good_part_shape") instance=ExtResource("5_socket")]
 position = Vector2(2, 0)
 accepted_part = 6
+shows_ghost_outline = false
 installed_art = NodePath("GoodStick")
 locking_fastener = NodePath("../Screw")
 bad_part_shape = NodePath("BrokenPart/BadPartShape")

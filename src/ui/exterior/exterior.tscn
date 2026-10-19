@@ -44,9 +44,9 @@ horizontal_alignment = 1
 [node name="SignTitle" type="Label" parent="SignViewport" unique_id=1053879971]
 unique_name_in_owner = true
 offset_left = 18.0
-offset_top = 144.0
+offset_top = 162.0
 offset_right = 648.0
-offset_bottom = 340.0
+offset_bottom = 358.0
 theme_override_colors/font_color = Color(0.23, 0.15, 0.08, 1)
 theme_override_fonts/font = ExtResource("5_font")
 theme_override_font_sizes/font_size = 108

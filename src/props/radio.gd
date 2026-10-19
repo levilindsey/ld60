@@ -9,8 +9,9 @@ extends Node2D
 ##
 ## The radio can glitch: the music slows and warbles, skips and hisses
 ## with static. Each effect has its own toggle so they can be
-## auditioned on their own. Once an item is fixed, it starts glitching at
-## random (the "Radio" group in `settings.gd`). A hammer hit fixes it and
+## auditioned on their own. It goes wonky during the items listed in
+## `settings.radio_glitch_item_indices`, 8-16 seconds into the item
+## (the "Radio" group in `settings.gd`). A hammer hit fixes it and
 ## starts a cooldown. In dev mode, R toggles the glitch.
 ##
 ## When the radio is the item on the bench, it breaks on the shelf (static,
@@ -82,6 +83,10 @@ var _beat_angle := 0.0
 var _glitch_amount := 0.0
 var _warble_time := 0.0
 var _cooldown_remaining_sec := 0.0
+## Queue index of the item the trigger last armed for, and the
+## seconds left before that item's glitch (-1: not armed).
+var _trigger_item_index := -1
+var _glitch_wait_remaining_sec := -1.0
 ## 1 right after a hammer hit; eases back to 0.
 var _hit_amount := 0.0
 ## Seconds the current glitch has run, for the highlight.
@@ -247,19 +252,33 @@ func on_struck(_charge: float) -> void:
 		set_glitching(false)
 
 
-## Rolls for a glitch each tick once an item is fixed and the cooldown is
-## over.
+## Starts a glitch 8-16 seconds into each item listed in
+## `radio_glitch_item_indices`. The fixed-item count is the current
+## item's queue index: it ticks up as the previous item departs.
+## Each listed item glitches once, and the wait is rolled when the
+## item starts.
 func _update_trigger(delta: float) -> void:
 	if is_glitching or is_away:
 		return
 	if _cooldown_remaining_sec > 0.0:
 		_cooldown_remaining_sec -= delta
 		return
-	if (
-		is_instance_valid(G.session)
-		and G.session.fixed_item_count > 0
-		and randf() < delta / G.settings.radio_glitch_chance_window_sec
-	):
+	if not is_instance_valid(G.session):
+		return
+	var item_index := G.session.fixed_item_count
+	if item_index != _trigger_item_index:
+		_trigger_item_index = item_index
+		_glitch_wait_remaining_sec = -1.0
+		if item_index in G.settings.radio_glitch_item_indices:
+			_glitch_wait_remaining_sec = randf_range(
+				G.settings.radio_glitch_delay_min_sec,
+				G.settings.radio_glitch_delay_max_sec,
+			)
+	if _glitch_wait_remaining_sec < 0.0:
+		return
+	_glitch_wait_remaining_sec -= delta
+	if _glitch_wait_remaining_sec <= 0.0:
+		_glitch_wait_remaining_sec = -1.0
 		set_glitching(true)
 
 

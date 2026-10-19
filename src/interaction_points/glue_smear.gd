@@ -68,7 +68,6 @@ func on_wiped(damage: float, _delta: float) -> void:
 
 func _clean() -> void:
 	hit_points_left = 0.0
-	G.audio.play_sound(&"ding")
 	finish()
 	if is_instance_valid(glue_decal):
 		glue_decal.queue_free()

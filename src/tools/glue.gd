@@ -101,7 +101,33 @@ func on_effect_pressed(_global_point: Vector2) -> void:
 				G.settings.glue_radius_px,
 				1.0,
 			)
+		elif not _is_nozzle_on_crack():
+			# Tapping is the mechanic: a tap off target
+			# smears at once, on the way down. Holding the
+			# squeeze repeats it, throttled by the same
+			# interval in `_physics_process()`.
+			_smear_on_surface(get_work_end_position())
 	G.audio.play_sound(&"glug")
+
+
+## True while the nozzle sits on a crack's line, where a
+## tap is on target and must not smear instead.
+func _is_nozzle_on_crack() -> bool:
+	if not is_instance_valid(G.level):
+		return false
+	if not is_instance_valid(G.level.active_repairable):
+		return false
+	var nozzle := get_work_end_position()
+	for layer in G.level.active_repairable.layers:
+		for point in layer.get_points():
+			if not point is Crack:
+				continue
+			if not point.is_exposed() or not point.is_visible_in_tree():
+				continue
+			for sample in (point as Crack).get_samples():
+				if sample.distance_to(nozzle) <= G.settings.glue_radius_px:
+					return true
+	return false
 
 
 ## The broken point under the working end right now, by the

@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://vd0oxmjay4p6" path="res://assets/images/tools/heyguysithinkifoundaglue.png" id="2_cd5ly"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
-radius = 120.0
+radius = 40.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_holder"]
 radius = 114.188705

@@ -26,10 +26,11 @@ crack without flooding it, then let it dry.
   decal becomes a glued seam.
 - **Too much:** a sample past 1.5 spawns a glue blob decal there and a
   glue blob defect (-5), once per sample.
-- **Off target:** squeezing over the same sorts of places the
+- **Off target:** tapping over the same sorts of places the
   hammer can dent (a surface, or the art of an exposed piece
-  with no surface there) leaves a `GlueSmear` there instead
-  (see below).
+  with no surface there) leaves a `GlueSmear` there at once,
+  on the way down; holding the squeeze repeats it, throttled
+  to one smear per `_OFF_TARGET_BLOB_SEC` (see below).
 
 ## Broken pieces
 

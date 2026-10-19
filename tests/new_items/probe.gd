@@ -680,10 +680,12 @@ func _check_gnw_dirt_is_bench_sized(screw: PhillipsScrew) -> void:
 		% [grime._decal_sprites.size(), int(round(grime.amount))],
 	)
 	_expect(
-		is_equal_approx(grime.hit_points_left, grime.toughness),
-		"the grime takes its toughness of wiping, amount aside"
+		is_equal_approx(
+			grime.hit_points_left, grime.toughness * 2.0
+		),
+		"the grime takes twice its toughness of wiping, amount aside"
 		+ " (%.2f of %.2f)"
-		% [grime.hit_points_left, grime.toughness],
+		% [grime.hit_points_left, grime.toughness * 2.0],
 	)
 
 

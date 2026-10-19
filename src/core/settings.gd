@@ -375,9 +375,15 @@ enum FirstRepairable {
 @export_group("")
 
 @export_group("Radio")
-## Once an item is fixed, the radio's chance to start glitching each
-## second is one over this.
-@export var radio_glitch_chance_window_sec := 300.0
+## Queue indices of the items during which the desk radio goes
+## wonky (0-based: the 3rd, 4th and 5th items of the day). One
+## glitch per listed item.
+@export var radio_glitch_item_indices: Array[int] = [2, 3, 4]
+## How far into a scheduled item the radio goes wonky, in seconds
+## after the previous item departs (roughly when the new one
+## lands): a random wait between these two.
+@export var radio_glitch_delay_min_sec := 8.0
+@export var radio_glitch_delay_max_sec := 16.0
 ## After the radio is fixed, how long before it can glitch again.
 @export var radio_glitch_cooldown_sec := 300.0
 ## When the radio is the item, how long it crackles on the shelf before it

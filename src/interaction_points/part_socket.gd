@@ -65,6 +65,12 @@ const _FLING_SPIN_RAD := 9.0
 ## against it, and the hint and ghost outline follow it once the
 ## socket is empty. Set up the same way as `bad_part_shape`.
 @export var good_part_shape: Area2D
+## Whether the empty socket shows the ghost outline of the
+## fitted part. Off where the fitted part stands proud of
+## the item (the Atari's stick): the filled silhouette reads
+## as a phantom part floating off the base, and the gap in
+## the base art already says where the part goes.
+@export var shows_ghost_outline := true
 
 ## True while the broken part still sits in the socket.
 var has_broken_part := false
@@ -139,7 +145,7 @@ func _ready() -> void:
 	# The ghost only shows once the socket is empty: while
 	# the broken part sits here it would draw a phantom of
 	# the good part over it (the Atari's second stick).
-	%Outline.visible = not has_broken_part
+	%Outline.visible = not has_broken_part and shows_ghost_outline
 	if is_instance_valid(installed_art):
 		installed_art.hide()
 	_broken_part_home_position = %BrokenPart.position
@@ -490,7 +496,7 @@ func _place_yank_indicator() -> void:
 func _pop_out() -> void:
 	var was_yanked := _wiggle.is_yanked
 	has_broken_part = false
-	%Outline.visible = true
+	%Outline.visible = shows_ghost_outline
 	_refresh_yank_indicator()
 	_stop_wiggle()
 	G.audio.play_sound(&"lid_pop", true)

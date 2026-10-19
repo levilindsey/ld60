@@ -78,9 +78,12 @@ func _check_shapes(inside: RepairLayer, front: RepairLayer) -> void:
 		"a new chip can be fitted across the chip's art",
 	)
 	var dpad_point := front.get_node("DpadPoint") as InteractionPoint
+	# (15, 15) in the point's own space, out along the cross's
+	# arm: the front layer is scaled down on the bench, so a
+	# world (15, 15) would overshoot the art entirely.
 	_expect(
 		dpad_point.is_point_in_shape(
-			dpad_point.global_position + Vector2(15, 15)
+			dpad_point.global_transform * Vector2(15, 15)
 		),
 		"the dpad point takes a press across the dpad art",
 	)
