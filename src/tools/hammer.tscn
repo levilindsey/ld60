@@ -21,6 +21,7 @@ holder_area = NodePath("Wrapper/HolderArea")
 held_rotation_deg = -37.0
 
 [node name="Wrapper" type="Node2D" parent="." unique_id=406411406]
+unique_name_in_owner = true
 scale = Vector2(0.25, 0.25)
 
 [node name="CursorPosition" type="Marker2D" parent="Wrapper" unique_id=1998033455]

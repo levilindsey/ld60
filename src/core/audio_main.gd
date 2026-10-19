@@ -41,6 +41,7 @@ extends Node2D
 	"scrape" = %Scrape,
 	"skid" = %Skid,
 	"pop" = %Pop,
+	"zap" = %Zap,
 	"grind" = %Grind,
 	"whoosh" = %Whoosh,
 	"snap" = %Snap,
@@ -53,6 +54,9 @@ extends Node2D
 var initial_volumes := {}
 
 var current_theme: AudioStreamPlayer
+## The pitch of sounds started now. The tiny hammer raises it around its
+## hits.
+var sound_pitch_scale := 1.0
 ## True while the shop radio is broken: the main theme stays silent, even
 ## through a pause and resume.
 var is_main_theme_cut_out := false
@@ -91,6 +95,7 @@ func play_sound(sound_name: StringName, force_restart := false) -> void:
 		# Placeholder player with no stream assigned yet.
 		return
 	if not stream_player.playing or force_restart:
+		stream_player.pitch_scale = sound_pitch_scale
 		stream_player.play.call()
 
 

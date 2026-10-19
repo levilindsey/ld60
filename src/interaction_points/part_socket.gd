@@ -35,6 +35,9 @@ const _ROCK_SHIFT_PX := 20.0
 ## When the new part lands, the fastener goes into install
 ## mode so it can be driven back in to finish the item.
 @export var locking_fastener: InteractionPoint
+## Optional. Grime covering this socket. While it is not FINISHED the
+## broken part can't be tugged out.
+@export var covering_grime: GrimeSpot
 
 ## True while the broken part still sits in the socket.
 var has_broken_part := false
@@ -60,6 +63,14 @@ func _ready() -> void:
 	has_broken_part = starts_with_broken_part
 	%BrokenArt.polygon = Part.get_polygon(accepted_part)
 	%BrokenArt.color = Part.get_color(accepted_part).darkened(0.45)
+	# A kind with real art shows it, darkened, unless the scene gives the
+	# broken part its own art.
+	if %BrokenArt.visible and Part.has_art(accepted_part):
+		var broken_sprite := Sprite2D.new()
+		Part.apply_art(broken_sprite, accepted_part)
+		broken_sprite.modulate = Color.WHITE.darkened(0.45)
+		%BrokenPart.add_child(broken_sprite)
+		%BrokenArt.hide()
 	%BrokenPart.visible = has_broken_part
 	if is_instance_valid(installed_art):
 		installed_art.hide()
@@ -98,9 +109,22 @@ func is_locked() -> bool:
 	)
 
 
+## True while grime covers this socket and has not been cleaned off.
+func is_covered() -> bool:
+	return (
+		is_instance_valid(covering_grime)
+		and covering_grime.mode != Mode.FINISHED
+	)
+
+
 ## True while a broken part sits here for the hand to tug out.
 func has_tuggable_part() -> bool:
-	return has_broken_part and mode != Mode.FINISHED and not is_locked()
+	return (
+		has_broken_part
+		and mode != Mode.FINISHED
+		and not is_locked()
+		and not is_covered()
+	)
 
 
 ## True while the player is mid-tug on the broken part.

@@ -18,12 +18,20 @@ enum WindPhase {
 const STRIKABLE_PROPS_GROUP := &"strikable_props"
 ## How far the held-at-full hammer trembles, in pixels each way.
 const MAX_TREMBLE_PX := 4.5
+## The shrunken hammer's size, as a share of its own.
+const _TINY_SCALE := 0.4
+const _SHRINK_SEC := 0.35
+## How much higher the shrunken hammer's hits sound.
+const _TINY_PITCH_SCALE := 1.8
 
 ## The hammer art. It turns around the striking face.
 @export var art: Node2D
 
 ## The charge of the current wind up, from 0 to 1.
 var charge := 0.0
+## True once the shrink ray has shrunk the hammer. Its hits sound higher
+## and never dent.
+var is_tiny := false
 
 var _phase := WindPhase.READY
 var _wind_sec := 0.0
@@ -128,6 +136,22 @@ func put_away() -> void:
 	super.put_away()
 
 
+## Shrinks the hammer for good.
+func shrink() -> void:
+	if is_tiny:
+		return
+	is_tiny = true
+	var tween := create_tween()
+	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(
+		%Wrapper,
+		"scale",
+		%Wrapper.scale * _TINY_SCALE,
+		_SHRINK_SEC,
+	)
+
+
 func _swing() -> void:
 	_phase = WindPhase.SWINGING
 	queue_redraw()
@@ -147,11 +171,18 @@ func _swing() -> void:
 func _strike() -> void:
 	# The smack lands where the working end is as the swing lands.
 	_locked_point = get_work_end_position()
+	if is_tiny:
+		G.audio.sound_pitch_scale = _TINY_PITCH_SCALE
 	if is_instance_valid(_locked_target):
-		_locked_target.on_struck(charge)
+		# A tiny hit can still work, but never too hard.
+		var strength := charge
+		if is_tiny:
+			strength = minf(charge, _locked_target.band_max)
+		_locked_target.on_struck(strength)
 	elif is_instance_valid(_locked_surface):
-		_locked_surface.on_struck(_locked_point, charge)
-		if charge >= G.settings.hammer_surface_damage_charge:
+		var strength := 0.0 if is_tiny else charge
+		_locked_surface.on_struck(_locked_point, strength)
+		if strength >= G.settings.hammer_surface_damage_charge:
 			G.audio.play_sound(&"thud", true)
 			G.level.shake_camera(5.0, 0.15)
 		else:
@@ -160,6 +191,7 @@ func _strike() -> void:
 		_locked_prop.on_struck(charge)
 	else:
 		G.audio.play_sound(&"thud", true)
+	G.audio.sound_pitch_scale = 1.0
 	_phase = WindPhase.HOLDING
 	if is_instance_valid(_swing_tween):
 		_swing_tween.kill()

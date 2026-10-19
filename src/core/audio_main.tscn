@@ -10,6 +10,7 @@
 [ext_resource type="AudioStream" uid="uid://dxra0c1lh1kw3" path="res://assets/audio/foley_cleaned/pliers scrape.wav" id="9_scrape"]
 [ext_resource type="AudioStream" uid="uid://cofxsoi0h2ir5" path="res://assets/audio/foley_cleaned/metal tap slide.wav" id="10_skid"]
 [ext_resource type="AudioStream" uid="uid://dnpxyugakh2iw" path="res://assets/audio/foley_cleaned/lid pop off 2.wav" id="11_pop"]
+[ext_resource type="AudioStream" path="res://assets/audio/zap.wav" id="40_zap"]
 [ext_resource type="AudioStream" uid="uid://wm4lqvpkt0v3" path="res://assets/audio/foley_cleaned/unscrew 2.wav" id="12_grind"]
 [ext_resource type="AudioStream" uid="uid://bh4jnm0ryemsc" path="res://assets/audio/foley_cleaned/air puff.wav" id="13_whoosh"]
 [ext_resource type="AudioStream" uid="uid://bga4bllx1ealr" path="res://assets/audio/foley_cleaned/parts together 2_b.wav" id="14_snap"]
@@ -234,6 +235,12 @@ bus = &"SFX"
 [node name="Pop" type="AudioStreamPlayer" parent="." unique_id=219562715]
 unique_name_in_owner = true
 stream = ExtResource("11_pop")
+bus = &"SFX"
+
+[node name="Zap" type="AudioStreamPlayer" parent="." unique_id=1903317541]
+unique_name_in_owner = true
+stream = ExtResource("40_zap")
+volume_db = -6.0
 bus = &"SFX"
 
 [node name="Grind" type="AudioStreamPlayer" parent="." unique_id=1851247793]

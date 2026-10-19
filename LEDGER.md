@@ -111,18 +111,14 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   overlap-aware draw order inside each group (a piece rises
   only once dragged clear of what covers it).
 
-- **LX69** · Radio bespoke arc not built yet: scripted glitch X seconds
-  into repairs 2, 3 and 4, hammer-fix each time; after the third fix a
-  special card is flicked/spinning onto the bench, then the radio is
-  repaired in place (flat screws, tube yank, blow out, hammer, glue the
-  fallen dial) for a reward card but no outbox trip. Design:
-  `docs/design/new_items.md`.
 - **LX70** · Dragging/repositioning the main repairable body (never
   rotating it) is designed only, not built. Design:
   `docs/design/new_items.md`.
 - **LX71** · Art still needed from Levi/Taryn to replace placeholders:
   Gear PNG and Spring PNG. Until then GEAR/SPRING parts keep
-  placeholder shapes. (Joystick, radio dial and Game n Watch art
+  placeholder shapes. Adding a row to `Part._ART` is enough: the
+  drawer part, the fitted part and a socket's darkened broken part
+  all pick it up. (Joystick, radio dial and Game n Watch art
   landed 2026-10-19 and are wired in; the piano's broken middle
   key is glued back on, so there is no good key; the TV's
   controls are its dial replacement, so there is no TV dial.)
@@ -209,6 +205,16 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX72** · Shrink ray (`src/repairables/shrink_ray_repairable.tscn`):
+  the first hammer hit sets it off and the beam shrinks the hammer for
+  the rest of the run (higher hits, never dents). Then four tiny-hammer
+  hits on the jam, wipe the grime off the crystal, and replace the
+  crystal (new CRYSTAL part) and the spring in the hook. Done
+  (2026-10-19). Zaven still to play it with a mouse (LX41).
+- **LX69** · Radio arc, built differently from the old design: the shop
+  radio breaks on its shelf, the music cuts out, it flies down to the
+  bench as the item, the music returns once it is fixed, and it goes
+  back to the shelf (HERE) instead of the outbox. Done (2026-10-19).
 - **LX67** · Toaster on wheels (`src/repairables/toaster.tscn`, last in
   `item_queue`): glue the fallen wheel, it wanders, two hammer hits stop it
   and knock the other wheel off, glue that, wipe grime, the face appears.

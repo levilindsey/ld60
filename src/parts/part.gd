@@ -20,6 +20,7 @@ enum Type {
 	LED,
 	JOYSTICK,
 	CIRCUIT,
+	CRYSTAL,
 }
 
 ## Seconds the part takes to snap into a socket.
@@ -72,6 +73,11 @@ const _ART := {
 		"res://assets/images/repairables/gamenwatch_chip_good.png",
 		Rect2(839, 809, 537, 765),
 		46.0,
+	],
+	Type.CRYSTAL: [
+		"res://assets/images/repairables/shrinkray_fixed_crystal.png",
+		Rect2(329, 166, 53, 58),
+		35.0,
 	],
 }
 
@@ -155,6 +161,19 @@ static func has_art(part_type: Type) -> bool:
 	return _ART.has(part_type)
 
 
+## Puts a kind's real art on a sprite, at its bench size. The kind must
+## have art (`has_art()`).
+static func apply_art(sprite: Sprite2D, part_type: Type) -> void:
+	var entry: Array = _ART[part_type]
+	var region := entry[1] as Rect2
+	sprite.texture = load(entry[0] as String) as Texture2D
+	sprite.region_enabled = true
+	sprite.region_rect = region
+	var longer_side := maxf(region.size.x, region.size.y)
+	var bench_px := entry[2] as float
+	sprite.scale = Vector2.ONE * (bench_px / longer_side)
+
+
 ## Sets the part's kind and its art: the real texture where
 ## the kind has one, the placeholder polygon where it doesn't.
 func setup(part_type: Type) -> void:
@@ -163,14 +182,7 @@ func setup(part_type: Type) -> void:
 	%Art.color = get_color(part_type)
 	var sprite := get_node("%Sprite") as Sprite2D
 	if _ART.has(part_type):
-		var entry: Array = _ART[part_type]
-		var region := entry[1] as Rect2
-		sprite.texture = load(entry[0] as String) as Texture2D
-		sprite.region_enabled = true
-		sprite.region_rect = region
-		var longer_side := maxf(region.size.x, region.size.y)
-		var bench_px := entry[2] as float
-		sprite.scale = Vector2.ONE * (bench_px / longer_side)
+		apply_art(sprite, part_type)
 		sprite.show()
 		%Art.hide()
 	else:
@@ -307,6 +319,8 @@ static func get_display_name(part_type: Type) -> String:
 			return "Joystick"
 		Type.CIRCUIT:
 			return "Circuit"
+		Type.CRYSTAL:
+			return "Crystal"
 		_:
 			G.fatal()
 			return ""
@@ -332,6 +346,8 @@ static func get_color(part_type: Type) -> Color:
 			return Color(0.8, 0.25, 0.25)
 		Type.CIRCUIT:
 			return Color(0.25, 0.65, 0.35)
+		Type.CRYSTAL:
+			return Color(0.9, 0.35, 0.9)
 		_:
 			G.fatal()
 			return Color.WHITE
@@ -427,6 +443,15 @@ static func get_polygon(part_type: Type) -> PackedVector2Array:
 					Vector2(20, -13),
 					Vector2(20, 13),
 					Vector2(-20, 13),
+				]
+			)
+		Type.CRYSTAL:
+			return PackedVector2Array(
+				[
+					Vector2(0, -17),
+					Vector2(14, 0),
+					Vector2(0, 17),
+					Vector2(-14, 0),
 				]
 			)
 		_:
