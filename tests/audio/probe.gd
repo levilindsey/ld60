@@ -99,6 +99,21 @@ func _run() -> void:
 		)
 		frustrated.stop()
 
+	# The toaster's scoot rolls on the pooled wheels takes.
+	var skid := (
+		G.audio.STREAM_PLAYERS_BY_NAME.get(&"skid")
+		as AudioStreamPlayer
+	)
+	var skid_randomizer := (
+		skid.stream as AudioStreamRandomizer
+		if is_instance_valid(skid) else null
+	)
+	_expect(
+		is_instance_valid(skid_randomizer)
+		and skid_randomizer.get_streams_count() == 4,
+		"the toaster scoot pools the four wheels takes",
+	)
+
 	_check_foley_direction()
 
 	# A pause resume is not a new run. No second humming.

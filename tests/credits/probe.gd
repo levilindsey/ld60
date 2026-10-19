@@ -68,6 +68,16 @@ func _run() -> void:
 		),
 		"the credits card floats down to the middle of the screen",
 	)
+	var main_theme := (
+		G.audio.STREAM_PLAYERS_BY_NAME["main_theme"]
+		as AudioStreamPlayer
+	)
+	_expect(
+		G.audio.current_theme == main_theme
+		and main_theme.playing
+		and not main_theme.stream_paused,
+		"the music keeps playing under the credits",
+	)
 	var overlay := G.hud.get_node("%CreditsOverlay") as Control
 	_expect(
 		overlay.modulate.a < 0.05,

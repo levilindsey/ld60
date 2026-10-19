@@ -9,7 +9,10 @@
 [ext_resource type="AudioStream" uid="uid://bp142r33ukg74" path="res://assets/audio/foley_cleaned/drawer/drawer openclose 3_b.wav" id="7_creak"]
 [ext_resource type="AudioStream" uid="uid://dlp54vv5fe75e" path="res://assets/audio/foley_cleaned/rattle snap on_a.wav" id="8_ratchet"]
 [ext_resource type="AudioStream" uid="uid://dxra0c1lh1kw3" path="res://assets/audio/foley_cleaned/pliers scrape.wav" id="9_scrape"]
-[ext_resource type="AudioStream" uid="uid://cofxsoi0h2ir5" path="res://assets/audio/foley_cleaned/metal tap slide.wav" id="10_skid"]
+[ext_resource type="AudioStream" uid="uid://btah3dj5vhee1" path="res://assets/audio/foley_cleaned/toaster/wheels.wav" id="10_skid"]
+[ext_resource type="AudioStream" uid="uid://dv3752gdnnuew" path="res://assets/audio/foley_cleaned/toaster/wheels 2.wav" id="91_wheels2"]
+[ext_resource type="AudioStream" uid="uid://d3k3aan4bfpud" path="res://assets/audio/foley_cleaned/toaster/wheels 3_a.wav" id="92_wheels3"]
+[ext_resource type="AudioStream" uid="uid://cbj0bee5y8mqa" path="res://assets/audio/foley_cleaned/toaster/wheels 4.wav" id="93_wheels4"]
 [ext_resource type="AudioStream" uid="uid://wm4lqvpkt0v3" path="res://assets/audio/foley_cleaned/unscrew 2.wav" id="12_grind"]
 [ext_resource type="AudioStream" uid="uid://bh4jnm0ryemsc" path="res://assets/audio/foley_cleaned/tools/air puff.wav" id="13_whoosh"]
 [ext_resource type="AudioStream" uid="uid://bga4bllx1ealr" path="res://assets/audio/foley_cleaned/parts together 2_b.wav" id="14_snap"]
@@ -40,6 +43,7 @@
 [ext_resource type="AudioStream" uid="uid://dyi4bknkxbvvs" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated 4_a.wav" id="39_frust4"]
 [ext_resource type="AudioStream" uid="uid://oltxq6g2gnwu" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated 5.wav" id="40_frust5"]
 [ext_resource type="AudioStream" uid="uid://bxyj0nwhyfg78" path="res://assets/audio/zap.wav" id="40_zap"]
+[ext_resource type="AudioStream" uid="uid://bbmex5ri7vjer" path="res://assets/audio/foley_cleaned/shrinkray blast.wav" id="94_blast"]
 [ext_resource type="AudioStream" uid="uid://cbn720l383p0l" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated 6.wav" id="41_frust6"]
 [ext_resource type="AudioStream" uid="uid://i0gek3tvppcq" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated 7_a.wav" id="42_frust7"]
 [ext_resource type="AudioStream" uid="uid://ckctna4ybfybq" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated 8.wav" id="43_frust8"]
@@ -223,6 +227,13 @@ stream_0/stream = ExtResource("84_wipe_2")
 stream_1/stream = ExtResource("85_wipe_3")
 stream_2/stream = ExtResource("86_wipe_a")
 
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_skid"]
+streams_count = 4
+stream_0/stream = ExtResource("10_skid")
+stream_1/stream = ExtResource("91_wheels2")
+stream_2/stream = ExtResource("92_wheels3")
+stream_3/stream = ExtResource("93_wheels4")
+
 [node name="AudioMain" type="Node2D" unique_id=2137804085]
 process_mode = 3
 script = ExtResource("1_tdp82")
@@ -348,7 +359,7 @@ bus = &"SFX"
 
 [node name="Skid" type="AudioStreamPlayer" parent="." unique_id=709969802]
 unique_name_in_owner = true
-stream = ExtResource("10_skid")
+stream = SubResource("AudioStreamRandomizer_skid")
 bus = &"SFX"
 
 [node name="Pop" type="AudioStreamPlayer" parent="." unique_id=219562715]
@@ -360,6 +371,11 @@ bus = &"SFX"
 unique_name_in_owner = true
 stream = ExtResource("40_zap")
 volume_db = -6.0
+bus = &"SFX"
+
+[node name="Blast" type="AudioStreamPlayer" parent="." unique_id=1903317542]
+unique_name_in_owner = true
+stream = ExtResource("94_blast")
 bus = &"SFX"
 
 [node name="Grind" type="AudioStreamPlayer" parent="." unique_id=1851247793]

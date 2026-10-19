@@ -60,7 +60,7 @@ func _run() -> void:
 	var sign_sub := exterior.get_node("SignViewport/SignSub") as Label
 	_expect(
 		sign_welcome.text == "Welcome to"
-		and sign_title.text == "Fix It"
+		and sign_title.text == "Loose Screw"
 		and sign_sub.text == "Come on in",
 		"the sign carries the shop name on three lines",
 	)

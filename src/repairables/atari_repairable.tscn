@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://cg17ymgfrol22" path="res://src/interaction_points/flat_head_screw.tscn" id="6_screw"]
 [ext_resource type="Texture2D" uid="uid://bqrp5b0s1dnbx" path="res://assets/images/repairables/atari_joystick_with_gaps.png" id="body_tex"]
 [ext_resource type="Texture2D" uid="uid://du62c2fga02r4" path="res://assets/images/repairables/atari_joystick_good.png" id="good_tex"]
+[ext_resource type="Texture2D" uid="uid://cb1cycyi1mevn" path="res://assets/images/repairables/atari_joystick_bad.png" id="bad_tex"]
 
 [node name="AtariRepairable" type="Node2D" unique_id=1191888130 node_paths=PackedStringArray("shape")]
 script = ExtResource("1_item")
@@ -51,6 +52,23 @@ scale = Vector2(0.32, 0.32)
 texture = ExtResource("good_tex")
 region_enabled = true
 region_rect = Rect2(617.5, 233.5, 418, 497.5)
+
+[node name="BustedStick" type="Sprite2D" parent="Layers/Body/Joystick/BrokenPart" unique_id=536495874]
+position = Vector2(1.7, -30.2)
+scale = Vector2(0.32, 0.32)
+texture = ExtResource("bad_tex")
+region_enabled = true
+region_rect = Rect2(615, 317, 546, 417)
+
+[node name="BadPartShape" type="Area2D" parent="Layers/Body/Joystick/BrokenPart" unique_id=536495876]
+position = Vector2(1.7, -30.2)
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Joystick/BrokenPart/BadPartShape" unique_id=536495877]
+polygon = PackedVector2Array(-68, -66, 68, -66, 87, -47, 87, 47, 68, 66, -68, 66, -87, 47, -87, -47)
 
 [node name="GoodPartShape" type="Area2D" parent="Layers/Body/Joystick" unique_id=536495874]
 position = Vector2(-18, -44)

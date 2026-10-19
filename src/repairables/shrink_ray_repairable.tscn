@@ -2,8 +2,12 @@
 
 [ext_resource type="Script" uid="uid://6bkc0hxek20j" path="res://src/repairables/shrink_ray.gd" id="1_ray"]
 [ext_resource type="Script" uid="uid://bexc8yuqwibs5" path="res://src/repairables/repair_layer.gd" id="2_layer"]
-[ext_resource type="Texture2D" uid="uid://b6tjvjk1gpgqc" path="res://assets/images/repairables/shrinkray.png" id="3_body"]
+[ext_resource type="Texture2D" uid="uid://0ve144e3robv" path="res://assets/images/repairables/shrinkray_with_gap.png" id="3_body"]
+[ext_resource type="Texture2D" uid="uid://b3j4r1rdvl84b" path="res://assets/images/repairables/shrinkray_trigger.png" id="11_trigger"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/broken_point.tscn" id="9_point"]
+[ext_resource type="Script" uid="uid://bvk4xcwwvu7k5" path="res://src/interaction_points/broken_piece.gd" id="10_piece"]
 [ext_resource type="Texture2D" uid="uid://cmj5ufmoe5yds" path="res://assets/images/repairables/shrinkray_fixed_crystal.png" id="5_crystal_good"]
+[ext_resource type="Texture2D" uid="uid://2x0h072q2p6k" path="res://assets/images/repairables/shrinkray_broken_crystal.png" id="bad_tex"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/part_socket.tscn" id="6_socket"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/stuck_part.tscn" id="7_stuck"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/grime_spot.tscn" id="8_grime"]
@@ -73,13 +77,32 @@ texture = ExtResource("5_crystal_good")
 region_enabled = true
 region_rect = Rect2(326, 160, 60, 68)
 
-[node name="Bolt" parent="Layers/Body" unique_id=1439230032 instance=ExtResource("6_socket")]
-position = Vector2(20, 2)
-accepted_part = 10
+[node name="BustedCrystal" type="Sprite2D" parent="Layers/Body/Crystal/BrokenPart" unique_id=1100441440]
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("bad_tex")
+region_enabled = true
+region_rect = Rect2(326, 160, 60, 68)
 
 [node name="CrystalGrime" parent="Layers/Body" unique_id=65784905 instance=ExtResource("8_grime")]
 position = Vector2(53.7, -41.1)
 amount = 1.6
+
+[node name="TriggerPoint" parent="Layers/Body" unique_id=1439230033 instance=ExtResource("9_point")]
+position = Vector2(18.3, 7.2)
+
+[node name="Trigger" type="Node2D" parent="Layers/Body" unique_id=1439230034 node_paths=PackedStringArray("target_point", "art")]
+position = Vector2(18.3, 7.2)
+script = ExtResource("10_piece")
+target_point = NodePath("../TriggerPoint")
+starts_detached = true
+fall_target_offset = Vector2(-160, 110)
+art = NodePath("Art")
+
+[node name="Art" type="Sprite2D" parent="Layers/Body/Trigger" unique_id=1439230035]
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("11_trigger")
+region_enabled = true
+region_rect = Rect2(247, 232, 100, 85)
 
 [node name="Shape" type="Area2D" parent="." unique_id=472882436]
 

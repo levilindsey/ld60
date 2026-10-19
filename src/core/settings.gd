@@ -452,6 +452,11 @@ enum FirstRepairable {
 @export var bench_dust_points := 3
 ## A broken piece hold that leaves its ring, per failure.
 @export var failed_glue_hold_points := 5
+## A dust clump blown down to this share of its toughness
+## left counts as cleaned: it finishes itself (shrinks and
+## fades away) instead of lingering as a nearly invisible
+## remainder that still blocks the finish and costs points.
+@export var dust_clean_share := 0.25
 ## A repair loses some points for every full interval it runs past its par
 ## time, up to a maximum.
 @export var time_penalty_interval_sec := 2.0
@@ -591,7 +596,9 @@ func get_defect_points(defect: RepairQuality.Defect) -> int:
 			points = oil_drip_points
 		RepairQuality.Defect.GLUE_BLOB:
 			points = glue_blob_points
-		RepairQuality.Defect.LEFTOVER_DIRT:
+		RepairQuality.Defect.LEFTOVER_GRIME:
+			points = leftover_dirt_points
+		RepairQuality.Defect.LEFTOVER_DUST:
 			points = leftover_dirt_points
 		RepairQuality.Defect.BENCH_DUST_LEFT:
 			points = bench_dust_points

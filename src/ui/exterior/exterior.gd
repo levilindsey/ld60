@@ -1,7 +1,7 @@
 class_name Exterior
 extends Node2D
 ## The shop's outside, and the title screen: the wall and door
-## fill the screen, and the shop name ("Welcome to" / "Fix It" /
+## fill the screen, and the shop name ("Welcome to" / "Loose Screw" /
 ## "Come on in") is lettered on the door's sign in Young Serif.
 ##
 ## On the enter tap, the door swings open (ExteriorDoor), the

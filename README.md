@@ -1,4 +1,4 @@
-# Fix It
+# Loose Screw
 
 Our Ludum Dare 60 jam game, built with Godot 4.7 (2D, single-player,
 web + Windows builds). The theme is "old tech": broken gadgets arrive
@@ -80,7 +80,7 @@ powershell -ExecutionPolicy Bypass -File scripts/export_web.ps1
 python scripts/serve_web.py    # then open http://localhost:8060
 ```
 
-To publish to itch.io (our page is `levilindsey/repair-shop`), push the
+To publish to itch.io (our page is `levilindsey/loose-screw`), push the
 build with Butler:
 
 ```powershell
@@ -94,7 +94,7 @@ One-time setup on the itch page itself (Butler can't set these): in
 upload tick **This file will be played in the browser** with a
 1280×720 viewport. Without those two, the page shows a download button
 instead of a playable game.
-The zip from `export_web.ps1` (`build/ld60-web.zip`) still works for a
+The zip from `export_web.ps1` (`build/loose-screw-web.zip`) still works for a
 manual upload in the itch dashboard.
 
 ## Links

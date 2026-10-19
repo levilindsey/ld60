@@ -86,6 +86,14 @@ theme_override_font_sizes/font_size = 40
 text = "Complaint"
 autowrap_mode = 3
 
+[node name="NotesLabel" type="Label" parent="ContentViewport/Paper/Contents"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.13, 0.22, 0.45, 1)
+theme_override_fonts/font = ExtResource("4_handwriting")
+theme_override_font_sizes/font_size = 30
+autowrap_mode = 3
+
 [node name="Scribbles" type="Control" parent="ContentViewport/Paper/Contents/ComplaintLabel"]
 unique_name_in_owner = true
 layout_mode = 1

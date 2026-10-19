@@ -274,8 +274,11 @@ func _find_bare_spot(
 ## Crack decals stamped on a layer's art so far.
 func _crack_decal_count(art: CanvasItem) -> int:
 	var count := 0
-	for child in art.get_children():
-		var sprite := child as Sprite2D
+	var pending: Array[Node] = [art]
+	while not pending.is_empty():
+		var node: Node = pending.pop_back()
+		pending.append_array(node.get_children())
+		var sprite := node as Sprite2D
 		if (
 			is_instance_valid(sprite)
 			and is_instance_valid(sprite.texture)

@@ -12,4 +12,4 @@ textures = Array[Texture2D]([ExtResource("2_glue"), ExtResource("3_glue"), ExtRe
 has_random_rotation = false
 can_flip_horizontally = true
 can_flip_vertically = false
-tint = Color(1, 0.84, 0.32, 1)
+tint = Color(1, 0.6, 0.07, 1)

@@ -81,22 +81,32 @@ func _draw() -> void:
 
 
 ## The scar the piece left behind, ringed once it's mended.
+## Drawn at a world size (see `_draw_hold()`): the point's
+## local units shrink with a scaled item.
 func _draw_scar() -> void:
+	var unit := _local_per_world()
 	var scar := Color(0.12, 0.1, 0.1, 0.9)
-	draw_line(Vector2(-14, -10), Vector2(12, 8), scar, 3.0, true)
-	draw_line(Vector2(-8, 12), Vector2(14, -8), scar, 3.0, true)
+	draw_line(
+		Vector2(-14, -10) * unit, Vector2(12, 8) * unit, scar,
+		3.0 * unit, true
+	)
+	draw_line(
+		Vector2(-8, 12) * unit, Vector2(14, -8) * unit, scar,
+		3.0 * unit, true
+	)
 	draw_arc(
-		Vector2.ZERO, 18.0, 0.0, TAU, 24, scar, 2.0, true
+		Vector2.ZERO, 18.0 * unit, 0.0, TAU, 24, scar,
+		2.0 * unit, true
 	)
 	if mode == Mode.FINISHED:
 		draw_arc(
 			Vector2.ZERO,
-			18.0,
+			18.0 * unit,
 			0.0,
 			TAU,
 			24,
 			Color(0.45, 0.95, 0.5, 0.95),
-			3.0,
+			3.0 * unit,
 			true,
 		)
 
@@ -119,23 +129,24 @@ func _draw_hold() -> void:
 	# core. The ring floats above the point, clear of the
 	# finger holding the piece on it.
 	var ring := _get_ring_center()
-	draw_arc(ring, outer, 0.0, TAU, 40, band_color, 5.0, true)
-	draw_arc(ring, inner, 0.0, TAU, 32, band_color, 2.0, true)
+	draw_arc(ring, outer, 0.0, TAU, 40, band_color, 5.0 * per_world, true)
+	draw_arc(ring, inner, 0.0, TAU, 32, band_color, 2.0 * per_world, true)
 	draw_circle(ring, inner, Color(band_color, 0.12))
 	draw_line(
-		Vector2.ZERO, ring, Color(band_color, 0.35), 2.0, true
+		Vector2.ZERO, ring, Color(band_color, 0.35),
+		2.0 * per_world, true
 	)
 	# Progress around the outside while the dot stays good.
 	if hold_sec > 0.0:
 		var share := clampf(hold_progress_sec / hold_sec, 0.0, 1.0)
 		draw_arc(
 			ring,
-			outer + 9.0,
+			outer + 9.0 * per_world,
 			-PI * 0.5,
 			-PI * 0.5 + share * TAU,
 			40,
 			Color(0.45, 0.95, 0.5, 0.95),
-			4.0,
+			4.0 * per_world,
 			true,
 		)
 	var dot_local := (
@@ -190,7 +201,7 @@ func _spawn_glue_decal() -> void:
 		DecalSpawner.Kind.GLUE_BLOB,
 		layer.art,
 		global_position,
-		52.0,
+		80.0,
 	)
 
 

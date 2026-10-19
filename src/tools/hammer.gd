@@ -21,8 +21,10 @@ const STRIKABLE_PROPS_GROUP := &"strikable_props"
 ## rising with the charge from nothing to this.
 const MAX_TREMBLE_PX := 18.0
 ## The shrunken hammer's size, as a share of its own.
-const _TINY_SCALE := 0.4
-const _SHRINK_SEC := 0.35
+const _TINY_SCALE := 0.25
+## The beat between the ray's blast and the hammer shrinking.
+const _SHRINK_DELAY_SEC := 0.2
+const _SHRINK_SEC := 0.45
 ## How much higher the shrunken hammer's hits sound.
 const _TINY_PITCH_SCALE := 1.8
 
@@ -244,20 +246,22 @@ func put_away() -> void:
 	super.put_away()
 
 
-## Shrinks the hammer for good.
+## Shrinks the hammer for good: a beat after the blast, it
+## bounces down to a quarter of its size. Its hits sound
+## higher from the first strike after (`_strike()`).
 func shrink() -> void:
 	if is_tiny:
 		return
 	is_tiny = true
 	var tween := create_tween()
 	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
-	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(_SHRINK_DELAY_SEC)
 	tween.tween_property(
 		%Wrapper,
 		"scale",
 		%Wrapper.scale * _TINY_SCALE,
 		_SHRINK_SEC,
-	)
+	).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_IN)
 
 
 func _swing() -> void:

@@ -72,12 +72,28 @@ func _run() -> void:
 
 	var hammer := G.level.tools_by_type[Tool.Type.HAMMER] as Tool
 	await _grab_tool(hammer)
-	var radio_point: Vector2 = (
-		_radio.get_node("Art") as Sprite2D
-	).global_position + Vector2(0.0, -40.0)
-	_expect(_radio.is_struck_at(radio_point), "the press lands on the radio")
-	await _press_down(radio_point)
+	# Aim the face, not the tip: the hammer acts where its
+	# working end lands, well away from the cursor marker.
+	# (Pressing the tip onto the radio leaves the face over
+	# empty air, which is how this probe used to miss.)
 	var hammer_tool := hammer as Hammer
+	var target := _radio.get_art_center()
+	_expect(_radio.is_struck_at(target), "the press lands on the radio")
+	var settle_frames := 0
+	while settle_frames < 90 and (
+		hammer_tool.follow_offset.length() > 0.5
+		or (
+			is_instance_valid(hammer_tool.rotation_tween)
+			and hammer_tool.rotation_tween.is_running()
+		)
+	):
+		await _physics_frames(1)
+		settle_frames += 1
+	var offset := (
+		hammer_tool.get_work_end_position()
+		- hammer_tool.get_tip_position()
+	)
+	await _press_down(target - offset)
 	_expect(
 		is_instance_valid(hammer_tool)
 		and hammer_tool.get_locked_prop() == _radio
@@ -85,7 +101,7 @@ func _run() -> void:
 		"winding up on the wonky radio locks it with the green band",
 	)
 	await _seconds(0.2)
-	await _release_at(radio_point)
+	await _release_at(target - offset)
 	await _seconds(0.5)
 	_expect(not _radio.is_glitching, "a hammer hit fixes the radio")
 	_expect(

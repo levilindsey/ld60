@@ -56,6 +56,9 @@ $Runs = @(
     @{ Name = "tools"; Probe = "tools"; UserArguments = @(); TimeoutSeconds = 150; WindowedArguments = @() }
     @{ Name = "phillips"; Probe = "phillips"; UserArguments = @(); TimeoutSeconds = 180; WindowedArguments = @() }
     @{ Name = "glue"; Probe = "glue"; UserArguments = @(); TimeoutSeconds = 120; WindowedArguments = @() }
+@{ Name = "gnwglue"; Probe = "gnwglue"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
+@{ Name = "blast"; Probe = "blast"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
+@{ Name = "rayglue"; Probe = "rayglue"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
     @{ Name = "audio"; Probe = "audio"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
     @{ Name = "decals"; Probe = "decals"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
 @{ Name = "exterior"; Probe = "exterior"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }

@@ -55,6 +55,11 @@ var _decal_alpha_share := 1.0
 ## Multiplier on the configured decal size. Dust renders at
 ## twice its configured size; other dirt at the size itself.
 var _decal_size_scale := 1.0
+## The Shape mask clipping the decal sprites to the layer's
+## authored Shape region, when the layer has one (see
+## `_set_up_shape_mask()`). Bench dust has no layer and no
+## mask.
+var _shape_mask: Polygon2D
 
 
 ## How far, in world pixels, a grime or dust spot past the
@@ -67,6 +72,36 @@ func _ready() -> void:
 	_scale_compensation = _get_scale_compensation()
 	_compensate_hit_shapes()
 	_nudge_extra_spot()
+	_set_up_shape_mask()
+
+
+## Clips the spot's decals to its layer's authored Shape
+## region, the way the decal spawner clips its decals (see
+## DecalSpawner): a filled Polygon2D set to CLIP_CHILDREN_ONLY
+## draws nothing itself but clips its children to its fill.
+## The art moves under the mask, and extras land there too.
+## The polygon is taken in this point's points at ready, so
+## it rides with the point (and its layer) afterwards.
+func _set_up_shape_mask() -> void:
+	if not is_instance_valid(art):
+		return
+	var layer := get_layer()
+	if not is_instance_valid(layer):
+		return
+	var world_polygon := layer.get_shape_world_polygon()
+	if world_polygon.size() < 3:
+		return
+	_shape_mask = Polygon2D.new()
+	_shape_mask.name = "ShapeClipMask"
+	_shape_mask.color = Color.WHITE
+	_shape_mask.clip_children = CanvasItem.CLIP_CHILDREN_ONLY
+	var inverse := global_transform.affine_inverse()
+	var local_polygon := PackedVector2Array()
+	for world_point in world_polygon:
+		local_polygon.append(inverse * world_point)
+	_shape_mask.polygon = local_polygon
+	add_child(_shape_mask)
+	art.reparent(_shape_mask)
 
 
 ## Spots past the first grime or dust spot on a layer sit a
@@ -176,7 +211,10 @@ func _add_extra_decals(total_count: int) -> void:
 		return
 	for index in range(1, maxi(total_count, 1)):
 		var decal := Sprite2D.new()
-		add_child(decal)
+		var decal_parent: Node = (
+			_shape_mask if is_instance_valid(_shape_mask) else self
+		)
+		decal_parent.add_child(decal)
 		_configure_decal(decal, decal_set)
 		decal.position = (
 			Vector2.from_angle(randf() * TAU)

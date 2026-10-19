@@ -41,7 +41,9 @@ extends Node2D
 ## wipe 2/3/_a for the rag; `lid_pop` (also `pop`) pools lid
 ## pop 2_b, lid pop off 3/_a and lid pop_b for a part yanked
 ## or lifted out of its installed spot; `sigh` is the
-## sigh-of-relief pool Level.win() plays at the end.
+## sigh-of-relief pool Level.win() plays at the end. `skid`
+## pools the four wheels takes (foley round 5) for the
+## toaster scooting around the bench.
 @onready var STREAM_PLAYERS_BY_NAME := {
 	"menu_theme" = %MenuTheme,
 	"main_theme" = %MainTheme,
@@ -68,6 +70,7 @@ extends Node2D
 	"skid" = %Skid,
 	"pop" = %Pop,
 	"zap" = %Zap,
+	"blast" = %Blast,
 	"grind" = %Grind,
 	"whoosh" = %Whoosh,
 	"snap" = %Snap,

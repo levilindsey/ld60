@@ -284,10 +284,14 @@ func _check_rag() -> void:
 		is_instance_valid(rag_holder) and rag_holder.is_outline_shown(),
 		"the rag holder outline shows while the rag is held",
 	)
+	var is_circle := is_instance_valid(rag_holder)
+	if is_circle:
+		for point in rag_holder.outline_polygon:
+			if absf(point.length() - rag_holder.outline_radius_px) > 1.0:
+				is_circle = false
 	_expect(
-		is_instance_valid(rag_holder)
-		and rag_holder.outline_polygon.size() >= 3,
-		"the rag holder carries an outline polygon",
+		is_circle and rag_holder.outline_polygon.size() >= 12,
+		"the rag holder's outline is a circle",
 	)
 	_expect(
 		rag.held_sprite.visible and not rag.hanging_sprite.visible,

@@ -88,7 +88,9 @@ func transition(to_state: State) -> void:
 			if not G.session.is_game_over:
 				G.game_panel.end_game()
 			get_tree().paused = true
-			G.audio.fade_to_end_theme()
+			# The music keeps playing under the credits, like
+			# the pause: there is no end theme, and fading to
+			# it only faded the music out to silence.
 		_:
 			G.error()
 

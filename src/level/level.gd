@@ -2283,6 +2283,7 @@ func _on_item_departed(item: Repairable) -> void:
 	%TicketCard.show_done(
 		item.quality.repair_time_sec,
 		item.quality.get_stars(),
+		item.quality.get_receipt_tags(),
 	)
 
 

@@ -75,6 +75,13 @@ func _ready() -> void:
 	type = Type.PHILLIPS_SCREW
 	G.check(is_instance_valid(sparks))
 	G.check(is_instance_valid(gauge))
+	# The gauge draws at a world size whatever scale the
+	# scene gives this screw (the Game n Watch's screws are
+	# scaled up to sit on its faceplate; an unscaled one on
+	# a scaled item would shrink the gauge to nothing).
+	var screw_scale := absf(global_transform.get_scale().x)
+	if screw_scale > 0.0001:
+		gauge.scale = Vector2.ONE / screw_scale
 	_zone_random.randomize()
 	# The zone starts where the fixed band used to sit.
 	_zone_center_rad_per_sec = (

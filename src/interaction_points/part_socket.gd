@@ -91,8 +91,16 @@ func _ready() -> void:
 	%BrokenArt.polygon = Part.get_polygon(accepted_part)
 	%BrokenArt.color = Part.get_color(accepted_part).darkened(0.45)
 	# A kind with real art shows it, darkened, unless the scene gives the
-	# broken part its own art.
-	if %BrokenArt.visible and Part.has_art(accepted_part):
+	# broken part its own art (a sprite already under the broken
+	# part, like the piano's busted LED): that art wins, and no
+	# generated sprite is added over it.
+	var has_own_broken_art := false
+	for child in %BrokenPart.get_children():
+		if child is Sprite2D:
+			has_own_broken_art = true
+	if has_own_broken_art:
+		%BrokenArt.hide()
+	elif %BrokenArt.visible and Part.has_art(accepted_part):
 		var broken_sprite := Sprite2D.new()
 		Part.apply_art(broken_sprite, accepted_part)
 		# Where the scene authors the fitted sprite, the broken
@@ -128,6 +136,10 @@ func _ready() -> void:
 		else _get_art_outline_points()
 	)
 	%Outline.scale = Vector2.ONE
+	# The ghost only shows once the socket is empty: while
+	# the broken part sits here it would draw a phantom of
+	# the good part over it (the Atari's second stick).
+	%Outline.visible = not has_broken_part
 	if is_instance_valid(installed_art):
 		installed_art.hide()
 	_broken_part_home_position = %BrokenPart.position
@@ -215,6 +227,25 @@ func is_point_in_part_shape(world_point: Vector2) -> bool:
 	)
 
 
+## True when a world point lands on the part as it sits (or
+## would sit) in this socket: the authored part shapes, or
+## the fitted art's footprint, which the ghost outline
+## already traces. Grabs and drops are judged against this,
+## not just the socket's hit circle: that circle is authored
+## in the item's units, so on a scaled item (the keyboard
+## at 0.13) it is a few world pixels across, and a new key
+## dropped on its outline missed by a mile.
+func is_point_on_part(world_point: Vector2) -> bool:
+	if is_point_in_part_shape(world_point):
+		return true
+	var polygon := _get_hint_polygon()
+	if polygon.size() < 3:
+		return false
+	return Geometry2D.is_point_in_polygon(
+		to_local(world_point), polygon
+	)
+
+
 ## The bad part shape's first polygon, in world points.
 func get_bad_part_world_polygon() -> PackedVector2Array:
 	if not is_instance_valid(bad_part_shape):
@@ -234,6 +265,7 @@ func get_good_part_world_polygon() -> PackedVector2Array:
 func on_poked() -> void:
 	if has_tuggable_part():
 		_is_wiggling = true
+		_set_yank_highlight(true)
 		if is_instance_valid(_settle_tween):
 			_settle_tween.kill()
 		%BrokenPart.position = _broken_part_home_position
@@ -451,6 +483,7 @@ func _place_yank_indicator() -> void:
 func _pop_out() -> void:
 	var was_yanked := _wiggle.is_yanked
 	has_broken_part = false
+	%Outline.visible = true
 	_refresh_yank_indicator()
 	_stop_wiggle()
 	G.audio.play_sound(&"lid_pop", true)
@@ -517,9 +550,47 @@ func _apply_wiggle_pose() -> void:
 	)
 
 
+## The broken part's sprite while a yank highlights it, and
+## the material it wore before (see `_set_yank_highlight()`).
+var _yank_highlighted_sprite: Sprite2D
+var _yank_sprite_material: Material
+
+
+## Highlights the broken part while a yank is in progress,
+## so what is being pulled reads at a glance. The shared
+## outline material keeps it the same world width as every
+## other sprite highlight.
+func _set_yank_highlight(is_on: bool) -> void:
+	if is_on:
+		if is_instance_valid(_yank_highlighted_sprite):
+			return
+		var sprite := _get_broken_sprite()
+		if not is_instance_valid(sprite):
+			return
+		_yank_highlighted_sprite = sprite
+		_yank_sprite_material = OutlineHint.apply_to_sprite(sprite)
+	else:
+		if is_instance_valid(_yank_highlighted_sprite):
+			OutlineHint.remove_from_sprite(
+				_yank_highlighted_sprite, _yank_sprite_material
+			)
+		_yank_highlighted_sprite = null
+		_yank_sprite_material = null
+
+
+## The broken part's visible sprite, or null when the socket
+## only has the placeholder polygon.
+func _get_broken_sprite() -> Sprite2D:
+	for child in %BrokenPart.get_children():
+		if child is Sprite2D and (child as CanvasItem).visible:
+			return child as Sprite2D
+	return null
+
+
 ## Ends the wiggle's hold on the pointer, with no settle animation.
 func _stop_wiggle() -> void:
 	_is_wiggling = false
+	_set_yank_highlight(false)
 	if is_instance_valid(_settle_tween):
 		_settle_tween.kill()
 	if is_instance_valid(G.level):

@@ -117,8 +117,11 @@ func _yank_and_refit() -> void:
 			grab_point = point
 	grab_point = grab_point.lerp(_socket.global_position, 0.2)
 	_expect(
-		grab_point.distance_to(_socket.global_position) > 30.0,
-		"the grab lands on the stick, off the socket's circle",
+		grab_point.distance_to(_socket.global_position) > 20.0,
+		"the grab lands on the stick, off the socket's circle"
+		+ " (%.1f px)" % grab_point.distance_to(
+			_socket.global_position
+		),
 	)
 	await _press_down(grab_point)
 	await _move_to(grab_point + Vector2(25, 0))

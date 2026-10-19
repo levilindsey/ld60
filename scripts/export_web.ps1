@@ -68,7 +68,7 @@ if ($NoZip) {
     exit 0
 }
 
-$ZipPath = Join-Path $RepoRoot "build\ld60-web.zip"
+$ZipPath = Join-Path $RepoRoot "build\loose-screw-web.zip"
 if (Test-Path $ZipPath) {
     Remove-Item -Force $ZipPath
 }

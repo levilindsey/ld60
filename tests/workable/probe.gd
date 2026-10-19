@@ -108,20 +108,36 @@ func _check_area_queries() -> void:
 	)
 
 
+## The smallest stocked part. The stock is shuffled, so
+## taking the first part made every case below depend on
+## which kind happened to come first (a joystick's reach
+## dwarfs the test box; a letter key's fits anywhere). The
+## smallest part keeps the cases about the area, not the
+## shuffle.
+func _stocked_part() -> Part:
+	var best: Part = null
+	for part in _level.get_drawer_parts():
+		if (
+			not is_instance_valid(best)
+			or part.get_radius_px() < best.get_radius_px()
+		):
+			best = part
+	return best
+
+
 func _part_radius() -> float:
-	var parts := _level.get_drawer_parts()
-	if parts.is_empty():
+	var part := _stocked_part()
+	if not is_instance_valid(part):
 		return 0.0
-	return parts[0].get_radius_px()
+	return part.get_radius_px()
 
 
 ## Takes one stocked part out of its drawer on paper: it rests
 ## loose on the bench where the drag cases can pick it up.
 func _place_part_on_bench() -> void:
-	var parts := _level.get_drawer_parts()
-	if not _expect(not parts.is_empty(), "a part is stocked"):
+	_part = _stocked_part()
+	if not _expect(is_instance_valid(_part), "a part is stocked"):
 		return
-	_part = parts[0]
 	_part.is_stored = false
 	_part.drawer_index = -1
 	_part.global_position = Vector2(0.0, 220.0)

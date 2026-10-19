@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cbj0bee5y8mqa"
+path="res://.godot/imported/wheels 4.wav-4f0c0b9138db93e70e1c85a4a0376378.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/toaster/wheels 4.wav"
+dest_files=["res://.godot/imported/wheels 4.wav-4f0c0b9138db93e70e1c85a4a0376378.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

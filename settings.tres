@@ -24,7 +24,7 @@
 [ext_resource type="PackedScene" uid="uid://dvsaww7wjr21n" path="res://src/repairables/piano_repairable.tscn" id="20_piano"]
 [ext_resource type="PackedScene" uid="uid://51hvu6uckha6" path="res://src/repairables/game_n_watch_repairable.tscn" id="21_gnw"]
 [ext_resource type="PackedScene" uid="uid://ddpmx6d4s1l3a" path="res://src/repairables/radio_repairable.tscn" id="22_radio"]
-[ext_resource type="PackedScene" path="res://src/repairables/shrink_ray_repairable.tscn" id="23_shrink"]
+[ext_resource type="PackedScene" uid="uid://coryeindgrvdf" path="res://src/repairables/shrink_ray_repairable.tscn" id="23_shrink"]
 [ext_resource type="PackedScene" uid="uid://b76fvxclxgui1" path="res://src/parts/gear_part.tscn" id="24_gear"]
 [ext_resource type="PackedScene" uid="uid://buxvp3jusx10w" path="res://src/parts/tube_part.tscn" id="25_tube"]
 [ext_resource type="PackedScene" uid="uid://dhsibya3xlycm" path="res://src/parts/bolt_part.tscn" id="26_bolt"]
@@ -78,7 +78,7 @@ game_n_watch_repairable_scene = ExtResource("21_gnw")
 radio_repairable_scene = ExtResource("22_radio")
 shrink_ray_repairable_scene = ExtResource("23_shrink")
 item_queue = Array[int]([3, 4, 5, 6, 7, 8, 2, 9])
-first_repairable_override = 6
+first_repairable_override = 10
 flat_head_screw_driver_scene = ExtResource("2_xmm7k")
 rag_scene = ExtResource("9_rag")
 air_blower_scene = ExtResource("10_blower")

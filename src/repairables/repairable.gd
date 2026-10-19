@@ -62,9 +62,11 @@ const _LEAVING_Z_INDEX := 16
 ## whole item, and the band fades across its depth, so the
 ## strong part is thinner than the number says. On a
 ## scaled-down item (the Game & Watch at 0.13) 14 px read
-## as a whisper; 20 with a stronger gradient (see
-## `_get_finish_outline_material()`) carries.
-const _FINISH_OUTLINE_WIDTH_PX := 20.0
+## as a whisper; 13 with a stronger gradient (see
+## `_get_finish_outline_material()`) carries. (Wider read
+## as too much on the piano and the shrink ray, which stack
+## this rim on the hard shape rim as well.)
+const _FINISH_OUTLINE_WIDTH_PX := 13.0
 
 @export var item_name := ""
 ## The object's own outline, an Area2D with polygon/shape
@@ -705,9 +707,15 @@ func _charge_remaining_mess() -> void:
 					point.global_position,
 					point,
 				)
-			elif point is GrimeSpot or point is DustClump:
+			elif point is GrimeSpot:
 				quality.add_defect(
-					RepairQuality.Defect.LEFTOVER_DIRT,
+					RepairQuality.Defect.LEFTOVER_GRIME,
+					point.global_position,
+					point,
+				)
+			elif point is DustClump:
+				quality.add_defect(
+					RepairQuality.Defect.LEFTOVER_DUST,
 					point.global_position,
 					point,
 				)

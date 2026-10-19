@@ -10,17 +10,17 @@ extends Repairable
 
 
 ## How far one scoot moves the toaster, in pixels.
-const _SCOOT_MIN_PX := 30.0
-const _SCOOT_MAX_PX := 70.0
+const _SCOOT_MIN_PX := 60.0
+const _SCOOT_MAX_PX := 140.0
 ## How far the toaster may wander from where it started, in pixels.
-const _WANDER_RANGE_PX := 110.0
+const _WANDER_RANGE_PX := 220.0
 const _SCOOT_SEC := 0.35
 ## How high a scoot hops, in pixels.
 const _SCOOT_HOP_PX := 8.0
 const _SCOOT_ROCK_RADIANS := 0.08
 ## The pause between scoots, in seconds.
-const _SCOOT_WAIT_MIN_SEC := 0.8
-const _SCOOT_WAIT_MAX_SEC := 2.0
+const _SCOOT_WAIT_MIN_SEC := 0.4
+const _SCOOT_WAIT_MAX_SEC := 1.0
 ## Where the knocked-off wheel lands, from the toaster's middle.
 const _KNOCKED_WHEEL_OFFSET := Vector2(-170.0, 50.0)
 const _FACE_POP_SEC := 0.35

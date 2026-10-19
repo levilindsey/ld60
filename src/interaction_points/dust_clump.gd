@@ -6,7 +6,8 @@ extends DirtSpot
 
 
 ## Ghost copies of the clump's art shed on each puff: they
-## drift the way the air pushes, swell up and fade out. This
+## swell up and fade out where they sit. Blown dust is not
+## displaced any more; it shrinks and fades in place. This
 ## is the whole dust-blow effect; a shader cloud would fight
 ## the hand-drawn decals.
 const _PUFF_GROUP := &"dust_puff"
@@ -51,10 +52,20 @@ func on_sprayed(strength: float, direction: Vector2, delta: float) -> void:
 	hit_points_left = maxf(hit_points_left - damage, 0.0)
 	_wobble()
 	_spawn_puff(direction, 0.55)
-	if hit_points_left <= 0.0:
+	if get_remaining_share() <= G.settings.dust_clean_share:
+		# Down to a whisper of the clump: counts as cleaned.
+		hit_points_left = 0.0
 		_blow_off(direction)
 	else:
 		_update_alpha()
+
+
+## How much of the clump is left, as a share of the
+## toughness it started with.
+func get_remaining_share() -> float:
+	return clampf(
+		hit_points_left / maxf(toughness, 0.001), 0.0, 1.0
+	)
 
 
 func on_poked() -> void:
@@ -63,11 +74,11 @@ func on_poked() -> void:
 
 
 ## Sheds `count` ghost copies of the clump's art into the
-## level. Each drifts along `direction` (fanned out a bit),
-## swells to up to twice its size, turns a little and fades
-## away, then frees itself. `alpha_scale` dims the shed
-## wisps against the burst when the clump goes.
-func _spawn_puff(direction: Vector2, alpha_scale: float) -> void:
+## level. Each swells to up to twice its size where it sits,
+## turns a little and fades away, then frees itself.
+## `alpha_scale` dims the shed wisps against the burst when
+## the clump goes.
+func _spawn_puff(_direction: Vector2, alpha_scale: float) -> void:
 	if not is_instance_valid(G.level) or not is_instance_valid(art):
 		return
 	for _index in _BURST_PUFF_COUNT if alpha_scale >= 1.0 else 1:
@@ -96,17 +107,10 @@ func _spawn_puff(direction: Vector2, alpha_scale: float) -> void:
 		ghost.z_as_relative = false
 		ghost.add_to_group(_PUFF_GROUP)
 		G.level.add_child(ghost)
-		var travel := direction.rotated(randf_range(-0.55, 0.55))
-		var target := (
-			ghost.global_position
-			+ travel * randf_range(45.0, 95.0)
-			+ Vector2(0.0, randf_range(-28.0, -8.0))
-		)
 		var duration := randf_range(_PUFF_MIN_SEC, _PUFF_MAX_SEC)
 		var tween := ghost.create_tween()
 		tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 		tween.set_parallel()
-		tween.tween_property(ghost, "global_position", target, duration)
 		tween.tween_property(
 			ghost,
 			"scale",
@@ -132,14 +136,25 @@ func _blow_off(direction: Vector2) -> void:
 	_fly_tween = create_tween()
 	_fly_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	_fly_tween.set_parallel()
-	var target := global_position + direction * 90.0 + Vector2(0.0, -20.0)
-	_fly_tween.tween_property(self, "global_position", target, 0.35)
-	_fly_tween.tween_property(art, "modulate:a", 0.0, 0.35)
-	_fly_tween.tween_property(art, "scale", _art_home_scale * 0.3, 0.35)
+	# The clump stays where it sits and shrinks and fades
+	# away; blown dust is not displaced any more.
+	# Every decal goes, not just the art: the extras are most
+	# of the patch when Amount is high, and leaving them drawn
+	# kept the dust looking present after it had blown off.
+	for decal in _decal_sprites:
+		if not is_instance_valid(decal):
+			continue
+		_fly_tween.tween_property(decal, "modulate:a", 0.0, 0.35)
+		_fly_tween.tween_property(
+			decal, "scale", decal.scale * 0.3, 0.35
+		)
 	_fly_tween.chain().tween_callback(_finish_blown_off)
 
 
 func _finish_blown_off() -> void:
+	for decal in _decal_sprites:
+		if is_instance_valid(decal):
+			decal.hide()
 	art.hide()
 	finish()
 

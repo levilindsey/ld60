@@ -49,8 +49,8 @@ offset_right = 648.0
 offset_bottom = 322.0
 theme_override_colors/font_color = Color(0.23, 0.15, 0.08, 1)
 theme_override_fonts/font = ExtResource("5_font")
-theme_override_font_sizes/font_size = 132
-text = "Fix It"
+theme_override_font_sizes/font_size = 108
+text = "Loose Screw"
 horizontal_alignment = 1
 
 [node name="SignSub" type="Label" parent="SignViewport" unique_id=252346468]

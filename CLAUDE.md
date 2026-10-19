@@ -223,7 +223,7 @@ powershell -ExecutionPolicy Bypass -File scripts/export_web.ps1
 python scripts/serve_web.py
 
 # Windows export.
-godot --headless --export-release "Windows Desktop" build/windows/ld60.exe
+godot --headless --export-release "Windows Desktop" build/windows/loose-screw.exe
 ```
 
 The Web preset has `thread_support=false` and

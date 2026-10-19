@@ -28,7 +28,7 @@ Defaults, tuned in settings (a "Quality" export group):
 | Smear, ruined (replaces the minor one) | -10 | The rag, fully wiped |
 | Oil drip or stain | -4 | Over-oiling, a drop off target |
 | Glue blob | -5 | Too much glue in one spot, or a glue smear left uncleaned |
-| Left dirty | -3 | A grime spot or dust clump left uncleaned, per spot |
+| Grime/dust left | -3 | A grime spot (`LEFTOVER_GRIME`) or dust clump (`LEFTOVER_DUST`) left uncleaned, per spot; separate kinds so the receipt can tell them apart |
 | Failed glue hold | -5 | A broken piece hold that leaves its ring, per failure |
 | Over par time | -1 per 2 s, at most -30 | A slow repair |
 | Wrong tool or wrong part | 0 | It just bounces off |
@@ -50,8 +50,12 @@ its ticket lifts to the receipt spot (`ReceiptSpot` in the level), and
 the time writes itself in by hand at the bottom of the paper: "Fixed in
 2 min 12 sec". Then a stamp rates the repair by its stars: oof (1), ok
 (2) or great (3), from `TicketCard.stamp_textures`. The score and the
-defect list stay hidden. The receipt leaves on a tap or after 2 s, and
-the next item drops in after it (`src/ui/ticket/ticket_card.gd`).
+points stay hidden, but the clerk's notes under the complaint name what
+went wrong in abbreviated tags (`RepairQuality.get_receipt_tags()`):
+biggest cost first, at most four, a count as `×N` when a kind happened
+more than once — `stripped screws · glue mess ×2 · slow`. A clean,
+on-time repair reads `spotless`. The receipt leaves on a tap or after
+2 s, and the next item drops in after it (`src/ui/ticket/ticket_card.gd`).
 
 ## Building it
 
@@ -71,7 +75,8 @@ enum Defect {
 	SMEAR_RUINED,
 	OIL_DRIP,
 	GLUE_BLOB,
-	LEFTOVER_DIRT,
+	LEFTOVER_GRIME,
+	LEFTOVER_DUST,
 	FAILED_GLUE_HOLD,
 }
 ```

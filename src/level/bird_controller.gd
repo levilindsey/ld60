@@ -19,10 +19,8 @@ const SMACK_DELAY_SEC := 17.0
 ## 15 fps the smack and caw sounds, and the window shake,
 ## land 14 frames in.
 const SMACK_HIT_SEC := 0.93
-#const PEAK_INTERVAL_MIN_SEC := 20.0
-#const PEAK_INTERVAL_MAX_SEC := 45.0
-const PEAK_INTERVAL_MIN_SEC := 4.0
-const PEAK_INTERVAL_MAX_SEC := 5.0
+const PEAK_INTERVAL_MIN_SEC := 20.0
+const PEAK_INTERVAL_MAX_SEC := 45.0
 ## Seconds the peek takes to fade out once its animation ends.
 const PEAK_FADE_SEC := 0.5
 ## How hard the window jumps when the bird hits it, in pixels.

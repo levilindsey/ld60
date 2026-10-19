@@ -57,6 +57,10 @@ func _run() -> void:
 	if not _expect(is_instance_valid(_socket), "the item has a socket"):
 		return
 	_expect(_socket.has_broken_part, "the socket starts broken")
+	_expect(
+		not (_socket.get_node("Outline") as CanvasItem).visible,
+		"no ghost outline while the broken part sits in the socket",
+	)
 	await _shot("1_bench")
 	_check_stocked()
 
@@ -85,15 +89,17 @@ func _run() -> void:
 	await _check_shape_grab()
 
 
-## The drawers hold one of every part kind in the game, plus
-## an extra copy of what the item's sockets need, plus the
-## decoys from settings, all stored and hidden.
+## The drawers hold one of every part kind in the game (so
+## the kind the item needs appears exactly once), plus
+## decoys up to the fuller 1.4x total, all stored and hidden.
 func _check_stocked() -> void:
 	var stored := _stored_parts()
+	var previous_total := (
+		Part.Type.size() + 1 + G.settings.decoy_part_count
+	)
 	_expect(
-		stored.size()
-		== Part.Type.size() + 1 + G.settings.decoy_part_count,
-		"the drawers hold every part kind plus decoys",
+		stored.size() == roundi(previous_total * 1.4),
+		"the drawers hold every part kind plus decoys (1.4x)",
 	)
 	var needed := 0
 	for part in stored:
@@ -103,7 +109,10 @@ func _check_stocked() -> void:
 			part.is_stored and not part.visible,
 			"a stocked part starts stored and hidden",
 		)
-	_expect(needed >= 1, "a stocked part fits the socket")
+	_expect(
+		needed == 1,
+		"the part that fits the socket is stocked exactly once",
+	)
 	for part in stored:
 		var sprite := part.get_node("%Sprite") as Sprite2D
 		if Part.has_art(part.type):
@@ -327,6 +336,13 @@ func _check_wiggle_out() -> void:
 		Input.CURSOR_DRAG,
 		"mid-tug on the broken part",
 	)
+	var broken_sprite := _socket._get_broken_sprite()
+	_expect(
+		is_instance_valid(broken_sprite)
+		and broken_sprite.material
+		== G.settings.outline_hint_material,
+		"the part being pulled is highlighted mid-yank",
+	)
 	_expect(
 		absf(broken_part.rotation) > 0.01
 		and absf(broken_part.position.x) > 0.1,
@@ -354,6 +370,16 @@ func _check_wiggle_out() -> void:
 	_expect(
 		_socket.mode == InteractionPoint.Mode.UNSTARTED,
 		"the socket is empty after the wiggle-out",
+	)
+	_expect(
+		(_socket.get_node("Outline") as CanvasItem).visible,
+		"the empty socket shows its ghost outline",
+	)
+	_expect(
+		not is_instance_valid(broken_sprite)
+		or broken_sprite.material
+		!= G.settings.outline_hint_material,
+		"the yank highlight is gone once the part is out",
 	)
 
 	# The loose piece is flung up and off a side, unfaded, and

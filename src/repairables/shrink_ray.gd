@@ -2,31 +2,36 @@ class_name ShrinkRay
 extends Repairable
 ## A raygun from the pawn shop.
 ##
-## The first hammer hit anywhere on it sets it off: a beam from the crystal
-## shrinks the hammer for good (`Hammer.shrink()`). After that, the jammed
+## The first hammer hit anywhere on it sets it off: the ray pulses,
+## its broken crystal flares blue and swells, and the blast shrinks
+## the hammer for good (`Hammer.shrink()`). After that, the jammed
 ## spot (`%Jam`) takes a few tiny-hammer hits, the grime on the crystal
-## wipes off, and the cracked crystal and the bolt in the hook get
-## replaced.
+## wipes off, the cracked crystal gets replaced, and the broken
+## trigger gets glued back on.
 
 
-const _BEAM_SEC := 0.4
-const _BEAM_WIDTH_PX := 12.0
-const _BEAM_COLOR := Color(1.0, 0.35, 0.95)
-## How far the beam's zigzag strays from a straight line, in pixels.
-const _BEAM_JITTER_PX := 6.0
-## How long each zigzag segment of the beam is, in pixels.
-const _BEAM_STEP_PX := 18.0
-## Above the hand and the tools.
-const _BEAM_Z_INDEX := 40
+## The blast pulse: the ray dips small, then swells, then settles.
+const _PULSE_SMALL := 0.92
+const _PULSE_BIG := 1.05
+const _PULSE_SMALL_SEC := 0.09
+const _PULSE_BIG_SEC := 0.13
+const _PULSE_SETTLE_SEC := 0.16
+## The broken crystal swells and dips with the blast, tinted blue.
+const _CRYSTAL_BIG := 1.4
+const _CRYSTAL_SMALL := 0.82
+const _CRYSTAL_BLUE := Color(0.62, 0.8, 1.25)
 
 
 ## True once the ray has gone off.
 var has_fired := false
 
+var _home_scale := Vector2.ONE
+
 
 func _ready() -> void:
 	super()
 	%Jam.visible = false
+	_home_scale = scale
 	add_to_group(Hammer.STRIKABLE_PROPS_GROUP)
 
 
@@ -40,46 +45,71 @@ func is_struck_at(global_point: Vector2) -> bool:
 	)
 
 
-## The hammer set it off: the beam shrinks the hammer, and the jammed spot
-## shows up.
+## The hammer set it off: the ray pulses, its crystal flares, the
+## blast shrinks the hammer, and the jammed spot shows up.
 func on_struck(_charge: float) -> void:
 	has_fired = true
 	%Jam.visible = true
 	G.audio.play_sound(&"thud", true)
-	G.audio.play_sound(&"zap", true)
+	G.audio.play_sound(&"blast", true)
 	G.level.shake_camera(8.0, 0.25)
+	_pulse_blast()
 	var hammer := G.level.hand.get_held_tool() as Hammer
 	if is_instance_valid(hammer):
-		_draw_beam(hammer.get_work_end_position())
 		hammer.shrink()
 
 
-## A crackling beam from the crystal to the target that fades out.
-func _draw_beam(target_global_position: Vector2) -> void:
-	var beam := Line2D.new()
-	beam.width = _BEAM_WIDTH_PX
-	beam.default_color = _BEAM_COLOR
-	beam.joint_mode = Line2D.LINE_JOINT_ROUND
-	beam.begin_cap_mode = Line2D.LINE_CAP_ROUND
-	beam.end_cap_mode = Line2D.LINE_CAP_ROUND
-	beam.z_index = _BEAM_Z_INDEX
-	G.level.add_child(beam)
-	var start := %Crystal.global_position as Vector2
-	var step_count := maxi(
-		ceili(start.distance_to(target_global_position) / _BEAM_STEP_PX),
-		1,
+## The blast, conveyed by the ray itself: it dips small, swells
+## big and settles, while the broken crystal swells, dips and
+## settles with it, flaring blue for the duration.
+func _pulse_blast() -> void:
+	var ray_tween := create_tween()
+	ray_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	ray_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	ray_tween.tween_property(
+		self, "scale", _home_scale * _PULSE_SMALL, _PULSE_SMALL_SEC
 	)
-	var normal := (target_global_position - start).orthogonal().normalized()
-	for step in step_count + 1:
-		var point := start.lerp(
-			target_global_position,
-			float(step) / step_count,
-		)
-		if step > 0 and step < step_count:
-			point += normal * randf_range(-_BEAM_JITTER_PX, _BEAM_JITTER_PX)
-		beam.add_point(beam.to_local(point))
-	var tween := beam.create_tween()
-	tween.set_parallel()
-	tween.tween_property(beam, "modulate:a", 0.0, _BEAM_SEC)
-	tween.tween_property(beam, "width", _BEAM_WIDTH_PX * 0.3, _BEAM_SEC)
-	tween.chain().tween_callback(beam.queue_free)
+	ray_tween.tween_property(
+		self, "scale", _home_scale * _PULSE_BIG, _PULSE_BIG_SEC
+	)
+	ray_tween.tween_property(
+		self, "scale", _home_scale, _PULSE_SETTLE_SEC
+	)
+	var crystal := (
+		%Crystal.get_node("BrokenPart/BustedCrystal") as Sprite2D
+	)
+	if not is_instance_valid(crystal):
+		return
+	var crystal_home_scale: Vector2 = crystal.scale
+	var crystal_tween := create_tween()
+	crystal_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	crystal_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	crystal_tween.tween_property(
+		crystal,
+		"scale",
+		crystal_home_scale * _CRYSTAL_BIG,
+		_PULSE_SMALL_SEC + _PULSE_BIG_SEC,
+	)
+	crystal_tween.tween_property(
+		crystal,
+		"scale",
+		crystal_home_scale * _CRYSTAL_SMALL,
+		_PULSE_SETTLE_SEC,
+	)
+	crystal_tween.tween_property(
+		crystal, "scale", crystal_home_scale, _PULSE_SETTLE_SEC
+	)
+	var tint_tween := create_tween()
+	tint_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	tint_tween.tween_property(
+		crystal,
+		"modulate",
+		_CRYSTAL_BLUE,
+		_PULSE_SMALL_SEC + _PULSE_BIG_SEC,
+	)
+	tint_tween.tween_property(
+		crystal,
+		"modulate",
+		Color.WHITE,
+		_PULSE_SETTLE_SEC * 2.0,
+	)

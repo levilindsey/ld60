@@ -57,6 +57,7 @@ func _run() -> void:
 		) == G.settings.bench_dust_points,
 		"bench dust left has a receipt name and a points cost",
 	)
+	_check_receipt_tags()
 
 	# Three spews far apart, so the puff cone aimed at the
 	# first cannot reach the other two.
@@ -85,6 +86,19 @@ func _run() -> void:
 			is_on_bench and G.level.is_inside_bench(dust.global_position)
 		)
 	_expect(is_on_bench, "the clumps land on the bench")
+	# Spewed dust is the level's, not the item's: no layer
+	# Shape mask may clip it, wherever it settles.
+	var is_unclipped := not spawned.is_empty()
+	for dust in spawned:
+		is_unclipped = (
+			is_unclipped
+			and not is_instance_valid(dust._shape_mask)
+			and dust.art.get_parent() == dust
+		)
+	_expect(
+		is_unclipped,
+		"spewed bench dust is not clipped to any repairable shape",
+	)
 
 	# Fresh spew is still flying: it carries a velocity away
 	# from the knock and is not a cleanable point yet.
@@ -189,6 +203,41 @@ func _run() -> void:
 	)
 	G.level.clear_bench_dust()
 	await _physics_frames(2)
+
+
+## The receipt's clerk notes (RepairQuality.get_receipt_tags):
+## short tags, biggest cost first, counts as ×N, capped at
+## four, nothing for a clean on-time repair.
+func _check_receipt_tags() -> void:
+	var clean := RepairQuality.new()
+	_expect(
+		clean.get_receipt_tags().is_empty(),
+		"a clean repair has no receipt tags",
+	)
+	var quality := RepairQuality.new()
+	quality.par_time_sec = 90.0
+	quality.repair_time_sec = 400.0
+	quality.add_defect(RepairQuality.Defect.CRACK, Vector2.ZERO, null)
+	quality.add_defect(
+		RepairQuality.Defect.GLUE_BLOB, Vector2.ZERO, null
+	)
+	quality.add_defect(
+		RepairQuality.Defect.GLUE_BLOB, Vector2.ZERO, null
+	)
+	quality.add_defect(
+		RepairQuality.Defect.LEFTOVER_DUST, Vector2.ZERO, null
+	)
+	quality.add_defect(
+		RepairQuality.Defect.SCREW_DAMAGE, Vector2.ZERO, null
+	)
+	# Costs: slow 30 (capped), cracked 15, glue mess 10,
+	# dust 3, slipped screws 2: the cap drops the last.
+	_expect(
+		quality.get_receipt_tags()
+		== ["slow", "cracked", "glue mess ×2", "dust"],
+		"the tags name what cost points, biggest first (%s)"
+		% [quality.get_receipt_tags()],
+	)
 
 
 ## Takes the blower off the rack and puffs at one clump until

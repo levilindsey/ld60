@@ -94,14 +94,25 @@ func _check_tv_antenna_shape() -> void:
 		corner_at_pivot,
 		"the antenna bends around its bottom right corner",
 	)
+	# The far end of the authored Shape, pulled a little way
+	# back along the antenna itself (toward the polygon's
+	# middle, not the point's origin: the antenna is a thin
+	# diagonal strip and the straight line to the origin
+	# leaves it).
+	var polygon := antenna.get_shape_world_polygon()
+	var centroid := Vector2.ZERO
+	for point in polygon:
+		centroid += point
+	if not polygon.is_empty():
+		centroid /= polygon.size()
 	var far_point := antenna.global_position
-	for point in antenna.get_shape_world_polygon():
+	for point in polygon:
 		if (
 			point.distance_squared_to(antenna.global_position)
 			> far_point.distance_squared_to(antenna.global_position)
 		):
 			far_point = point
-	far_point = far_point.lerp(antenna.global_position, 0.25)
+	far_point = far_point.lerp(centroid, 0.3)
 	_expect(
 		_hand.find_point(far_point) == antenna,
 		"a press on the antenna's Shape finds the antenna",
@@ -296,6 +307,24 @@ func _check_keyboard() -> void:
 			if point is DustClump:
 				dust_count += 1
 	_expect(dust_count >= 2, "the keyboard has dust to blow")
+	# The sockets' hit circles are a few world pixels across
+	# at the keyboard's scale, so grabs and drops are judged
+	# on the keys' art: on the spacebar's outline counts,
+	# well past it does not.
+	var spacebar := _find_socket(item, Part.Type.SPACEBAR)
+	if is_instance_valid(spacebar):
+		_expect(
+			spacebar.is_point_on_part(
+				spacebar.global_position + Vector2(50, 0)
+			),
+			"the spacebar counts a press near its end",
+		)
+		_expect(
+			not spacebar.is_point_on_part(
+				spacebar.global_position + Vector2(120, 0)
+			),
+			"past the spacebar's end does not count",
+		)
 	item.queue_free()
 	await _physics_frames(2)
 
@@ -308,6 +337,25 @@ func _check_piano() -> void:
 		is_instance_valid(_find_socket(item, Part.Type.LED)),
 		"the piano has an LED socket",
 	)
+	var led_socket := _find_socket(item, Part.Type.LED)
+	if is_instance_valid(led_socket):
+		_expect(
+			not (led_socket.installed_art as CanvasItem).visible,
+			"the piano's good LED hides until it is fitted",
+		)
+		var busted_sprite: Sprite2D = null
+		for child in led_socket.get_node(
+			"%BrokenPart"
+		).get_children():
+			if child is Sprite2D:
+				busted_sprite = child as Sprite2D
+		_expect(
+			is_instance_valid(busted_sprite)
+			and busted_sprite.texture.resource_path.contains(
+				"busted"
+			),
+			"the piano shows its busted LED at the start",
+		)
 	var has_broken := false
 	var grime_count := 0
 	for layer in item.layers:
@@ -763,8 +811,57 @@ func _check_placeholders() -> void:
 			is_instance_valid(_find_point(item, StuckPart)),
 			"placeholder has a whack: " + scene_path,
 		)
+		if scene_path.ends_with("radio_repairable.tscn"):
+			await _check_whack_cross(item)
 		item.queue_free()
 		await _physics_frames(2)
+
+
+## The final whack's cross only shows once the whack is the
+## item's only step left: hidden while other work remains,
+## shown when everything else is done on paper.
+func _check_whack_cross(item: Repairable) -> void:
+	var whack := _find_point(item, StuckPart) as StuckPart
+	if not is_instance_valid(whack):
+		return
+	var cross := whack.get_node("Art") as CanvasItem
+	await get_tree().process_frame
+	_expect(
+		not cross.visible,
+		"the whack's cross hides while other steps remain",
+	)
+	var cross_polygon := (cross as Polygon2D).polygon
+	var cross_bounds := Rect2(cross_polygon[0], Vector2.ZERO)
+	for point in cross_polygon:
+		cross_bounds = cross_bounds.expand(
+			(cross as Polygon2D).global_transform * point
+		)
+	_expect(
+		cross_bounds.size.x > 24.0 and cross_bounds.size.x < 36.0,
+		"the whack's cross draws at a consistent world size"
+		+ " (%.0f px)" % cross_bounds.size.x,
+	)
+	var previous_active := G.level.active_repairable
+	G.level.active_repairable = item
+	for layer in item.layers:
+		for point in layer.get_points():
+			if point == whack:
+				continue
+			if point is PartSocket:
+				(point as PartSocket).has_broken_part = false
+			if point is Screw:
+				# Driven in, not removed: a screw set
+				# FINISHED as-is reads as taken out, and
+				# its layer would count as loose.
+				(point as Screw).set_install_mode()
+			point.mode = InteractionPoint.Mode.FINISHED
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_expect(
+		cross.visible,
+		"the whack's cross shows when it is the only step left",
+	)
+	G.level.active_repairable = previous_active
 
 
 ## The radio item sits at a small root scale, so its front
@@ -840,6 +937,14 @@ func _expect_broken_art_matches(
 		"the %s broken art matches the fitted size"
 		% name
 		+ " (broken %s, fitted %s)" % [broken_size, fitted_size],
+	)
+	var broken_path := broken_sprite.texture.resource_path
+	_expect(
+		broken_path.contains("bad")
+		or broken_path.contains("busted")
+		or broken_path.contains("broken"),
+		"the %s shows its bad art at the start (%s)"
+		% [name, broken_path.get_file()],
 	)
 
 

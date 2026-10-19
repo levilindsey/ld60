@@ -115,6 +115,7 @@ func _ready() -> void:
 func show_item(complaint: String, flings_up := false) -> void:
 	_set_complaint(complaint)
 	_fit_complaint()
+	%NotesLabel.text = ""
 	%TimeLabel.text = ""
 	%Stamp.visible = false
 	_stop_motion()
@@ -145,8 +146,19 @@ func show_item(complaint: String, flings_up := false) -> void:
 
 ## Shows the ticket as the receipt: it lifts to `done_spot`, the time
 ## writes in, and the stamp for the rating (1 to 3) comes down. Emits
-## `done_closed` once the ticket has left.
-func show_done(repair_time_sec: float, star_count: int) -> void:
+## `done_closed` once the ticket has left. `notes` are the
+## clerk's tags for what cost points (see
+## RepairQuality.get_receipt_tags()); an empty list writes
+## "spotless" instead.
+func show_done(
+	repair_time_sec: float,
+	star_count: int,
+	notes: Array[String] = [],
+) -> void:
+	if notes.is_empty():
+		%NotesLabel.text = "spotless"
+	else:
+		%NotesLabel.text = " · ".join(notes)
 	var time_text := _get_fixed_time_text(repair_time_sec)
 	_time_letter_count = time_text.length()
 	%TimeLabel.text = "[ink]%s[/ink]" % time_text

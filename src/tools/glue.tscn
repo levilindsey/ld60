@@ -17,7 +17,7 @@ cursor_position = NodePath("Wrapper/CursorPosition")
 grab_area = NodePath("Wrapper/GrabArea")
 interaction_area = NodePath("Wrapper/InteractionArea")
 holder_area = NodePath("Wrapper/HolderArea")
-held_rotation_deg = -120.0
+held_rotation_deg = 120.0
 holder_shadow = 0
 
 [node name="Wrapper" type="Node2D" parent="." unique_id=1053359982]

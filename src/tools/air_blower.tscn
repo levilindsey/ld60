@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://loo6ls40aw13"]
 
 [ext_resource type="Script" uid="uid://d1jl7m3xiy1dt" path="res://src/tools/air_blower.gd" id="1_blower"]
-[ext_resource type="Texture2D" uid="uid://dukut3bwj2d67" path="res://assets/images/tools/air blower bulb thingy.png" id="2_plump"]
-[ext_resource type="Texture2D" uid="uid://dur0rmxr2p4hr" path="res://assets/images/tools/squishhhh.png" id="3_squeezed"]
+[ext_resource type="Texture2D" uid="uid://dulr6rdcw2qjb" path="res://assets/images/tools/air blower bulb thingy.png" id="2_plump"]
+[ext_resource type="Texture2D" uid="uid://ktxek8s8nva1" path="res://assets/images/tools/squishhhh.png" id="3_squeezed"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
 radius = 52.201527
@@ -20,7 +20,7 @@ cursor_position = NodePath("Wrapper/CursorPosition")
 grab_area = NodePath("Wrapper/GrabArea")
 interaction_area = NodePath("Wrapper/InteractionArea")
 holder_area = NodePath("Wrapper/HolderArea")
-held_rotation_deg = 85.0
+held_rotation_deg = -85.0
 
 [node name="Wrapper" type="Node2D" parent="." unique_id=1276337428]
 scale = Vector2(0.11, 0.11)
@@ -64,8 +64,8 @@ scale = Vector2(2, 2)
 texture = ExtResource("2_plump")
 
 [node name="SqueezedSprite" type="Sprite2D" parent="Wrapper/Art" unique_id=1193908240]
-scale = Vector2(2, 2)
 visible = false
+scale = Vector2(2, 2)
 texture = ExtResource("3_squeezed")
 
 [node name="ConeVisual" type="Polygon2D" parent="." unique_id=889137414]

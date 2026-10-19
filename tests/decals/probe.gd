@@ -282,6 +282,7 @@ func _check_dirt_points() -> void:
 	)
 	dust.texture_set = DirtSpot.TextureSet.SECOND
 	dust.tint = Color(1.0, 0.5, 0.5)
+	dust.amount = 3.0
 	_cover.add_child(dust)
 	dust.position = Vector2(-30, -30)
 
@@ -311,6 +312,12 @@ func _check_dirt_points() -> void:
 		"the dust wears the second dust set",
 	)
 	_expect(
+		dust_art.get_parent().name == "ShapeClipMask"
+		and (dust_art.get_parent() as Polygon2D).clip_children
+		== CanvasItem.CLIP_CHILDREN_ONLY,
+		"the dirt art is clipped to its layer's Shape region",
+	)
+	_expect(
 		is_equal_approx(dust_art.modulate.g, dust.get_active_set().tint.g * 0.5),
 		"the dust wears its color configuration",
 	)
@@ -320,6 +327,34 @@ func _check_dirt_points() -> void:
 		dust.mode == InteractionPoint.Mode.FINISHED,
 		"a puff still blows the dust off",
 	)
+	var all_gone := dust._decal_sprites.size() >= 3
+	for decal in dust._decal_sprites:
+		if (
+			is_instance_valid(decal)
+			and decal.visible
+			and decal.modulate.a > 0.01
+		):
+			all_gone = false
+	_expect(
+		all_gone,
+		"every dust decal is gone once it blows off (%d decals)"
+		% dust._decal_sprites.size(),
+	)
+	# A clump blown down to the clean share counts as
+	# cleaned: it finishes itself instead of lingering.
+	var remnant: DustClump = (
+		(load(_DUST_SCENE_PATH) as PackedScene).instantiate()
+	)
+	_cover.add_child(remnant)
+	remnant.position = Vector2(-52, 28)
+	await _physics_frames(2)
+	remnant.on_sprayed(1.0, Vector2.RIGHT, 0.6)
+	await _seconds(0.6)
+	_expect(
+		remnant.mode == InteractionPoint.Mode.FINISHED,
+		"dust blown under the clean share counts as cleaned",
+	)
+	remnant.queue_free()
 
 	_expect(
 		(grime.art as Sprite2D).texture.resource_path.contains("decals/grime0"),

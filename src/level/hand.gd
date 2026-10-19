@@ -1193,8 +1193,8 @@ func _find_drawer(global_point: Vector2) -> Drawer:
 
 ## The first socket under a world position on an exposed layer, or
 ## null. Finished sockets still count: pressing one nopes. A
-## socket with authored part shapes also counts anywhere inside
-## them: the broken part is grabbed by its whole outline, and a
+## socket also counts anywhere on its part's art footprint:
+## the broken part is grabbed by its whole outline, and a
 ## drop lands anywhere the fitted part would sit.
 func _find_socket(
 	global_point: Vector2, fitting_part: Part = null
@@ -1229,7 +1229,7 @@ func _find_socket(
 					not is_instance_valid(fitting_part)
 					or socket.can_fit(fitting_part)
 				)
-				and socket.is_point_in_part_shape(global_point)
+				and socket.is_point_on_part(global_point)
 			):
 				return socket
 	return null
