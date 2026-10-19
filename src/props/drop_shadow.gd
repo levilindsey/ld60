@@ -29,10 +29,11 @@ enum Kind {
 
 ## Grow layers for silhouettes: (horizontal margin, vertical
 ## margin, alpha share), in world pixels the scaled copy extends
-## past the art. Non-uniform on purpose: a lot of scale
-## horizontally so the rim shows on the left and right, only a
-## tiny bit vertically. The bigger, fainter copy behind fakes a
-## blur. Margins are measured on the art's used
+## past the art. The margins feed one uniform scale per layer
+## (see `_get_grow`), so a copy is the art's exact shape, only
+## bigger: the rim shows more along the art's long axis, which
+## is the price of never squashing it. The bigger, fainter copy
+## behind fakes a blur. Margins are measured on the art's used
 ## (non-transparent) rect, not the whole texture canvas: the art
 ## sits in mostly transparent padding, and a percentage of the
 ## canvas would barely grow the art itself.
@@ -342,9 +343,14 @@ func _update_centre_local() -> void:
 		_centre_local = bounds.get_center()
 
 
-## The per-axis scale that grows `source`'s art by `margin`
-## world pixels (x and y separately), with the art's centre in
-## the source's local units. Sprite art is measured by the
+## The uniform scale that grows `source`'s art by `margin`
+## world pixels, with the art's centre in the source's local
+## units. One factor for both axes, always: a per-axis factor
+## squashes the silhouette (a tall part's shadow came out wider
+## and shorter than the part), and a squashed shape reads as
+## the wrong orientation as soon as the host turns. The factor
+## is the larger of the two per-axis needs, so the rim still
+## clears the art on every side. Sprite art is measured by the
 ## texture's used (non-transparent) rect: the art sits in a
 ## mostly transparent canvas, and a margin on the whole canvas
 ## would barely grow the art itself.
@@ -395,11 +401,11 @@ func _get_grow(source: CanvasItem, margin: Vector2) -> Array:
 		size.x * basis.x.length(),
 		size.y * basis.y.length(),
 	)
-	var factor := Vector2(
+	var uniform := maxf(
 		1.0 + 2.0 * margin.x / maxf(world_size.x, 0.001),
 		1.0 + 2.0 * margin.y / maxf(world_size.y, 0.001),
 	)
-	return [factor, centre, size]
+	return [Vector2.ONE * uniform, centre, size]
 
 
 static var _used_rects: Dictionary = {}
