@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://dolqnwf6ir2dd"]
 
 [ext_resource type="Script" uid="uid://dnsfjtnlfluct" path="res://src/tools/phillips_screw_driver.gd" id="1_85718"]
-[ext_resource type="Texture2D" uid="uid://bjdmdoqf7ofql" path="res://assets/images/frame_phillip0000.png" id="2_u4u72"]
-[ext_resource type="Texture2D" uid="uid://bteb2g76iqtvo" path="res://assets/images/frame_phillip0001.png" id="3_8hs6w"]
-[ext_resource type="Texture2D" uid="uid://cg6ffto75thxv" path="res://assets/images/frame_phillip0002.png" id="4_b0wyx"]
-[ext_resource type="Texture2D" uid="uid://wux14isf477k" path="res://assets/images/frame_phillip0003.png" id="5_171xb"]
+[ext_resource type="Texture2D" uid="uid://bjdmdoqf7ofql" path="res://assets/images/tools/frame_phillip0000.png" id="2_u4u72"]
+[ext_resource type="Texture2D" uid="uid://bteb2g76iqtvo" path="res://assets/images/tools/frame_phillip0001.png" id="3_8hs6w"]
+[ext_resource type="Texture2D" uid="uid://cg6ffto75thxv" path="res://assets/images/tools/frame_phillip0002.png" id="4_b0wyx"]
+[ext_resource type="Texture2D" uid="uid://wux14isf477k" path="res://assets/images/tools/frame_phillip0003.png" id="5_171xb"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_85718"]
 radius = 29.999996

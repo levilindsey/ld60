@@ -49,8 +49,10 @@ turn, and the grip drains. An empty grip cams the bit out.
 - **Grip meter:** starts full. It is only the time left before
   the bit strips or slips out, never progress toward done. It
   refills at 0.35/s while the speed is in the zone and drains
-  at 0.28/s while it is out, swinging between the two over
-  0.4 s, so a brief stray costs almost nothing. At 0 the bit
+  at 0.28/s while it is out. The needle carries the gauge's
+  only momentum: the frame the needle enters the green, the
+  grip starts refilling, and the frame it leaves, the grip
+  starts draining. At 0 the bit
   cams out: the screw takes 1 damage, the driver hops, input
   pauses for 0.5 s, the meter restarts full, and the turns so
   far are kept.
@@ -121,8 +123,8 @@ the face starts reddening below `phillips_failure_tint_start`
 (0.55) and is fully red by `phillips_failure_tint_full` (0.15). The cam-out pause is 0.5 s and the intro is 0.33 s; the
 microgame starts after `phillips_start_drag_rad` (1.5) of
 dragged turning. The smoothing
-is `phillips_speed_smoothing_sec` (0.65) for the needle and
-`phillips_meter_smoothing_sec` (0.4) for the grip, and steps
+is `phillips_speed_smoothing_sec` (0.65), for the needle alone,
+and steps
 under `phillips_min_segment_px` (4) do not count. Turns out is
 `turns_needed` on the screw (4.8). Each screw also has a
 `difficulty` (0.5 to 2): higher narrows its zone, slides it

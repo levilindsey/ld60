@@ -45,7 +45,9 @@
 [ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm frustrated 9.wav" id="44_frust9"]
 [ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/hmm frustrated_b.wav" id="45_frust1"]
 [ext_resource type="AudioStream" uid="uid://byhonrp2iy8i8" path="res://assets/audio/music/buy_something_radio_edit.ogg" id="46_main_theme"]
-[ext_resource type="AudioStream" uid="uid://b315yss232ppn" path="res://assets/audio/music/beepstart.ogg" id="47_menu_theme"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/drawer open.wav" id="47_drawer_open"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/drawer close.wav" id="48_drawer_close"]
+[ext_resource type="AudioStream" uid="uid://b315yss232ppn" path="res://assets/audio/music/beepstart.ogg" id="49_menu_theme"]
 
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_hmm"]
 streams_count = 4
@@ -139,7 +141,7 @@ script = ExtResource("1_tdp82")
 
 [node name="MenuTheme" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
-stream = ExtResource("47_menu_theme")
+stream = ExtResource("49_menu_theme")
 volume_db = 1.94
 bus = &"Music"
 
@@ -279,4 +281,14 @@ bus = &"SFX"
 [node name="Snap" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
 stream = ExtResource("14_snap")
+bus = &"SFX"
+
+[node name="DrawerOpen" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("47_drawer_open")
+bus = &"SFX"
+
+[node name="DrawerClose" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("48_drawer_close")
 bus = &"SFX"

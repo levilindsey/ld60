@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ccdw1u28lthc5"]
 
 [ext_resource type="Script" uid="uid://dq2batu75vvva" path="res://src/tools/glue.gd" id="1_glue"]
-[ext_resource type="Texture2D" uid="uid://dlm5vy4hum1ny" path="res://assets/images/heyguysithinkifoundaglue.png" id="2_cd5ly"]
+[ext_resource type="Texture2D" uid="uid://dlm5vy4hum1ny" path="res://assets/images/tools/heyguysithinkifoundaglue.png" id="2_cd5ly"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
 radius = 40.0

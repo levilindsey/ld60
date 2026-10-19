@@ -3,8 +3,7 @@
 [ext_resource type="Script" uid="uid://d0cwcbqrcvhhb" path="res://src/ui/ticket/ticket_card.gd" id="1_ticket"]
 [ext_resource type="FontFile" uid="uid://dpjyugfnnu6wc" path="res://assets/fonts/reenie_beanie/ReenieBeanie.ttf" id="4_handwriting"]
 [ext_resource type="Shader" uid="uid://thfeaa7qcy2v" path="res://assets/shaders/perspective_quad.gdshader" id="5_perspective"]
-
-[ext_resource type="Texture2D" uid="uid://ciwpguv1cbffl" path="res://assets/images/repairticket.png" id="7_paper"]
+[ext_resource type="Texture2D" uid="uid://ciwpguv1cbffl" path="res://assets/images/manual/repairticket.png" id="7_paper"]
 
 [sub_resource type="Theme" id="Theme_paper"]
 Label/colors/font_color = Color(0.22, 0.15, 0.08, 1)

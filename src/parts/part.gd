@@ -84,6 +84,7 @@ func finish_bench_return() -> void:
 	is_returning = false
 	# A part that is out stays in front of the drawers.
 	z_index = 16
+	G.audio.play_sound(&"thud")
 
 
 ## Sets the part's kind and rebuilds its placeholder art.

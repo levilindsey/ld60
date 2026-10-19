@@ -1,18 +1,18 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://dwv1t1pd3n7li"]
 
-[ext_resource type="Script" path="res://src/props/radio.gd" id="1_radio"]
-[ext_resource type="Texture2D" path="res://assets/images/radio.png" id="2_texture"]
-[ext_resource type="AudioStream" path="res://assets/audio/radio_static.ogg" id="3_static"]
+[ext_resource type="Script" uid="uid://c3wda6ko0caqc" path="res://src/props/radio.gd" id="1_radio"]
+[ext_resource type="Texture2D" uid="uid://bu0iy5e8r5hge" path="res://assets/images/repairables/radio.png" id="2_texture"]
+[ext_resource type="AudioStream" uid="uid://dknug6bkt2o8v" path="res://assets/audio/radio_static.ogg" id="3_static"]
 
-[node name="Radio" type="Node2D" groups=["strikable_props"]]
+[node name="Radio" type="Node2D" unique_id=876580089 groups=["strikable_props"]]
 script = ExtResource("1_radio")
 
-[node name="Art" type="Sprite2D" parent="."]
+[node name="Art" type="Sprite2D" parent="." unique_id=1112514980]
 unique_name_in_owner = true
 texture = ExtResource("2_texture")
 offset = Vector2(-40, -1217)
 
-[node name="Static" type="AudioStreamPlayer" parent="."]
+[node name="Static" type="AudioStreamPlayer" parent="." unique_id=23297000]
 unique_name_in_owner = true
 stream = ExtResource("3_static")
 bus = &"SFX"

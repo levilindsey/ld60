@@ -1,11 +1,11 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://src/interaction_points/phillips_screw.gd" id="1_8uvch"]
+[ext_resource type="Script" uid="uid://cthlbdrgeyi70" path="res://src/interaction_points/phillips_screw.gd" id="1_8uvch"]
 [ext_resource type="Texture2D" uid="uid://bbsbswnunrrqw" path="res://assets/images/circle.png" id="2_w7024"]
 [ext_resource type="Texture2D" uid="uid://bclc8sopmd7hr" path="res://assets/images/circle-with-rectangle.png" id="3_vqoce"]
-[ext_resource type="Texture2D" uid="uid://vyy5uqfggx23" path="res://assets/images/screwwwzzzzzz.png" id="4_t7xyj"]
-[ext_resource type="Texture2D" uid="uid://doo15tm6p351v" path="res://assets/images/screwin around.png" id="5_a0cqg"]
-[ext_resource type="Script" path="res://src/interaction_points/phillips_gauge.gd" id="6_gauge"]
+[ext_resource type="Texture2D" uid="uid://vyy5uqfggx23" path="res://assets/images/repairables/screwwwzzzzzz.png" id="4_t7xyj"]
+[ext_resource type="Texture2D" uid="uid://doo15tm6p351v" path="res://assets/images/repairables/screwin around.png" id="5_a0cqg"]
+[ext_resource type="Script" uid="uid://f6i45koa00nf" path="res://src/interaction_points/phillips_gauge.gd" id="6_gauge"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 12.0

@@ -91,6 +91,10 @@ func on_wiped(distance_px: float) -> void:
 func on_struck(at_position: Vector2, strength: float) -> void:
 	if not is_active():
 		return
+	# Every hit squishes the piece a bit, damaging or not.
+	var layer := get_layer()
+	if is_instance_valid(layer):
+		layer.squish(strength)
 	var damage_at := G.settings.hammer_surface_damage_charge
 	if strength < damage_at:
 		return
@@ -134,9 +138,3 @@ func _add_defect(
 			)
 		_:
 			pass
-	if defect in [
-		RepairQuality.Defect.DENT_SMALL,
-		RepairQuality.Defect.DENT_LARGE,
-		RepairQuality.Defect.CRACK,
-	]:
-		layer.squish()

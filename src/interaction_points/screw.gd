@@ -400,6 +400,7 @@ func start_bench_return() -> void:
 func finish_bench_return() -> void:
 	is_returning = false
 	_rest_rotation = bench_art.rotation
+	G.audio.play_sound(&"click")
 
 
 ## True when a press on this resting screw would bring it back: its layer
@@ -706,6 +707,7 @@ func _leave_hole() -> void:
 	bench_art.reset_physics_interpolation()
 	_rest_rotation = bench_art.rotation
 	travel = Travel.RESTING
+	G.audio.play_sound(&"click")
 	if is_instance_valid(G.level):
 		G.level.register_resting_screw(self)
 	if is_install_mode:
@@ -715,6 +717,7 @@ func _leave_hole() -> void:
 
 func _reach_rest_spot() -> void:
 	travel = Travel.RESTING
+	G.audio.play_sound(&"click")
 	if is_install_mode:
 		_start_outline()
 
@@ -731,6 +734,7 @@ func _reach_rest_spot() -> void:
 ## microgame finishes: only a set-down after being carried
 ## counts.
 func on_set_down(release_velocity := Vector2.ZERO) -> void:
+	G.audio.play_sound(&"click")
 	_roll_from_position = bench_art.global_position
 	_roll_from_rotation = bench_art.rotation
 	var head_start := bench_art.to_global(_HEAD_LOCAL)
@@ -808,6 +812,7 @@ func _trade_holes_with(other: Screw) -> void:
 ## Over the hole: the clipped art takes over again and sinks into the
 ## hole, turned back like a loose screw.
 func _reach_hole() -> void:
+	G.audio.play_sound(&"click")
 	bench_art.reparent(self, false)
 	bench_art.position = _bench_art_home_position
 	bench_art.rotation = _bench_art_home_rotation

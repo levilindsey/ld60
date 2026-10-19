@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://k22j46btanto"]
 
 [ext_resource type="Script" uid="uid://dkjdge0ymcd82" path="res://src/tools/rag.gd" id="1_rag"]
-[ext_resource type="Texture2D" uid="uid://cvp7nwjg12211" path="res://assets/images/towel (hanging).png" id="2_hanging"]
-[ext_resource type="Texture2D" uid="uid://lv00w0djvcuv" path="res://assets/images/towel.png" id="3_held"]
+[ext_resource type="Texture2D" uid="uid://cvp7nwjg12211" path="res://assets/images/tools/towel (hanging).png" id="2_hanging"]
+[ext_resource type="Texture2D" uid="uid://lv00w0djvcuv" path="res://assets/images/tools/towel.png" id="3_held"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
 radius = 159.99998

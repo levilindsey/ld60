@@ -211,6 +211,7 @@ func _set_mode(to_mode: Mode, _from_mode: Mode) -> void:
 
 ## Called by the hand when it takes this tool.
 func pick_up() -> void:
+	G.audio.play_sound(&"click")
 	var from_tip := get_tip_position()
 	_tip_left_holder = false
 	mode = Mode.HELD
@@ -226,6 +227,17 @@ func put_away() -> void:
 	engaged_point = null
 	_cancel_follow_offset()
 	mode = Mode.STORED
+	# A soft knock when the glide lands it in its holder. A
+	# glide cut short (picked straight back up) never lands.
+	if is_instance_valid(position_tween):
+		position_tween.finished.connect(
+			_on_put_away_landed, CONNECT_ONE_SHOT
+		)
+
+
+## The put-away glide reached the holder.
+func _on_put_away_landed() -> void:
+	G.audio.play_sound(&"clunk")
 
 
 ## Puts the tool straight into its holder, with no glide.

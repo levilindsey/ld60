@@ -44,6 +44,8 @@ extends Node2D
 	"grind" = %Grind,
 	"whoosh" = %Whoosh,
 	"snap" = %Snap,
+	"drawer_open" = %DrawerOpen,
+	"drawer_close" = %DrawerClose,
 }
 
 var initial_volumes := {}

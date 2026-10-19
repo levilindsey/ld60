@@ -62,7 +62,6 @@ var _zone_climb_rad_per_sec := 0.0
 var _zone_target_climb_rad_per_sec := 0.0
 var _zone_retarget_left_sec := 0.0
 var _zone_random := RandomNumberGenerator.new()
-var _range_share := 0.0
 var _progress_hold_left := 0.0
 var _is_cam_out_paused := false
 var _pause_tween: Tween
@@ -192,7 +191,6 @@ func _start_microgame() -> void:
 	pressure_rad_per_sec = 0.0
 	_has_last_pointer_position = false
 	_has_last_heading = false
-	_range_share = 0.0
 	_progress_hold_left = 0.0
 	intro_left = G.settings.phillips_intro_sec
 	grip_meter = (
@@ -220,34 +218,27 @@ func _advance(delta: float) -> void:
 		if not _has_started_dragging:
 			return
 
-	# The grip swings between filling and draining over a few
-	# tenths of a second, so a brief stray costs almost nothing.
-	var meter_blend := 1.0 - exp(
-		-delta / maxf(G.settings.phillips_meter_smoothing_sec, 0.01)
-	)
-	_range_share += (
-		(1.0 if _is_in_true_band() else 0.0) - _range_share
-	) * meter_blend
+	# The needle carries the only momentum. The grip follows
+	# the needle's position this frame: inside the green it
+	# gains, outside it drains, with no second lag behind it.
+	var is_in_band := _is_in_true_band()
 	if never_drains:
-		grip_meter = minf(
-			grip_meter
-			+ G.settings.phillips_fill_rate * _range_share * delta,
-			1.0,
-		)
+		if is_in_band:
+			grip_meter = minf(
+				grip_meter + G.settings.phillips_fill_rate * delta,
+				1.0,
+			)
 	else:
-		grip_meter += (
-			G.settings.phillips_fill_rate * _range_share
-			- G.settings.phillips_drain_rate
-			* difficulty
-			* (1.0 - _range_share)
-		) * delta
-		grip_meter = clampf(grip_meter, 0.0, 1.0)
+		var grip_rate := (
+			G.settings.phillips_fill_rate
+			if is_in_band
+			else -G.settings.phillips_drain_rate * difficulty
+		)
+		grip_meter = clampf(grip_meter + grip_rate * delta, 0.0, 1.0)
 
 	# Progress counts only while the needle is inside the green
 	# window itself, and the twisting animation follows progress.
-	var is_making_progress := (
-		_is_in_true_band() and _frame_correct_turn > 0.0
-	)
+	var is_making_progress := is_in_band and _frame_correct_turn > 0.0
 	if is_making_progress:
 		_progress_hold_left = _PROGRESS_HOLD_SEC
 		_turned_rad += _frame_correct_turn
@@ -258,7 +249,7 @@ func _advance(delta: float) -> void:
 	else:
 		_progress_hold_left = maxf(_progress_hold_left - delta, 0.0)
 	_set_driver_twist_animation(
-		_progress_hold_left > 0.0 and _is_in_true_band()
+		_progress_hold_left > 0.0 and is_in_band
 	)
 	if not never_drains and grip_meter <= 0.0:
 		_cam_out()
@@ -355,20 +346,35 @@ func _zone_distance(speed_rad_per_sec: float) -> float:
 
 
 ## True while a speed sits inside the green window itself.
-## Circling the wrong way never counts, and neither does
-## circling faster than the dial's top: that is past the seam,
-## not around it.
+## Circling the wrong way never counts. Neither does circling
+## faster than the dial's top, with one exception: the needle
+## wraps around the seam when it draws, so when the zone itself
+## straddles the seam, a speed that lands just past the top is
+## inside the zone's wrapped segment and counts. The exception
+## reaches only as far past the top as the zone does: a merely
+## fast circle whose needle happens to sweep through the green
+## on its way around is still too fast.
 func _is_speed_in_zone(speed_rad_per_sec: float) -> bool:
 	if speed_rad_per_sec < 0.0:
 		return false
-	if speed_rad_per_sec > maxf(
-		G.settings.phillips_gauge_max_rad_per_sec, 0.01
-	):
-		return false
-	return (
-		absf(_zone_distance(speed_rad_per_sec))
-		<= _get_zone_width() / 2.0
-	)
+	var cycle := maxf(G.settings.phillips_gauge_max_rad_per_sec, 0.01)
+	var half_width := _get_zone_width() / 2.0
+	if speed_rad_per_sec > cycle:
+		# The needle draws one wrap past the top. It counts
+		# only inside the zone's own wrapped segment, on
+		# whichever side of the seam the zone straddles.
+		var wrapped_speed := speed_rad_per_sec - cycle
+		var low := _zone_center_rad_per_sec - half_width
+		var high := _zone_center_rad_per_sec + half_width
+		if high > cycle:
+			if wrapped_speed > high - cycle:
+				return false
+		elif low < 0.0:
+			if wrapped_speed > high:
+				return false
+		else:
+			return false
+	return absf(_zone_distance(speed_rad_per_sec)) <= half_width
 
 
 ## True while the speed sits inside the green window's own edges.

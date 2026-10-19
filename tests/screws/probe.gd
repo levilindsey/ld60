@@ -84,6 +84,11 @@ var _item: Repairable
 var _cover: RepairLayer
 var _screw_left: FlatHeadScrew
 var _screw_right: FlatHeadScrew
+## The Phillips the test box ships as ScrewRight, lifted out of
+## the tree (but kept alive) while the flathead stand-in plays
+## its part. The item's derived repair sequence still names it,
+## so it must stay a valid object to poll.
+var _shipped_right: Node
 var _holder_position := Vector2.ZERO
 ## Where each screw sits at home, in world pixels, from when its item landed.
 var _homes := {}
@@ -284,6 +289,25 @@ func _collect_nodes() -> void:
 	)
 	_item = _level.active_repairable
 	_cover = _item.get_node("Layers/Cover")
+	# The test box ships one screw of each kind (ScrewRight is a
+	# Phillips), so a player meets both drivers on the first item.
+	# This probe is the flathead one: it stands a second flathead
+	# in ScrewRight's place before anything moves. Points are
+	# found by scanning the layer, so the stand-in plays its part
+	# exactly like the shipped screw would.
+	var shipped_right := _cover.get_node("ScrewRight")
+	if not shipped_right is FlatHeadScrew:
+		var stand_in := (
+			load("res://src/interaction_points/flat_head_screw.tscn")
+			as PackedScene
+		).instantiate() as FlatHeadScrew
+		stand_in.name = "ScrewRight"
+		stand_in.position = (shipped_right as Node2D).position
+		var index := shipped_right.get_index()
+		_cover.remove_child(shipped_right)
+		_shipped_right = shipped_right
+		_cover.add_child(stand_in)
+		_cover.move_child(stand_in, index)
 	_screw_left = _cover.get_node("ScrewLeft")
 	_screw_right = _cover.get_node("ScrewRight")
 	_holder_position = _level.get_tool_holder_position(

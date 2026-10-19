@@ -22,6 +22,10 @@ const _CRACK_SIZE_PX := 52.0
 func on_struck(strength: float) -> void:
 	if mode == Mode.FINISHED:
 		return
+	# Every hit squishes the piece a bit, dent or not.
+	var layer := get_layer()
+	if is_instance_valid(layer):
+		layer.squish(strength)
 	if strength < band_min:
 		G.audio.play_sound(&"click")
 		pulse()
@@ -82,9 +86,3 @@ func add_hammer_defect(defect: RepairQuality.Defect) -> void:
 			)
 		_:
 			pass
-	if defect in [
-		RepairQuality.Defect.DENT_SMALL,
-		RepairQuality.Defect.DENT_LARGE,
-		RepairQuality.Defect.CRACK,
-	]:
-		layer.squish()

@@ -1,7 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://src/props/prop_close_button.gd" id="1_button"]
-[ext_resource type="Texture2D" path="res://assets/images/closebutton.png" id="2_texture"]
+[ext_resource type="Script" uid="uid://6odjkpuggpyk" path="res://src/props/prop_close_button.gd" id="1_button"]
+[ext_resource type="Texture2D" uid="uid://dsx6jgf80156n" path="res://assets/images/manual/closebutton.png" id="2_texture"]
 
 [node name="PropCloseButton" type="Node2D"]
 visible = false

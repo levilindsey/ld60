@@ -163,6 +163,11 @@ func _check_screw_rest_and_drag() -> void:
 		and screw_shadow.get_copy_count() == 1,
 		"a resting screw casts a single shadow, not two",
 	)
+	await _check_shadow_turns_with(
+		screw_shadow,
+		_screw.bench_art,
+		"a resting screw",
+	)
 	# Drag it across the bench and let go.
 	var middle := rest_position + _screw.rest_hit_offset
 	var rotation_before := _screw.bench_art.rotation
@@ -329,6 +334,11 @@ func _check_cover_drag() -> void:
 		+ " (turned %.1f deg)"
 		% rad_to_deg(_cover.global_rotation - home_rotation),
 	)
+	await _check_shadow_turns_with(
+		_find_shadow(_cover),
+		_cover,
+		"a loose cover",
+	)
 	# Dropping it by its home before the inside is done seats
 	# nothing: it just rests there.
 	await _press_down(_cover.global_position)
@@ -459,6 +469,53 @@ func _is_smooth_fade(fades: Array, is_rising: bool) -> bool:
 		if not is_rising and value > previous + 0.001:
 			return false
 	return distinct_between.size() >= 3
+
+
+## Turns `host` a quarter turn and back, and checks that its
+## drop shadow kept the same bearing from it: the shadow's
+## offset and turn follow the host's global turn, so the
+## shadow sits at the same relative spot however the piece
+## itself is turned.
+func _check_shadow_turns_with(
+	shadow: DropShadow,
+	host: Node2D,
+	label: String,
+) -> void:
+	if not _expect(
+		is_instance_valid(shadow),
+		"%s has a drop shadow to turn with" % label,
+	):
+		return
+	var rest_rotation := host.rotation
+	host.rotation = rest_rotation + PI * 0.5
+	host.reset_physics_interpolation()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var expected_offset := shadow.offset_px.rotated(
+		host.global_rotation
+	)
+	var actual_offset := (
+		shadow.global_position - host.global_position
+	)
+	_expect(
+		actual_offset.distance_to(expected_offset) < 0.5,
+		"%s's shadow offset turns with it (offset %s, want %s)"
+		% [label, actual_offset, expected_offset],
+	)
+	_expect(
+		absf(
+			wrapf(
+				shadow.global_rotation - host.global_rotation,
+				-PI,
+				PI,
+			),
+		) < 0.01,
+		"%s's shadow keeps its turn with it" % label,
+	)
+	host.rotation = rest_rotation
+	host.reset_physics_interpolation()
+	await get_tree().process_frame
+	await get_tree().process_frame
 
 
 ## The drop shadow attached to a host node, or null.

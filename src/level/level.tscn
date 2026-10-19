@@ -1,19 +1,22 @@
 [gd_scene format=3 uid="uid://bukfeupi41tif"]
 
 [ext_resource type="Script" uid="uid://bqj50lqds4nhs" path="res://src/level/level.gd" id="1_la7um"]
-[ext_resource type="Texture2D" uid="uid://cx082esij4go3" path="res://assets/images/room.png" id="2_n4rap"]
+[ext_resource type="Texture2D" uid="uid://cx082esij4go3" path="res://assets/images/room/room.png" id="2_n4rap"]
 [ext_resource type="Script" uid="uid://3xax4i6teywv" path="res://src/level/camera_shaker.gd" id="2_xv147"]
 [ext_resource type="Script" uid="uid://bfo0vmq35oagd" path="res://src/level/tool_holder.gd" id="3_af42n"]
+[ext_resource type="Texture2D" uid="uid://g3ysr8be4but" path="res://assets/images/white_pixel.png" id="4_ascnc"]
+[ext_resource type="Texture2D" uid="uid://dvqi372uhukfc" path="res://assets/images/room/window.png" id="4_fghqq"]
+[ext_resource type="Texture2D" uid="uid://wcoqjwjle7il" path="res://assets/images/room/workbench.png" id="5_ascnc"]
 [ext_resource type="Script" uid="uid://d8bmnco1ssr8" path="res://src/level/hand.gd" id="5_hand"]
 [ext_resource type="PackedScene" path="res://src/decals/decal_spawner.tscn" id="6_decals"]
 [ext_resource type="PackedScene" uid="uid://dinrtvteq5ayd" path="res://src/ui/ticket/ticket_card.tscn" id="7_ticket"]
 [ext_resource type="PackedScene" path="res://src/ui/receipt/receipt.tscn" id="8_receipt"]
 [ext_resource type="PackedScene" path="res://src/parts/part.tscn" id="10_part"]
 [ext_resource type="PackedScene" path="res://src/manual/instruction_manual.tscn" id="12_manual"]
-[ext_resource type="Texture2D" uid="uid://doc4jnkrixmjs" path="res://assets/images/manual_page0000.png" id="13_page0"]
-[ext_resource type="Texture2D" uid="uid://bl6bxtj82jtcy" path="res://assets/images/manual_page0001.png" id="14_page1"]
-[ext_resource type="Texture2D" uid="uid://bik16fm0enfxo" path="res://assets/images/manual_page0002.png" id="15_page2"]
-[ext_resource type="Texture2D" uid="uid://b5jej1flts5qt" path="res://assets/images/manual_page0003.png" id="16_page3"]
+[ext_resource type="Texture2D" uid="uid://doc4jnkrixmjs" path="res://assets/images/manual/manual_page0000.png" id="13_page0"]
+[ext_resource type="Texture2D" uid="uid://bl6bxtj82jtcy" path="res://assets/images/manual/manual_page0001.png" id="14_page1"]
+[ext_resource type="Texture2D" uid="uid://bik16fm0enfxo" path="res://assets/images/manual/manual_page0002.png" id="15_page2"]
+[ext_resource type="Texture2D" uid="uid://b5jej1flts5qt" path="res://assets/images/manual/manual_page0003.png" id="16_page3"]
 [ext_resource type="PackedScene" uid="uid://dq0q06p1k4wyo" path="res://src/level/Drawer.tscn" id="17_drawer"]
 [ext_resource type="PackedScene" path="res://src/props/radio.tscn" id="18_radio"]
 [ext_resource type="FontFile" uid="uid://dpjyugfnnu6wc" path="res://assets/fonts/reenie_beanie/ReenieBeanie.ttf" id="19_handwriting"]
@@ -25,10 +28,30 @@ radius = 34.058773
 script = ExtResource("1_la7um")
 part_scene = ExtResource("10_part")
 
-[node name="Room!!!!!!" type="Sprite2D" parent="." unique_id=1576706779]
+[node name="Background" type="Node" parent="." unique_id=350321910]
+
+[node name="Room" type="Sprite2D" parent="Background" unique_id=1576706779]
 position = Vector2(7, 2)
 scale = Vector2(0.36922747, 0.29375002)
 texture = ExtResource("2_n4rap")
+
+[node name="OutsideStuff" type="Sprite2D" parent="Background" unique_id=1705364791]
+position = Vector2(-18, -72)
+scale = Vector2(675.5491, 473.93988)
+texture = ExtResource("4_ascnc")
+
+[node name="Scaler" type="Node2D" parent="Background/OutsideStuff" unique_id=2086735917]
+scale = Vector2(0.001, 0.002)
+
+[node name="Window" type="Sprite2D" parent="Background" unique_id=1872835696]
+position = Vector2(7, 2)
+scale = Vector2(0.36922747, 0.29375002)
+texture = ExtResource("4_fghqq")
+
+[node name="Workbench" type="Sprite2D" parent="Background" unique_id=43193686]
+position = Vector2(7, 2)
+scale = Vector2(0.36922747, 0.29375002)
+texture = ExtResource("5_ascnc")
 
 [node name="Radio" parent="." unique_id=675782899 instance=ExtResource("18_radio")]
 position = Vector2(-290, 145)

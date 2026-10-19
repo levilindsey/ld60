@@ -451,12 +451,45 @@ func _check_cleanup() -> void:
 		is_instance_valid(shadow) and shadow.size_scale < 1.0,
 		"a loose part's shadow is drawn smaller than the part",
 	)
+	await _check_shadow_turns_with(shadow, part)
 	_level.cleanup_loose_parts()
 	_expect(
 		await _wait_until(func() -> bool: return part.is_stored),
 		"cleanup puts a part left out away into a drawer",
 	)
 	_expect(not part.visible, "a cleaned-up part is hidden again")
+
+
+## Turns `part` a quarter turn and back, and checks that its
+## drop shadow kept the same bearing from it: the shadow's
+## offset follows the part's global turn, so the shadow sits
+## at the same relative spot however the part itself is turned.
+func _check_shadow_turns_with(shadow: DropShadow, part: Part) -> void:
+	if not _expect(
+		is_instance_valid(shadow),
+		"a loose part has a drop shadow to turn with",
+	):
+		return
+	var rest_rotation := part.rotation
+	part.rotation = rest_rotation + PI * 0.5
+	part.reset_physics_interpolation()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var expected_offset := shadow.offset_px.rotated(
+		part.global_rotation
+	)
+	var actual_offset := (
+		shadow.global_position - part.global_position
+	)
+	_expect(
+		actual_offset.distance_to(expected_offset) < 0.5,
+		"a loose part's shadow offset turns with it"
+		+ " (offset %s, want %s)" % [actual_offset, expected_offset],
+	)
+	part.rotation = rest_rotation
+	part.reset_physics_interpolation()
+	await get_tree().process_frame
+	await get_tree().process_frame
 
 
 func _open_drawer(drawer: Drawer) -> void:

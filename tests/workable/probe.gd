@@ -98,7 +98,7 @@ func _check_area_queries() -> void:
 	)
 	var fall_sec := fall[1] as float
 	_expect(
-		fall_sec > 0.49 and fall_sec < 0.58,
+		fall_sec > 0.38 and fall_sec < 0.46,
 		"a fall is timed by the bumped gravity, slowed a"
 		+ " little by wind drag (%.2f s)" % fall_sec,
 	)
@@ -241,10 +241,11 @@ func _flick_piece(
 	from_point: Vector2,
 	approach_point: Vector2,
 	release_point: Vector2,
+	release_steps := 12,
 ) -> void:
 	await _press_down(from_point)
 	await _step_pointer_to(from_point, approach_point, 8)
-	await _step_pointer_to(approach_point, release_point, 12)
+	await _step_pointer_to(approach_point, release_point, release_steps)
 	await _release_at(release_point)
 
 
@@ -271,11 +272,14 @@ func _check_part_throws() -> void:
 	var margin_px := (
 		_part.get_radius_px() + G.settings.workable_edge_padding_px
 	)
-	# Thrown up: it passes the top of the viewport and falls back.
+	# Thrown up hard: it passes the top of the viewport and
+	# falls back. The release leg is quick, a genuinely hard
+	# flick, which the heavier gravity now demands.
 	await _flick_piece(
 		_part.global_position,
 		Vector2(0.0, 220.0),
 		Vector2(0.0, -60.0),
+		6,
 	)
 	_expect(_part.is_returning, "a flicked part is thrown, not set down")
 	var points := await _track_return(

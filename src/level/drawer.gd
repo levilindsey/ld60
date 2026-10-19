@@ -180,6 +180,7 @@ func open_drawer() -> void:
 	if state != State.CLOSED:
 		return
 	state = State.OPENING
+	G.audio.play_sound(&"drawer_open")
 	var generation := _generation
 	_kill_tween()
 	await _tween_open_fraction(
@@ -220,6 +221,7 @@ func close_drawer() -> void:
 	if state != State.OPEN and state != State.OPENING:
 		return
 	state = State.CLOSING
+	G.audio.play_sound(&"drawer_close")
 	var generation := _generation
 	close_started.emit()
 	_kill_tween()
@@ -390,6 +392,7 @@ func _sink_part(part: Part) -> void:
 ## Files a part away inside this drawer and hides it until the
 ## drawer opens again.
 func _store_part(part: Part) -> void:
+	G.audio.play_sound(&"click")
 	part.is_stored = true
 	part.is_returning = false
 	part.drawer_index = drawer_index

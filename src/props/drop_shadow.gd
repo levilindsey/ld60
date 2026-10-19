@@ -10,9 +10,11 @@ extends Node2D
 ##   holder's contact point (a tool resting on its shoulders:
 ##   only what hangs below the neck shadows).
 ##
-## Sizes and offsets are world pixels: the drawing compensates
-## for any scale above it, the same lesson the outline hint
-## learned, so a scaled-down prop does not shrink its shadow.
+## Sizes and offset lengths are world pixels: the drawing
+## compensates for any scale above it, the same lesson the
+## outline hint learned, so a scaled-down prop does not shrink
+## its shadow. The offset's direction is the host's own: it
+## turns with the host (see `offset_px`).
 ## Only shown while its `show_when` callable says the host is at
 ## rest and not being held or carried, fading in and out.
 
@@ -54,7 +56,10 @@ void fragment() {
 
 ## World size of the ellipse (ELLIPSE kind).
 var size_px := Vector2(60.0, 18.0)
-## World offset from the host's origin to the shadow's centre.
+## Offset from the host's origin to the shadow's centre, in
+## the host's own frame. It turns with the host, so the shadow
+## keeps the same bearing from the screw, part or piece
+## however that thing is turned. Its length is in world pixels.
 var offset_px := Vector2(4.0, 10.0)
 ## Judges whether the host is at rest and unheld right now.
 var show_when: Callable
@@ -154,11 +159,17 @@ func _process(delta: float) -> void:
 	if not is_instance_valid(_host):
 		queue_free()
 		return
-	var centre: Vector2 = (_host as Node2D).global_position
+	var host_node := _host as Node2D
+	var centre: Vector2 = host_node.global_position
 	if is_instance_valid(anchor):
 		centre = anchor.global_position
-	global_position = centre + offset_px
-	global_rotation = (_host as Node2D).global_rotation
+	# The offset is in the host's frame: turn it by the host's
+	# global turn, so the shadow's global bearing from the host
+	# is the same however the host itself is turned.
+	global_position = centre + offset_px.rotated(
+		host_node.global_rotation
+	)
+	global_rotation = host_node.global_rotation
 	_sync_silhouette()
 	_update_clip()
 	var should_show := (

@@ -442,9 +442,19 @@ func _check_hammer() -> void:
 		"the hammer reticle sits on the working end, not the origin",
 	)
 
-	# A tap is too weak to jog the stuck part.
-	await _strike(hammer, stuck.global_position, 0.05)
+	# A tap is too weak to jog the stuck part, but even a hit
+	# that does nothing still squishes the piece a little.
+	var stuck_layer := stuck.get_layer()
+	var stuck_rest_scale := stuck_layer.scale
+	await _strike(hammer, stuck.global_position, 0.05, 0.10)
 	_expect(stuck.hits_done == 0, "a tap below the band does nothing")
+	_expect(
+		stuck_layer.scale.y < stuck_rest_scale.y * 0.995
+		and stuck_layer.scale.y > stuck_rest_scale.y * 0.93,
+		"a tap squishes the piece a little (scale y %.3f)"
+		% stuck_layer.scale.y,
+	)
+	await _seconds(0.6)
 	await _strike(hammer, stuck.global_position, 0.6)
 	_expect(stuck.hits_done == 1, "a hit in the band jogs the part")
 	await _strike(hammer, stuck.global_position, 0.6)

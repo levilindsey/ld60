@@ -3,8 +3,8 @@
 [ext_resource type="Script" uid="uid://dnhtim17pwlns" path="res://src/interaction_points/flat_head_screw.gd" id="1_eu2r4"]
 [ext_resource type="Texture2D" uid="uid://bbsbswnunrrqw" path="res://assets/images/circle.png" id="2_w7024"]
 [ext_resource type="Texture2D" uid="uid://bclc8sopmd7hr" path="res://assets/images/circle-with-rectangle.png" id="3_vqoce"]
-[ext_resource type="Texture2D" uid="uid://lk6nlbk0tidj" path="res://assets/images/screwwwzzzzzzflat.png" id="4_t7xyj"]
-[ext_resource type="Texture2D" uid="uid://csqlenh214xgi" path="res://assets/images/screweeeeeeeeddddddd.png" id="5_a0cqg"]
+[ext_resource type="Texture2D" uid="uid://lk6nlbk0tidj" path="res://assets/images/repairables/screwwwzzzzzzflat.png" id="4_t7xyj"]
+[ext_resource type="Texture2D" uid="uid://csqlenh214xgi" path="res://assets/images/repairables/screweeeeeeeeddddddd.png" id="5_a0cqg"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 12.0

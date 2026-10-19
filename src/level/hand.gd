@@ -383,6 +383,7 @@ func _press_resting_screw(global_point: Vector2) -> bool:
 		)
 		screw.is_carried = true
 		screw.on_picked_up()
+		G.audio.play_sound(&"click")
 	return true
 
 
@@ -408,6 +409,7 @@ func _press_set_aside_layer(global_point: Vector2) -> bool:
 		layer.is_moving = true
 		if is_ready:
 			layer.straighten_to_home()
+		G.audio.play_sound(&"clunk")
 	return true
 
 
@@ -479,7 +481,6 @@ func _press_drawer_modal(global_point: Vector2) -> bool:
 				drawer.close_drawer()
 				return true
 			held_tool.put_away()
-		G.audio.play_sound(&"whoosh")
 		# Both animate at once: the opener's slide out of its
 		# slot staggers it past the closer's trip home, so the
 		# two never meaningfully cross in the center.
@@ -509,6 +510,7 @@ func _press_loose_part(global_point: Vector2) -> bool:
 	):
 		_loose_part = part
 		_loose_drag_offset = part.global_position - global_point
+		G.audio.play_sound(&"click")
 	return true
 
 
@@ -526,7 +528,6 @@ func _press_drawer(global_point: Vector2) -> bool:
 			# A point has the tool. Let it finish first.
 			return true
 		held_tool.put_away()
-	G.audio.play_sound(&"whoosh")
 	drawer.open_drawer()
 	return true
 
@@ -720,6 +721,7 @@ func _set_down_part(
 ) -> void:
 	if G.level.try_return_part(part, release_velocity):
 		return
+	G.audio.play_sound(&"thud")
 	# A part that is out stays in front of the drawers.
 	part.z_index = 16
 
@@ -744,7 +746,8 @@ func _drop_loose_layer(release_velocity := Vector2.ZERO) -> void:
 	):
 		layer.put_back()
 		return
-	G.level.try_return_layer(layer, release_velocity)
+	if not G.level.try_return_layer(layer, release_velocity):
+		G.audio.play_sound(&"clunk")
 
 
 ## Moves the dragged item with the pointer and tilts it with the sideways

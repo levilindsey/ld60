@@ -78,10 +78,12 @@ later ones get narrow middle bands.
   shadow under it grows and fades.
 - **Swing:** a fast ease-in (about 0.08 s) down to the strike point.
 - **Impact:** the hit-stop, sparks or a dust puff, and the target's
-  reaction. A hit that dents or cracks the piece also squishes it:
-  a quick squash by `hammer_squish_amount` (0.12 of its height,
-  spreading half as much sideways) that springs back over
-  `hammer_squish_recover_sec` (0.3), like the radio's bonk.
+  reaction. Every hit squishes the piece, dent or not: a quick
+  squash that springs back over `hammer_squish_recover_sec` (0.3),
+  like the radio's bonk. The charge scales the squash from a
+  small share of `hammer_squish_amount` (0.12 of its height,
+  spreading half as much sideways) for a tap up to the full
+  amount for a denting hit.
 - **Recoil:** bounce up about 10 degrees and settle (0.2 s). Then the
   follow offset eases the hammer back under the cursor.
 

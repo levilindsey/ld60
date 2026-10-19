@@ -29,7 +29,11 @@ enum PhysicsLayer {
 
 # --- Game configuration ---
 
-@export var default_gravity_acceleration := 2200.0
+## Downward pull on everything that flies or falls (bench
+## returns, throws), in pixels per second squared. Tuned high
+## for this screen size: at 2200 a 300 px drop hung for over a
+## third of a second and read as floaty.
+@export var default_gravity_acceleration := 3600.0
 
 @export var default_level_scene: PackedScene
 
@@ -246,10 +250,9 @@ enum PhysicsLayer {
 ## the grip or the screw starts to move. Sitting with the driver
 ## seated and not yet circling costs nothing until then.
 @export var phillips_start_drag_rad := 1.5
-## Seconds the speed needle smooths over.
+## Seconds the speed needle smooths over. The needle carries
+## the gauge's only momentum: the grip follows its position.
 @export var phillips_speed_smoothing_sec := 0.65
-## Seconds the grip swings between filling and draining over.
-@export var phillips_meter_smoothing_sec := 0.4
 ## Pointer steps shorter than this don't count toward the turning.
 @export var phillips_min_segment_px := 4.0
 @export_group("")
@@ -300,8 +303,9 @@ enum PhysicsLayer {
 @export var hammer_far_margin := 0.2
 ## Charge where a bare surface starts to take damage.
 @export var hammer_surface_damage_charge := 0.55
-## How far a denting hit squashes the piece, as a fraction of its
-## height. It spreads sideways by half as much (like the radio).
+## How far the hardest hit squashes the piece, as a fraction of
+## its height. Softer hits squash a share of this. It spreads
+## sideways by half as much (like the radio).
 @export var hammer_squish_amount := 0.12
 ## Seconds the piece takes to spring back from that squash.
 @export var hammer_squish_recover_sec := 0.3
@@ -414,11 +418,13 @@ enum PhysicsLayer {
 ## rest. The throw keeps the smoothed speed, capped at the
 ## most below.
 @export var workable_throw_min_speed_px_per_sec := 500.0
-@export var workable_throw_max_speed_px_per_sec := 1500.0
+## Capped high enough that, under `default_gravity_acceleration`,
+## a hard upward flick still leaves the top of the screen.
+@export var workable_throw_max_speed_px_per_sec := 2100.0
 ## Fastest a dropped or thrown piece may ever move, in
 ## pixels per second. Gravity may speed a falling piece up
 ## past the throw cap, but never past this.
-@export var workable_max_speed_px_per_sec := 1750.0
+@export var workable_max_speed_px_per_sec := 2400.0
 ## Wind drag on a piece in the air, as the share of its
 ## speed it loses per second. It slows falls and throws a
 ## little without ever stopping them.

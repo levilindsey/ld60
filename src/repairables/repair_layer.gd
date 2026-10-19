@@ -15,9 +15,12 @@ extends Node2D
 const _SET_ASIDE_MAX_TURN_DEG := 20.0
 const _PULSE_SCALE := 1.08
 const _PULSE_SEC := 0.3
-## Seconds the squash down of a denting hammer hit takes. The
-## spring back is `hammer_squish_recover_sec` in settings.
+## Seconds the squash down of a hammer hit takes. The spring
+## back is `hammer_squish_recover_sec` in settings.
 const _SQUISH_DOWN_SEC := 0.06
+## Share of the full squash the softest hammer hit still shows.
+## Harder hits scale from here up to the full amount.
+const _SQUISH_MIN_SHARE := 0.35
 
 ## The art that decals parent to and clip against. Points and surfaces
 ## are its siblings, not its children. A ColorRect, Sprite2D or
@@ -188,6 +191,7 @@ func take_off_for_drag() -> void:
 	is_moving = true
 	z_index = 10
 	_stop_outline()
+	G.audio.play_sound(&"pop")
 	_home_global_rotation = kept_rotation
 	reparent(spot)
 	global_position = kept_global
@@ -259,6 +263,7 @@ func start_bench_return() -> void:
 ## The layer has come to rest inside the workable area.
 func finish_bench_return() -> void:
 	is_returning = false
+	G.audio.play_sound(&"clunk")
 
 
 ## The player let go of this dragged layer somewhere on the bench.
@@ -334,14 +339,20 @@ func pulse() -> void:
 
 
 ## A quick squash and spring back: the flinch when a hammer hit
-## dents or cracks this layer, like the radio's bonk.
-func squish() -> void:
+## lands on this layer, like the radio's bonk. Every hit shows
+## some: `strength` (the hammer's charge, 0 to 1) scales the
+## squash from a small share up to the full amount a denting
+## hit gives.
+func squish(strength := 1.0) -> void:
 	if is_moving:
 		return
 	if is_instance_valid(_squish_tween):
 		_squish_tween.kill()
 	scale = _rest_scale
-	var amount := G.settings.hammer_squish_amount
+	var amount := (
+		G.settings.hammer_squish_amount
+		* lerpf(_SQUISH_MIN_SHARE, 1.0, clampf(strength, 0.0, 1.0))
+	)
 	var squished := Vector2(
 		_rest_scale.x * (1.0 + amount * 0.5),
 		_rest_scale.y * (1.0 - amount),

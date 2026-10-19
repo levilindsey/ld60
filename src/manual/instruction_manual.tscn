@@ -1,14 +1,13 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://src/manual/instruction_manual.gd" id="1_manual"]
+[ext_resource type="Script" uid="uid://bln40e0tcvv7b" path="res://src/manual/instruction_manual.gd" id="1_manual"]
 [ext_resource type="PackedScene" path="res://src/manual/manual_page.tscn" id="2_page"]
-[ext_resource type="Script" path="res://src/manual/manual_leaf.gd" id="3_leaf"]
-[ext_resource type="Texture2D" path="res://assets/images/manual_outline_left.png" id="4_outline_left"]
-[ext_resource type="Texture2D" path="res://assets/images/manual_outline_right.png" id="5_outline_right"]
-[ext_resource type="Texture2D" path="res://assets/images/manual_front.png" id="6_cover"]
-[ext_resource type="Texture2D" path="res://assets/images/manual_spine.png" id="7_spine"]
-
-[ext_resource type="Shader" path="res://assets/shaders/perspective_quad.gdshader" id="9_perspective"]
+[ext_resource type="Script" uid="uid://cqx83camglu2l" path="res://src/manual/manual_leaf.gd" id="3_leaf"]
+[ext_resource type="Texture2D" uid="uid://dbuj15prejhyx" path="res://assets/images/manual/manual_outline_left.png" id="4_outline_left"]
+[ext_resource type="Texture2D" uid="uid://8gl64fr50grj" path="res://assets/images/manual/manual_outline_right.png" id="5_outline_right"]
+[ext_resource type="Texture2D" uid="uid://bu3lubw0hh5pn" path="res://assets/images/manual/manual_front.png" id="6_cover"]
+[ext_resource type="Texture2D" uid="uid://gyrmp56alofw" path="res://assets/images/manual/manual_spine.png" id="7_spine"]
+[ext_resource type="Shader" uid="uid://thfeaa7qcy2v" path="res://assets/shaders/perspective_quad.gdshader" id="9_perspective"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_spread"]
 size = Vector2(480, 320)

@@ -59,6 +59,7 @@ func _run() -> void:
 	_check_zone_continuity()
 	_check_gauge_tint()
 	_check_gauge_needle_wrap()
+	_check_gauge_progress_switch()
 	await _check_cam_outs()
 	await _check_removals()
 	await _check_install()
@@ -143,6 +144,76 @@ func _check_gauge_needle_wrap() -> void:
 		past_step < -0.1,
 		"the gauge needle continues past the downward seam",
 	)
+	# When the zone straddles the seam, a speed a little past the
+	# top is where the needle draws, inside the wrapped segment:
+	# it has to count as in the zone, or the needle sits in the
+	# green and stays red. Way past the top still does not.
+	_left._zone_center_rad_per_sec = gauge_max - 0.2
+	_expect(
+		_left._is_speed_in_zone(gauge_max + 0.3),
+		"a speed just past the seam counts when the zone straddles it",
+	)
+	_expect(
+		not _left._is_speed_in_zone(gauge_max + 4.0),
+		"a speed way past the top does not wrap into the zone",
+	)
+	_left.pressure_rad_per_sec = gauge_max + 0.3
+	_expect(
+		_left.is_in_range(),
+		"the needle reads in range just past the seam",
+	)
+	_left.pressure_rad_per_sec = 0.0
+	# The same wrap on the dial's low side: a needle just past
+	# the top draws at the slow end, inside the wrapped segment.
+	_left._zone_center_rad_per_sec = 0.2
+	_expect(
+		_left._is_speed_in_zone(gauge_max + 0.3),
+		"a speed just past the seam counts when the zone wraps low",
+	)
+	_expect(
+		not _left._is_speed_in_zone(gauge_max + 4.0),
+		"a speed way past the top does not wrap into the low zone",
+	)
+
+
+## The needle is the only momentum in the gauge: the frame it
+## enters the green, the grip must already be gaining, even when
+## the grip was draining a moment before. The meter may not keep
+## a second, hidden lag of its own behind the needle.
+func _check_gauge_progress_switch() -> void:
+	_left._zone_center_rad_per_sec = 5.0
+	_left._zone_climb_rad_per_sec = 0.0
+	_left._zone_target_climb_rad_per_sec = 0.0
+	_left._zone_retarget_left_sec = 30.0
+	_left.pressure_rad_per_sec = 5.0
+	_left.grip_meter = 0.5
+	_left.intro_left = 0.0
+	_left._has_started_dragging = true
+	_left._advance(1.0 / 60.0)
+	_expect(
+		_left.grip_meter > 0.5,
+		"the grip gains the frame the needle enters the green"
+		+ " (grip %.4f)" % _left.grip_meter,
+	)
+	_left.pressure_rad_per_sec = 0.0
+	_left.grip_meter = 0.5
+	_left._advance(1.0 / 60.0)
+	_expect(
+		_left.grip_meter < 0.5,
+		"the grip drains the frame the needle leaves the green"
+		+ " (grip %.4f)" % _left.grip_meter,
+	)
+	_left.pressure_rad_per_sec = 0.0
+	_left.grip_meter = G.settings.phillips_meter_start
+	_left._zone_center_rad_per_sec = (
+		(
+			G.settings.phillips_speed_min_rad_per_sec
+			+ G.settings.phillips_speed_max_rad_per_sec
+		)
+		/ 2.0
+	)
+	_left._zone_climb_rad_per_sec = 0.0
+	_left._pick_zone_target()
 
 
 func _check_zone_continuity() -> void:

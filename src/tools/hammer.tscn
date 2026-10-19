@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://coo7afm5ydr44"]
 
 [ext_resource type="Script" uid="uid://ds5hsa2iliqn8" path="res://src/tools/hammer.gd" id="1_hammer"]
-[ext_resource type="Texture2D" uid="uid://cvilvnvyfufff" path="res://assets/images/bestrongandhitstuff.png" id="2_t6h3i"]
+[ext_resource type="Texture2D" uid="uid://cvilvnvyfufff" path="res://assets/images/tools/bestrongandhitstuff.png" id="2_t6h3i"]
 [ext_resource type="Script" uid="uid://dox5wvsseew56" path="res://src/tools/hammer_reticle.gd" id="3_reticle"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
