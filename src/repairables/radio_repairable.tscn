@@ -101,11 +101,11 @@ art = NodePath("Art")
 texture = ExtResource("front_tex")
 
 [node name="ScrewLeft" parent="Layers/Front" instance=ExtResource("4_screw")]
-position = Vector2(-1154, -640)
+position = Vector2(-1266, -249)
 scale = Vector2(8, 8)
 
 [node name="ScrewRight" parent="Layers/Front" instance=ExtResource("4_screw")]
-position = Vector2(1046, -640)
+position = Vector2(1218, -209)
 scale = Vector2(8, 8)
 
 [node name="FinalWhack" parent="Layers/Front" instance=ExtResource("6_stuck")]
