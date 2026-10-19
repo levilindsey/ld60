@@ -29,6 +29,9 @@ const _FIT_SEC := 0.15
 ## then stays hidden, and cannot be grabbed, until that
 ## layer has been taken off the item.
 @export var covering_layer: RepairLayer
+## The piece's z_index while it's on the item. Below 0 draws it
+## behind the layer's art, like a far wheel.
+@export var installed_z_index := 0
 ## How close a press may land and still grab it, in pixels.
 @export var grab_radius_px := 30.0
 ## The piece's art: a Polygon2D, so its shape can be redrawn
@@ -252,7 +255,7 @@ func attach_to_point(point: BrokenPoint) -> void:
 		reparent(point.get_parent())
 	global_position = from_global
 	reset_physics_interpolation()
-	z_index = 0
+	z_index = installed_z_index
 	z_as_relative = true
 	G.audio.play_sound(&"snap")
 	var tween := create_tween()

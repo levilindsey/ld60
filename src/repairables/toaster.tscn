@@ -99,10 +99,12 @@ draws_scar = false
 
 [node name="SecondWheel" type="Node2D" parent="Layers/Body" node_paths=PackedStringArray("target_point", "art")]
 unique_name_in_owner = true
+z_index = -1
 position = Vector2(-102.6, 55.3)
 script = ExtResource("8_broken_piece")
 target_point = NodePath("../SecondWheelPoint")
 starts_installed = true
+installed_z_index = -1
 art = NodePath("Art")
 
 [node name="Art" type="Sprite2D" parent="Layers/Body/SecondWheel"]
