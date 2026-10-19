@@ -98,6 +98,30 @@ position = Vector2(3, 218)
 unique_name_in_owner = true
 position = Vector2(0, -549)
 
+[node name="RadioSpot" type="Node2D" parent="." unique_id=1650384417]
+position = Vector2(-293, 92)
+
+[node name="RadioSpotPlaceholder" type="Polygon2D" parent="RadioSpot" unique_id=1650384418]
+unique_name_in_owner = true
+color = Color(0.2, 0.15, 0.1, 0)
+polygon = PackedVector2Array(-90, -58, 90, -58, 90, 58, -90, 58)
+
+[node name="RadioSpotLabel" type="Label" parent="RadioSpot" unique_id=1650384419]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+offset_left = -80.0
+offset_top = -32.0
+offset_right = 80.0
+offset_bottom = 33.0
+theme_override_colors/font_color = Color(1, 0.95, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0.2, 0.13, 0.07, 1)
+theme_override_constants/outline_size = 10
+theme_override_fonts/font = ExtResource("19_handwriting")
+theme_override_font_sizes/font_size = 64
+text = "HERE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="Outbox" type="Area2D" parent="." unique_id=235443095]
 unique_name_in_owner = true
 position = Vector2(-587, 105)

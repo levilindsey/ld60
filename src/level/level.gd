@@ -76,8 +76,10 @@ var hand: Hand:
 ## untyped so a freed screw never lands in a typed variable.
 var _resting_screws: Array = []
 
-var _outbox_outline_hint: OutlineHint
-var _outbox_label_tween: Tween
+## Each spot's outline, by its placeholder.
+var _spot_outline_hints := {}
+## Each spot's label fade, by its label.
+var _spot_label_tweens := {}
 ## Where the shop radio item lines up with the radio on the shelf.
 var _shop_radio_pose := Transform2D.IDENTITY
 
@@ -186,6 +188,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_step_bench_returns(delta)
+	_bounce_shop_radio()
 
 
 func start_game() -> void:
@@ -304,50 +307,57 @@ func drop_item(
 
 ## Shows or hides the outline around the outbox. A finished item
 ## turns it on, so the bench says where the item goes next. The shop
-## radio goes back to its shelf, so it shows the radio's empty spot
-## instead.
+## radio goes back to its shelf, so it marks the radio's spot instead.
 func set_outbox_outline_shown(is_shown: bool) -> void:
 	if (
 		is_instance_valid(active_repairable)
 		and active_repairable.is_shop_radio
 	):
-		%Radio.show_return_spot(is_shown)
+		_set_spot_shown(%RadioSpotPlaceholder, %RadioSpotLabel, is_shown)
 		return
-	if is_shown:
-		if not is_instance_valid(_outbox_outline_hint):
-			var placeholder := (
-				%Outbox.get_node("Placeholder") as Polygon2D
-			)
-			var points := OutlineHint.get_art_polygon(placeholder)
-			if points.is_empty():
-				return
-			_outbox_outline_hint = OutlineHint.new()
-			placeholder.add_child(_outbox_outline_hint)
-			_outbox_outline_hint.polygon = points
-		_outbox_outline_hint.set_active(true)
-	elif is_instance_valid(_outbox_outline_hint):
-		_outbox_outline_hint.set_active(false)
-	_fade_outbox_label(1.0 if is_shown else 0.0)
+	_set_spot_shown(
+		%Outbox.get_node("Placeholder") as Polygon2D,
+		%OutboxLabel,
+		is_shown,
+	)
 
 
 ## True while the outbox shows its outline.
 func is_outbox_outline_shown() -> bool:
-	return (
-		is_instance_valid(_outbox_outline_hint)
-		and _outbox_outline_hint.is_active()
-	)
+	var hint := _spot_outline_hints.get(
+		%Outbox.get_node("Placeholder")
+	) as OutlineHint
+	return is_instance_valid(hint) and hint.is_active()
 
 
-func _fade_outbox_label(alpha: float) -> void:
-	if is_instance_valid(_outbox_label_tween):
-		_outbox_label_tween.kill()
-	_outbox_label_tween = create_tween()
-	_outbox_label_tween.tween_property(
-		%OutboxLabel,
+## Turns a spot's outline on or off and fades its label with it.
+func _set_spot_shown(
+	placeholder: Polygon2D,
+	label: Label,
+	is_shown: bool,
+) -> void:
+	var hint := _spot_outline_hints.get(placeholder) as OutlineHint
+	if is_shown and not is_instance_valid(hint):
+		var points := OutlineHint.get_art_polygon(placeholder)
+		if points.is_empty():
+			return
+		hint = OutlineHint.new()
+		placeholder.add_child(hint)
+		hint.polygon = points
+		_spot_outline_hints[placeholder] = hint
+	if is_instance_valid(hint):
+		hint.set_active(is_shown)
+	var old_tween := _spot_label_tweens.get(label) as Tween
+	if is_instance_valid(old_tween):
+		old_tween.kill()
+	var tween := create_tween()
+	tween.tween_property(
+		label,
 		"modulate:a",
-		alpha,
+		1.0 if is_shown else 0.0,
 		G.settings.outbox_label_fade_sec,
 	)
+	_spot_label_tweens[label] = tween
 
 
 ## Eases an item back to where the bench keeps the item being repaired.
@@ -1950,13 +1960,26 @@ func _fly_in_shop_radio(bench_scale: Vector2) -> void:
 
 ## The fixed shop radio flies back up to its shelf.
 func _return_shop_radio(item: Repairable) -> void:
-	%Radio.show_return_spot(false)
+	set_outbox_outline_shown(false)
+	item.set_art_scale(Vector2.ONE)
 	cleanup_loose_parts()
 	cleanup_broken_pieces(item)
 	active_repairable = null
 	item.departed.connect(%Radio.return_to_shelf, CONNECT_ONE_SHOT)
 	item.departed.connect(_on_item_departed.bind(item), CONNECT_ONE_SHOT)
 	item.fly_out(_shop_radio_pose.origin, _shop_radio_pose.get_scale())
+
+
+## Once the music is back, the radio on the bench bounces to it like the
+## one on the shelf does.
+func _bounce_shop_radio() -> void:
+	var item := active_repairable
+	if (
+		is_instance_valid(item)
+		and item.is_shop_radio
+		and item.has_finished
+	):
+		item.set_art_scale(%Radio.get_beat_scale())
 
 
 ## The item's position and scale that line its outermost art up with the

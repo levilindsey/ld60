@@ -365,6 +365,12 @@ func leave(
 	_motion_tween.tween_callback(_depart)
 
 
+## Squashes and stretches the item's art about its origin. 1 is its own
+## size.
+func set_art_scale(value: Vector2) -> void:
+	%Layers.scale = value
+
+
 ## Flies the item from where it stands to a pose, growing or shrinking to
 ## the scale. Nothing falls, so it doesn't bounce. Its loose pieces pop off
 ## as it lands, and then `landed` fires.

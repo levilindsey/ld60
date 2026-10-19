@@ -14,8 +14,7 @@ extends Node2D
 ## starts a cooldown. In dev mode, R toggles the glitch.
 ##
 ## When the radio is the item on the bench, it breaks on the shelf (static,
-## a jolt, the music cuts out) and hides while the item is repaired. Its
-## spot shows a faint ghost of it once the item is ready to go back.
+## a jolt, the music cuts out) and hides while the item is repaired.
 
 
 ## How far the radio squashes and stretches on each beat, as a fraction of
@@ -65,8 +64,6 @@ extends Node2D
 @export_group("Break")
 ## The static's volume as the radio breaks.
 @export var break_static_volume_db: float = -12.0
-## How see-through the ghost on the empty spot is.
-@export var return_spot_alpha: float = 0.35
 
 
 var is_glitching := false
@@ -168,18 +165,17 @@ func break_away() -> void:
 	%Static.play()
 
 
+## The squash and stretch of the current beat, for the radio item on the
+## bench to bounce along with the music.
+func get_beat_scale() -> Vector2:
+	var stretch := stretch_amount * absf(sin(_beat_angle)) * _motion_amount
+	return Vector2(1.0 - stretch, 1.0 + stretch)
+
+
 ## The radio leaves the shelf to be the item on the bench.
 func leave_shelf() -> void:
 	%Static.stop()
 	visible = false
-
-
-## Shows or hides the faint ghost on the empty spot.
-func show_return_spot(is_shown: bool) -> void:
-	if not is_away:
-		return
-	visible = is_shown
-	modulate.a = return_spot_alpha
 
 
 ## The fixed radio is back on the shelf, with a little squash.
@@ -187,7 +183,6 @@ func return_to_shelf() -> void:
 	%Static.stop()
 	is_away = false
 	visible = true
-	modulate.a = 1.0
 	_hit_amount = 1.0
 
 
