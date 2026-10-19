@@ -279,6 +279,10 @@ func _run() -> void:
 		_piece.is_installed,
 		"the held piece stays on its point",
 	)
+	_expect(
+		not is_instance_valid(_point.glue_decal),
+		"the glue dab is removed once the job is done",
+	)
 	await _physics_frames(30)
 	_expect(
 		_piece.global_position.distance_to(

@@ -102,14 +102,17 @@ func get_locked_prop() -> Node2D:
 
 
 ## True while the locked prop takes the green band treatment:
-## the wonky radio is fixed by a bonk at any charge, so its
-## whole ring counts as the band.
+## the wonky radio is fixed by a bonk at any charge, and the
+## shrink ray goes off at any charge, so their whole ring
+## counts as the band.
 func is_locked_prop_green() -> bool:
-	return (
-		is_instance_valid(_locked_prop)
-		and _locked_prop is Radio
-		and (_locked_prop as Radio).is_glitching
-	)
+	if not is_instance_valid(_locked_prop):
+		return false
+	if _locked_prop is Radio:
+		return (_locked_prop as Radio).is_glitching
+	if _locked_prop is ShrinkRay:
+		return not (_locked_prop as ShrinkRay).has_fired
+	return false
 
 
 ## True while the charge sits inside the locked target's band.
@@ -146,10 +149,18 @@ func on_effect_pressed(_global_point: Vector2) -> void:
 		if not is_instance_valid(_locked_target):
 			_locked_surface = G.level.hand.find_surface(_locked_point)
 		if not is_instance_valid(_locked_target):
+			# A strikable prop (the shrink ray, the radio) takes
+			# the hit over its own layer's dent: hammering any
+			# part of it sets it off. Once it has gone off it
+			# stops qualifying, and later hits land on the
+			# layer and its points as usual.
 			if not is_instance_valid(_locked_surface):
-				_locked_layer = _find_layer_target(_locked_point)
-			if not is_instance_valid(_locked_layer):
 				_locked_prop = _find_strikable_prop(_locked_point)
+			if (
+				not is_instance_valid(_locked_prop)
+				and not is_instance_valid(_locked_surface)
+			):
+				_locked_layer = _find_layer_target(_locked_point)
 		G.level.hand.set_input_owner(self)
 	_phase = WindPhase.WINDING
 	_wind_sec = 0.0

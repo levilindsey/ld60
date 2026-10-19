@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://wnluu85ums1p" path="res://assets/images/repairables/tv_fixed_channel_1.png" id="fixed1_tex"]
 [ext_resource type="Texture2D" uid="uid://bvjdk81a1qia0" path="res://assets/images/repairables/tv_fixed_channel_2.png" id="fixed2_tex"]
 [ext_resource type="Texture2D" uid="uid://bdhxoykfocdx7" path="res://assets/images/repairables/tv_controls.png" id="good_tex"]
+[ext_resource type="Texture2D" uid="uid://dyj7f66igylpa" path="res://assets/images/repairables/tv_bad_controls.png" id="bad_tex"]
 [ext_resource type="Texture2D" uid="uid://ci6a4d1p4f1cy" path="res://assets/images/repairables/tv_static_1.png" id="static1_tex"]
 [ext_resource type="Texture2D" uid="uid://bm2wv6hlqgeus" path="res://assets/images/repairables/tv_static_2.png" id="static2_tex"]
 [ext_resource type="Texture2D" uid="uid://cly16lbogiq7x" path="res://assets/images/repairables/tv_straight_antenna.png" id="straight_tex"]
@@ -98,10 +99,11 @@ texture = ExtResource("straight_tex")
 region_enabled = true
 region_rect = Rect2(681.5, 158, 161.5, 108.5)
 
-[node name="Controls" parent="Layers/Body" unique_id=1830129670 node_paths=PackedStringArray("installed_art", "good_part_shape") instance=ExtResource("5_socket")]
+[node name="Controls" parent="Layers/Body" unique_id=1830129670 node_paths=PackedStringArray("installed_art", "bad_part_shape", "good_part_shape") instance=ExtResource("5_socket")]
 position = Vector2(747, 187)
 accepted_part = 2
 installed_art = NodePath("GoodControls")
+bad_part_shape = NodePath("BrokenPart/BadPartShape")
 good_part_shape = NodePath("GoodPartShape")
 
 [node name="GoodControls" type="Sprite2D" parent="Layers/Body/Controls" unique_id=1312169053]
@@ -109,6 +111,21 @@ scale = Vector2(2, 2)
 texture = ExtResource("good_tex")
 region_enabled = true
 region_rect = Rect2(1108.5, 459.5, 283.5, 507.5)
+
+[node name="BustedControls" type="Sprite2D" parent="Layers/Body/Controls/BrokenPart" unique_id=1312169056]
+scale = Vector2(2, 2)
+texture = ExtResource("bad_tex")
+region_enabled = true
+region_rect = Rect2(1108.5, 459.5, 283.5, 507.5)
+
+[node name="BadPartShape" type="Area2D" parent="Layers/Body/Controls/BrokenPart" unique_id=1312169057]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Controls/BrokenPart/BadPartShape" unique_id=1312169058]
+polygon = PackedVector2Array(-283, -488, 283, -488, 283, 488, -283, 488)
 
 [node name="GoodPartShape" type="Area2D" parent="Layers/Body/Controls" unique_id=1312169054]
 collision_layer = 0
@@ -122,6 +139,7 @@ polygon = PackedVector2Array(-283, -488, 283, -488, 283, 488, -283, 488)
 [node name="FinalWhack" parent="Layers/Body" unique_id=24686342 instance=ExtResource("6_stuck")]
 position = Vector2(188, -24)
 hits_needed = 1
+highlights_item_shape = true
 band_min = 0.25
 bench_dust_spew_count = 12
 

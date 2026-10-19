@@ -376,6 +376,8 @@ bus = &"SFX"
 [node name="Blast" type="AudioStreamPlayer" parent="." unique_id=1903317542]
 unique_name_in_owner = true
 stream = ExtResource("94_blast")
+volume_db = 10.0
+pitch_scale = 1.12
 bus = &"SFX"
 
 [node name="Grind" type="AudioStreamPlayer" parent="." unique_id=1851247793]

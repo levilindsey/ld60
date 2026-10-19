@@ -16,6 +16,10 @@ func _run() -> void:
 		_finish(1)
 		return
 	_hand = G.level.hand
+	var queue_ray := G.level.active_repairable
+	if is_instance_valid(queue_ray):
+		var qc := queue_ray.get_node_or_null("Layers/Body/Crystal/BrokenPart")
+		print("DIAG queue crystal brokenpart=", qc, " children=", qc.get_children() if is_instance_valid(qc) else [])
 	var ray := (load("res://src/repairables/shrink_ray_repairable.tscn") as PackedScene).instantiate() as Repairable
 	G.level.add_child(ray)
 	ray.mode = Repairable.Mode.UNDER_REPAIR
@@ -30,7 +34,6 @@ func _run() -> void:
 	if not _expect(is_instance_valid(point), "the shrink ray has a broken point"):
 		_finish(1)
 		return
-	print("DIAG point global=", point.global_position, " exposed=", point.is_exposed(), " visible=", point.is_visible_in_tree(), " piece=", is_instance_valid(point.piece))
 	if is_instance_valid(point.piece):
 		point.piece.detach_for_fall(ray.global_position + point.piece.fall_target_offset)
 		await _physics_frames(30)
@@ -48,10 +51,8 @@ func _run() -> void:
 		await _physics_frames(1)
 		settle_frames += 1
 	var nozzle_offset: Vector2 = glue.get_work_end_position() - glue.get_tip_position()
-	print("DIAG nozzle offset=", nozzle_offset, " squeezing before=", glue.get("_is_squeezing"))
 	await _press_down(point.global_position - nozzle_offset)
 	await _seconds(1.2)
-	print("DIAG squeezing=", glue.get("_is_squeezing"), " has_glue=", point.has_glue, " mode=", point.mode)
 	await _shot("ray_glue_squeeze")
 	await _release_at(point.global_position - nozzle_offset)
 	await _physics_frames(4)
@@ -59,7 +60,12 @@ func _run() -> void:
 	var decal: Sprite2D = point.glue_decal
 	_expect(is_instance_valid(decal) and decal.is_visible_in_tree(), "the trigger glue dab shows")
 	if is_instance_valid(decal):
-		print("DIAG decal pos=", decal.global_position, " alpha=", decal.modulate.a, " parent=", decal.get_parent().name)
+		_expect(
+			decal.global_position.distance_to(
+				point.global_position
+			) < 1.0,
+			"the trigger glue dab sits on the point",
+		)
 	await _shot("ray_glued")
 	glue.put_away()
 	await _physics_frames(2)
@@ -71,7 +77,7 @@ func _run() -> void:
 	await _press_at(glue.global_position)
 	_expect(_hand.held == glue, "the hand holds the glue again")
 	var near_spot: Vector2 = (
-		point.global_position + Vector2(80, 0) - nozzle_offset
+		point.global_position + Vector2(50, 0) - nozzle_offset
 	)
 	await _press_down(near_spot)
 	await _seconds(1.2)
@@ -79,8 +85,33 @@ func _run() -> void:
 		point.has_glue,
 		"glue lands with the nozzle beside the point (near aim)",
 	)
-	print("DIAG near squeezing=", glue.get("_is_squeezing"), " has_glue=", point.has_glue, " nozzle dist=", glue.get_work_end_position().distance_to(point.global_position), " overlaps=", glue.interaction_area.get_overlapping_areas().size(), " glue shape world r=", (glue.get_interaction_shape().shape as CircleShape2D).radius * glue.get_interaction_shape().global_transform.get_scale().x)
 	await _release_at(near_spot)
+	glue.put_away()
+	await _physics_frames(2)
+
+	# Squeezing on plain body art, away from any point,
+	# leaves a smear there for the rag.
+	await _press_at(glue.global_position)
+	_expect(_hand.held == glue, "the hand holds the glue for a smear")
+	var smear_spot: Vector2 = (
+		ray.layers[0].art as Sprite2D
+	).to_global(Vector2(-60, -60))
+	var smear_press: Vector2 = smear_spot - nozzle_offset
+	await _press_down(smear_press)
+	await _seconds(1.2)
+	await _release_at(smear_press)
+	await _physics_frames(4)
+	var smear: GlueSmear = null
+	for layer in ray.layers:
+		for p in layer.get_points():
+			if p is GlueSmear:
+				smear = p as GlueSmear
+	_expect(
+		is_instance_valid(smear)
+		and is_instance_valid(smear.glue_decal)
+		and smear.glue_decal.is_visible_in_tree(),
+		"glue squeezed on plain body art leaves a smear",
+	)
 	glue.put_away()
 	await _physics_frames(2)
 
@@ -105,14 +136,15 @@ func _run() -> void:
 	await _seconds(0.4)
 	await _press_down(strike_spot - hammer_offset)
 	await _seconds(0.3)
-	print("DIAG face dist=", hammer.get_work_end_position().distance_to(strike_spot), " phase=", hammer.get("_phase"), " mode=", hammer.mode, " locked target=", hammer.get_locked_target(), " prop=", hammer.get_locked_prop(), " layer=", hammer.get_locked_layer(), " surface=", hammer.get_locked_surface())
-	hammer.on_effect_pressed(strike_spot)
-	print("DIAG direct: prop=", hammer.get_locked_prop(), " layer=", hammer.get_locked_layer(), " target=", hammer.get_locked_target())
-	print("DIAG ray struck_at=", ray.is_struck_at(strike_spot), " active is ray=", G.level.active_repairable == ray, " active=", G.level.active_repairable, " ray mode=", ray.mode, " in shape=", ray.is_point_in_shape(strike_spot), " layer has_point=", ray.layers[0].has_point(strike_spot), " exposed=", ray.layers[0].is_exposed())
+	_expect(
+		hammer.get_locked_prop() == ray
+		and hammer.is_locked_prop_green(),
+		"winding up on the ray shows the green ring",
+	)
 	await _release_at(strike_spot - hammer_offset)
 	await _seconds(0.5)
-	print("DIAG fired=", ray.has_fired, " jam hits=", (ray.get_node("Layers/Body/Jam") as StuckPart).hits_done if is_instance_valid(ray.get_node_or_null("Layers/Body/Jam")) else -1)
 	_expect(
 		ray.has_fired, "a hammer hit on the body sets the ray off"
 	)
 	_finish(0 if _failures.is_empty() else 1)
+

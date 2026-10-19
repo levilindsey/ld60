@@ -30,6 +30,7 @@ Defaults, tuned in settings (a "Quality" export group):
 | Glue blob | -5 | Too much glue in one spot, or a glue smear left uncleaned |
 | Grime/dust left | -3 | A grime spot (`LEFTOVER_GRIME`) or dust clump (`LEFTOVER_DUST`) left uncleaned, per spot; separate kinds so the receipt can tell them apart |
 | Failed glue hold | -5 | A broken piece hold that leaves its ring, per failure |
+| Part left out | -2 | A drawer part left loose on the bench when the item ships (`PART_LEFT_OUT`, receipt tag "messy desk"), per part |
 | Over par time | -1 per 2 s, at most -30 | A slow repair |
 | Wrong tool or wrong part | 0 | It just bounces off |
 

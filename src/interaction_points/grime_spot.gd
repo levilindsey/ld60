@@ -12,8 +12,13 @@ extends DirtSpot
 ## grime, but it does not change how long wiping takes.
 @export var amount := 1.0
 ## How hard the grime is to wipe off. The wiping a spot
-## needs is its toughness alone.
+## needs is its toughness alone, times the global scale
+## below: grime takes twice the wiping its toughness says.
 @export var toughness := 1.0
+
+## Every grime spot takes this many times the wiping its
+## toughness alone would need.
+const _WIPE_TIME_SCALE := 2.0
 
 ## Hit points left. It starts at the toughness.
 var hit_points_left := 0.0
@@ -29,7 +34,7 @@ func _ready() -> void:
 	_decal_size_scale = 2.0
 	_set_up_art()
 	_add_extra_decals(maxi(1, int(round(amount))))
-	_total_hit_points = maxf(toughness, 0.0)
+	_total_hit_points = maxf(toughness * _WIPE_TIME_SCALE, 0.0)
 	hit_points_left = _total_hit_points
 	_update_alpha()
 

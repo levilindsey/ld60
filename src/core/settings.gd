@@ -15,7 +15,7 @@ enum PhysicsLayer {
 
 # --- General configuration ---
 
-@export var dev_mode := true
+@export var dev_mode := false
 @export var show_debug_console := false
 
 @export var start_in_game := true
@@ -27,8 +27,9 @@ enum PhysicsLayer {
 ## winning does, instead of playing the day through. A
 ## playtesting convenience.
 @export var show_credits_at_start := false
-## Show the instruction manual on the bench. Off, the level
-## removes it before play, so it is neither seen nor tapped.
+## Show the instruction manual on the bench. When off, the
+## level removes it before play, so it is neither seen nor
+## tapped.
 @export var show_instruction_manual := true
 @export var full_screen := false
 @export var move_preview_windows_to_other_display := true
@@ -449,6 +450,8 @@ enum FirstRepairable {
 ## A bench dust clump left uncleaned when the item finishes,
 ## per clump. See `Level.spawn_bench_dust()`.
 @export var bench_dust_points := 3
+## A drawer part left out on the bench when the item ships.
+@export var messy_desk_points := 2
 ## A broken piece hold that leaves its ring, per failure.
 @export var failed_glue_hold_points := 5
 ## A dust clump blown down to this share of its toughness
@@ -601,6 +604,8 @@ func get_defect_points(defect: RepairQuality.Defect) -> int:
 			points = leftover_dirt_points
 		RepairQuality.Defect.BENCH_DUST_LEFT:
 			points = bench_dust_points
+		RepairQuality.Defect.PART_LEFT_OUT:
+			points = messy_desk_points
 		RepairQuality.Defect.FAILED_GLUE_HOLD:
 			points = failed_glue_hold_points
 		_:

@@ -65,8 +65,8 @@ const _BENCH_DUST_SCENE: PackedScene = preload(
 ## how far below it most of it settles on the bench. One
 ## clump in `_BENCH_DUST_ON_ITEM_SHARE` instead lands close
 ## to the knock, on the item itself.
-const _BENCH_DUST_SPREAD_X_PX := 120.0
-const _BENCH_DUST_SETTLE_Y_PX := 70.0
+const _BENCH_DUST_SPREAD_X_PX := 240.0
+const _BENCH_DUST_SETTLE_Y_PX := 210.0
 const _BENCH_DUST_ON_ITEM_SHARE := 0.25
 ## Shortest and longest slide of a spewed clump before it
 ## settles into a point, and the least distance one travels.
@@ -2063,6 +2063,38 @@ func get_bench_dust() -> Array[BenchDust]:
 	for entry: Variant in _bench_dust:
 		dusts.append(entry as BenchDust)
 	return dusts
+
+
+## Charges an item for each drawer part left out on the
+## bench when it ships and returns how many were charged:
+## a part that is neither stored in its drawer, installed
+## in a socket, on its way back, nor in the hand is mess.
+## Each costs `Settings.messy_desk_points` as a
+## `PART_LEFT_OUT` defect, charged at most once per part.
+func charge_messy_desk(item: Repairable) -> int:
+	if not is_instance_valid(item):
+		return 0
+	var held: Part = null
+	if is_instance_valid(hand):
+		held = hand.get_loose_part()
+	var charged := 0
+	for part in get_drawer_parts():
+		if (
+			part.is_stored
+			or part.is_installed
+			or part.is_returning
+			or part.is_charged
+			or part == held
+		):
+			continue
+		part.is_charged = true
+		item.quality.add_defect(
+			RepairQuality.Defect.PART_LEFT_OUT,
+			part.global_position,
+			part,
+		)
+		charged += 1
+	return charged
 
 
 ## How many bench dust clumps still need cleaning.

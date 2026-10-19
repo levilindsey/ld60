@@ -57,7 +57,8 @@ func _physics_process(_delta: float) -> void:
 	_item = item
 	if not is_instance_valid(item):
 		return
-	item.landed.connect(_on_item_landed, CONNECT_ONE_SHOT)
+	if not item.landed.is_connected(_on_item_landed):
+		item.landed.connect(_on_item_landed, CONNECT_ONE_SHOT)
 
 
 func _on_item_landed() -> void:

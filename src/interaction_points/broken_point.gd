@@ -163,10 +163,17 @@ func reset_for_reglue() -> void:
 	mode = Mode.UNSTARTED
 	has_glue = false
 	hold_progress_sec = 0.0
+	_destroy_glue_decal()
+	queue_redraw()
+
+
+## The glue dab has done its job: once the piece is on, the
+## dab goes away instead of sitting under the piece (and
+## peeking out around it) for the rest of the repair.
+func _destroy_glue_decal() -> void:
 	if is_instance_valid(glue_decal):
 		glue_decal.queue_free()
 	glue_decal = null
-	queue_redraw()
 
 
 ## Glue flowed at a world point. True when it landed here.
@@ -408,3 +415,4 @@ func _complete_hold() -> void:
 		# back onto this point's exact centre.
 		attached.attach_to_point(self)
 	finish()
+	_destroy_glue_decal()

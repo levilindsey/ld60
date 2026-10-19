@@ -15,7 +15,7 @@ shape = SubResource("CircleShape2D_socket")
 
 [node name="Outline" type="Polygon2D" parent="."]
 unique_name_in_owner = true
-color = Color(1, 1, 1, 0.3)
+color = Color(1, 1, 1, 0.13)
 polygon = PackedVector2Array(19, 0, 9.54594, 9.54594, 0, 13.5, -9.54594, 9.54594, -13.5, 0, -19, 0, -9.54594, -9.54594, 0, -13.5, 9.54594, -9.54594, 13.5, 0)
 
 [node name="BrokenPart" type="Node2D" parent="."]

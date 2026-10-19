@@ -104,6 +104,9 @@ extends Node2D
 }
 
 var initial_volumes := {}
+## Each player's authored pitch, so `play_sound()` can scale
+## it instead of replacing it (the blast sits a bit high).
+var initial_pitches := {}
 
 var current_theme: AudioStreamPlayer
 ## The pitch of sounds started now. The tiny hammer raises it around its
@@ -125,6 +128,7 @@ func _ready() -> void:
 	for player_name in STREAM_PLAYERS_BY_NAME:
 		var player: AudioStreamPlayer = STREAM_PLAYERS_BY_NAME[player_name]
 		initial_volumes[player_name] = player.volume_db
+		initial_pitches[player_name] = player.pitch_scale
 	# Looping fallback: Godot 4's web AudioStreamWAV loop_mode is
 	# unreliable on the AudioWorklet backend (loops fine on desktop,
 	# doesn't loop on Chrome/Firefox web). Manually re-trigger play
@@ -183,7 +187,10 @@ func play_sound(sound_name: StringName, force_restart := false) -> void:
 		# Placeholder player with no stream assigned yet.
 		return
 	if not stream_player.playing or force_restart:
-		stream_player.pitch_scale = sound_pitch_scale
+		stream_player.pitch_scale = (
+			sound_pitch_scale
+			* float(initial_pitches.get(sound_name, 1.0))
+		)
 		stream_player.play.call()
 
 

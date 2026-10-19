@@ -78,9 +78,13 @@ func _pulse_blast() -> void:
 	ray_tween.tween_property(
 		self, "scale", _home_scale, _PULSE_SETTLE_SEC
 	)
-	var crystal := (
-		%Crystal.get_node("BrokenPart/BustedCrystal") as Sprite2D
-	)
+	var crystal: Sprite2D = null
+	var broken_part := %Crystal.get_node_or_null("BrokenPart")
+	if is_instance_valid(broken_part):
+		for child in broken_part.get_children():
+			if child is Sprite2D and (child as CanvasItem).visible:
+				crystal = child as Sprite2D
+				break
 	if not is_instance_valid(crystal):
 		return
 	var crystal_home_scale: Vector2 = crystal.scale

@@ -121,6 +121,9 @@ var _arrival_start_rotation := 0.0
 ## How many times the arriving item has hit the bench.
 var _arrival_impact_count := 0
 var _outline_hint: OutlineHint
+var _is_whack_highlighted := false
+var _whack_art: Sprite2D
+var _whack_material_before: Material
 var _outlined_art: Sprite2D
 var _art_material_before_outline: Material
 var _finish_outline_material: Material
@@ -582,6 +585,7 @@ func _start_leaving() -> void:
 	if is_instance_valid(G.level):
 		G.level.charge_bench_dust(self)
 		G.level.clear_bench_dust()
+		G.level.charge_messy_desk(self)
 	mode = Mode.LEAVING
 	z_index = _LEAVING_Z_INDEX
 	set_physics_process(false)
@@ -763,9 +767,40 @@ func is_showing_outline() -> bool:
 	return is_instance_valid(_outlined_art)
 
 
+## The hammer-this-item highlight (the TV's final whack): the
+## shared hint outline on the exposed layer's art, thinner
+## than the finished outline below. The StuckPart offering
+## the whack turns it on while it is the only step left.
+func set_whack_highlight(shown: bool) -> void:
+	if shown == _is_whack_highlighted:
+		return
+	_is_whack_highlighted = shown
+	if shown:
+		var layer := get_exposed_layer()
+		if is_instance_valid(layer) and layer.art is Sprite2D:
+			if is_instance_valid(G.settings.outline_hint_material):
+				_whack_art = layer.art as Sprite2D
+				_whack_material_before = OutlineHint.apply_to_sprite(
+					_whack_art
+				)
+	else:
+		if is_instance_valid(_whack_art):
+			OutlineHint.remove_from_sprite(
+				_whack_art, _whack_material_before
+			)
+		_whack_art = null
+		_whack_material_before = null
+
+
+## True while the whack highlight is up.
+func is_whack_highlighted() -> bool:
+	return _is_whack_highlighted
+
+
 ## The finished item and the outbox get the outline. The item's top
 ## layer carries the item's share of it.
 func _start_outline() -> void:
+	set_whack_highlight(false)
 	_stop_outline()
 	var layer := get_exposed_layer()
 	if is_instance_valid(layer):

@@ -204,6 +204,30 @@ func _run() -> void:
 	G.level.clear_bench_dust()
 	await _physics_frames(2)
 
+	# A drawer part left out on the bench costs the item
+	# when it ships; parts put away cost nothing.
+	var drawer_parts := G.level.get_drawer_parts()
+	if _expect(
+		not drawer_parts.is_empty(), "the drawers stocked parts"
+	):
+		var left_out := drawer_parts[0]
+		left_out.is_stored = false
+		var mess_points := _item.quality.get_defect_points_total()
+		_expect(
+			G.level.charge_messy_desk(_item) == 1,
+			"one part left out is charged",
+		)
+		_expect(
+			_item.quality.get_defect_points_total()
+			== mess_points + G.settings.messy_desk_points,
+			"the left-out part costs its messy desk points",
+		)
+		_expect(
+			G.level.charge_messy_desk(_item) == 0,
+			"a second messy charge costs nothing more",
+		)
+		left_out.is_stored = true
+
 
 ## The receipt's clerk notes (RepairQuality.get_receipt_tags):
 ## short tags, biggest cost first, counts as ×N, capped at

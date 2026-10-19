@@ -129,6 +129,9 @@ var drawer_spot_rotation := 0.0
 ## True while a drawer is putting the part away. A returning part
 ## cannot be grabbed.
 var is_returning := false
+## True once the messy-desk charge has counted this part for
+## an item that shipped (see `Level.charge_messy_desk()`).
+var is_charged := false
 
 
 ## True once the level has chosen this part's drawer spot for

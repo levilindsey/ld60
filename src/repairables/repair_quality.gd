@@ -31,6 +31,7 @@ enum Defect {
 	LEFTOVER_DUST,
 	FAILED_GLUE_HOLD,
 	BENCH_DUST_LEFT,
+	PART_LEFT_OUT,
 }
 
 ## Every item starts with this many points.
@@ -171,6 +172,7 @@ func get_receipt_tags() -> Array[String]:
 		["scratched", [Defect.PLIERS_SCRATCH]],
 		["yanked", [Defect.YANKED_PART]],
 		["oil stain", [Defect.OIL_DRIP]],
+		["messy desk", [Defect.PART_LEFT_OUT]],
 	]
 	var by_defect := {}
 	for line in get_summary():
@@ -234,6 +236,8 @@ static func get_defect_name(defect: Defect) -> String:
 			return "Failed glue hold"
 		Defect.BENCH_DUST_LEFT:
 			return "Dust on the bench"
+		Defect.PART_LEFT_OUT:
+			return "Part left out"
 		_:
 			G.fatal()
 			return ""

@@ -6,6 +6,12 @@ extends StrikablePoint
 
 ## Working hits that free the part.
 @export var hits_needed := 3
+## Highlight the whole item shape while the whack is the
+## only step left, instead of the little cross (the TV's
+## final whack: the whole set is the target). The cross
+## never shows; `Repairable.set_whack_highlight()` draws
+## the shared hint outline on the item.
+@export var highlights_item_shape := false
 
 ## Working hits so far.
 var hits_done := 0
@@ -20,6 +26,8 @@ const _CROSS_SPAN_PX := 30.0
 ## art). It only shows once the whack is the item's only
 ## step left; see `_is_only_step_left()`.
 var _art: CanvasItem
+
+var _shape_highlight_shown := false
 
 
 func _ready() -> void:
@@ -56,6 +64,16 @@ func _process(_delta: float) -> void:
 
 
 func _update_art_visibility() -> void:
+	if highlights_item_shape:
+		if is_instance_valid(_art):
+			_art.visible = false
+		var shown := _is_only_step_left()
+		if shown != _shape_highlight_shown:
+			_shape_highlight_shown = shown
+			var item := get_item()
+			if is_instance_valid(item):
+				item.set_whack_highlight(shown)
+		return
 	if is_instance_valid(_art):
 		_art.visible = _is_only_step_left()
 
