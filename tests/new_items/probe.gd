@@ -33,6 +33,7 @@ func _ready() -> void:
 	await _check_tv()
 	await _check_keyboard()
 	await _check_piano()
+	await _check_atari()
 	await _check_placeholders()
 	_finish(0 if _failures.is_empty() else 1)
 
@@ -137,9 +138,33 @@ func _check_piano() -> void:
 	await _physics_frames(2)
 
 
+func _check_atari() -> void:
+	var item := _spawn("res://src/repairables/atari_repairable.tscn")
+	if not _expect(is_instance_valid(item), "the Atari loads"):
+		return
+	var screw: FlatHeadScrew = null
+	for layer in item.layers:
+		for point in layer.get_points():
+			if point is FlatHeadScrew:
+				screw = point as FlatHeadScrew
+	_expect(
+		is_instance_valid(screw),
+		"the Atari is screwed on with a flathead screw",
+	)
+	_expect(
+		is_instance_valid(_find_socket(item, Part.Type.JOYSTICK)),
+		"the Atari has a joystick socket to yank and refit",
+	)
+	_expect(
+		item.layers.size() == 2,
+		"the Atari opens: a cover over an inside",
+	)
+	item.queue_free()
+	await _physics_frames(2)
+
+
 func _check_placeholders() -> void:
 	for scene_path in [
-		"res://src/repairables/atari_repairable.tscn",
 		"res://src/repairables/game_n_watch_repairable.tscn",
 		"res://src/repairables/radio_repairable.tscn",
 		"res://src/repairables/toaster.tscn",
