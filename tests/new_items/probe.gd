@@ -52,6 +52,7 @@ func _ready() -> void:
 	await _check_atari()
 	await _check_game_n_watch()
 	await _check_placeholders()
+	await _check_radio_front_size()
 	_finish(0 if _failures.is_empty() else 1)
 
 
@@ -319,6 +320,41 @@ func _check_placeholders() -> void:
 		)
 		item.queue_free()
 		await _physics_frames(2)
+
+
+## The radio item sits at a small root scale, so its front
+## must keep that world size when it leaves the item: it
+## reparents to the unscaled set-aside spot.
+func _check_radio_front_size() -> void:
+	var item := _spawn("res://src/repairables/radio_repairable.tscn")
+	if not _expect(is_instance_valid(item), "the radio loads again"):
+		return
+	var front: RepairLayer
+	for layer in item.layers:
+		if layer.name == "Front":
+			front = layer
+	if not _expect(
+		is_instance_valid(front), "the radio has a front layer"
+	):
+		item.queue_free()
+		return
+	for fastener in front.get_fasteners():
+		(fastener as Screw).remove()
+	for frame in 600:
+		if front.is_loose():
+			break
+		await get_tree().physics_frame
+	_expect(front.is_loose(), "the front's screws come out")
+	var size_before := front.global_scale
+	front.take_off_for_drag()
+	_expect(
+		front.global_scale.is_equal_approx(size_before),
+		"the radio front keeps its size when taken off (was %s, now %s)"
+		% [size_before, front.global_scale],
+	)
+	front.queue_free()
+	item.queue_free()
+	await _physics_frames(2)
 
 
 ## True when the socket's broken part carries a real sprite

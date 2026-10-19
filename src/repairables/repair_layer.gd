@@ -302,6 +302,7 @@ func take_off_for_drag() -> void:
 	var spot := G.level.get_set_aside_spot()
 	var kept_global := global_position
 	var kept_rotation := global_rotation
+	var kept_global_scale := global_scale
 	has_been_removed = true
 	is_on = false
 	is_moving = true
@@ -312,8 +313,10 @@ func take_off_for_drag() -> void:
 	reparent(spot)
 	global_position = kept_global
 	global_rotation = kept_rotation
-	scale = _home_scale
-	_rest_scale = _home_scale
+	# The item may itself be scaled (the radio sits at 0.12), so
+	# keep the size the world saw, not the layer's local scale.
+	global_scale = kept_global_scale
+	_rest_scale = scale
 	reset_physics_interpolation()
 	_kill_move_tween()
 	_move_tween = create_tween()
