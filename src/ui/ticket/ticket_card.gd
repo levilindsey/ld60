@@ -48,9 +48,15 @@ const _LEAVE_RISE_PX := 60.0
 const _WRITE_LETTERS_PER_SEC := 12.0
 ## The pause between the time being written and the stamp.
 const _STAMP_DELAY_SEC := 0.3
-const _STAMP_DURATION_SEC := 0.15
-## The stamp's scale as it starts to come down.
-const _STAMP_START_SCALE := 2.5
+## How long the ticket jolts and settles when the stamp is slapped on.
+const _SLAP_DURATION_SEC := 0.35
+## How far the slap pushes the ticket down, in pixels.
+const _SLAP_PUSH_PX := 10.0
+## How much the slap squashes the ticket, as a fraction of its size.
+const _SLAP_SQUASH := 0.04
+const _SLAP_ROCK_RADIANS := 0.03
+## Bounces as the ticket settles from the slap.
+const _SLAP_BOUNCES := 2.5
 ## How long the finished receipt stays before it leaves.
 const _DONE_HOLD_SEC := 2.0
 
@@ -253,26 +259,21 @@ func _on_time_written() -> void:
 	)
 
 
+## The stamp appears all at once and the ticket jolts, as if slapped.
 func _stamp() -> void:
 	%Stamp.visible = true
+	_play_sound(&"thud", true)
 	_motion_tween_id = G.time.tween_method(
 		self,
-		"_set_stamp",
+		"_set_slap",
 		0.0,
 		1.0,
-		_STAMP_DURATION_SEC,
-		"ease_in",
+		_SLAP_DURATION_SEC,
+		"linear",
 		0.0,
 		TimeType.PLAY_PHYSICS,
-		_on_stamped,
+		_hold_done,
 	)
-
-
-func _on_stamped() -> void:
-	_play_sound(&"thud", true)
-	if is_instance_valid(G.level):
-		G.level.shake_camera(4.0, 0.12)
-	_hold_done()
 
 
 func _hold_done() -> void:
@@ -290,7 +291,7 @@ func _finish_done() -> void:
 	_set_ink_progress(_time_letter_count + 2.0)
 	if %Stamp.texture != null:
 		%Stamp.visible = true
-		_set_stamp(1.0)
+	_set_lift(1.0)
 	_is_done_shown = false
 	_leave_lift = 1.0
 	_leave()
@@ -337,10 +338,17 @@ func _set_ink_progress(progress: float) -> void:
 	%TimeLabel.custom_effects[0].progress = progress
 
 
-## 0 is high above the paper; 1 has come down on it.
-func _set_stamp(progress: float) -> void:
-	%Stamp.scale = Vector2.ONE * lerpf(_STAMP_START_SCALE, 1.0, progress)
-	%Stamp.modulate.a = progress
+## 0 is the moment of the slap, pushed down and squashed; 1 has settled
+## back into the receipt pose, bouncing less and less on the way.
+func _set_slap(progress: float) -> void:
+	_set_lift(1.0)
+	var remaining := 1.0 - progress
+	var bounce := (
+		remaining * remaining * cos(progress * PI * 2.0 * _SLAP_BOUNCES)
+	)
+	global_position.y += _SLAP_PUSH_PX * bounce
+	global_scale *= 1.0 - _SLAP_SQUASH * bounce
+	global_rotation += _SLAP_ROCK_RADIANS * bounce
 
 
 ## "Fixed in 2 min 12 sec", leaving out a unit that is zero.
