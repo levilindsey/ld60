@@ -1,0 +1,127 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/repairables/repairable.gd" id="1_item"]
+[ext_resource type="Script" path="res://src/repairables/repair_layer.gd" id="2_layer"]
+[ext_resource type="Script" path="res://src/repairables/surface.gd" id="3_surface"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/bent_part.tscn" id="4_bent"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/part_socket.tscn" id="5_socket"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/stuck_part.tscn" id="6_stuck"]
+[ext_resource type="Texture2D" uid="uid://bcj46dyjdkhqg" path="res://assets/images/repairables/tv_with_gaps.png" id="body_tex"]
+[ext_resource type="Texture2D" uid="uid://ll4k1f4aobj1" path="res://assets/images/repairables/tv_bent_antenna.png" id="bent_tex"]
+[ext_resource type="Texture2D" uid="uid://cly16lbogiq7x" path="res://assets/images/repairables/tv_straight_antenna.png" id="straight_tex"]
+[ext_resource type="Texture2D" uid="uid://dyj7f66igylpa" path="res://assets/images/repairables/tv_bad_controls.png" id="bad_tex"]
+[ext_resource type="Texture2D" uid="uid://bdhxoykfocdx7" path="res://assets/images/repairables/tv_controls.png" id="good_tex"]
+
+[sub_resource type="RectangleShape2D" id="drop_shape"]
+size = Vector2(2341, 1850)
+
+[sub_resource type="RectangleShape2D" id="surface_shape"]
+size = Vector2(2341, 1850)
+
+[sub_resource type="CircleShape2D" id="antenna_shape"]
+radius = 190.0
+
+[sub_resource type="CircleShape2D" id="controls_shape"]
+radius = 330.0
+
+[sub_resource type="CircleShape2D" id="whack_shape"]
+radius = 230.0
+
+[node name="TvRepairable" type="Node2D"]
+scale = Vector2(0.13, 0.13)
+script = ExtResource("1_item")
+item_name = "TV"
+ticket = "Antenna's bent, controls are shot. Whack it back to life at the end."
+
+[node name="DropArea" type="Area2D" parent="."]
+unique_name_in_owner = true
+collision_layer = 2
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea"]
+position = Vector2(188, -24)
+shape = SubResource("drop_shape")
+
+[node name="Layers" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Body" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+script = ExtResource("2_layer")
+art = NodePath("Art")
+
+[node name="Art" type="Sprite2D" parent="Layers/Body"]
+texture = ExtResource("body_tex")
+
+[node name="CaseSurface" type="Area2D" parent="Layers/Body"]
+collision_layer = 32
+collision_mask = 0
+monitoring = false
+script = ExtResource("3_surface")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layers/Body/CaseSurface"]
+position = Vector2(188, -24)
+shape = SubResource("surface_shape")
+
+[node name="Antenna" parent="Layers/Body" node_paths=PackedStringArray("art", "straight_art") instance=ExtResource("4_bent")]
+position = Vector2(-221, -759)
+art = NodePath("AntennaBent")
+straight_art = NodePath("AntennaStraight")
+error_deg = 28.0
+hits_to_straighten = 3
+band_min = 0.25
+band_max = 0.65
+bench_dust_spew_count = 2
+
+[node name="CollisionShape2D" parent="Layers/Body/Antenna"]
+shape = SubResource("antenna_shape")
+
+[node name="Art" parent="Layers/Body/Antenna"]
+visible = false
+
+[node name="AntennaBent" type="Sprite2D" parent="Layers/Body/Antenna"]
+texture = ExtResource("bent_tex")
+region_enabled = true
+region_rect = Rect2(1380, 406, 306, 151)
+
+[node name="AntennaStraight" type="Sprite2D" parent="Layers/Body/Antenna"]
+texture = ExtResource("straight_tex")
+region_enabled = true
+region_rect = Rect2(1363, 316, 323, 217)
+
+[node name="Controls" parent="Layers/Body" node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
+position = Vector2(747, 187)
+accepted_part = 3
+installed_art = NodePath("GoodControls")
+
+[node name="CollisionShape2D" parent="Layers/Body/Controls"]
+shape = SubResource("controls_shape")
+
+[node name="Outline" parent="Layers/Body/Controls"]
+visible = false
+
+[node name="BrokenArt" parent="Layers/Body/Controls/BrokenPart"]
+visible = false
+
+[node name="BadControls" type="Sprite2D" parent="Layers/Body/Controls/BrokenPart"]
+texture = ExtResource("bad_tex")
+region_enabled = true
+region_rect = Rect2(2217, 919, 567, 1015)
+
+[node name="GoodControls" type="Sprite2D" parent="Layers/Body/Controls"]
+texture = ExtResource("good_tex")
+region_enabled = true
+region_rect = Rect2(2217, 919, 567, 1015)
+
+[node name="FinalWhack" parent="Layers/Body" instance=ExtResource("6_stuck")]
+position = Vector2(188, -24)
+hits_needed = 1
+band_min = 0.25
+band_max = 0.75
+bench_dust_spew_count = 3
+
+[node name="CollisionShape2D" parent="Layers/Body/FinalWhack"]
+shape = SubResource("whack_shape")
+
+[node name="Art" parent="Layers/Body/FinalWhack"]
+visible = false

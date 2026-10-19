@@ -16,6 +16,10 @@ const _CRACK_SIZE_PX := 52.0
 @export var band_min := 0.45
 ## Charge where the band ends, from 0 to 1.
 @export var band_max := 0.75
+## Bench dust clumps a working hit shakes loose onto the
+## workbench (the TV spews when whacked). Zero spews none.
+## Other bespoke items can set this on their own points.
+@export var bench_dust_spew_count := 0
 
 
 ## The hammer hit this point with this charge, from 0 to 1.
@@ -46,6 +50,12 @@ func on_struck(strength: float) -> void:
 	else:
 		G.level.shake_camera(4.0, 0.15)
 	G.audio.play_sound(&"thud", true)
+	if (
+		bench_dust_spew_count > 0
+		and is_instance_valid(G.level)
+		and G.level.has_method("spawn_bench_dust")
+	):
+		G.level.spawn_bench_dust(global_position, bench_dust_spew_count)
 	apply_hit(strength, is_over)
 
 

@@ -42,6 +42,10 @@ func _run() -> void:
 	G.settings.hint_delay_sec = 0.25
 	G.settings.hint_tool_delay_sec = 0.55
 	await _seconds(0.3)
+	var probe_queue: Array[Repairable.Type] = [
+		Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE,
+	]
+	G.settings.item_queue = probe_queue
 	G.state.transition(StateMain.State.GAME)
 	await _seconds(0.8)
 	if not _expect(is_instance_valid(G.level), "the level is running"):

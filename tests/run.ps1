@@ -64,6 +64,10 @@ $Runs = @(
     @{ Name = "hints"; Probe = "hints"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
     @{ Name = "screw_swap"; Probe = "screw_swap"; UserArguments = @(); TimeoutSeconds = 150; WindowedArguments = @() }
     @{ Name = "broken_glue"; Probe = "broken_glue"; UserArguments = @(); TimeoutSeconds = 150; WindowedArguments = @() }
+    @{ Name = "bench_dust"; Probe = "bench_dust"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
+    @{ Name = "grime_screw"; Probe = "grime_screw"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
+    @{ Name = "yank_tap"; Probe = "yank_tap"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
+    @{ Name = "new_items"; Probe = "new_items"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
 )
 
 

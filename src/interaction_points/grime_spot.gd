@@ -49,6 +49,13 @@ func _clean() -> void:
 	_update_alpha()
 	G.audio.play_sound(&"ding")
 	finish()
+	# Cleaned off, the patch no longer blocks what was under it.
+	# A screw it covered can be worked again.
+	for child in get_children():
+		if child is CollisionShape2D:
+			(child as CollisionShape2D).set_deferred(
+				"disabled", true
+			)
 
 
 func _update_alpha() -> void:

@@ -1,0 +1,128 @@
+﻿[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/repairables/repairable.gd" id="1_item"]
+[ext_resource type="Script" path="res://src/repairables/repair_layer.gd" id="2_layer"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/flat_head_screw.tscn" id="4_screw"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/part_socket.tscn" id="5_socket"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/stuck_part.tscn" id="6_stuck"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/dust_clump.tscn" id="7_dust"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/broken_point.tscn" id="9_point"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/broken_piece.tscn" id="10_piece"]
+[ext_resource type="Texture2D" uid="uid://8aaa5q1tdpsf" path="res://assets/images/repairables/radio.png" id="front_tex"]
+[ext_resource type="Texture2D" uid="uid://bjm15dp86ks2j" path="res://assets/images/repairables/radio_inside.png" id="inside_tex"]
+[ext_resource type="Texture2D" uid="uid://5lq8n6qwe2yw" path="res://assets/images/repairables/radio_bad_bulb.png" id="bad_tex"]
+[ext_resource type="Texture2D" uid="uid://2tb724cejrw0" path="res://assets/images/repairables/radio_good_bulb.png" id="good_tex"]
+
+[sub_resource type="RectangleShape2D" id="drop_shape"]
+size = Vector2(3022, 2437)
+
+[sub_resource type="CircleShape2D" id="bulb_shape"]
+radius = 280.0
+
+[sub_resource type="CircleShape2D" id="dust_shape"]
+radius = 150.0
+
+[sub_resource type="CircleShape2D" id="whack_shape"]
+radius = 220.0
+
+[node name="RadioRepairable" type="Node2D"]
+scale = Vector2(0.12, 0.12)
+script = ExtResource("1_item")
+item_name = "Radio"
+ticket = "Open it up, swap the bulb, blow it out, whack it, glue the dial."
+
+[node name="DropArea" type="Area2D" parent="."]
+unique_name_in_owner = true
+collision_layer = 2
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea"]
+position = Vector2(-40, -2)
+shape = SubResource("drop_shape")
+
+[node name="Layers" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Inside" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+script = ExtResource("2_layer")
+art = NodePath("Art")
+
+[node name="Art" type="Sprite2D" parent="Layers/Inside"]
+texture = ExtResource("inside_tex")
+
+[node name="Bulb" parent="Layers/Inside" node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
+position = Vector2(592, 444)
+accepted_part = 1
+installed_art = NodePath("GoodBulb")
+
+[node name="CollisionShape2D" parent="Layers/Inside/Bulb"]
+shape = SubResource("bulb_shape")
+
+[node name="Outline" parent="Layers/Inside/Bulb"]
+visible = false
+
+[node name="BrokenArt" parent="Layers/Inside/Bulb/BrokenPart"]
+visible = false
+
+[node name="BadBulb" type="Sprite2D" parent="Layers/Inside/Bulb/BrokenPart"]
+texture = ExtResource("bad_tex")
+region_enabled = true
+region_rect = Rect2(2119, 1174, 455, 1020)
+
+[node name="GoodBulb" type="Sprite2D" parent="Layers/Inside/Bulb"]
+texture = ExtResource("good_tex")
+region_enabled = true
+region_rect = Rect2(2118, 1175, 455, 994)
+
+[node name="DustA" parent="Layers/Inside" instance=ExtResource("7_dust")]
+position = Vector2(-954, -40)
+is_required = false
+
+[node name="CollisionShape2D" parent="Layers/Inside/DustA"]
+shape = SubResource("dust_shape")
+
+[node name="DustB" parent="Layers/Inside" instance=ExtResource("7_dust")]
+position = Vector2(46, 760)
+is_required = false
+
+[node name="CollisionShape2D" parent="Layers/Inside/DustB"]
+shape = SubResource("dust_shape")
+
+[node name="Front" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+script = ExtResource("2_layer")
+art = NodePath("Art")
+
+[node name="Art" type="Sprite2D" parent="Layers/Front"]
+texture = ExtResource("front_tex")
+
+[node name="ScrewLeft" parent="Layers/Front" instance=ExtResource("4_screw")]
+position = Vector2(-1154, -640)
+scale = Vector2(8, 8)
+
+[node name="ScrewRight" parent="Layers/Front" instance=ExtResource("4_screw")]
+position = Vector2(1046, -640)
+scale = Vector2(8, 8)
+
+[node name="FinalWhack" parent="Layers/Front" instance=ExtResource("6_stuck")]
+position = Vector2(-40, -2)
+hits_needed = 1
+band_min = 0.25
+band_max = 0.75
+
+[node name="CollisionShape2D" parent="Layers/Front/FinalWhack"]
+shape = SubResource("whack_shape")
+
+[node name="Art" parent="Layers/Front/FinalWhack"]
+visible = false
+
+[node name="DialPoint" parent="Layers/Front" instance=ExtResource("9_point")]
+position = Vector2(946, 560)
+is_required = false
+
+[node name="DialPiece" parent="Layers/Front" node_paths=PackedStringArray("target_point") instance=ExtResource("10_piece")]
+position = Vector2(1246, 710)
+target_point = NodePath("../DialPoint")
+starts_detached = true
+fall_target_offset = Vector2(300, 150)
+

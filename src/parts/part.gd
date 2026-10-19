@@ -14,6 +14,12 @@ enum Type {
 	GEAR,
 	TUBE,
 	SPRING,
+	TV_CONTROLS,
+	LETTER_KEY,
+	SPACEBAR,
+	LED,
+	JOYSTICK,
+	CIRCUIT,
 }
 
 ## Seconds the part takes to snap into a socket.
@@ -221,6 +227,18 @@ static func get_display_name(part_type: Type) -> String:
 			return "Tube"
 		Type.SPRING:
 			return "Spring"
+		Type.TV_CONTROLS:
+			return "TV controls"
+		Type.LETTER_KEY:
+			return "Letter key"
+		Type.SPACEBAR:
+			return "Spacebar"
+		Type.LED:
+			return "LED"
+		Type.JOYSTICK:
+			return "Joystick"
+		Type.CIRCUIT:
+			return "Circuit"
 		_:
 			G.fatal()
 			return ""
@@ -234,6 +252,18 @@ static func get_color(part_type: Type) -> Color:
 			return Color(0.45, 0.65, 0.85)
 		Type.SPRING:
 			return Color(0.55, 0.8, 0.5)
+		Type.TV_CONTROLS:
+			return Color(0.75, 0.45, 0.3)
+		Type.LETTER_KEY:
+			return Color(0.9, 0.88, 0.8)
+		Type.SPACEBAR:
+			return Color(0.85, 0.83, 0.75)
+		Type.LED:
+			return Color(0.95, 0.3, 0.25)
+		Type.JOYSTICK:
+			return Color(0.8, 0.25, 0.25)
+		Type.CIRCUIT:
+			return Color(0.25, 0.65, 0.35)
 		_:
 			G.fatal()
 			return Color.WHITE
@@ -274,6 +304,61 @@ static func get_polygon(part_type: Type) -> PackedVector2Array:
 					Vector2(-4, 14),
 					Vector2(-12, 2),
 					Vector2(-20, 14),
+				]
+			)
+		Type.TV_CONTROLS:
+			return PackedVector2Array(
+				[
+					Vector2(-14, -18),
+					Vector2(14, -18),
+					Vector2(14, 18),
+					Vector2(-14, 18),
+				]
+			)
+		Type.LETTER_KEY:
+			return PackedVector2Array(
+				[
+					Vector2(-13, -13),
+					Vector2(13, -13),
+					Vector2(13, 13),
+					Vector2(-13, 13),
+				]
+			)
+		Type.SPACEBAR:
+			return PackedVector2Array(
+				[
+					Vector2(-26, -8),
+					Vector2(26, -8),
+					Vector2(26, 8),
+					Vector2(-26, 8),
+				]
+			)
+		Type.LED:
+			var led_points := PackedVector2Array()
+			for index in 12:
+				var angle := TAU * index / 12.0
+				led_points.append(Vector2.from_angle(angle) * 11.0)
+			return led_points
+		Type.JOYSTICK:
+			return PackedVector2Array(
+				[
+					Vector2(-6, -20),
+					Vector2(6, -20),
+					Vector2(6, 2),
+					Vector2(16, 2),
+					Vector2(16, 14),
+					Vector2(-16, 14),
+					Vector2(-16, 2),
+					Vector2(-6, 2),
+				]
+			)
+		Type.CIRCUIT:
+			return PackedVector2Array(
+				[
+					Vector2(-20, -13),
+					Vector2(20, -13),
+					Vector2(20, 13),
+					Vector2(-20, 13),
 				]
 			)
 		_:

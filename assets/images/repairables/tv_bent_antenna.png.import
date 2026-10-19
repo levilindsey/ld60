@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://pnajuswex37w"
-path="res://.godot/imported/button_hover.png-0cf08a821f5f7e7c57c8037568467deb.ctex"
+uid="uid://ll4k1f4aobj1"
+path="res://.godot/imported/tv_bent_antenna.png-02affb84fe9e2ac52bd62830aec4fc00.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/gui/button_hover.png"
-dest_files=["res://.godot/imported/button_hover.png-0cf08a821f5f7e7c57c8037568467deb.ctex"]
+source_file="res://assets/images/repairables/tv_bent_antenna.png"
+dest_files=["res://.godot/imported/tv_bent_antenna.png-02affb84fe9e2ac52bd62830aec4fc00.ctex"]
 
 [params]
 

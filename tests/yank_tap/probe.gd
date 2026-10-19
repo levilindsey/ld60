@@ -1,0 +1,83 @@
+extends "res://tests/probe_base.gd"
+## Wiggling a socket's broken part out by tapping. Boots the
+## game and spawns a part socket on the test box cover. The
+## yank arrows show while its part can be tugged. Each tap is
+## one swing to alternating sides, and enough taps pop the
+## part out and hide the arrows. Dragging back and forth
+## still works it loose the usual way.
+
+
+const _MAIN_SCENE_PATH := "res://src/core/main.tscn"
+const _SOCKET_SCENE_PATH := "res://src/interaction_points/part_socket.tscn"
+const _TIMEOUT_SEC := 90.0
+
+var _item: Repairable
+var _cover: RepairLayer
+var _socket: PartSocket
+
+
+func _ready() -> void:
+	_start_timeout(_TIMEOUT_SEC)
+	_is_taking_screenshots = "--screenshots" in OS.get_cmdline_args()
+	var main := (
+		(load(_MAIN_SCENE_PATH) as PackedScene).instantiate()
+		as Main
+	)
+	main.process_mode = Node.PROCESS_MODE_PAUSABLE
+	add_child(main)
+	await _seconds(0.3)
+	var probe_queue: Array[Repairable.Type] = [
+		Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE,
+	]
+	G.settings.item_queue = probe_queue
+	G.state.transition(StateMain.State.GAME)
+	if not _expect(await _wait_for_landing(), "the first item lands"):
+		_finish(1)
+		return
+	_item = G.level.active_repairable
+	_hand = G.level.hand
+	_cover = _item.layers[_item.layers.size() - 1]
+	_socket = (
+		(load(_SOCKET_SCENE_PATH) as PackedScene).instantiate()
+		as PartSocket
+	)
+	_cover.add_child(_socket)
+	_socket.position = Vector2(12, 30)
+	_socket.swings_needed = 4
+	await _physics_frames(2)
+	if not _expect(
+		is_instance_valid(_socket), "the socket is on the cover"
+	):
+		_finish(1)
+		return
+	_expect(
+		_socket.is_yank_indicator_visible(),
+		"the yank arrows show while the part can be tugged",
+	)
+	await _press_at(_socket.global_position)
+	_expect(
+		_socket._wiggle.swings == 1,
+		"one tap is one wiggle swing",
+	)
+	var first_rock := _socket._wiggle.rock_angle_rad
+	_expect(
+		not is_zero_approx(first_rock),
+		"the tap rocks the part to one side",
+	)
+	await _press_at(_socket.global_position)
+	_expect(
+		_socket._wiggle.swings == 2
+		and signf(_socket._wiggle.rock_angle_rad) == -signf(first_rock),
+		"a second tap swings it to the other side",
+	)
+	await _press_at(_socket.global_position)
+	await _press_at(_socket.global_position)
+	_expect(
+		not _socket.has_broken_part,
+		"enough taps pop the part out",
+	)
+	_expect(
+		not _socket.is_yank_indicator_visible(),
+		"the yank arrows hide once the part is out",
+	)
+	_finish(0 if _failures.is_empty() else 1)

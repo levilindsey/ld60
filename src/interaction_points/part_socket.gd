@@ -4,7 +4,10 @@ extends InteractionPoint
 ##
 ## A broken part starts in it. The empty hand wiggles that part out,
 ## and then a press with the right part from the drawer snaps the new
-## part in.
+## part in. While a part can be tugged, two arrows beside it pulse
+## back and forth to suggest the wiggle. Dragging back and forth
+## loosens it, and a single tap counts as one swing too, so a
+## series of taps works it out.
 
 
 ## How far the broken part slides out as it loosens, in pixels.
@@ -20,6 +23,11 @@ const _ROCK_SHIFT_PX := 20.0
 @export var swing_min_px := 12.0
 ## False for a socket that starts empty.
 @export var starts_with_broken_part := true
+## Optional art of the fitted part, shown when a part lands
+## (the TV's good controls, a piano's good LED). The drawer
+## part itself is a small placeholder shape; this sprite is
+## the real fitted piece at scene scale. Hidden until then.
+@export var installed_art: Node2D
 
 ## True while the broken part still sits in the socket.
 var has_broken_part := false
@@ -30,6 +38,11 @@ var _last_pointer_screen_position := Vector2.ZERO
 var _broken_part_home_position := Vector2.ZERO
 var _pop_tween: Tween
 var _settle_tween: Tween
+var _press_swings := 0
+var _yank_indicator: Node2D
+var _yank_left: Polygon2D
+var _yank_right: Polygon2D
+var _yank_time := 0.0
 
 
 func _ready() -> void:
@@ -41,7 +54,31 @@ func _ready() -> void:
 	%BrokenArt.polygon = Part.get_polygon(accepted_part)
 	%BrokenArt.color = Part.get_color(accepted_part).darkened(0.45)
 	%BrokenPart.visible = has_broken_part
+	if is_instance_valid(installed_art):
+		installed_art.hide()
 	_broken_part_home_position = %BrokenPart.position
+	_build_yank_indicator()
+	_refresh_yank_indicator()
+
+
+func _process(delta: float) -> void:
+	if not is_instance_valid(_yank_indicator) or not _yank_indicator.visible:
+		return
+	_yank_time += delta
+	var wave := sin(_yank_time * TAU * 2.5)
+	if is_instance_valid(_yank_left):
+		_yank_left.modulate.a = 0.35 + 0.65 * maxf(wave, 0.0)
+		_yank_left.scale = Vector2.ONE * (1.0 + 0.2 * maxf(wave, 0.0))
+	if is_instance_valid(_yank_right):
+		_yank_right.modulate.a = 0.35 + 0.65 * maxf(-wave, 0.0)
+		_yank_right.scale = Vector2.ONE * (1.0 + 0.2 * maxf(-wave, 0.0))
+
+
+## True while the back-and-forth yank arrows show.
+func is_yank_indicator_visible() -> bool:
+	return (
+		is_instance_valid(_yank_indicator) and _yank_indicator.visible
+	)
 
 
 ## True while a broken part sits here for the hand to tug out.
@@ -66,9 +103,14 @@ func on_poked() -> void:
 		_last_pointer_screen_position = (
 			G.level.hand.pointer_screen_position
 		)
+		# Swings banked by earlier taps survive this press, so
+		# a series of taps adds up the way a drag does.
+		var banked_swings := _wiggle.swings
 		_wiggle.reset(
 			_last_pointer_screen_position, swings_needed, swing_min_px
 		)
+		_wiggle.swings = banked_swings
+		_press_swings = banked_swings
 		_apply_wiggle_pose()
 		G.level.hand.set_input_owner(self)
 		G.audio.play_sound(&"creak")
@@ -96,6 +138,14 @@ func on_pointer_moved(_global_position: Vector2) -> void:
 
 
 func on_pointer_released(_global_position: Vector2) -> void:
+	if _is_wiggling and _wiggle.swings == _press_swings:
+		# A press that never dragged is a tap: one swing, in
+		# the alternating direction, as though dragged that way.
+		if _wiggle.tap_swing():
+			_pop_out()
+			return
+		_apply_wiggle_pose()
+		G.audio.play_sound(&"ratchet", true)
 	_end_wiggle()
 
 
@@ -115,8 +165,42 @@ func try_fit(part: Part) -> bool:
 ## The new part landed. The socket is done.
 func on_part_installed() -> void:
 	%Outline.visible = false
+	_refresh_yank_indicator()
+	if is_instance_valid(installed_art):
+		installed_art.show()
 	G.audio.play_sound(&"click")
 	finish()
+
+
+## Builds the two yank arrows in code, one each side.
+func _build_yank_indicator() -> void:
+	_yank_indicator = Node2D.new()
+	_yank_indicator.name = "YankIndicator"
+	_yank_indicator.z_index = 20
+	add_child(_yank_indicator)
+	_yank_left = Polygon2D.new()
+	_yank_left.name = "YankLeft"
+	_yank_left.polygon = PackedVector2Array(
+		[Vector2(6, -7), Vector2(-6, 0), Vector2(6, 7)]
+	)
+	_yank_left.color = Color(1.0, 0.92, 0.4, 1.0)
+	_yank_left.position = Vector2(-30, 0)
+	_yank_indicator.add_child(_yank_left)
+	_yank_right = Polygon2D.new()
+	_yank_right.name = "YankRight"
+	_yank_right.polygon = PackedVector2Array(
+		[Vector2(-6, -7), Vector2(6, 0), Vector2(-6, 7)]
+	)
+	_yank_right.color = Color(1.0, 0.92, 0.4, 1.0)
+	_yank_right.position = Vector2(30, 0)
+	_yank_indicator.add_child(_yank_right)
+
+
+## The arrows show while a part can be tugged, and hide
+## once it is out or fitted.
+func _refresh_yank_indicator() -> void:
+	if is_instance_valid(_yank_indicator):
+		_yank_indicator.visible = has_tuggable_part()
 
 
 ## The broken part pops out and flies off as scrap. A yank costs a
@@ -124,6 +208,7 @@ func on_part_installed() -> void:
 func _pop_out() -> void:
 	var was_yanked := _wiggle.is_yanked
 	has_broken_part = false
+	_refresh_yank_indicator()
 	_stop_wiggle()
 	G.audio.play_sound(&"pop", true)
 	if was_yanked:

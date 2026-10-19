@@ -193,6 +193,13 @@ enum PhysicsLayer {
 @export var flat_head_screw_repairable_scene: PackedScene
 @export var phillips_repairable_scene: PackedScene
 @export var toaster_scene: PackedScene
+@export var atari_repairable_scene: PackedScene
+@export var keyboard_repairable_scene: PackedScene
+@export var tv_repairable_scene: PackedScene
+@export var piano_repairable_scene: PackedScene
+@export var game_n_watch_repairable_scene: PackedScene
+@export var radio_repairable_scene: PackedScene
+@export var shrink_ray_repairable_scene: PackedScene
 ## The day's order: the items that arrive, one after another. The game is
 ## won after the last one goes into the outbox.
 @export var item_queue: Array[Repairable.Type] = []
@@ -376,6 +383,9 @@ enum PhysicsLayer {
 ## A grime spot or dust clump left uncleaned when the item
 ## finishes, per spot.
 @export var leftover_dirt_points := 3
+## A bench dust clump left uncleaned when the item finishes,
+## per clump. See `Level.spawn_bench_dust()`.
+@export var bench_dust_points := 3
 ## A broken piece hold that leaves its ring, per failure.
 @export var failed_glue_hold_points := 5
 ## A repair loses some points for every full interval it runs past its par
@@ -519,6 +529,8 @@ func get_defect_points(defect: RepairQuality.Defect) -> int:
 			points = glue_blob_points
 		RepairQuality.Defect.LEFTOVER_DIRT:
 			points = leftover_dirt_points
+		RepairQuality.Defect.BENCH_DUST_LEFT:
+			points = bench_dust_points
 		RepairQuality.Defect.FAILED_GLUE_HOLD:
 			points = failed_glue_hold_points
 		_:
@@ -534,6 +546,20 @@ func get_repairable_scene_from_type(type: Repairable.Type) -> PackedScene:
 			return phillips_repairable_scene
 		Repairable.Type.TOASTER:
 			return toaster_scene
+		Repairable.Type.ATARI_JOYSTICK:
+			return atari_repairable_scene
+		Repairable.Type.KEYBOARD:
+			return keyboard_repairable_scene
+		Repairable.Type.TV:
+			return tv_repairable_scene
+		Repairable.Type.PIANO:
+			return piano_repairable_scene
+		Repairable.Type.GAME_N_WATCH:
+			return game_n_watch_repairable_scene
+		Repairable.Type.RADIO:
+			return radio_repairable_scene
+		Repairable.Type.SHRINK_RAY:
+			return shrink_ray_repairable_scene
 		_:
 			G.fatal()
 			return null

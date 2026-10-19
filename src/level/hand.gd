@@ -591,6 +591,14 @@ func _press_with_tool(global_point: Vector2) -> bool:
 		held_tool.on_effect_pressed(global_point)
 		return true
 	var target := find_point_for_tool(held_tool)
+	if is_instance_valid(target):
+		var covered_screw := target as Screw
+		if (
+			is_instance_valid(covered_screw)
+			and covered_screw.is_covered()
+		):
+			held_tool.nope()
+			return true
 	if not is_instance_valid(target) or not target.can_engage():
 		return false
 	if target.accepts(held_tool):

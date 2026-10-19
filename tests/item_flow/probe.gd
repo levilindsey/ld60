@@ -80,10 +80,11 @@ func _run() -> void:
 func _check_configuration() -> void:
 	var queue_text := str(G.settings.item_queue)
 	_expect(
-		G.settings.item_queue.size() == 3
+		G.settings.item_queue.size() == 8
 		and G.settings.item_queue[0]
-		== Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE,
-		"settings.tres loads the three-item queue (got %s)" % queue_text,
+		== Repairable.Type.ATARI_JOYSTICK,
+		"settings.tres loads the eight-item line-up (got %s)"
+		% queue_text,
 	)
 	_expect(
 		G.settings.outline_hint_material is ShaderMaterial,

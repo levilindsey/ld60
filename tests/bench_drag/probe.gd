@@ -40,6 +40,10 @@ func _ready() -> void:
 
 func _run() -> void:
 	await _seconds(0.3)
+	var probe_queue: Array[Repairable.Type] = [
+		Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE,
+	]
+	G.settings.item_queue = probe_queue
 	G.state.transition(StateMain.State.GAME)
 	if not _expect(await _wait_for_landing(), "the first item lands"):
 		return
@@ -80,6 +84,10 @@ func _collect_nodes() -> void:
 	_item = _level.active_repairable
 	_cover = _item.get_node("Layers/Cover")
 	_screw = _cover.get_node("ScrewLeft")
+	# ScrewLeft starts under grime; this probe starts cleaned
+	# (the grime_screw probe covers working it).
+	if _screw.is_covered():
+		_screw.covering_grime.finish()
 
 
 ## Turns the flathead screw out, recentering the tip every frame.

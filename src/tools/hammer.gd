@@ -16,6 +16,8 @@ enum WindPhase {
 ## Props outside the item that the hammer can hit, like the radio. Each
 ## needs `is_struck_at(global_point) -> bool` and `on_struck(charge)`.
 const STRIKABLE_PROPS_GROUP := &"strikable_props"
+## How far the held-at-full hammer trembles, in pixels each way.
+const MAX_TREMBLE_PX := 4.5
 
 ## The hammer art. It turns around the striking face.
 @export var art: Node2D
@@ -51,9 +53,10 @@ func _physics_process(delta: float) -> void:
 	art.rotation = _art_home_rotation + windup
 	art.scale = Vector2.ONE * (1.0 + 0.15 * charge)
 	if charge >= 1.0:
-		# The held full swing trembles.
+		# The held full swing trembles hard in the hand.
 		art.position = Vector2(
-			randf_range(-1.5, 1.5), randf_range(-1.5, 1.5)
+			randf_range(-MAX_TREMBLE_PX, MAX_TREMBLE_PX),
+			randf_range(-MAX_TREMBLE_PX, MAX_TREMBLE_PX),
 		)
 	else:
 		art.position = Vector2.ZERO

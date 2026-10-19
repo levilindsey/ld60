@@ -44,6 +44,10 @@ func _ready() -> void:
 
 func _run() -> void:
 	await _seconds(0.3)
+	var probe_queue: Array[Repairable.Type] = [
+		Repairable.Type.TEST_PHILLIPS_REPAIRABLE,
+	]
+	G.settings.item_queue = probe_queue
 	G.state.transition(StateMain.State.GAME)
 	if not _expect(await _wait_for_landing(), "the first item lands"):
 		return

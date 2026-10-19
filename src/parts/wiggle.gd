@@ -47,6 +47,16 @@ func reset(
 	_travelled_px = 0.0
 
 
+## Counts one tap as one swing. The rock alternates sides with
+## each tap, so repeated taps walk the part loose. True when this
+## swing reaches the count that pops the part out.
+func tap_swing() -> bool:
+	swings += 1
+	var direction := 1.0 if swings % 2 == 1 else -1.0
+	rock_angle_rad = direction * _MAX_ROCK_RAD
+	return swings >= _swings_needed
+
+
 ## Feeds one pointer position. True when the last swing pops out.
 func feed(pointer_position: Vector2) -> bool:
 	var delta_x := pointer_position.x - _last_position.x

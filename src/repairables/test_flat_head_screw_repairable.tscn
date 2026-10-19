@@ -87,8 +87,13 @@ script = ExtResource("4_surface")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Layers/Cover/CaseSurface" unique_id=1241601882]
 shape = SubResource("RectangleShape2D_case")
 
-[node name="ScrewLeft" parent="Layers/Cover" unique_id=1431611738 instance=ExtResource("2_208r4")]
+[node name="ScrewLeft" parent="Layers/Cover" unique_id=1431611738 node_paths=PackedStringArray("covering_grime") instance=ExtResource("2_208r4")]
 position = Vector2(-30, -30)
+covering_grime = NodePath("../CoverGrime")
+
+[node name="CoverGrime" parent="Layers/Cover" instance=ExtResource("6_grime")]
+position = Vector2(-30, -30)
+is_required = false
 
 [node name="ScrewRight" parent="Layers/Cover" unique_id=268084832 instance=ExtResource("8_aj7g0")]
 position = Vector2(30, 30)

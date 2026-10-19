@@ -30,6 +30,13 @@ enum Type {
 	TEST_FLAT_HEAD_SCREW_REPAIRABLE,
 	TEST_PHILLIPS_REPAIRABLE,
 	TOASTER,
+	ATARI_JOYSTICK,
+	KEYBOARD,
+	TV,
+	PIANO,
+	GAME_N_WATCH,
+	RADIO,
+	SHRINK_RAY,
 }
 
 enum Mode {
@@ -534,6 +541,9 @@ func _update_state() -> void:
 	has_finished = is_now_finished
 	if has_finished:
 		_charge_remaining_mess()
+		if is_instance_valid(G.level):
+			G.level.charge_bench_dust(self)
+			G.level.clear_bench_dust()
 		G.print(
 			"Item finished: %s" % item_name,
 			ScaffolderLog.CATEGORY_GAME_STATE,

@@ -39,6 +39,10 @@ func _ready() -> void:
 
 func _run() -> void:
 	await _seconds(0.3)
+	var probe_queue: Array[Repairable.Type] = [
+		Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE,
+	]
+	G.settings.item_queue = probe_queue
 	G.state.transition(StateMain.State.GAME)
 	if not _expect(await _wait_for_landing(), "the first item lands"):
 		return
@@ -501,6 +505,27 @@ func _check_hammer() -> void:
 	_expect(
 		seat.mode == InteractionPoint.Mode.FINISHED,
 		"a hard hit seats the part and finishes it",
+	)
+
+	# Held at full charge, the hammer trembles hard.
+	var offset := (
+		hammer.get_work_end_position() - hammer.get_tip_position()
+	)
+	var press_point := seat.global_position - offset
+	await _press_down(press_point)
+	await _seconds(G.settings.hammer_charge_sec + 0.2)
+	var biggest_tremble := 0.0
+	for frame in 30:
+		biggest_tremble = maxf(
+			biggest_tremble, hammer.art.position.length()
+		)
+		await _physics_frames(1)
+	await _release_at(press_point)
+	await _seconds(0.5)
+	_expect(
+		biggest_tremble > 2.5,
+		"the hammer shakes hard held at max (%.1f px)"
+		% biggest_tremble,
 	)
 
 

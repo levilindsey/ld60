@@ -124,6 +124,10 @@ func _run() -> void:
 			"LX25: the %s sound has a stream" % sound_name,
 		)
 	_check_drift_table()
+	var probe_queue: Array[Repairable.Type] = [
+		Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE,
+	]
+	G.settings.item_queue = probe_queue
 	G.state.transition(StateMain.State.GAME)
 	await _seconds(0.8)
 	if not _expect(is_instance_valid(G.level), "the level is running"):
@@ -310,6 +314,11 @@ func _collect_nodes() -> void:
 		_cover.move_child(stand_in, index)
 	_screw_left = _cover.get_node("ScrewLeft")
 	_screw_right = _cover.get_node("ScrewRight")
+	# ScrewLeft starts under grime on the test box (the
+	# grime_screw probe covers working it). This probe is
+	# about the driver, so it starts with the screw cleaned.
+	if _screw_left.is_covered():
+		_screw_left.covering_grime.finish()
 	_holder_position = _level.get_tool_holder_position(
 		Tool.Type.FLAT_HEAD_SCREW_DRIVER
 	)

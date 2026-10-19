@@ -19,6 +19,14 @@
 [ext_resource type="PackedScene" path="res://src/interaction_points/glue_smear.tscn" id="15_smear"]
 [ext_resource type="PackedScene" path="res://src/repairables/toaster.tscn" id="16_toaster"]
 
+[ext_resource type="PackedScene" path="res://src/repairables/atari_repairable.tscn" id="17_atari"]
+[ext_resource type="PackedScene" path="res://src/repairables/keyboard_repairable.tscn" id="18_keyboard"]
+[ext_resource type="PackedScene" path="res://src/repairables/tv_repairable.tscn" id="19_tv"]
+[ext_resource type="PackedScene" path="res://src/repairables/piano_repairable.tscn" id="20_piano"]
+[ext_resource type="PackedScene" path="res://src/repairables/game_n_watch_repairable.tscn" id="21_gnw"]
+[ext_resource type="PackedScene" path="res://src/repairables/radio_repairable.tscn" id="22_radio"]
+[ext_resource type="PackedScene" path="res://src/repairables/shrink_ray_repairable.tscn" id="23_shrink"]
+
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("5_outline")
 shader_parameter/outline_color_inner = Color(1, 0.92, 0.4, 1)
@@ -41,7 +49,14 @@ finish_sparkle_scene = ExtResource("6_sparkle")
 flat_head_screw_repairable_scene = ExtResource("3_yixrw")
 phillips_repairable_scene = ExtResource("13_philitem")
 toaster_scene = ExtResource("16_toaster")
-item_queue = Array[int]([0, 0, 0, 2])
+atari_repairable_scene = ExtResource("17_atari")
+keyboard_repairable_scene = ExtResource("18_keyboard")
+tv_repairable_scene = ExtResource("19_tv")
+piano_repairable_scene = ExtResource("20_piano")
+game_n_watch_repairable_scene = ExtResource("21_gnw")
+radio_repairable_scene = ExtResource("22_radio")
+shrink_ray_repairable_scene = ExtResource("23_shrink")
+item_queue = Array[int]([3, 4, 5, 6, 7, 8, 2, 9])
 flat_head_screw_driver_scene = ExtResource("2_xmm7k")
 rag_scene = ExtResource("9_rag")
 air_blower_scene = ExtResource("10_blower")

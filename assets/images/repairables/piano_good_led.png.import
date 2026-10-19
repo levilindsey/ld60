@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkuxtbiaa6jlx"
-path="res://.godot/imported/button_normal.png-b5b6fb91a322eeb2a5a5661cde5432c4.ctex"
+uid="uid://cu5oa7bfurap4"
+path="res://.godot/imported/piano_good_led.png-87f60f1f039185d83635cd7cb33fbff3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/gui/button_normal.png"
-dest_files=["res://.godot/imported/button_normal.png-b5b6fb91a322eeb2a5a5661cde5432c4.ctex"]
+source_file="res://assets/images/repairables/piano_good_led.png"
+dest_files=["res://.godot/imported/piano_good_led.png-87f60f1f039185d83635cd7cb33fbff3.ctex"]
 
 [params]
 

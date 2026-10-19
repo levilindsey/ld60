@@ -29,6 +29,7 @@ enum Defect {
 	GLUE_BLOB,
 	LEFTOVER_DIRT,
 	FAILED_GLUE_HOLD,
+	BENCH_DUST_LEFT,
 }
 
 ## Every item starts with this many points.
@@ -175,6 +176,8 @@ static func get_defect_name(defect: Defect) -> String:
 			return "Left dirty"
 		Defect.FAILED_GLUE_HOLD:
 			return "Failed glue hold"
+		Defect.BENCH_DUST_LEFT:
+			return "Dust on the bench"
 		_:
 			G.fatal()
 			return ""

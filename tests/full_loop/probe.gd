@@ -66,6 +66,10 @@ func _ready() -> void:
 func _run_loop() -> void:
 	await _seconds(0.3)
 	_expect(G.state.state == StateMain.State.TITLE, "boot shows the title")
+	var probe_queue: Array[Repairable.Type] = [
+		Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE,
+	]
+	G.settings.item_queue = probe_queue
 	G.state.transition(StateMain.State.GAME)
 	await _seconds(0.8)
 	if not _expect(is_instance_valid(G.level), "the level is running"):
@@ -150,6 +154,10 @@ func _collect_nodes() -> void:
 	_cover = _item.get_node("Layers/Cover")
 	_screw_left = _cover.get_node("ScrewLeft")
 	_screw_right = _cover.get_node("ScrewRight")
+	# ScrewLeft starts under grime; this loop starts cleaned
+	# (the grime_screw probe covers working it).
+	if _screw_left.is_covered():
+		_screw_left.covering_grime.finish()
 	_holder_position = _level.get_tool_holder_position(
 		Tool.Type.FLAT_HEAD_SCREW_DRIVER
 	)

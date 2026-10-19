@@ -7,6 +7,10 @@ extends StrikablePoint
 
 ## The art that sits bent. It turns straight as hits land.
 @export var art: Node2D
+## Optional straight art swapped in when the part is fixed,
+## for a piece whose straight shape is its own sprite (the
+## TV antenna). Hidden until the part finishes.
+@export var straight_art: Node2D
 ## How far the part starts bent, in degrees.
 @export var error_deg := 18.0
 ## Working hits that straighten the part.
@@ -27,6 +31,8 @@ func _ready() -> void:
 	G.check(is_instance_valid(art))
 	_home_rotation = art.rotation
 	current_error_deg = error_deg
+	if is_instance_valid(straight_art):
+		straight_art.hide()
 	_apply_error()
 
 
@@ -37,6 +43,9 @@ func apply_hit(_strength: float, is_over: bool) -> void:
 	if absf(current_error_deg) <= done_threshold_deg:
 		current_error_deg = 0.0
 		_apply_error()
+		if is_instance_valid(straight_art):
+			art.hide()
+			straight_art.show()
 		finish()
 	else:
 		_apply_error()

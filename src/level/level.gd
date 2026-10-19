@@ -38,6 +38,16 @@ const _RETURN_MAX_RESTITUTION := 0.5
 const _RETURN_SKID_DOWN_SHARE := 0.08
 const _RETURN_SKID_SIDE_SHARE := 0.7
 
+## The bench dust a hard knock spews across the bench. It is
+## loaded here because the level owns the dust; the scene is
+## not a per-level configuration.
+const _BENCH_DUST_SCENE: PackedScene = preload(
+	"res://src/interaction_points/bench_dust.tscn"
+)
+## How far from the spew point a bench dust clump may land,
+## in world pixels.
+const _BENCH_DUST_SPREAD_PX := 44.0
+
 
 var has_started := false
 var has_won := false
@@ -75,6 +85,11 @@ var _drawer_parts: Array = []
 ## loose on the bench or glued back on. Installed pieces stay
 ## in the list by flag. Untyped, like the drawer parts.
 var _broken_pieces: Array = []
+
+## Every bench dust clump spewed onto the bench, cleaned ones
+## included until they are cleared. Bench dust lives here, not
+## on the item. Untyped, like the drawer parts.
+var _bench_dust: Array = []
 
 ## The fade tween currently running on each drawer's stored
 ## parts, keyed by the drawer, so a new fade kills the old one.
@@ -549,8 +564,10 @@ func get_part_of_type_in_drawer(
 
 ## Restocks the drawers for an item that just landed: the old loose
 ## parts go away, and a fresh set is hidden at random across the
-## drawers. The set holds one part per socket the item needs, plus
-## decoys, shuffled so hunting takes opening more than one drawer.
+## drawers. The set holds one of every part kind in the game, plus
+## extra copies per socket the item needs, plus decoys, shuffled
+## so hunting takes opening more than one drawer. It resets for
+## each repairable.
 func restock_parts(item: Repairable) -> void:
 	for drawer in get_drawers():
 		drawer.reset_closed()
@@ -566,7 +583,13 @@ func restock_parts(item: Repairable) -> void:
 		return
 	G.check(is_instance_valid(part_scene))
 
+	# One of every part kind in the game, so the full set is
+	# on show across the drawers for every repairable.
 	var part_types: Array[Part.Type] = []
+	for part_type in Part.Type.values():
+		part_types.append(part_type as Part.Type)
+	# Extra copies of what this item's sockets need, beyond
+	# the one of each kind above.
 	for layer in item.layers:
 		for point in layer.get_points():
 			if point is PartSocket:
@@ -574,14 +597,17 @@ func restock_parts(item: Repairable) -> void:
 					(point as PartSocket).accepted_part
 				)
 	# Decoys are kinds the item does not need, when it leaves any.
+	var needed_types: Array[Part.Type] = []
+	for layer in item.layers:
+		for point in layer.get_points():
+			if point is PartSocket:
+				needed_types.append(
+					(point as PartSocket).accepted_part
+				)
 	var decoy_types: Array[Part.Type] = []
-	for part_type in [
-		Part.Type.GEAR,
-		Part.Type.TUBE,
-		Part.Type.SPRING,
-	]:
-		if not part_types.has(part_type):
-			decoy_types.append(part_type)
+	for part_type in Part.Type.values():
+		if not needed_types.has(part_type):
+			decoy_types.append(part_type as Part.Type)
 	if decoy_types.is_empty():
 		decoy_types = part_types.duplicate()
 	for _decoy in maxi(G.settings.decoy_part_count, 0):
@@ -1711,6 +1737,106 @@ func spawn_decal(
 		size,
 		direction,
 	)
+
+
+## Spews `count` bench dust clumps around a world position
+## and returns them. A hard knock on an item (a hammer whack
+## on the TV) calls this. The clumps live on the bench, not on
+## the item, until the air blower cleans them or the item
+## finishes and `charge_bench_dust()` pays for what is left.
+func spawn_bench_dust(
+	global_pos: Vector2, count: int
+) -> Array[BenchDust]:
+	var spawned: Array[BenchDust] = []
+	_prune_bench_dust()
+	for index in maxi(count, 0):
+		var dust := _BENCH_DUST_SCENE.instantiate() as BenchDust
+		if not G.check(is_instance_valid(dust)):
+			continue
+		dust.amount = randf_range(0.8, 1.0)
+		_get_bench_dust_holder().add_child(dust)
+		var target := global_pos
+		if count > 1:
+			var angle := TAU * float(index) / float(count)
+			angle += randf_range(-0.35, 0.35)
+			var radius := randf_range(14.0, _BENCH_DUST_SPREAD_PX)
+			target += Vector2.from_angle(angle) * radius
+		dust.global_position = clamp_to_bench(target)
+		dust.reset_physics_interpolation()
+		_bench_dust.append(dust)
+		spawned.append(dust)
+	return spawned
+
+
+## Every bench dust clump still tracked, cleaned ones
+## included until they are cleared or freed.
+func get_bench_dust() -> Array[BenchDust]:
+	_prune_bench_dust()
+	var dusts: Array[BenchDust] = []
+	for entry: Variant in _bench_dust:
+		dusts.append(entry as BenchDust)
+	return dusts
+
+
+## How many bench dust clumps still need cleaning.
+func count_bench_dust_left() -> int:
+	var left := 0
+	for dust in get_bench_dust():
+		if dust.mode != InteractionPoint.Mode.FINISHED:
+			left += 1
+	return left
+
+
+## Frees every bench dust clump, cleaned or not.
+func clear_bench_dust() -> void:
+	for entry: Variant in _bench_dust:
+		if is_instance_valid(entry):
+			(entry as Node).queue_free()
+	_bench_dust.clear()
+
+
+## Charges an item for each bench dust clump left uncleaned
+## and returns how many were charged. Each clump costs
+## `Settings.bench_dust_points` as a `BENCH_DUST_LEFT`
+## defect. A clump is charged at most once, and cleaned
+## clumps cost nothing. Call `clear_bench_dust()` when the
+## bench resets for the next item.
+func charge_bench_dust(item: Repairable) -> int:
+	if not is_instance_valid(item):
+		return 0
+	var charged := 0
+	for dust in get_bench_dust():
+		if dust.mode == InteractionPoint.Mode.FINISHED:
+			continue
+		if dust.is_charged:
+			continue
+		dust.is_charged = true
+		item.quality.add_defect(
+			RepairQuality.Defect.BENCH_DUST_LEFT,
+			dust.global_position,
+			dust,
+		)
+		charged += 1
+	return charged
+
+
+## The node bench dust lives under, made on first use. It
+## draws the dust over the bench and under the tools.
+func _get_bench_dust_holder() -> Node2D:
+	var holder := get_node_or_null("BenchDust") as Node2D
+	if not is_instance_valid(holder):
+		holder = Node2D.new()
+		holder.name = "BenchDust"
+		holder.z_index = 2
+		add_child(holder)
+	return holder
+
+
+## Drops freed clumps from the bench dust list.
+func _prune_bench_dust() -> void:
+	for index in range(_bench_dust.size() - 1, -1, -1):
+		if not is_instance_valid(_bench_dust[index]):
+			_bench_dust.remove_at(index)
 
 
 ## True once every item of the day's order has been spawned.

@@ -40,6 +40,10 @@ func _ready() -> void:
 
 func _run() -> void:
 	await _seconds(0.3)
+	var probe_queue: Array[Repairable.Type] = [
+		Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE,
+	]
+	G.settings.item_queue = probe_queue
 	G.state.transition(StateMain.State.GAME)
 	await _seconds(0.8)
 	if not _expect(is_instance_valid(G.level), "the level is running"):
@@ -79,13 +83,15 @@ func _run() -> void:
 	await _check_cleanup()
 
 
-## The drawers hold one part per socket the item needs, plus the
+## The drawers hold one of every part kind in the game, plus
+## an extra copy of what the item's sockets need, plus the
 ## decoys from settings, all stored and hidden.
 func _check_stocked() -> void:
 	var stored := _stored_parts()
 	_expect(
-		stored.size() == 1 + G.settings.decoy_part_count,
-		"the drawers hold the needed part plus decoys",
+		stored.size()
+		== Part.Type.size() + 1 + G.settings.decoy_part_count,
+		"the drawers hold every part kind plus decoys",
 	)
 	var needed := 0
 	for part in stored:
@@ -95,7 +101,7 @@ func _check_stocked() -> void:
 			part.is_stored and not part.visible,
 			"a stocked part starts stored and hidden",
 		)
-	_expect(needed == 1, "exactly one stocked part fits the socket")
+	_expect(needed >= 1, "a stocked part fits the socket")
 
 
 ## Drags the item's loose cover off to a clear bench spot.

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://gqudk1l13bt3"
-path="res://.godot/imported/button_pressed.png-4509a307d66eb4c79c246760c4f4898f.ctex"
+uid="uid://bf07lv0swan6r"
+path="res://.godot/imported/keyss_with_gaps.png-2cab0aa70b011a32d34d86b217e63bb1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/gui/button_pressed.png"
-dest_files=["res://.godot/imported/button_pressed.png-4509a307d66eb4c79c246760c4f4898f.ctex"]
+source_file="res://assets/images/repairables/keyss_with_gaps.png"
+dest_files=["res://.godot/imported/keyss_with_gaps.png-2cab0aa70b011a32d34d86b217e63bb1.ctex"]
 
 [params]
 

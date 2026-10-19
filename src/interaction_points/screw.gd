@@ -109,6 +109,9 @@ const _SHAFT_RADIUS_LOCAL := 173.5
 @export var rust_overlay: CanvasItem
 ## Optional. A rust streak running down from the hole, shown while seized.
 @export var rust_streak: CanvasItem
+## Optional. Grime covering this screw. While it is not FINISHED the
+## screw cannot be worked.
+@export var covering_grime: GrimeSpot
 
 @export_group("Pull-out")
 ## Plays `pull_out_animation`.
@@ -254,9 +257,21 @@ func _notification(what: int) -> void:
 		bench_art.queue_free()
 
 
-## A screw out of its hole can't be engaged.
+## True while grime covers this screw and has not been cleaned off.
+func is_covered() -> bool:
+	return (
+		is_instance_valid(covering_grime)
+		and covering_grime.mode != Mode.FINISHED
+	)
+
+
+## A screw out of its hole can't be engaged. Neither can a covered one.
 func can_engage() -> bool:
-	return travel == Travel.HOME and super.can_engage()
+	return (
+		travel == Travel.HOME
+		and not is_covered()
+		and super.can_engage()
+	)
 
 
 func is_fastened() -> bool:
@@ -317,9 +332,12 @@ func unseize() -> void:
 	_is_seize_warned = false
 
 
-## A press with an accepted tool. A stripped or seized screw grinds
-## instead of turning, and the tool stays in the hand.
+## A press with an accepted tool. A covered screw does nothing. A
+## stripped or seized screw grinds instead of turning, and the tool
+## stays in the hand.
 func engage(tool: Tool) -> void:
+	if is_covered():
+		return
 	if is_stripped():
 		_press_stripped(tool)
 	elif is_seized:
