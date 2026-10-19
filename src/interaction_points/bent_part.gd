@@ -33,7 +33,33 @@ func _ready() -> void:
 	current_error_deg = error_deg
 	if is_instance_valid(straight_art):
 		straight_art.hide()
+	_set_art_pivot_to_bottom_right()
 	_apply_error()
+
+
+## Turns the art around its bottom right corner instead of
+## its centre: the bend swings from where the part meets
+## what it sticks out of (the TV antenna's base), not from
+## the middle of the sprite. The corner becomes the art's
+## origin; the drawing itself does not move.
+func _set_art_pivot_to_bottom_right() -> void:
+	if not (art is Sprite2D):
+		return
+	var sprite := art as Sprite2D
+	if not is_instance_valid(sprite.texture):
+		return
+	var size := Vector2(sprite.texture.get_size())
+	if sprite.region_enabled:
+		size = sprite.region_rect.size
+	var corner := size if not sprite.centered else size * 0.5
+	var corner_world := sprite.to_global(corner)
+	sprite.offset -= corner
+	art.global_position = corner_world
+	# Anything riding on the art (its authored Shape) stays
+	# where it was in the world.
+	for child in art.get_children():
+		if child is Node2D:
+			(child as Node2D).position -= corner
 
 
 func apply_hit(_strength: float, is_over: bool) -> void:

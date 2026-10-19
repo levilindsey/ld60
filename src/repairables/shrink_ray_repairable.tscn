@@ -1,10 +1,9 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://coryeindgrvdf"]
 
-[ext_resource type="Script" path="res://src/repairables/shrink_ray.gd" id="1_ray"]
-[ext_resource type="Script" path="res://src/repairables/repair_layer.gd" id="2_layer"]
-[ext_resource type="Texture2D" path="res://assets/images/repairables/shrinkray.png" id="3_body"]
-[ext_resource type="Texture2D" path="res://assets/images/repairables/shrinkray_broken_crystal.png" id="4_crystal_bad"]
-[ext_resource type="Texture2D" path="res://assets/images/repairables/shrinkray_fixed_crystal.png" id="5_crystal_good"]
+[ext_resource type="Script" uid="uid://6bkc0hxek20j" path="res://src/repairables/shrink_ray.gd" id="1_ray"]
+[ext_resource type="Script" uid="uid://bexc8yuqwibs5" path="res://src/repairables/repair_layer.gd" id="2_layer"]
+[ext_resource type="Texture2D" uid="uid://b6tjvjk1gpgqc" path="res://assets/images/repairables/shrinkray.png" id="3_body"]
+[ext_resource type="Texture2D" uid="uid://cmj5ufmoe5yds" path="res://assets/images/repairables/shrinkray_fixed_crystal.png" id="5_crystal_good"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/part_socket.tscn" id="6_socket"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/stuck_part.tscn" id="7_stuck"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/grime_spot.tscn" id="8_grime"]
@@ -12,103 +11,77 @@
 [sub_resource type="RectangleShape2D" id="drop_shape"]
 size = Vector2(240, 180)
 
-[sub_resource type="CircleShape2D" id="crystal_shape"]
-radius = 18.0
-
-[sub_resource type="CircleShape2D" id="jam_shape"]
-radius = 26.0
-
-[node name="ShrinkRayRepairable" type="Node2D" node_paths=PackedStringArray("shape")]
+[node name="ShrinkRayRepairable" type="Node2D" unique_id=204709820 node_paths=PackedStringArray("shape")]
 scale = Vector2(1.4, 1.4)
 script = ExtResource("1_ray")
-shape = NodePath("Shape")
 item_name = "Shrink ray"
+shape = NodePath("Shape")
 ticket = "The pawn guy doesn't remember where he got it. Careful, it might go off."
 bench_radius_px = 130.0
 shadow_size = Vector2(260, 36)
 shadow_offset = Vector2(-42, 85)
 
-[node name="DropArea" type="Area2D" parent="."]
+[node name="DropArea" type="Area2D" parent="." unique_id=1804424364]
 unique_name_in_owner = true
 collision_layer = 2
 collision_mask = 0
 monitoring = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea" unique_id=392321898]
 position = Vector2(0, -32)
 shape = SubResource("drop_shape")
 
-[node name="Layers" type="Node2D" parent="."]
+[node name="Layers" type="Node2D" parent="." unique_id=1945324018]
 unique_name_in_owner = true
 
-[node name="Body" type="Node2D" parent="Layers" node_paths=PackedStringArray("art", "shape")]
+[node name="Body" type="Node2D" parent="Layers" unique_id=1873226264 node_paths=PackedStringArray("art", "shape")]
 position = Vector2(0, -32)
 script = ExtResource("2_layer")
 art = NodePath("Art")
 shape = NodePath("Shape")
 
-[node name="Art" type="Sprite2D" parent="Layers/Body"]
+[node name="Art" type="Sprite2D" parent="Layers/Body" unique_id=97458418]
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("3_body")
 offset = Vector2(-10.5, -6.5)
 
-[node name="Shape" type="Area2D" parent="Layers/Body"]
+[node name="Shape" type="Area2D" parent="Layers/Body" unique_id=691561369]
+position = Vector2(0, 31.999998)
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape"]
-polygon = PackedVector2Array(-126.9, -92.7, 126.9, -92.7, 126.9, 93.3, -126.9, 93.3)
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape" unique_id=2136984832]
+polygon = PackedVector2Array(-42.142853, -77.14285, -93.57143, -67.85714, -94.285706, -74.99999, -87.85714, -86.428566, -70.71428, -92.85714, -5.7142854, -101.428566, 4.9999995, -89.285706, 26.42857, -80.71428, 27.142855, -89.99999, 38.571426, -101.428566, 55.714283, -104.99999, 69.99999, -99.99999, 73.57143, -102.85714, 84.99999, -102.85714, 90.71428, -102.85714, 96.428566, -108.57142, 97.14285, -116.428566, 99.285706, -119.285706, 108.57142, -123.57142, 115.71428, -121.428566, 118.57142, -117.14285, 118.750206, -113.36401, 107.14285, -103.57142, 119.99999, -102.85714, 121.428566, -95.71428, 108.57142, -91.428566, 122.14285, -87.85714, 123.57142, -81.428566, 117.14285, -74.99999, 109.99999, -74.28571, 100.71428, -80.71428, 92.85714, -79.99999, 82.85714, -74.28571, 74.28571, -62.85714, 62.142853, -52.85714, 51.42857, -48.571426, 38.571426, -53.571426, 43.571426, -40.714283, 46.42857, -24.999998, 37.142857, -14.285713, 12.857142, -9.999999, 2.142857, -13.571427, -3.5714283, -23.571426, -6.428571, -32.142857, -14.285713, -39.999996, -20.714285, -37.142857, -17.857141, -17.142857, -19.999998, 3.5714283, -24.285713, 25.714285, -22.142857, 30.714283, -17.857141, 34.285713, -9.999999, 37.85714, -13.571427, 47.142853, -16.42857, 54.28571, -57.142853, 59.28571, -59.28571, 55.714283, -55.714283, 38.571426, -55.714283, -34.999996, -113.57142, -24.285713, -123.57142, -35.714283)
 
-[node name="Jam" parent="Layers/Body" instance=ExtResource("7_stuck")]
+[node name="Jam" parent="Layers/Body" unique_id=2100721568 instance=ExtResource("7_stuck")]
 unique_name_in_owner = true
 position = Vector2(2, -31)
 hits_needed = 4
 
-[node name="CollisionShape2D" parent="Layers/Body/Jam" index="0"]
-shape = SubResource("jam_shape")
-
-[node name="Art" parent="Layers/Body/Jam" index="1"]
-visible = false
-
-[node name="Crystal" parent="Layers/Body" node_paths=PackedStringArray("installed_art", "covering_grime") instance=ExtResource("6_socket")]
+[node name="Crystal" parent="Layers/Body" unique_id=896112778 node_paths=PackedStringArray("installed_art", "covering_grime") instance=ExtResource("6_socket")]
 unique_name_in_owner = true
 position = Vector2(53.7, -41.1)
 accepted_part = 8
 installed_art = NodePath("GoodCrystal")
 covering_grime = NodePath("../CrystalGrime")
 
-[node name="CollisionShape2D" parent="Layers/Body/Crystal" index="0"]
-shape = SubResource("crystal_shape")
-
-[node name="Outline" parent="Layers/Body/Crystal" index="1"]
-visible = false
-
-[node name="BrokenArt" parent="Layers/Body/Crystal/BrokenPart" index="0"]
-visible = false
-
-[node name="BadCrystal" type="Sprite2D" parent="Layers/Body/Crystal/BrokenPart"]
-scale = Vector2(0.6, 0.6)
-texture = ExtResource("4_crystal_bad")
-region_enabled = true
-region_rect = Rect2(326, 160, 60, 68)
-
-[node name="GoodCrystal" type="Sprite2D" parent="Layers/Body/Crystal"]
+[node name="GoodCrystal" type="Sprite2D" parent="Layers/Body/Crystal" unique_id=1100441439]
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("5_crystal_good")
 region_enabled = true
 region_rect = Rect2(326, 160, 60, 68)
 
-[node name="Bolt" parent="Layers/Body" instance=ExtResource("6_socket")]
+[node name="Bolt" parent="Layers/Body" unique_id=1439230032 instance=ExtResource("6_socket")]
 position = Vector2(20, 2)
 accepted_part = 10
 
-[node name="CrystalGrime" parent="Layers/Body" instance=ExtResource("8_grime")]
+[node name="CrystalGrime" parent="Layers/Body" unique_id=65784905 instance=ExtResource("8_grime")]
 position = Vector2(53.7, -41.1)
 amount = 1.6
 
-[node name="Shape" type="Area2D" parent="."]
+[node name="Shape" type="Area2D" parent="." unique_id=472882436]
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape"]
-polygon = PackedVector2Array(-127, -125, 127, -125, 127, 61, -127, 61)
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape" unique_id=1673138137]
+polygon = PackedVector2Array(-42.142853, -77.14285, -93.57143, -67.85714, -94.285706, -74.99999, -87.85714, -86.428566, -70.71428, -92.85714, -5.7142854, -101.428566, 4.9999995, -89.285706, 26.42857, -80.71428, 27.142855, -89.99999, 38.571426, -101.428566, 55.714283, -104.99999, 69.99999, -99.99999, 73.57143, -102.85714, 84.99999, -102.85714, 90.71428, -102.85714, 96.428566, -108.57142, 97.14285, -116.428566, 99.285706, -119.285706, 108.57142, -123.57142, 115.71428, -121.428566, 118.57142, -117.14285, 118.750206, -113.36401, 107.14285, -103.57142, 119.99999, -102.85714, 121.428566, -95.71428, 108.57142, -91.428566, 122.14285, -87.85714, 123.57142, -81.428566, 117.14285, -74.99999, 109.99999, -74.28571, 100.71428, -80.71428, 92.85714, -79.99999, 82.85714, -74.28571, 74.28571, -62.85714, 62.142853, -52.85714, 51.42857, -48.571426, 38.571426, -53.571426, 43.571426, -40.714283, 46.42857, -24.999998, 37.142857, -14.285713, 12.857142, -9.999999, 2.142857, -13.571427, -3.5714283, -23.571426, -6.428571, -32.142857, -14.285713, -39.999996, -20.714285, -37.142857, -17.857141, -17.142857, -19.999998, 3.5714283, -24.285713, 25.714285, -22.142857, 30.714283, -17.857141, 34.285713, -9.999999, 37.85714, -13.571427, 47.142853, -16.42857, 54.28571, -57.142853, 59.28571, -59.28571, 55.714283, -55.714283, 38.571426, -55.714283, -34.999996, -113.57142, -24.285713, -123.57142, -35.714283)

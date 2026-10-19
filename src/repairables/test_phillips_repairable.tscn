@@ -9,9 +9,6 @@
 [ext_resource type="PackedScene" path="res://src/interaction_points/grime_spot.tscn" id="7_grime"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/rust_spot.tscn" id="8_rust"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_drop"]
-size = Vector2(100, 100)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_case"]
 size = Vector2(96, 96)
 
@@ -20,15 +17,6 @@ script = ExtResource("1_item")
 item_name = "Test phillips box"
 shape = NodePath("Shape")
 ticket = "The cross heads just spin. Circle them out, then in."
-
-[node name="DropArea" type="Area2D" parent="." unique_id=743076970]
-unique_name_in_owner = true
-collision_layer = 2
-collision_mask = 0
-monitoring = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea" unique_id=94310221]
-shape = SubResource("RectangleShape2D_drop")
 
 [node name="Layers" type="Node2D" parent="." unique_id=753972576]
 unique_name_in_owner = true

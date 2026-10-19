@@ -54,6 +54,9 @@ var is_installed := false
 var is_returning := false
 ## True while a failed hold's flick is still in the air.
 var is_flicking := false
+## True while its point's hold game is running. The point
+## moves the piece then, not the hand.
+var is_in_hold := false
 
 var _has_detached := false
 var _turn_tween: Tween

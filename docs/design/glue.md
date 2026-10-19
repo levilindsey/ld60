@@ -57,17 +57,21 @@ Ledger: **LX66**. A snapped off piece is two placeable nodes.
 - **The hold:** while the piece is held near its glued point, a
   ring shows, drawn over everything else and offset above the
   point (`broken_hold_ring_offset_px`) so the finger holding the
-  piece is not over it. The dot is the piece's offset from the
-  point (`broken_hold_dot_scale`) plus a drift that changes
-  direction every `broken_hold_drift_retarget_sec`. The game
-  only starts once the piece is dragged within
-  `broken_hold_start_radius_px`, and starting tweens it onto
-  the point's exact centre. Fully inside the inner circle
-  banks time. Straddling the wide band warns (amber) and
-  pauses the timer. Past the band fails: the hand lets go and
-  the piece is flicked up and to a side, the glue stays, and
-  the failure costs a failed glue hold defect (-5).
-  `hold_sec` on the point (default 5) is the still time.
+  piece is not over it. The dot is the player's hand movement
+  from where the hold started (`broken_hold_dot_scale`) plus a
+  drift that changes direction every
+  `broken_hold_drift_retarget_sec`. The game only starts once
+  the piece is dragged within `broken_hold_start_radius_px`,
+  and starting tweens it onto the point's exact centre. From
+  there the piece no longer follows the pointer: it stays on
+  the point and leans a little toward the dot
+  (`broken_hold_piece_lean_share`), and when the hold completes
+  it tweens back to the exact centre as it glues on. Fully
+  inside the inner circle banks time. Straddling the wide band
+  warns (amber) and pauses the timer. Past the band fails: the
+  hand lets go and the piece is flicked up and to a side, the
+  glue stays, and the failure costs a failed glue hold defect
+  (-5). `hold_sec` on the point (default 5) is the still time.
 - **Glue contact:** glue leaves the bottle's working end, never
   the cursor marker or the bottle origin. A broken point glues
   when the click lands with the tool's InteractionArea

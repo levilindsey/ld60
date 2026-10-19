@@ -24,8 +24,7 @@ enum Mode {
 ## How this tool's shadow is drawn while it rests in its holder,
 ## picked from where the tool meets the holder at `holder_area`:
 ## the glue bottle sits on a shelf (an ellipse under the contact),
-## the rag hangs on a hook (its full shape, offset down), and the
-## rest of the hanging tools cast none. A tool also casts no
+## and the hanging tools cast none. A tool also casts no
 ## shadow while it is held or in use.
 enum HolderShadow {
 	ELLIPSE_AT_HOLDER,
@@ -54,8 +53,8 @@ const _NOPE_SHAKE_STEPS := 4
 @export var stored_rotation_deg := 0.0
 @export var held_rotation_deg := 0.0
 ## The in-holder shadow treatment for this tool (see HolderShadow).
-## Set per tool scene: glue is ELLIPSE_AT_HOLDER, the rag is
-## SILHOUETTE, the rest are NONE.
+## Set per tool scene: glue is ELLIPSE_AT_HOLDER, the rest
+## are NONE.
 @export var holder_shadow := HolderShadow.NONE
 
 var mode := Mode.ENTERING:

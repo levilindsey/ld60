@@ -6,7 +6,9 @@ extends Node
 ## has the sets assigned, and a bare `DecalSpawner.new()` has none.
 ##
 ## `spawn(kind, part, global_position, size, direction)` is the whole API.
-## The spawner turns on the part's clipping, so callers only pass the part.
+## The spawner clips the decal (to the part's layer's Shape
+## where it has one, else to the part's own art), so callers
+## only pass the part.
 ##
 ## To add a kind:
 ## 1. Add an entry to `Kind`.
@@ -127,8 +129,7 @@ func spawn(
 		/ longer_side
 	)
 
-	_set_up_clipping(part)
-	part.add_child(decal)
+	_get_decal_parent(part).add_child(decal)
 	# Setting the global transform makes the decal's size, rotation and
 	# position come out in world pixels. Godot works out the local transform
 	# from the part's own scale, rotation and origin, so any part works.
@@ -244,6 +245,54 @@ func _is_texture_usable(texture: Texture2D) -> bool:
 		is_instance_valid(texture)
 		and not texture.get_size().is_zero_approx()
 	)
+
+
+## The name of the per-part mask node `_get_decal_parent()`
+## makes, reused by every later decal on the same part.
+const _SHAPE_MASK_NAME := "DecalShapeMask"
+
+
+## Where a fresh decal goes under `part`: inside a mask shaped
+## like the part's layer's authored Shape, when that layer has
+## a polygon Shape, so the decal only shows within the Shape
+## region. Godot clips canvas children to a parent's drawn
+## alpha, and a filled `Polygon2D` set to CLIP_CHILDREN_ONLY
+## draws nothing itself but clips its children to its fill, so
+## the Shape's polygon becomes the mask. The polygon is taken
+## in the part's own points at spawn time, so it moves with the
+## part (and its layer) afterwards. Without a usable Shape, the
+## part's own clipping (its texture alpha) does the job, as
+## before.
+func _get_decal_parent(part: CanvasItem) -> CanvasItem:
+	var layer := _find_layer(part)
+	if is_instance_valid(layer):
+		var world_polygon := layer.get_shape_world_polygon()
+		if world_polygon.size() >= 3:
+			var mask := (
+				part.get_node_or_null(_SHAPE_MASK_NAME) as Polygon2D
+			)
+			if not is_instance_valid(mask):
+				mask = Polygon2D.new()
+				mask.name = _SHAPE_MASK_NAME
+				mask.color = Color.WHITE
+				mask.clip_children = CanvasItem.CLIP_CHILDREN_ONLY
+				part.add_child(mask)
+			mask.polygon = OutlineHint.world_polygon_to_local(
+				part, world_polygon
+			)
+			return mask
+	_set_up_clipping(part)
+	return part
+
+
+## The repair layer `part` belongs to, or null.
+func _find_layer(part: CanvasItem) -> RepairLayer:
+	var node: Node = part
+	while is_instance_valid(node):
+		if node is RepairLayer:
+			return node as RepairLayer
+		node = node.get_parent()
+	return null
 
 
 # Clips the part's children to the part's own drawn shape. A part that

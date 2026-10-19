@@ -15,6 +15,11 @@ const _DRAWER_SPOT_TRIES := 48
 ## ever touching, which a small drawer cannot fit, so spots
 ## may let the extents overlap by the rest.
 const _DRAWER_SPOT_SPACING := 0.8
+## How much fuller the drawers are stocked than the set they
+## used to hold (one of each kind, a copy per socket and the
+## decoy setting), now that needed kinds stay single and
+## decoys make up the difference (see `restock_parts()`).
+const _DRAWER_STOCK_SCALE := 1.4
 
 ## A bench return is flying in under gravity toward its
 ## landing point inside the workable area.
@@ -679,12 +684,13 @@ func get_part_of_type_in_drawer(
 
 ## Restocks the drawers for an item that just landed: the old loose
 ## parts go away, and a fresh set is dealt across the drawers.
-## The set holds one of every part kind in the game, plus
-## extra copies per socket the item needs, plus decoys, shuffled
-## so hunting takes opening more than one drawer. Each part's
-## spot and turn inside its drawer are chosen here, once
-## (`_layout_drawer_spots()`), and kept until the next item. It
-## resets for each repairable.
+## The set holds one of every part kind in the game, so a kind
+## the item needs appears exactly once across all the drawers,
+## plus decoys up to a fuller total than that set alone (see
+## `_DRAWER_STOCK_SCALE`), shuffled so hunting takes opening
+## more than one drawer. Each part's spot and turn inside its
+## drawer are chosen here, once (`_layout_drawer_spots()`), and
+## kept until the next item. It resets for each repairable.
 func restock_parts(item: Repairable) -> void:
 	for drawer in get_drawers():
 		drawer.reset_closed()
@@ -700,37 +706,43 @@ func restock_parts(item: Repairable) -> void:
 		return
 
 	# One of every part kind in the game, so the full set is
-	# on show across the drawers for every repairable.
+	# on show across the drawers for every repairable. A kind
+	# the item needs therefore appears exactly once across
+	# all the drawers: no spare copies of a needed part.
 	var part_types: Array[Part.Type] = []
 	for part_type in Part.Type.values():
 		part_types.append(part_type as Part.Type)
-	# Extra copies of what this item's sockets need, beyond
-	# the one of each kind above.
-	for layer in item.layers:
-		for point in layer.get_points():
-			if point is PartSocket:
-				part_types.append(
-					(point as PartSocket).accepted_part
-				)
-	# Decoys are kinds the item does not need, when it leaves any.
+	# What this item's sockets need, and how many sockets
+	# there are (the old set added a copy per socket).
 	var needed_types: Array[Part.Type] = []
+	var socket_count := 0
 	for layer in item.layers:
 		for point in layer.get_points():
 			if point is PartSocket:
-				needed_types.append(
-					(point as PartSocket).accepted_part
-				)
+				socket_count += 1
+				var needed := (point as PartSocket).accepted_part
+				if not needed_types.has(needed):
+					needed_types.append(needed)
+	# Decoys are kinds the item does not need. They fill the
+	# stock up to the fuller total: the old set's size (one
+	# of each kind, a copy per socket, the decoy setting)
+	# scaled by `_DRAWER_STOCK_SCALE`, with needed kinds
+	# staying single. When every kind is needed there is
+	# nothing to decoy with, and the stock stays at one each.
 	var decoy_types: Array[Part.Type] = []
 	for part_type in Part.Type.values():
 		if not needed_types.has(part_type):
 			decoy_types.append(part_type as Part.Type)
-	if decoy_types.is_empty():
-		decoy_types = part_types.duplicate()
-	for _decoy in maxi(G.settings.decoy_part_count, 0):
-		if not decoy_types.is_empty():
-			part_types.append(
-				decoy_types[randi_range(0, decoy_types.size() - 1)]
-			)
+	var previous_total := (
+		Part.Type.values().size()
+		+ socket_count
+		+ maxi(G.settings.decoy_part_count, 0)
+	)
+	var target_total := roundi(previous_total * _DRAWER_STOCK_SCALE)
+	while part_types.size() < target_total and not decoy_types.is_empty():
+		part_types.append(
+			decoy_types[randi_range(0, decoy_types.size() - 1)]
+		)
 	part_types.shuffle()
 
 	var drawers := get_drawers()
@@ -1547,7 +1559,34 @@ func _is_at_ship_spot(item: Repairable) -> bool:
 		return false
 	if item.is_shop_radio:
 		return %Radio.is_over_spot(_get_outer_art_center(item))
-	return %Outbox.overlaps_area(item.drop_area)
+	return _is_item_over_outbox(item)
+
+
+## The outbox's outline in world points, from its authored
+## polygon.
+func _get_outbox_world_polygon() -> PackedVector2Array:
+	var points := PackedVector2Array()
+	var polygon_node := (
+		%Outbox.get_node("Shape") as CollisionPolygon2D
+	)
+	if is_instance_valid(polygon_node):
+		for point in polygon_node.polygon:
+			points.append(polygon_node.global_transform * point)
+	return points
+
+
+## True when an item's own Shape overlaps the outbox's
+## outline. Tested by hand from the two world polygons: the
+## item's Shape carries no collision state (see Repairable),
+## so physics never sees it.
+func _is_item_over_outbox(item: Repairable) -> bool:
+	var item_polygon := item.get_shape_world_polygon()
+	var outbox_polygon := _get_outbox_world_polygon()
+	if item_polygon.size() < 3 or outbox_polygon.size() < 3:
+		return false
+	return not Geometry2D.intersect_polygons(
+		item_polygon, outbox_polygon
+	).is_empty()
 
 
 func _ship(item: Repairable) -> void:

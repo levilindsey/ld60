@@ -49,7 +49,6 @@ func on_wiped(damage: float, _delta: float) -> void:
 func _clean() -> void:
 	hit_points_left = 0.0
 	_update_alpha()
-	G.audio.play_sound(&"ding")
 	finish()
 	# Cleaned off, the patch no longer blocks what was under it.
 	# A screw it covered can be worked again.

@@ -40,6 +40,9 @@ var _drift_retarget_left_sec := 0.0
 ## it onto the centre, so the start is forgiven while that
 ## tween runs.
 var _hold_grace_left_sec := 0.0
+## Where the player's hand was when the hold started. The
+## dot reads hand movement from here, not the piece.
+var _hold_pointer_anchor := Vector2.ZERO
 var _home_z_index := 0
 var _home_z_as_relative := true
 
@@ -66,6 +69,7 @@ func _physics_process(delta: float) -> void:
 		_try_start_hold()
 		return
 	_step_hold(delta)
+	_lean_piece_to_dot()
 
 
 func _draw() -> void:
@@ -186,7 +190,7 @@ func _spawn_glue_decal() -> void:
 		DecalSpawner.Kind.GLUE_BLOB,
 		layer.art,
 		global_position,
-		34.0,
+		52.0,
 	)
 
 
@@ -203,18 +207,44 @@ func get_hold_state() -> int:
 	return 2
 
 
-## The dot, in world pixels: the held piece's offset from
-## this point, amplified, plus its own drift. World pixels
-## on purpose: the point's local units are the item's art
-## units, so on a scaled item (the piano at 0.11) a piece a
-## few world pixels off centre read as hundreds of dot
-## pixels and the hold failed on its first frame.
+## The dot, in world pixels: while a hold runs, the player's
+## hand movement from where the hold started, amplified,
+## plus the drift. (Outside a hold it reads the piece's own
+## offset, as before.) World pixels on purpose: the point's
+## local units are the item's art units, so on a scaled item
+## (the piano at 0.11) a few world pixels read as hundreds
+## of dot pixels and the hold failed on its first frame.
 func get_dot_offset() -> Vector2:
 	var offset := Vector2.ZERO
-	if is_instance_valid(piece):
+	if (
+		is_holding
+		and is_instance_valid(G.level)
+		and is_instance_valid(G.level.hand)
+	):
+		offset = (
+			G.level.hand.pointer_position - _hold_pointer_anchor
+		)
+	elif is_instance_valid(piece):
 		offset = piece.global_position - global_position
 	return (
 		offset * G.settings.broken_hold_dot_scale + _dot_drift
+	)
+
+
+## The piece under the fingers, positioned for the hold: it
+## stays on this point and leans a little toward the dot, so
+## the strain shows on the piece itself. It does not follow
+## the pointer. While the start alignment runs, the hand's
+## tween owns the piece and this stays out of its way.
+func _lean_piece_to_dot() -> void:
+	if not is_holding or not is_instance_valid(piece):
+		return
+	if _hold_grace_left_sec > 0.0:
+		return
+	piece.global_position = (
+		global_position
+		+ get_dot_offset()
+		* G.settings.broken_hold_piece_lean_share
 	)
 
 
@@ -256,6 +286,8 @@ func _try_start_hold() -> void:
 	_dot_drift = Vector2.ZERO
 	_dot_drift_velocity = Vector2.ZERO
 	_drift_retarget_left_sec = 0.0
+	_hold_pointer_anchor = G.level.hand.pointer_position
+	piece.is_in_hold = true
 	# The game draws over the tools, the piece and the hand.
 	z_as_relative = false
 	z_index = _HOLD_Z_INDEX
@@ -324,6 +356,8 @@ func _restore_draw_order() -> void:
 
 func _end_hold() -> void:
 	is_holding = false
+	if is_instance_valid(piece):
+		piece.is_in_hold = false
 	hold_progress_sec = 0.0
 	_hold_grace_left_sec = 0.0
 	_dot_drift = Vector2.ZERO
@@ -352,10 +386,14 @@ func _fail_hold() -> void:
 
 func _complete_hold() -> void:
 	is_holding = false
+	if is_instance_valid(piece):
+		piece.is_in_hold = false
 	_restore_draw_order()
 	hold_progress_sec = maxf(hold_sec, 0.0)
 	var attached := piece
 	G.audio.play_sound(&"ding")
 	if is_instance_valid(attached):
+		# attach_to_point tweens the piece from its lean
+		# back onto this point's exact centre.
 		attached.attach_to_point(self)
 	finish()

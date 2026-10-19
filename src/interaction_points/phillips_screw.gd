@@ -18,6 +18,9 @@ const _TURN_WINDOW_SEC := 0.45
 ## Seconds the twisting animation carries on after the last
 ## counted step of progress, so it doesn't stutter between steps.
 const _PROGRESS_HOLD_SEC := 0.15
+## Driving a screw back in takes this many times the turning
+## of taking it out's loose turn: twice as long to screw in.
+const _INSTALL_TURN_MULTIPLIER := 2.0
 
 ## Sparks at the head when the bit cams out.
 @export var sparks: CPUParticles2D
@@ -392,7 +395,8 @@ func _apply_turn() -> void:
 	var share := clampf(_turned_rad / total, 0.0, 1.0)
 	if is_install_mode:
 		head.rotation = (
-			_home_head_rotation - LOOSE_TURN_RAD + _turned_rad
+			_home_head_rotation
+			- LOOSE_TURN_RAD * (1.0 - share)
 		)
 		slide = 1.0 - share
 	else:
@@ -437,9 +441,9 @@ func _end_cam_out_pause() -> void:
 	_is_cam_out_paused = false
 
 
-## Radians to turn in total: out by full turns, in by the loose
-## turn the screw sits back by.
+## Radians to turn in total: out by full turns, in by twice
+## the loose turn the screw sits back by.
 func _get_total_rad() -> float:
 	if is_install_mode:
-		return LOOSE_TURN_RAD
+		return LOOSE_TURN_RAD * _INSTALL_TURN_MULTIPLIER
 	return turns_needed * TAU

@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dyfwjjnbsqf7v" path="res://src/repairables/tv_repairable.gd" id="1_item"]
 [ext_resource type="Script" uid="uid://bexc8yuqwibs5" path="res://src/repairables/repair_layer.gd" id="2_layer"]
 [ext_resource type="Script" uid="uid://be84jbhspe8mj" path="res://src/repairables/surface.gd" id="3_surface"]
-[ext_resource type="PackedScene" path="res://src/interaction_points/bent_part.tscn" id="4_bent"]
+[ext_resource type="PackedScene" uid="uid://coawtc7eybcv7" path="res://src/interaction_points/bent_part.tscn" id="4_bent"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/part_socket.tscn" id="5_socket"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/stuck_part.tscn" id="6_stuck"]
 [ext_resource type="Texture2D" uid="uid://ll4k1f4aobj1" path="res://assets/images/repairables/tv_bent_antenna.png" id="bent_tex"]
@@ -15,12 +15,6 @@
 [ext_resource type="Texture2D" uid="uid://bm2wv6hlqgeus" path="res://assets/images/repairables/tv_static_2.png" id="static2_tex"]
 [ext_resource type="Texture2D" uid="uid://cly16lbogiq7x" path="res://assets/images/repairables/tv_straight_antenna.png" id="straight_tex"]
 
-[sub_resource type="RectangleShape2D" id="drop_shape"]
-size = Vector2(2341, 1850)
-
-[sub_resource type="RectangleShape2D" id="surface_shape"]
-size = Vector2(2341, 1850)
-
 [node name="TvRepairable" type="Node2D" unique_id=550236401 node_paths=PackedStringArray("screen", "shape")]
 scale = Vector2(0.13, 0.13)
 script = ExtResource("1_item")
@@ -31,16 +25,6 @@ item_name = "TV"
 shape = NodePath("Shape")
 ticket = "Grandpa just says it needs a good whack, but I don't think that's enough..."
 shadow_offset = Vector2(5, 22)
-
-[node name="DropArea" type="Area2D" parent="." unique_id=363481681]
-unique_name_in_owner = true
-collision_layer = 2
-collision_mask = 0
-monitoring = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea" unique_id=460922794]
-position = Vector2(188, -332)
-shape = SubResource("drop_shape")
 
 [node name="Layers" type="Node2D" parent="." unique_id=456005890]
 unique_name_in_owner = true
@@ -56,13 +40,14 @@ scale = Vector2(2, 2)
 texture = ExtResource("body_tex")
 
 [node name="Shape" type="Area2D" parent="Layers/Body" unique_id=373096009]
+position = Vector2(0, 308)
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape" unique_id=1566672197]
-polygon = PackedVector2Array(-983, -949, 1358, -949, 1358, 901, -983, 901)
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape" unique_id=1114491260]
+polygon = PackedVector2Array(-923.07697, 507.69232, -923.07697, -738.46155, -246.15385, -753.8462, -61.538464, -876.9231, -92.30769, -984.6154, -69.230774, -1053.8462, 38.46154, -1092.3077, 100, -1069.2308, 153.84616, -1046.1539, 176.92308, -953.8462, 130.76924, -892.30774, 261.53848, -830.7693, 315.3846, -761.5385, 1061.5385, -738.46155, 1184.6155, -623.07697, 1192.3077, 446.15387, 1100, 530.7692)
 
 [node name="Screen" type="Sprite2D" parent="Layers/Body" unique_id=2023733748]
 position = Vector2(-218, 236)
@@ -72,24 +57,24 @@ region_enabled = true
 region_rect = Rect2(554, 560, 428.5, 356)
 
 [node name="CaseSurface" type="Area2D" parent="Layers/Body" unique_id=843460334]
+position = Vector2(0, 308)
 collision_layer = 32
 collision_mask = 0
 monitoring = false
 script = ExtResource("3_surface")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Layers/Body/CaseSurface" unique_id=693808086]
-position = Vector2(188, -24)
-shape = SubResource("surface_shape")
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/CaseSurface" unique_id=1456033648]
+polygon = PackedVector2Array(-923.07697, 507.69232, -923.07697, -738.46155, -246.15385, -753.8462, -61.538464, -876.9231, -92.30769, -984.6154, -69.230774, -1053.8462, 38.46154, -1092.3077, 100, -1069.2308, 153.84616, -1046.1539, 176.92308, -953.8462, 130.76924, -892.30774, 261.53848, -830.7693, 315.3846, -761.5385, 1061.5385, -738.46155, 1184.6155, -623.07697, 1192.3077, 446.15387, 1100, 530.7692)
 
 [node name="Antenna" parent="Layers/Body" unique_id=783311866 node_paths=PackedStringArray("art", "straight_art", "shape") instance=ExtResource("4_bent")]
 position = Vector2(-221, -759)
 art = NodePath("AntennaBent")
 straight_art = NodePath("AntennaStraight")
-shape = NodePath("AntennaBent/AntennaShape")
 error_deg = 28.0
 band_min = 0.25
 band_max = 0.65
 bench_dust_spew_count = 8
+shape = NodePath("AntennaBent/AntennaShape")
 
 [node name="AntennaBent" type="Sprite2D" parent="Layers/Body/Antenna" unique_id=1446214726]
 scale = Vector2(2, 2)
@@ -104,7 +89,7 @@ monitoring = false
 monitorable = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Antenna/AntennaBent/AntennaShape" unique_id=1446214728]
-polygon = PackedVector2Array(-3.5, -36, -6.5, -33, -10.5, -30, -14.5, -26, -19.5, -23, -22.5, -19, -26.5, -16, -31.5, -13, -34.5, -9, -37.5, -6, -41.5, -2, -45.5, 1, -49.5, 4, -53.5, 8, -71.5, 11, -72.5, 15, -75.5, 18, -76.5, 21, -75.5, 25, -75.5, 28, -72.5, 32, -69.5, 35, -56.5, 35, -54.5, 32, -52.5, 28, -51.5, 25, 66.5, 21, 69.5, 18, 72.5, 15, 73.5, 11, 69.5, 8, 65.5, 4, 59.5, 1, 54.5, -2, 50.5, -6, 45.5, -9, 42.5, -13, 36.5, -16, 32.5, -19, 28.5, -23, 23.5, -26, 19.5, -30, 15.5, -33, 10.5, -36)
+polygon = PackedVector2Array(-3.5, -36, -6.5, -33, -10.5, -30, -14.5, -26, -19.5, -23, -22.5, -19, -26.5, -16, -31.5, -13, -34.5, -9, -37.5, -6, -41.5, -2, -45.5, 1, -49.5, 4, -53.5, 8, -71.5, 11, -72.5, 15, -75.5, 18, -76.5, 21, -75.5, 25, -75.5, 28, -72.5, 32, -69.5, 35, -56.5, 35, -54.5, 32, -52.5, 28, -51.5, 25, -47.192307, 18.115356, -1.0384674, -24.192322, 37.423073, 6.5769043, 66.5, 21, 69.5, 18, 72.5, 15, 73.5, 11, 69.5, 8, 65.5, 4, 59.5, 1, 54.5, -2, 50.5, -6, 45.5, -9, 42.5, -13, 36.5, -16, 32.5, -19, 28.5, -23, 23.5, -26, 19.5, -30, 15.5, -33, 10.5, -36)
 
 [node name="AntennaStraight" type="Sprite2D" parent="Layers/Body/Antenna" unique_id=1167577550]
 position = Vector2(-7.6923065, -53.84607)
@@ -113,11 +98,10 @@ texture = ExtResource("straight_tex")
 region_enabled = true
 region_rect = Rect2(681.5, 158, 161.5, 108.5)
 
-[node name="Controls" parent="Layers/Body" unique_id=1830129670 node_paths=PackedStringArray("installed_art", "bad_part_shape", "good_part_shape") instance=ExtResource("5_socket")]
+[node name="Controls" parent="Layers/Body" unique_id=1830129670 node_paths=PackedStringArray("installed_art", "good_part_shape") instance=ExtResource("5_socket")]
 position = Vector2(747, 187)
 accepted_part = 2
 installed_art = NodePath("GoodControls")
-bad_part_shape = NodePath("BrokenPart/BadPartShape")
 good_part_shape = NodePath("GoodPartShape")
 
 [node name="GoodControls" type="Sprite2D" parent="Layers/Body/Controls" unique_id=1312169053]
@@ -135,15 +119,6 @@ monitorable = false
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Controls/GoodPartShape" unique_id=1312169055]
 polygon = PackedVector2Array(-283, -488, 283, -488, 283, 488, -283, 488)
 
-[node name="BadPartShape" type="Area2D" parent="Layers/Body/Controls/BrokenPart" unique_id=1312169056]
-collision_layer = 0
-collision_mask = 0
-monitoring = false
-monitorable = false
-
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Controls/BrokenPart/BadPartShape" unique_id=1312169057]
-polygon = PackedVector2Array(-283, -488, 283, -488, 283, 488, -283, 488)
-
 [node name="FinalWhack" parent="Layers/Body" unique_id=24686342 instance=ExtResource("6_stuck")]
 position = Vector2(188, -24)
 hits_needed = 1
@@ -153,4 +128,4 @@ bench_dust_spew_count = 12
 [node name="Shape" type="Area2D" parent="." unique_id=724490024]
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape" unique_id=1987539344]
-polygon = PackedVector2Array(-923.07697, 507.69232, -923.07697, -738.46155, -246.15385, -753.8462, -61.538464, -876.9231, -92.30769, -984.6154, -223.07693, -1100, -330.76926, -1030.7693, -361.53848, -1176.9231, -207.69232, -1146.1539, -69.230774, -1053.8462, 38.46154, -1092.3077, 100, -1069.2308, 361.53848, -1253.8462, 392.3077, -1230.7693, 153.84616, -1046.1539, 176.92308, -953.8462, 130.76924, -892.30774, 261.53848, -830.7693, 315.3846, -761.5385, 1061.5385, -738.46155, 1184.6155, -623.07697, 1192.3077, 446.15387, 1100, 530.7692)
+polygon = PackedVector2Array(-923.07697, 507.69232, -923.07697, -738.46155, -246.15385, -753.8462, -61.538464, -876.9231, -92.30769, -984.6154, -69.230774, -1053.8462, 38.46154, -1092.3077, 100, -1069.2308, 153.84616, -1046.1539, 176.92308, -953.8462, 130.76924, -892.30774, 261.53848, -830.7693, 315.3846, -761.5385, 1061.5385, -738.46155, 1184.6155, -623.07697, 1192.3077, 446.15387, 1100, 530.7692)

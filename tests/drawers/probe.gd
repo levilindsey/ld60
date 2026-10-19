@@ -75,6 +75,49 @@ func _check_stocked_spots() -> void:
 		"the drawers hold about as many parts as each other %s"
 		% [counts],
 	)
+	_check_stock_composition(counts)
+
+
+## The stock's makeup: every kind the item needs appears
+## exactly once across all the drawers, and the total is the
+## old set (one of each kind, a copy per socket, the decoy
+## setting) scaled by the stock scale, in decoys.
+func _check_stock_composition(counts: Array[int]) -> void:
+	var item := _level.active_repairable
+	var needed_types: Array[Part.Type] = []
+	var socket_count := 0
+	for layer in item.layers:
+		for point in layer.get_points():
+			if point is PartSocket:
+				socket_count += 1
+				var needed := (point as PartSocket).accepted_part
+				if not needed_types.has(needed):
+					needed_types.append(needed)
+	var stocked_by_type := {}
+	for drawer in _level.get_drawers():
+		for part in _level.get_parts_in_drawer(drawer):
+			stocked_by_type[part.type] = (
+				int(stocked_by_type.get(part.type, 0)) + 1
+			)
+	for needed in needed_types:
+		_expect(
+			int(stocked_by_type.get(needed, 0)) == 1,
+			"the needed %s is stocked exactly once"
+			% Part.get_display_name(needed),
+		)
+	var total := 0
+	for count in counts:
+		total += count
+	var previous_total := (
+		Part.Type.values().size()
+		+ socket_count
+		+ maxi(G.settings.decoy_part_count, 0)
+	)
+	_expect(
+		total == roundi(previous_total * 1.4),
+		"the drawers hold 1.4x the old stock (%d of %d)"
+		% [total, roundi(previous_total * 1.4)],
+	)
 
 
 ## Drawer-mates' spots keep most of their reaches apart: no two

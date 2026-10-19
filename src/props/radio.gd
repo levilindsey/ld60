@@ -54,6 +54,10 @@ extends Node2D
 ## spreads sideways by half as much, like it's deflated.
 @export var deflate_amount: float = 0.12
 
+## Seconds a glitch runs before the radio highlights itself,
+## when the player has not bonked it since the glitch started.
+@export var glitch_highlight_delay_sec := 5.0
+
 @export_group("Hit")
 ## How far a hammer hit squashes the radio, as a fraction of its height.
 @export var hit_squash_amount: float = 0.15
@@ -80,6 +84,12 @@ var _warble_time := 0.0
 var _cooldown_remaining_sec := 0.0
 ## 1 right after a hammer hit; eases back to 0.
 var _hit_amount := 0.0
+## Seconds the current glitch has run, for the highlight.
+var _glitch_elapsed_sec := 0.0
+## True once the player bonks the radio during this glitch.
+var _interacted_this_glitch := false
+var _is_highlight_shown := false
+var _art_material_before_highlight: Material
 
 
 func _physics_process(delta: float) -> void:
@@ -102,6 +112,7 @@ func _physics_process(delta: float) -> void:
 		(1.0 + stretch) * (1.0 - deflate),
 	)
 
+	_update_highlight(delta)
 	_update_trigger(delta)
 	_update_glitch(delta)
 
@@ -122,7 +133,45 @@ func set_glitching(value: bool) -> void:
 	if is_glitching and not value:
 		_cooldown_remaining_sec = G.settings.radio_glitch_cooldown_sec
 	is_glitching = value
+	if value:
+		_glitch_elapsed_sec = 0.0
+		_interacted_this_glitch = false
+	else:
+		_set_highlight_shown(false)
 	G.print("Radio glitching: %s" % is_glitching)
+
+
+## Counts a glitch the player has left alone. Past the delay
+## the radio highlights itself until the glitch ends.
+func _update_highlight(delta: float) -> void:
+	if not is_glitching:
+		_glitch_elapsed_sec = 0.0
+		return
+	if _interacted_this_glitch or _is_highlight_shown:
+		return
+	_glitch_elapsed_sec += delta
+	if _glitch_elapsed_sec >= glitch_highlight_delay_sec:
+		_set_highlight_shown(true)
+
+
+## True while the ignored-glitch highlight is on the art.
+func is_highlight_shown() -> bool:
+	return _is_highlight_shown
+
+
+func _set_highlight_shown(is_shown: bool) -> void:
+	if _is_highlight_shown == is_shown:
+		return
+	_is_highlight_shown = is_shown
+	if is_shown:
+		_art_material_before_highlight = OutlineHint.apply_to_sprite(
+			%Art
+		)
+	else:
+		OutlineHint.remove_from_sprite(
+			%Art, _art_material_before_highlight
+		)
+		_art_material_before_highlight = null
 
 
 ## Whether a hammer press at this point lands on the radio.
@@ -156,6 +205,7 @@ func get_art_scale() -> float:
 func break_away() -> void:
 	is_away = true
 	is_glitching = false
+	_set_highlight_shown(false)
 	_glitch_amount = 0.0
 	_hit_amount = 1.0
 	if is_instance_valid(G.audio.current_theme):
@@ -188,6 +238,8 @@ func return_to_shelf() -> void:
 
 ## A hammer hit at any strength bonks the radio and fixes a glitch.
 func on_struck(_charge: float) -> void:
+	_interacted_this_glitch = true
+	_set_highlight_shown(false)
 	G.audio.play_sound(&"thud", true)
 	G.level.shake_camera(5.0, 0.15)
 	_hit_amount = 1.0

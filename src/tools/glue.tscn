@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ccdw1u28lthc5"]
 
 [ext_resource type="Script" uid="uid://dq2batu75vvva" path="res://src/tools/glue.gd" id="1_glue"]
-[ext_resource type="Texture2D" uid="uid://dlm5vy4hum1ny" path="res://assets/images/tools/heyguysithinkifoundaglue.png" id="2_cd5ly"]
+[ext_resource type="Texture2D" uid="uid://vd0oxmjay4p6" path="res://assets/images/tools/heyguysithinkifoundaglue.png" id="2_cd5ly"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
 radius = 40.0
@@ -17,7 +17,7 @@ cursor_position = NodePath("Wrapper/CursorPosition")
 grab_area = NodePath("Wrapper/GrabArea")
 interaction_area = NodePath("Wrapper/InteractionArea")
 holder_area = NodePath("Wrapper/HolderArea")
-held_rotation_deg = -50.0
+held_rotation_deg = -120.0
 holder_shadow = 0
 
 [node name="Wrapper" type="Node2D" parent="." unique_id=1053359982]

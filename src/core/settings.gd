@@ -416,11 +416,16 @@ enum FirstRepairable {
 ## Seconds the piece takes to settle onto the point's exact
 ## centre when the hold game starts.
 @export var broken_hold_align_sec := 0.18
-## How much the held piece's offset moves the dot, so a
-## small hand movement reads clearly in the ring.
+## How much the player's hand movement from where the hold
+## started moves the dot, so a small hand movement reads
+## clearly in the ring.
 @export var broken_hold_dot_scale := 1.6
+## How far the held piece leans toward the dot, as a share
+## of the dot's offset from the ring's centre. The piece
+## itself stays on its point; only this lean moves it.
+@export var broken_hold_piece_lean_share := 0.25
 ## How fast the dot drifts on its own, in pixels per second.
-## The player counters it by nudging the piece.
+## The player counters it by nudging their hand.
 @export var broken_hold_drift_speed_px_per_sec := 14.0
 ## Seconds between fresh drift directions.
 @export var broken_hold_drift_retarget_sec := 0.45

@@ -7,9 +7,6 @@
 [ext_resource type="Texture2D" uid="uid://bqrp5b0s1dnbx" path="res://assets/images/repairables/atari_joystick_with_gaps.png" id="body_tex"]
 [ext_resource type="Texture2D" uid="uid://du62c2fga02r4" path="res://assets/images/repairables/atari_joystick_good.png" id="good_tex"]
 
-[sub_resource type="RectangleShape2D" id="drop_shape"]
-size = Vector2(215, 185)
-
 [node name="AtariRepairable" type="Node2D" unique_id=1191888130 node_paths=PackedStringArray("shape")]
 script = ExtResource("1_item")
 item_name = "Atari joystick"
@@ -18,16 +15,6 @@ shadow_style = 1
 ticket = "hi i movd it to strong and now it dont werk
 :("
 shadow_offset = Vector2(3, 8)
-
-[node name="DropArea" type="Area2D" parent="." unique_id=1445261071]
-unique_name_in_owner = true
-position = Vector2(8, 22)
-collision_layer = 2
-collision_mask = 0
-monitoring = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea" unique_id=1168562579]
-shape = SubResource("drop_shape")
 
 [node name="Layers" type="Node2D" parent="." unique_id=1367025518]
 unique_name_in_owner = true
@@ -73,16 +60,6 @@ monitoring = false
 monitorable = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Joystick/GoodPartShape" unique_id=536495875]
-position = Vector2(-1, 0)
-polygon = PackedVector2Array(-17, 20, -8, 15, 6, 10, 15, 8, 14, -25, 13, -71, 15, -75, 20, -78, 25, -79, 36, -79, 43, -76, 47, -71, 47, -44, 40, 12, 55, 20, 67, 37, 66.795975, 55.11661, 64, 63, 55, 73, 40, 79, 14, 79, -2, 75, -11, 64, -17, 52, -58, 53, -67, 46, -66.98875, 39.0782, -63, 31, -58, 28, -19, 28)
-
-[node name="BadPartShape" type="Area2D" parent="Layers/Body/Joystick/BrokenPart" unique_id=536495876]
-collision_layer = 0
-collision_mask = 0
-monitoring = false
-monitorable = false
-
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Joystick/BrokenPart/BadPartShape" unique_id=536495877]
 position = Vector2(-1, 0)
 polygon = PackedVector2Array(-17, 20, -8, 15, 6, 10, 15, 8, 14, -25, 13, -71, 15, -75, 20, -78, 25, -79, 36, -79, 43, -76, 47, -71, 47, -44, 40, 12, 55, 20, 67, 37, 66.795975, 55.11661, 64, 63, 55, 73, 40, 79, 14, 79, -2, 75, -11, 64, -17, 52, -58, 53, -67, 46, -66.98875, 39.0782, -63, 31, -58, 28, -19, 28)
 

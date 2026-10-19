@@ -61,6 +61,15 @@ func _run() -> void:
 		"the glitch plays static",
 	)
 
+	# Left alone, the wonky radio highlights itself. The
+	# probe shortens the delay so it does not wait it out.
+	_radio.glitch_highlight_delay_sec = 1.0
+	await _seconds(0.3)
+	_expect(
+		_radio.is_highlight_shown(),
+		"a glitch left alone highlights the radio",
+	)
+
 	var hammer := G.level.tools_by_type[Tool.Type.HAMMER] as Tool
 	await _grab_tool(hammer)
 	var radio_point: Vector2 = (
@@ -68,10 +77,21 @@ func _run() -> void:
 	).global_position + Vector2(0.0, -40.0)
 	_expect(_radio.is_struck_at(radio_point), "the press lands on the radio")
 	await _press_down(radio_point)
+	var hammer_tool := hammer as Hammer
+	_expect(
+		is_instance_valid(hammer_tool)
+		and hammer_tool.get_locked_prop() == _radio
+		and hammer_tool.is_locked_prop_green(),
+		"winding up on the wonky radio locks it with the green band",
+	)
 	await _seconds(0.2)
 	await _release_at(radio_point)
 	await _seconds(0.5)
 	_expect(not _radio.is_glitching, "a hammer hit fixes the radio")
+	_expect(
+		not _radio.is_highlight_shown(),
+		"bonking the radio clears the highlight",
+	)
 
 	await _seconds(3.0)
 	_expect(

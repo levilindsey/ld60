@@ -434,6 +434,12 @@ func _check_install() -> void:
 		await _wait_for_travel(_left, Screw.Travel.HOME),
 		"the left screw sinks back in",
 	)
+	_expect(
+		is_equal_approx(
+			_left._get_total_rad(), Screw.LOOSE_TURN_RAD * 2.0
+		),
+		"driving in takes twice the loose turn's turning",
+	)
 	# Pressing the cover back can brush the driver's own holder
 	# and put it away. Take it again if the hand is empty.
 	if _hand.held != _driver:
@@ -446,8 +452,9 @@ func _check_install() -> void:
 	)
 	# The seated screw sits raised: press its slid-up hit shape.
 	# Drive it in tracked bursts, re-engaging after a cam-out:
-	# progress is kept between tries.
-	for attempt in 3:
+	# progress is kept between tries. Driving in takes twice
+	# the turning it used to, so there are more bursts.
+	for attempt in 6:
 		if _left.mode == InteractionPoint.Mode.FINISHED:
 			break
 		if _left.mode != InteractionPoint.Mode.ACTIVE:

@@ -35,6 +35,14 @@ enum Kind {
 ## sits in mostly transparent padding, and a percentage of the
 ## canvas would barely grow the art itself.
 const _GROW_LAYERS: Array = [[20.0, 3.0, 0.45], [10.0, 1.5, 0.8]]
+## The most a silhouette copy may outgrow its art. The grow
+## factor comes from the art's short axis (that is where the
+## margin runs out first), and one uniform factor then scales
+## the long axis by the same amount: on a long, thin piece
+## (the piano's broken key, 18 world px across) the uncapped
+## factor more than doubled the whole shadow. The cap keeps
+## the rim a rim on thin art; wide art never reaches it.
+const _MAX_GROW_FACTOR := 1.35
 const _SILHOUETTE_SHADER := """
 shader_type canvas_item;
 void fragment() {
@@ -379,7 +387,7 @@ func _get_grow(source: CanvasItem, margin: Vector2) -> Array:
 		1.0 + 2.0 * margin.x / maxf(world_size.x, 0.001),
 		1.0 + 2.0 * margin.y / maxf(world_size.y, 0.001),
 	)
-	return [Vector2.ONE * uniform, centre, size]
+	return [Vector2.ONE * minf(uniform, _MAX_GROW_FACTOR), centre, size]
 
 
 static var _used_rects: Dictionary = {}

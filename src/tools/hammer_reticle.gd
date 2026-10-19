@@ -59,8 +59,24 @@ func _draw() -> void:
 			7.0,
 			true,
 		)
+	elif hammer.is_locked_prop_green():
+		# The wonky radio: any charge fixes it, so the green
+		# band generously covers the whole ring.
+		draw_arc(
+			center,
+			radius,
+			start,
+			start + TAU,
+			48,
+			Color(0.4, 1.0, 0.45),
+			7.0,
+			true,
+		)
 	var fill_color := Color(1.0, 0.85, 0.3)
-	if is_instance_valid(target) and hammer.is_charge_in_band():
+	if (
+		(is_instance_valid(target) and hammer.is_charge_in_band())
+		or hammer.is_locked_prop_green()
+	):
 		fill_color = Color(0.4, 1.0, 0.45)
 	draw_arc(
 		center,

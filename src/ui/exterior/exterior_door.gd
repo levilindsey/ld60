@@ -57,7 +57,7 @@ func _draw() -> void:
 	if not is_instance_valid(texture) or door_size.x <= 0.0:
 		return
 	# The dark inside, behind wherever the door has swung away.
-	draw_rect(Rect2(Vector2.ZERO, door_size), _DOORWAY_COLOR)
+	#draw_rect(Rect2(Vector2.ZERO, door_size), _DOORWAY_COLOR)
 
 	var angle := _MAX_OPEN_RAD * _open_amount
 	var brightness := 1.0 - _MAX_SHADE * sin(angle)

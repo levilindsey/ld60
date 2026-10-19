@@ -771,9 +771,12 @@ func _handle_release(global_point: Vector2) -> bool:
 ## outside the workable area sends them back in.
 func _drag_loose_piece() -> void:
 	if is_instance_valid(_loose_broken_piece):
-		_loose_broken_piece.global_position = (
-			pointer_position + _loose_drag_offset
-		)
+		# During the hold game the point moves the piece
+		# itself; the pointer no longer drags it.
+		if not _loose_broken_piece.is_in_hold:
+			_loose_broken_piece.global_position = (
+				pointer_position + _loose_drag_offset
+			)
 	elif is_instance_valid(_loose_part):
 		# A part may be carried anywhere, over the drawers too. It
 		# is only set down, fitted or put away on release.
@@ -846,9 +849,10 @@ func get_loose_broken_piece() -> BrokenPiece:
 	return _loose_broken_piece
 
 
-## The hold game started. The drag offset eases so the piece
-## settles onto its point's exact centre while the pointer
-## stays where it is. Moving the pointer still drags it.
+## The hold game started. The piece itself eases onto its
+## point's exact centre. From there the pointer no longer
+## drags it: the point leans it toward the dot instead
+## (see BrokenPoint), until the hold ends.
 func begin_broken_piece_hold(
 	piece: BrokenPiece, target_global_position: Vector2
 ) -> void:
@@ -863,9 +867,9 @@ func begin_broken_piece_hold(
 		Tween.EASE_OUT
 	)
 	_hold_align_tween.tween_property(
-		self,
-		"_loose_drag_offset",
-		target_global_position - pointer_position,
+		piece,
+		"global_position",
+		target_global_position,
 		G.settings.broken_hold_align_sec,
 	)
 
@@ -881,6 +885,7 @@ func clear_loose_broken_piece(piece: BrokenPiece) -> void:
 	if _loose_broken_piece == piece:
 		_loose_broken_piece = null
 		_stop_hold_alignment()
+	piece.is_in_hold = false
 
 
 ## The hold game failed. The hand lets go and the piece is
@@ -890,6 +895,7 @@ func fail_broken_piece_hold(piece: BrokenPiece) -> void:
 		return
 	_loose_broken_piece = null
 	_stop_hold_alignment()
+	piece.is_in_hold = false
 	piece.flick_away()
 
 
@@ -904,6 +910,7 @@ func _drop_loose_broken_piece(
 	_stop_hold_alignment()
 	if not is_instance_valid(piece):
 		return
+	piece.is_in_hold = false
 	if piece.is_installed:
 		return
 	_set_down_broken_piece(piece, release_velocity)

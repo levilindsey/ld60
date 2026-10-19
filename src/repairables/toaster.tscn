@@ -11,9 +11,6 @@
 [ext_resource type="PackedScene" path="res://src/interaction_points/stuck_part.tscn" id="9_stuck"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/grime_spot.tscn" id="10_grime"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_drop"]
-size = Vector2(230, 170)
-
 [node name="Toaster" type="Node2D" unique_id=767667941 node_paths=PackedStringArray("shape")]
 script = ExtResource("1_toaster")
 item_name = "Toaster"
@@ -23,15 +20,6 @@ par_time_sec = 120.0
 bench_radius_px = 100.0
 shadow_size = Vector2(240, 34)
 shadow_offset = Vector2(5, 88)
-
-[node name="DropArea" type="Area2D" parent="." unique_id=1935434787]
-unique_name_in_owner = true
-collision_layer = 2
-collision_mask = 0
-monitoring = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea" unique_id=825021103]
-shape = SubResource("RectangleShape2D_drop")
 
 [node name="Layers" type="Node2D" parent="." unique_id=1698067149]
 unique_name_in_owner = true
@@ -61,14 +49,14 @@ scale = Vector2(0.55, 0.55)
 texture = ExtResource("3_body")
 offset = Vector2(7, -18.5)
 
-[node name="Shape" type="Area2D" parent="Layers/Body"]
+[node name="Shape" type="Area2D" parent="Layers/Body" unique_id=56493772]
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape"]
-polygon = PackedVector2Array(-112.2, -78.925, 112.2, -78.925, 112.2, 78.925, -112.2, 78.925)
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape" unique_id=484148739]
+polygon = PackedVector2Array(-101, 63, -103, -8, -92, -29, -68, -47, -16, -54, 35, -55, 53, -56, 64, -55, 71, -54, 95, -45, 95, -36, 100, -22, 101, 29, 96, 31, 88, 29, 78, 29, 73, 34, 74, 49, 67, 52, -5, 74, -45, 73, -96, 66)
 
 [node name="Face" type="Sprite2D" parent="Layers/Body" unique_id=773536517]
 unique_name_in_owner = true
@@ -117,4 +105,4 @@ draws_scar = false
 [node name="Shape" type="Area2D" parent="." unique_id=1849007626]
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape" unique_id=693503427]
-polygon = PackedVector2Array(-101, 63, -103, -8, -92, -29, -68, -47, 35, -55, 64, -77, 69, -74, 71, -54, 95, -45, 104, -56, 111, -55, 109, -24, 102, 46, 86, 60, 67, 52, -2, 73, -45, 73, -96, 66)
+polygon = PackedVector2Array(-101, 63, -103, -8, -92, -29, -68, -47, -16, -54, 35, -55, 53, -56, 64, -55, 71, -54, 95, -45, 95, -36, 100, -22, 101, 29, 96, 31, 88, 29, 78, 29, 73, 34, 74, 49, 67, 52, -5, 74, -45, 73, -96, 66)

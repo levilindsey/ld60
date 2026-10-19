@@ -52,7 +52,7 @@ const _FLING_DURATION_SEC := 0.9
 const _FLING_DEPTH_PX := 600.0
 ## How far left of its desk spot the toss starts, gliding
 ## right as it rises.
-const _FLING_FROM_LEFT_PX := 200.0
+const _FLING_FROM_LEFT_PX := 420.0
 ## How high above its desk spot the toss peaks.
 const _FLING_PEAK_PX := 120.0
 ## How far the ticket spins on the way up, settling flat as it lands.

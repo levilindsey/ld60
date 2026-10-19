@@ -10,9 +10,10 @@ extends Node2D
 ## `arrive()` drops it onto the bench, a finished item gets the
 ## outline and can be dragged (`on_grabbed()`, `return_to()`), and
 ## `leave()` sends it off
-## through the outbox. Every item scene needs a `%DropArea` on the
-## REPAIRABLES physics layer for the outbox to detect. The shop radio flies
-## in and out instead (`fly_in()`, `fly_out()`).
+## through the outbox. The outbox detects a finished item
+## from its `shape`, tested by hand in the level like every
+## Shape test. The shop radio flies in and out instead
+## (`fly_in()`, `fly_out()`).
 
 
 signal layer_removed(layer: RepairLayer)
@@ -58,8 +59,12 @@ const _ARRIVAL_BOUNCE_DECAY := 0.4
 const _LEAVING_Z_INDEX := 16
 ## World width of the finished item's outline. Wider than
 ## the shared hint rim: the hint width reads thin around a
-## whole item.
-const _FINISH_OUTLINE_WIDTH_PX := 14.0
+## whole item, and the band fades across its depth, so the
+## strong part is thinner than the number says. On a
+## scaled-down item (the Game & Watch at 0.13) 14 px read
+## as a whisper; 20 with a stronger gradient (see
+## `_get_finish_outline_material()`) carries.
+const _FINISH_OUTLINE_WIDTH_PX := 20.0
 
 @export var item_name := ""
 ## The object's own outline, an Area2D with polygon/shape
@@ -104,11 +109,6 @@ var has_finished := false
 ## This repair's score: its defects and its time (`quality.md`). The
 ## repair time counts unpaused seconds from landing to `finished`.
 var quality := RepairQuality.new()
-
-## What the outbox tests for overlap.
-var drop_area: Area2D:
-	get:
-		return %DropArea
 
 var _repair_sequence: RepairSequence
 var _shake_tween: Tween
@@ -405,8 +405,8 @@ func arrive(target_global_position: Vector2) -> void:
 
 
 ## How far this item reaches from its middle, in world
-## pixels. Its `%DropArea` is 100 by 100, so half of that.
-## The level keeps this much of a finished item inside the
+## pixels, authored per item. The level keeps this much of
+## a finished item inside the
 ## workable area when it comes to rest, and it sets how
 ## much the item bounces and skids when it lands there. A
 ## big item like this bounces little and stops quickly.
@@ -790,8 +790,10 @@ func _start_outline() -> void:
 
 ## The finished item's rim, a copy of the shared outline
 ## material with a wider band: the shared hint width reads
-## thin around a whole item. Duplicated once, the first time
-## an item finishes.
+## thin around a whole item. The copy also holds its color
+## longer across the band (a higher gradient power), so
+## more of the band is at full strength instead of fading
+## out. Duplicated once, the first time an item finishes.
 func _get_finish_outline_material() -> Material:
 	if not is_instance_valid(_finish_outline_material):
 		var shared := G.settings.outline_hint_material
@@ -800,6 +802,10 @@ func _get_finish_outline_material() -> Material:
 			(_finish_outline_material as ShaderMaterial
 			).set_shader_parameter(
 				&"outline_width_px", _FINISH_OUTLINE_WIDTH_PX
+			)
+			(_finish_outline_material as ShaderMaterial
+			).set_shader_parameter(
+				&"gradient_power", 1.6
 			)
 	return _finish_outline_material
 

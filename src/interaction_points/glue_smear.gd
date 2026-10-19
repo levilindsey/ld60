@@ -45,7 +45,7 @@ func setup_decal() -> void:
 		DecalSpawner.Kind.GLUE_BLOB,
 		layer.art,
 		global_position,
-		34.0,
+		52.0,
 	)
 	if is_instance_valid(glue_decal):
 		_base_alpha = glue_decal.modulate.a

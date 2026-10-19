@@ -140,6 +140,11 @@ func _run() -> void:
 			"the smear shows as a glue decal",
 		)
 		_expect(
+			_world_size(smear.glue_decal).x >= 44.0,
+			"the smear's glue decal is big enough to see (%.0f px)"
+			% _world_size(smear.glue_decal).x,
+		)
+		_expect(
 			_item.quality.get_defect_count() == defects_before,
 			"a fresh smear costs nothing yet",
 		)
@@ -214,6 +219,22 @@ func _run() -> void:
 		) < 6.0,
 		"the piece settles onto the point's exact centre",
 	)
+	# The piece no longer follows the pointer during the
+	# hold. Moving the hand only leans it toward the dot.
+	await _move_to(_point.global_position + Vector2(44, 0))
+	await _physics_frames(6)
+	var lean := _piece.global_position - _point.global_position
+	_expect(
+		lean.length() > 1.0 and lean.length() < 13.0,
+		"the held piece leans a little instead of following"
+		+ " the pointer (lean %s)" % [lean],
+	)
+	_expect(
+		lean.x > 0.0,
+		"the held piece leans toward the dot",
+	)
+	await _move_to(_point.global_position + Vector2(20, 0))
+	await _physics_frames(4)
 	var defects_before_fail := _item.quality.get_defect_count()
 	var fail_position := _point.global_position + Vector2(230, 0)
 	await _move_to(fail_position)
@@ -257,6 +278,13 @@ func _run() -> void:
 	_expect(
 		_piece.is_installed,
 		"the held piece stays on its point",
+	)
+	await _physics_frames(30)
+	_expect(
+		_piece.global_position.distance_to(
+			_point.global_position
+		) < 6.0,
+		"the finished piece tweens back to the point's centre",
 	)
 
 	# Dirt left when the repair ends is charged then, one
@@ -343,6 +371,27 @@ func _glue_pointer_for(tool: Tool, target: Vector2) -> Vector2:
 		tool.get_work_end_position() - tool.get_tip_position()
 	)
 	return target - offset
+
+
+## A sprite's drawn size in world pixels.
+func _world_size(sprite: Sprite2D) -> Vector2:
+	if not is_instance_valid(sprite):
+		return Vector2.ZERO
+	var rect := sprite.get_rect()
+	var world := Rect2()
+	var first := true
+	for corner in [
+		rect.position, rect.end,
+		Vector2(rect.position.x, rect.end.y),
+		Vector2(rect.end.x, rect.position.y),
+	]:
+		var point: Vector2 = sprite.global_transform * corner
+		if first:
+			world = Rect2(point, Vector2.ZERO)
+			first = false
+		else:
+			world = world.expand(point)
+	return world.size
 
 
 func _find_smear(layer: RepairLayer) -> GlueSmear:

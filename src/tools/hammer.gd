@@ -94,6 +94,22 @@ func get_locked_layer() -> RepairLayer:
 	return _locked_layer
 
 
+## The prop locked by the current wind up, or null.
+func get_locked_prop() -> Node2D:
+	return _locked_prop
+
+
+## True while the locked prop takes the green band treatment:
+## the wonky radio is fixed by a bonk at any charge, so its
+## whole ring counts as the band.
+func is_locked_prop_green() -> bool:
+	return (
+		is_instance_valid(_locked_prop)
+		and _locked_prop is Radio
+		and (_locked_prop as Radio).is_glitching
+	)
+
+
 ## True while the charge sits inside the locked target's band.
 func is_charge_in_band() -> bool:
 	return (

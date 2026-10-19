@@ -102,7 +102,19 @@ func _check_fitted_spawns() -> void:
 		DecalSpawner.Kind.DENT, _art_global(art, Vector2(2, 2)), 34.0
 	)
 	if _expect(is_instance_valid(dent), "a fitted dent spawns"):
-		_expect(dent.get_parent() == art, "the dent parents to the part art")
+		_expect(
+			dent.get_parent() == art
+			or dent.get_parent().name == "DecalShapeMask",
+			"the dent parents to the part art or its Shape mask",
+		)
+		var mask := dent.get_parent() as Polygon2D
+		if is_instance_valid(mask) and mask.name == "DecalShapeMask":
+			_expect(
+				mask.clip_children
+				== CanvasItem.CLIP_CHILDREN_ONLY
+				and mask.polygon.size() >= 3,
+				"the decal is clipped to the layer's Shape region",
+			)
 		_expect(
 			dent.modulate == spawner.dent_set.tint,
 			"the dent wears the set tint",
@@ -345,14 +357,18 @@ func _check_dirt_points() -> void:
 ## How many decals showing `texture_marker` sit on the part art.
 func _decal_count(art: CanvasItem, texture_marker: String) -> int:
 	var count := 0
-	for child in art.get_children():
-		if child is Sprite2D:
-			var sprite := child as Sprite2D
-			if (
-				sprite.texture != null
-				and sprite.texture.resource_path.contains(texture_marker)
-			):
-				count += 1
+	var pending: Array[Node] = [art]
+	while not pending.is_empty():
+		var node: Node = pending.pop_back()
+		pending.append_array(node.get_children())
+		if node == art or not (node is Sprite2D):
+			continue
+		var sprite := node as Sprite2D
+		if (
+			sprite.texture != null
+			and sprite.texture.resource_path.contains(texture_marker)
+		):
+			count += 1
 	return count
 
 

@@ -1,67 +1,64 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://c7lu3sllc5kk0"]
 
-[ext_resource type="Script" path="res://src/ui/exterior/exterior.gd" id="1_exterior"]
-[ext_resource type="Texture2D" path="res://assets/images/repairables/exterior_wall.png" id="2_wall"]
-[ext_resource type="Texture2D" path="res://assets/images/repairables/exterior_door.png" id="3_door"]
-[ext_resource type="Script" path="res://src/ui/exterior/exterior_door.gd" id="4_door_script"]
-[ext_resource type="FontFile" path="res://assets/fonts/young_serif/YoungSerif-Regular.ttf" id="5_font"]
+[ext_resource type="Script" uid="uid://dwnaaqsnarceb" path="res://src/ui/exterior/exterior.gd" id="1_exterior"]
+[ext_resource type="Texture2D" uid="uid://3fe5tom6jfw6" path="res://assets/images/repairables/exterior_wall.png" id="2_wall"]
+[ext_resource type="Texture2D" uid="uid://c3tuu3ouiggeh" path="res://assets/images/repairables/exterior_door.png" id="3_door"]
+[ext_resource type="Script" uid="uid://c8a2gdi15cwgl" path="res://src/ui/exterior/exterior_door.gd" id="4_door_script"]
+[ext_resource type="FontFile" uid="uid://c4k1kn5tdsq0" path="res://assets/fonts/young_serif/YoungSerif-Regular.ttf" id="5_font"]
 
-[node name="Exterior" type="Node2D"]
+[node name="Exterior" type="Node2D" unique_id=797812914]
 process_mode = 3
 script = ExtResource("1_exterior")
 wall_texture = ExtResource("2_wall")
 door_texture = ExtResource("3_door")
 
-[node name="Zoom" type="Node2D" parent="."]
+[node name="Zoom" type="Node2D" parent="." unique_id=937825427]
 unique_name_in_owner = true
 
-[node name="Wall" type="Sprite2D" parent="Zoom"]
+[node name="Wall" type="Sprite2D" parent="Zoom" unique_id=2022897371]
 unique_name_in_owner = true
 centered = false
 
-[node name="Door" type="Node2D" parent="Zoom"]
+[node name="Door" type="Node2D" parent="Zoom" unique_id=1529709637]
 unique_name_in_owner = true
 script = ExtResource("4_door_script")
 
-[node name="SignViewport" type="SubViewport" parent="."]
+[node name="SignViewport" type="SubViewport" parent="." unique_id=1971880625]
 unique_name_in_owner = true
 transparent_bg = true
 gui_disable_input = true
 size = Vector2i(630, 474)
 
-[node name="SignWelcome" type="Label" parent="SignViewport"]
+[node name="SignWelcome" type="Label" parent="SignViewport" unique_id=996290587]
 unique_name_in_owner = true
 offset_left = 18.0
 offset_top = 52.0
 offset_right = 648.0
 offset_bottom = 134.0
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.23, 0.15, 0.08, 0.85)
 theme_override_fonts/font = ExtResource("5_font")
 theme_override_font_sizes/font_size = 52
 text = "Welcome to"
 horizontal_alignment = 1
 
-[node name="SignTitle" type="Label" parent="SignViewport"]
+[node name="SignTitle" type="Label" parent="SignViewport" unique_id=1053879971]
 unique_name_in_owner = true
 offset_left = 18.0
 offset_top = 126.0
 offset_right = 648.0
 offset_bottom = 322.0
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.23, 0.15, 0.08, 1)
 theme_override_fonts/font = ExtResource("5_font")
 theme_override_font_sizes/font_size = 132
 text = "Fix It"
 horizontal_alignment = 1
 
-[node name="SignSub" type="Label" parent="SignViewport"]
+[node name="SignSub" type="Label" parent="SignViewport" unique_id=252346468]
 unique_name_in_owner = true
 offset_left = 18.0
 offset_top = 324.0
 offset_right = 648.0
 offset_bottom = 467.0
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.23, 0.15, 0.08, 0.85)
 theme_override_fonts/font = ExtResource("5_font")
 theme_override_font_sizes/font_size = 64

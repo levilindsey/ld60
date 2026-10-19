@@ -100,8 +100,8 @@ func _check_driver_art() -> void:
 
 
 ## Each stored tool's shadow follows its holder treatment: the
-## glue's ellipse sits at its holder contact, the rag casts its
-## full shape, and the hanging drivers cast no shadow at all.
+## glue's ellipse sits at its holder contact, and the hanging
+## tools (the rag, the drivers) cast no shadow at all.
 func _check_holder_shadows() -> void:
 	var glue := G.level.tools_by_type[Tool.Type.GLUE] as Tool
 	var rag := G.level.tools_by_type[Tool.Type.RAG] as Tool
@@ -115,13 +115,14 @@ func _check_holder_shadows() -> void:
 		"the stored glue casts an ellipse at its holder contact",
 	)
 	_expect(
-		rag.holder_shadow == Tool.HolderShadow.SILHOUETTE
-		and rag._drop_shadow.kind == DropShadow.Kind.SILHOUETTE
-		and rag._drop_shadow.get_copy_count() > 0,
-		"the hanging rag casts its full shape (%d copies)"
-		% rag._drop_shadow.get_copy_count(),
+		rag.holder_shadow == Tool.HolderShadow.NONE,
+		"the hanging rag asks for no shadow",
 	)
 	await _physics_frames(30)
+	_expect(
+		not rag._drop_shadow.visible,
+		"the stored rag casts no shadow on its holder",
+	)
 	_expect(
 		driver.holder_shadow == Tool.HolderShadow.NONE
 		and not driver._drop_shadow.visible,

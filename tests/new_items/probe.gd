@@ -75,6 +75,25 @@ func _check_tv_antenna_shape() -> void:
 		is_instance_valid(antenna), "the landed TV has an antenna"
 	):
 		return
+	# The bend turns the art around its bottom right corner:
+	# the corner sits on the art's origin and stays there as
+	# the error comes out.
+	var bent_sprite := antenna.art as Sprite2D
+	var corner_at_pivot := false
+	var corner_before := Vector2.ZERO
+	if is_instance_valid(bent_sprite):
+		var size := bent_sprite.region_rect.size
+		corner_before = bent_sprite.to_global(
+			bent_sprite.offset + size * 0.5
+		)
+		corner_at_pivot = (
+			corner_before.distance_to(antenna.art.global_position)
+			< 1.0
+		)
+	_expect(
+		corner_at_pivot,
+		"the antenna bends around its bottom right corner",
+	)
 	var far_point := antenna.global_position
 	for point in antenna.get_shape_world_polygon():
 		if (
@@ -118,6 +137,15 @@ func _check_tv_antenna_shape() -> void:
 		+ " (error %.1f of %.1f)"
 		% [antenna.current_error_deg, antenna.error_deg],
 	)
+	if is_instance_valid(bent_sprite):
+		var size := bent_sprite.region_rect.size
+		var corner_after := bent_sprite.to_global(
+			bent_sprite.offset + size * 0.5
+		)
+		_expect(
+			corner_after.distance_to(corner_before) < 1.0,
+			"the antenna's corner stays put as it straightens",
+		)
 	if is_instance_valid(whack):
 		_expect(
 			whack.hits_done == 0
@@ -290,8 +318,93 @@ func _check_piano() -> void:
 				grime_count += 1
 	_expect(has_broken, "the piano has a key to glue back on")
 	_expect(grime_count >= 2, "the piano has grime to wipe")
+	await _check_piano_key_shadow(item)
 	item.queue_free()
 	await _physics_frames(2)
+
+
+## The broken key is long and thin (about 18 world px
+## across): its silhouette shadow must stay a rim around it,
+## not a blob nearly twice its size, and it must sit just
+## below the key, not hang far under it.
+func _check_piano_key_shadow(item: Repairable) -> void:
+	var piece: BrokenPiece = null
+	for found in item.find_children(
+		"*", "BrokenPiece", true, false
+	):
+		piece = found as BrokenPiece
+	if not _expect(
+		is_instance_valid(piece), "the piano's broken key exists"
+	):
+		return
+	piece.detach_for_fall(
+		piece.global_position + Vector2(250, 300)
+	)
+	for frame in 240:
+		await get_tree().physics_frame
+		if not piece.is_returning and not piece.is_flicking:
+			break
+	await _physics_frames(10)
+	var shadow: DropShadow = null
+	for sibling in piece.get_parent().get_children():
+		if (
+			sibling is DropShadow
+			and (sibling as DropShadow)._host == piece
+		):
+			shadow = sibling as DropShadow
+	if not _expect(
+		is_instance_valid(shadow), "the fallen key has a shadow"
+	):
+		piece.queue_free()
+		return
+	var piece_rect := _sprite_world_rect(piece.art as Sprite2D)
+	var shadow_rect := Rect2()
+	var first := true
+	for entry in shadow._copies:
+		var copy := entry[0] as Sprite2D
+		if not is_instance_valid(copy):
+			continue
+		var copy_rect := _sprite_world_rect(copy)
+		if first:
+			shadow_rect = copy_rect
+			first = false
+		else:
+			shadow_rect = shadow_rect.merge(copy_rect)
+	var ratio := shadow_rect.size / piece_rect.size
+	_expect(
+		ratio.x <= 1.2 and ratio.y <= 1.2,
+		"the key's shadow stays a rim (%.2fx the key)"
+		% maxf(ratio.x, ratio.y),
+	)
+	_expect(
+		shadow_rect.get_center().distance_to(
+			piece_rect.get_center()
+		) <= 9.0,
+		"the key's shadow sits just under it (%.1f px off)"
+		% shadow_rect.get_center().distance_to(
+			piece_rect.get_center()
+		),
+	)
+	piece.queue_free()
+
+
+## A sprite's drawn rect in world points.
+func _sprite_world_rect(sprite: Sprite2D) -> Rect2:
+	var rect := sprite.get_rect()
+	var world := Rect2()
+	var first := true
+	for corner in [
+		rect.position, rect.end,
+		Vector2(rect.position.x, rect.end.y),
+		Vector2(rect.end.x, rect.position.y),
+	]:
+		var point: Vector2 = sprite.global_transform * corner
+		if first:
+			world = Rect2(point, Vector2.ZERO)
+			first = false
+		else:
+			world = world.expand(point)
+	return world
 
 
 func _check_atari() -> void:

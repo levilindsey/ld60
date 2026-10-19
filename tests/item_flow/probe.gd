@@ -451,11 +451,10 @@ func _check_outbox() -> void:
 	_departed_msec = 0
 	await _press_down(home)
 	await _move_to(inside)
-	# The overlap shows up a few physics frames after the item moves.
 	await _physics_frames(4)
 	_expect(
 		_hand.held == leaving_item
-		and outbox.overlaps_area(leaving_item.drop_area),
+		and _level._is_at_ship_spot(leaving_item),
 		"5. the dragged item overlaps the outbox",
 	)
 	await _shot("4_outbox")
