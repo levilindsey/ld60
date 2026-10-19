@@ -132,18 +132,31 @@ func _yank_and_refit() -> void:
 	await _open_drawer(drawer)
 	if not _expect(part.visible, "the new joystick shows in its drawer"):
 		return
-	# Grab the part on its authored shape, not its centre: the
-	# stick's centre is the ring gap, off the shape.
+	# Grab the part by the far end of its authored shape, not
+	# its centre: the stick's centre is the ring gap, off the
+	# shape, and a far grab leaves the cursor well outside the
+	# socket's circle at the drop. The fit must still land,
+	# because the drop is judged by the part's own middle.
 	var part_position := part.global_position
 	var shape_points := part.get_shape_world_polygon()
 	if not shape_points.is_empty():
-		var centroid := Vector2.ZERO
+		var farthest := part.global_position
 		for point in shape_points:
-			centroid += point
-		part_position = centroid / shape_points.size()
+			if (
+				point.distance_squared_to(part.global_position)
+				> farthest.distance_squared_to(part.global_position)
+			):
+				farthest = point
+		part_position = farthest
+	var drag_offset := part.global_position - part_position
 	await _press_down(part_position)
-	await _move_to(_socket.global_position)
-	await _release_at(_socket.global_position)
+	var release_point := _socket.global_position - drag_offset
+	_expect(
+		release_point.distance_to(_socket.global_position) > 40.0,
+		"the far grab leaves the cursor off the socket's middle",
+	)
+	await _move_to(release_point)
+	await _release_at(release_point)
 	_expect(
 		await _wait_until(
 			func() -> bool: return _socket.mode == InteractionPoint.Mode.FINISHED

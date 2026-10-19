@@ -208,6 +208,19 @@ func on_pointer_released(_global_position: Vector2) -> void:
 	_end_wiggle()
 
 
+## True when this socket would take `part` right now: empty,
+## unfinished, and the part is its kind. A drop judged by the
+## part's own middle (see `Hand._drop_loose_part()`) only
+## claims sockets this is true for, so dragging a part across
+## the item on the way to a drawer never installs or nopes it.
+func can_fit(part: Part) -> bool:
+	return (
+		mode != Mode.FINISHED
+		and not has_broken_part
+		and part.type == accepted_part
+	)
+
+
 ## A press with a held part. Returns true when the press was used:
 ## the right part installs, anything else nopes and stays in hand.
 func try_fit(part: Part) -> bool:

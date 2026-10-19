@@ -14,29 +14,28 @@
 [ext_resource type="PackedScene" uid="uid://loo6ls40aw13" path="res://src/tools/air_blower.tscn" id="10_blower"]
 [ext_resource type="PackedScene" uid="uid://coo7afm5ydr44" path="res://src/tools/hammer.tscn" id="11_hammer"]
 [ext_resource type="PackedScene" uid="uid://dolqnwf6ir2dd" path="res://src/tools/phillips_screw_driver.tscn" id="12_phildriver"]
-[ext_resource type="PackedScene" path="res://src/repairables/test_phillips_repairable.tscn" id="13_philitem"]
+[ext_resource type="PackedScene" uid="uid://dj3swbjaa36c3" path="res://src/repairables/test_phillips_repairable.tscn" id="13_philitem"]
 [ext_resource type="PackedScene" uid="uid://ccdw1u28lthc5" path="res://src/tools/glue.tscn" id="14_glue"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/glue_smear.tscn" id="15_smear"]
-[ext_resource type="PackedScene" path="res://src/repairables/toaster.tscn" id="16_toaster"]
-
-[ext_resource type="PackedScene" path="res://src/repairables/atari_repairable.tscn" id="17_atari"]
-[ext_resource type="PackedScene" path="res://src/repairables/keyboard_repairable.tscn" id="18_keyboard"]
-[ext_resource type="PackedScene" path="res://src/repairables/tv_repairable.tscn" id="19_tv"]
-[ext_resource type="PackedScene" path="res://src/repairables/piano_repairable.tscn" id="20_piano"]
-[ext_resource type="PackedScene" path="res://src/repairables/game_n_watch_repairable.tscn" id="21_gnw"]
-[ext_resource type="PackedScene" path="res://src/repairables/radio_repairable.tscn" id="22_radio"]
+[ext_resource type="PackedScene" uid="uid://dtpfs6gw1kf70" path="res://src/repairables/toaster.tscn" id="16_toaster"]
+[ext_resource type="PackedScene" uid="uid://crsifg3vsl1n7" path="res://src/repairables/atari_repairable.tscn" id="17_atari"]
+[ext_resource type="PackedScene" uid="uid://crw5iclamtou6" path="res://src/repairables/keyboard_repairable.tscn" id="18_keyboard"]
+[ext_resource type="PackedScene" uid="uid://j8ilknnahfvn" path="res://src/repairables/tv_repairable.tscn" id="19_tv"]
+[ext_resource type="PackedScene" uid="uid://dvsaww7wjr21n" path="res://src/repairables/piano_repairable.tscn" id="20_piano"]
+[ext_resource type="PackedScene" uid="uid://51hvu6uckha6" path="res://src/repairables/game_n_watch_repairable.tscn" id="21_gnw"]
+[ext_resource type="PackedScene" uid="uid://ddpmx6d4s1l3a" path="res://src/repairables/radio_repairable.tscn" id="22_radio"]
 [ext_resource type="PackedScene" path="res://src/repairables/shrink_ray_repairable.tscn" id="23_shrink"]
 [ext_resource type="PackedScene" path="res://src/parts/gear_part.tscn" id="24_gear"]
-[ext_resource type="PackedScene" path="res://src/parts/tube_part.tscn" id="25_tube"]
+[ext_resource type="PackedScene" uid="uid://buxvp3jusx10w" path="res://src/parts/tube_part.tscn" id="25_tube"]
 [ext_resource type="PackedScene" path="res://src/parts/bolt_part.tscn" id="26_bolt"]
-[ext_resource type="PackedScene" path="res://src/parts/nut_part.tscn" id="34_nut"]
-[ext_resource type="PackedScene" path="res://src/parts/tv_controls_part.tscn" id="27_tvctl"]
-[ext_resource type="PackedScene" path="res://src/parts/letter_key_part.tscn" id="28_letter"]
-[ext_resource type="PackedScene" path="res://src/parts/spacebar_part.tscn" id="29_space"]
+[ext_resource type="PackedScene" uid="uid://p0h3iaernb7c" path="res://src/parts/tv_controls_part.tscn" id="27_tvctl"]
+[ext_resource type="PackedScene" uid="uid://bt85a5wfeku4v" path="res://src/parts/letter_key_part.tscn" id="28_letter"]
+[ext_resource type="PackedScene" uid="uid://cuutj086t65gq" path="res://src/parts/spacebar_part.tscn" id="29_space"]
 [ext_resource type="PackedScene" path="res://src/parts/led_part.tscn" id="30_led"]
-[ext_resource type="PackedScene" path="res://src/parts/joystick_part.tscn" id="31_joy"]
+[ext_resource type="PackedScene" uid="uid://b3lginqywil2b" path="res://src/parts/joystick_part.tscn" id="31_joy"]
 [ext_resource type="PackedScene" path="res://src/parts/circuit_part.tscn" id="32_circuit"]
-[ext_resource type="PackedScene" path="res://src/parts/crystal_part.tscn" id="33_crystal"]
+[ext_resource type="PackedScene" uid="uid://b6xytyybe6yji" path="res://src/parts/crystal_part.tscn" id="33_crystal"]
+[ext_resource type="PackedScene" path="res://src/parts/nut_part.tscn" id="34_nut"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("5_outline")
@@ -50,7 +49,6 @@ shader_parameter/outline_enabled = true
 [resource]
 script = ExtResource("1_krfic")
 start_in_game = false
-show_bird_slam_at_start = false
 show_credits_at_start = false
 pauses_on_focus_out = false
 default_level_scene = ExtResource("1_w7hap")
@@ -59,6 +57,17 @@ grab_cursor_texture = ExtResource("7_hand")
 grabbed_cursor_texture = ExtResource("9_grabbed")
 outline_hint_material = SubResource("ShaderMaterial_outline")
 finish_sparkle_scene = ExtResource("6_sparkle")
+gear_part_scene = ExtResource("24_gear")
+tube_part_scene = ExtResource("25_tube")
+tv_controls_part_scene = ExtResource("27_tvctl")
+letter_key_part_scene = ExtResource("28_letter")
+spacebar_part_scene = ExtResource("29_space")
+led_part_scene = ExtResource("30_led")
+joystick_part_scene = ExtResource("31_joy")
+circuit_part_scene = ExtResource("32_circuit")
+crystal_part_scene = ExtResource("33_crystal")
+bolt_part_scene = ExtResource("26_bolt")
+nut_part_scene = ExtResource("34_nut")
 flat_head_screw_repairable_scene = ExtResource("3_yixrw")
 phillips_repairable_scene = ExtResource("13_philitem")
 toaster_scene = ExtResource("16_toaster")
@@ -69,23 +78,12 @@ piano_repairable_scene = ExtResource("20_piano")
 game_n_watch_repairable_scene = ExtResource("21_gnw")
 radio_repairable_scene = ExtResource("22_radio")
 shrink_ray_repairable_scene = ExtResource("23_shrink")
-gear_part_scene = ExtResource("24_gear")
-tube_part_scene = ExtResource("25_tube")
-bolt_part_scene = ExtResource("26_bolt")
-nut_part_scene = ExtResource("34_nut")
-tv_controls_part_scene = ExtResource("27_tvctl")
-letter_key_part_scene = ExtResource("28_letter")
-spacebar_part_scene = ExtResource("29_space")
-led_part_scene = ExtResource("30_led")
-joystick_part_scene = ExtResource("31_joy")
-circuit_part_scene = ExtResource("32_circuit")
-crystal_part_scene = ExtResource("33_crystal")
 item_queue = Array[int]([3, 4, 5, 6, 7, 8, 2, 9])
 flat_head_screw_driver_scene = ExtResource("2_xmm7k")
 rag_scene = ExtResource("9_rag")
 air_blower_scene = ExtResource("10_blower")
 hammer_scene = ExtResource("11_hammer")
 glue_scene = ExtResource("14_glue")
-glue_smear_scene = ExtResource("15_smear")
 phillips_screw_driver_scene = ExtResource("12_phildriver")
+glue_smear_scene = ExtResource("15_smear")
 defect_popup_scene = ExtResource("4_popup")

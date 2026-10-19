@@ -826,6 +826,14 @@ func _set_down_broken_piece(
 ## the part is set down instead. Anywhere else it rests where it
 ## fell, unless that is outside the workable area, which sends
 ## it back in.
+##
+## The socket test uses the part's own middle first, and the
+## pointer second. The part trails the pointer by wherever it
+## was grabbed, so a pointer-only test makes the player hunt
+## for the spot with the cursor while the part itself already
+## sits on its socket (the Atari's stick, grabbed by its shaft,
+## missed by a wide margin). Screws already seat by their own
+## position the same way.
 func _drop_loose_part(
 	global_point: Vector2,
 	release_velocity := Vector2.ZERO,
@@ -834,7 +842,9 @@ func _drop_loose_part(
 	_loose_part = null
 	if not is_instance_valid(part):
 		return
-	var socket := _find_socket(global_point)
+	var socket := _find_socket(part.global_position, part)
+	if not is_instance_valid(socket):
+		socket = _find_socket(global_point)
 	if is_instance_valid(socket):
 		socket.try_fit(part)
 		if part.is_installed:
@@ -1074,7 +1084,9 @@ func _find_drawer(global_point: Vector2) -> Drawer:
 
 ## The first socket under a world position on an exposed layer, or
 ## null. Finished sockets still count: pressing one nopes.
-func _find_socket(global_point: Vector2) -> PartSocket:
+func _find_socket(
+	global_point: Vector2, fitting_part: Part = null
+) -> PartSocket:
 	for area in _query(
 		global_point, Settings.PhysicsLayer.INTERACTION_POINTS
 	):
@@ -1083,6 +1095,10 @@ func _find_socket(global_point: Vector2) -> PartSocket:
 			is_instance_valid(socket)
 			and socket.is_visible_in_tree()
 			and socket.is_exposed()
+			and (
+				not is_instance_valid(fitting_part)
+				or socket.can_fit(fitting_part)
+			)
 		):
 			return socket
 	return null
