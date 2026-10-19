@@ -1,8 +1,8 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://d0c56bxupgxhb"]
 
-[ext_resource type="Script" path="res://src/props/credits_card.gd" id="1_credits"]
-[ext_resource type="Texture2D" uid="uid://ciwpguv1cbffl" path="res://assets/images/manual/repairticket.png" id="2_paper"]
-[ext_resource type="FontFile" uid="uid://dlbfldbshspi3" path="res://assets/fonts/special_elite/SpecialElite-Regular.ttf" id="3_font"]
+[ext_resource type="Script" uid="uid://b3x0lp35asrpk" path="res://src/props/credits_card.gd" id="1_credits"]
+[ext_resource type="Texture2D" uid="uid://b0ved5cyu8ifs" path="res://assets/images/manual/creditsticket.png" id="2_r7bi8"]
+[ext_resource type="FontFile" uid="uid://dpjyugfnnu6wc" path="res://assets/fonts/reenie_beanie/ReenieBeanie.ttf" id="3_r7bi8"]
 
 [node name="CreditsCard" type="Node2D" unique_id=2100002001]
 process_mode = 3
@@ -12,28 +12,30 @@ script = ExtResource("1_credits")
 
 [node name="Paper" type="Sprite2D" parent="." unique_id=2100002002]
 scale = Vector2(0.85, 0.85)
-texture = ExtResource("2_paper")
+texture = ExtResource("2_r7bi8")
 
 [node name="ThanksLabel" type="Label" parent="." unique_id=2100002003]
 offset_left = -300.0
-offset_top = -200.0
+offset_top = -163.0
 offset_right = 300.0
-offset_bottom = -120.0
-mouse_filter = 2
+offset_bottom = -83.0
 theme_override_colors/font_color = Color(0.22, 0.15, 0.08, 1)
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 48
+theme_override_fonts/font = ExtResource("3_r7bi8")
+theme_override_font_sizes/font_size = 64
 text = "Thanks for playing!"
 horizontal_alignment = 1
 
 [node name="CreditsLabel" type="Label" parent="." unique_id=2100002004]
 offset_left = -300.0
-offset_top = -90.0
-offset_right = 300.0
-offset_bottom = 230.0
-mouse_filter = 2
+offset_top = -35.0
+offset_right = 315.0
+offset_bottom = 285.0
 theme_override_colors/font_color = Color(0.22, 0.15, 0.08, 1)
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 24
-text = "Taryn Schwartzstein\nZaven Muradyan\nLevi Lindsey\n\nMade for Ludum Dare 60.\n\nMusic: \"Buy Something!\" by Cleyton Kauffman (CC0)."
+theme_override_fonts/font = ExtResource("3_r7bi8")
+theme_override_font_sizes/font_size = 36
+text = "Taryn Schwartzstein
+Zaven Muradyan
+Levi Lindsey
+
+Made for Ludum Dare 60."
 horizontal_alignment = 1
