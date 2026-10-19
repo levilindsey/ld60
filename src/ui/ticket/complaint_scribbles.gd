@@ -6,7 +6,7 @@ extends Control
 
 ## Ink to match the handwriting.
 const _INK := Color(0.22, 0.15, 0.08, 1.0)
-const _STROKE_WIDTH := 2.5
+const _STROKE_WIDTH := 4.0
 ## How far the pen steps down between its side-to-side strokes, in
 ## pixels.
 const _LINE_STEP_PX := 4.0
