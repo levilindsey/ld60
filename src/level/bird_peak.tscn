@@ -217,7 +217,7 @@ animations = [{
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2100001012]
 position = Vector2(-784.7998, 539)
-scale = Vector2(0.8, 0.8)
+scale = Vector2(1.6, 1.6)
 sprite_frames = SubResource("SpriteFrames_bird")
 animation = &"peak"
 frame_progress = 0.12261249

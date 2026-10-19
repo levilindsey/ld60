@@ -42,7 +42,7 @@ art = NodePath("Art")
 shape = NodePath("Shape")
 
 [node name="Art" type="Sprite2D" parent="Layers/Body" unique_id=226079780]
-scale = Vector2(0.16, 0.16)
+scale = Vector2(0.32, 0.32)
 texture = ExtResource("body_tex")
 
 [node name="Shape" type="Area2D" parent="Layers/Body" unique_id=1409663735]
@@ -71,17 +71,17 @@ visible = false
 
 [node name="BadStick" type="Sprite2D" parent="Layers/Body/Joystick/BrokenPart"]
 position = Vector2(2, -30)
-scale = Vector2(0.16, 0.16)
+scale = Vector2(0.32, 0.32)
 texture = ExtResource("bad_tex")
 region_enabled = true
-region_rect = Rect2(1235, 637, 1086, 825)
+region_rect = Rect2(617.5, 318.5, 543, 412.5)
 
 [node name="GoodStick" type="Sprite2D" parent="Layers/Body/Joystick" unique_id=536495873]
 position = Vector2(-18, -44)
-scale = Vector2(0.16, 0.16)
+scale = Vector2(0.32, 0.32)
 texture = ExtResource("good_tex")
 region_enabled = true
-region_rect = Rect2(1235, 467, 836, 995)
+region_rect = Rect2(617.5, 233.5, 418, 497.5)
 
 [node name="Screw" parent="Layers/Body" unique_id=1956487963 instance=ExtResource("6_screw")]
 position = Vector2(-68, -2)

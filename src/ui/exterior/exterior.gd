@@ -19,9 +19,9 @@ signal entered
 
 ## The source art canvas, and where the door and its sign plate
 ## sit in it, in image pixels (measured from the art).
-const _IMAGE_SIZE := Vector2(3508.0, 2480.0)
-const _DOOR_IMAGE_RECT := Rect2(1071.0, 276.0, 1337.0, 2204.0)
-const _PLATE_IMAGE_RECT := Rect2(1425.0, 609.0, 630.0, 474.0)
+const _IMAGE_SIZE := Vector2(1754.0, 1240.0)
+const _DOOR_IMAGE_RECT := Rect2(535.5, 138, 668.5, 1102)
+const _PLATE_IMAGE_RECT := Rect2(712.5, 304.5, 315, 237)
 ## Where the door's center lands on screen, as a share of the
 ## viewport. A little low, so the sign sits above middle.
 const _DOOR_CENTER_SHARE := Vector2(0.5, 0.55)

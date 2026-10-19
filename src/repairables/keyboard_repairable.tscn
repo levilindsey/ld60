@@ -52,6 +52,7 @@ art = NodePath("Art")
 shape = NodePath("Shape")
 
 [node name="Art" type="Sprite2D" parent="Layers/Body" unique_id=1622340983]
+scale = Vector2(2, 2)
 texture = ExtResource("body_tex")
 
 [node name="Shape" type="Area2D" parent="Layers/Body"]
@@ -79,9 +80,10 @@ accepted_part = 3
 installed_art = NodePath("GoodLetter")
 
 [node name="GoodLetter" type="Sprite2D" parent="Layers/Body/LetterKey" unique_id=590498116]
+scale = Vector2(2, 2)
 texture = ExtResource("letter_tex")
 region_enabled = true
-region_rect = Rect2(1120, 1501, 120, 94)
+region_rect = Rect2(560, 750.5, 60, 47)
 
 [node name="CollisionShape2D" parent="Layers/Body/LetterKey" index="0"]
 shape = SubResource("key_shape")
@@ -93,9 +95,10 @@ visible = false
 visible = false
 
 [node name="BadLetter" type="Sprite2D" parent="Layers/Body/LetterKey/BrokenPart"]
+scale = Vector2(2, 2)
 texture = ExtResource("letter_tex")
 region_enabled = true
-region_rect = Rect2(1120, 1501, 120, 94)
+region_rect = Rect2(560, 750.5, 60, 47)
 
 [node name="Spacebar" parent="Layers/Body" unique_id=1223335619 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
 position = Vector2(-4, 372)
@@ -103,9 +106,10 @@ accepted_part = 4
 installed_art = NodePath("GoodSpacebar")
 
 [node name="GoodSpacebar" type="Sprite2D" parent="Layers/Body/Spacebar" unique_id=1968967572]
+scale = Vector2(2, 2)
 texture = ExtResource("good_space_tex")
 region_enabled = true
-region_rect = Rect2(1296, 1562, 908, 100)
+region_rect = Rect2(648, 781, 454, 50)
 
 [node name="CollisionShape2D" parent="Layers/Body/Spacebar" index="0"]
 shape = SubResource("space_shape")
@@ -117,9 +121,10 @@ visible = false
 visible = false
 
 [node name="BadSpacebar" type="Sprite2D" parent="Layers/Body/Spacebar/BrokenPart"]
+scale = Vector2(2, 2)
 texture = ExtResource("bad_space_tex")
 region_enabled = true
-region_rect = Rect2(1296, 1586, 908, 100)
+region_rect = Rect2(648, 793, 454, 50)
 
 [node name="DustA" parent="Layers/Body" unique_id=926858815 instance=ExtResource("7_dust")]
 position = Vector2(-954, 260)

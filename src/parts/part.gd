@@ -45,42 +45,42 @@ const _TURN_MAX_RAD := 0.5
 const _ART := {
 	Type.GEAR: [
 		"res://assets/images/repairables/gear.png",
-		Rect2(1134, 633, 1230, 1219),
+		Rect2(567, 316.5, 615, 609.5),
 		76.0,
 	],
 	Type.TUBE: [
 		"res://assets/images/repairables/radio_good_bulb.png",
-		Rect2(2118, 1175, 455, 994),
+		Rect2(1059, 587.5, 227.5, 497),
 		119.0,
 	],
 	Type.TV_CONTROLS: [
 		"res://assets/images/repairables/tv_controls.png",
-		Rect2(2217, 919, 567, 1015),
+		Rect2(1108.5, 459.5, 283.5, 507.5),
 		132.0,
 	],
 	Type.LETTER_KEY: [
 		"res://assets/images/repairables/keyss_letter_key.png",
-		Rect2(1120, 1501, 120, 94),
+		Rect2(560, 750.5, 60, 47),
 		16.0,
 	],
 	Type.SPACEBAR: [
 		"res://assets/images/repairables/keyss_spacebar.png",
-		Rect2(1296, 1562, 908, 100),
+		Rect2(648, 781, 454, 50),
 		118.0,
 	],
 	Type.LED: [
 		"res://assets/images/repairables/piano_good_led.png",
-		Rect2(227, 718, 418, 110),
+		Rect2(113.5, 359, 209, 55),
 		46.0,
 	],
 	Type.JOYSTICK: [
 		"res://assets/images/repairables/atari_joystick_good.png",
-		Rect2(1235, 467, 836, 995),
+		Rect2(617.5, 233.5, 418, 497.5),
 		159.0,
 	],
 	Type.CIRCUIT: [
 		"res://assets/images/repairables/gamenwatch_chip_good.png",
-		Rect2(839, 809, 537, 765),
+		Rect2(419.5, 404.5, 268.5, 382.5),
 		99.0,
 	],
 	Type.CRYSTAL: [
@@ -90,12 +90,12 @@ const _ART := {
 	],
 	Type.BOLT: [
 		"res://assets/images/repairables/bolt.png",
-		Rect2(1292, 591, 472, 829),
+		Rect2(646, 295.5, 236, 414.5),
 		92.0,
 	],
 	Type.NUT: [
 		"res://assets/images/repairables/nut.png",
-		Rect2(1908, 531, 347, 371),
+		Rect2(954, 265.5, 173.5, 185.5),
 		58.0,
 	],
 }

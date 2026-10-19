@@ -32,7 +32,7 @@ scale = Vector2(0.99999994, 0.99999994)
 
 [node name="Sprite" type="Sprite2D" parent="Wrapper/Art" unique_id=1105925836]
 position = Vector2(90.00001, -50.00001)
-scale = Vector2(0.3205645, 0.32056454)
+scale = Vector2(0.641129, 0.641129)
 texture = ExtResource("2_cd5ly")
 
 [node name="GrabArea" type="Area2D" parent="Wrapper" unique_id=324791401]

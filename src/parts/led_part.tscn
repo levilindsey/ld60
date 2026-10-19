@@ -17,10 +17,10 @@ polygon = PackedVector2Array(11, 0, 9.5263, 5.5, 5.5, 9.5263, 0, 11, -5.5, 9.526
 
 [node name="Sprite" type="Sprite2D" parent="."]
 unique_name_in_owner = true
-scale = Vector2(0.11004785, 0.11004785)
+scale = Vector2(0.220096, 0.220096)
 texture = ExtResource("2_tex")
 region_enabled = true
-region_rect = Rect2(227, 718, 418, 110)
+region_rect = Rect2(113.5, 359, 209, 55)
 
 [node name="Shape" type="Area2D" parent="."]
 collision_layer = 0

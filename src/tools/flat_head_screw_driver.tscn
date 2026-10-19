@@ -14,23 +14,23 @@ radius = 200.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_60bvt"]
 atlas = ExtResource("6_60bvt")
-region = Rect2(0, 0, 3508, 2480)
+region = Rect2(0, 0, 1754, 1240)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4tha1"]
 atlas = ExtResource("6_60bvt")
-region = Rect2(0, 0, 3508, 2480)
+region = Rect2(0, 0, 1754, 1240)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_thf8m"]
 atlas = ExtResource("7_4tha1")
-region = Rect2(0, 0, 3508, 2480)
+region = Rect2(0, 0, 1754, 1240)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_75fi4"]
 atlas = ExtResource("8_thf8m")
-region = Rect2(0, 0, 3508, 2480)
+region = Rect2(0, 0, 1754, 1240)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5uyaj"]
 atlas = ExtResource("9_75fi4")
-region = Rect2(0, 0, 3508, 2480)
+region = Rect2(0, 0, 1754, 1240)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_60exv"]
 animations = [{
@@ -109,7 +109,7 @@ rotation = -1.5707964
 unique_name_in_owner = true
 position = Vector2(595, 55)
 rotation = -1.5707964
-scale = Vector2(0.6, 0.6)
+scale = Vector2(1.2, 1.2)
 sprite_frames = SubResource("SpriteFrames_60exv")
 autoplay = "default"
 frame_progress = 0.91773057

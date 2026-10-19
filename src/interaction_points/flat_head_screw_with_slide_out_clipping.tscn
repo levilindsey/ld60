@@ -212,15 +212,15 @@ position = Vector2(0, -230)
 
 [node name="AnglePerspective" type="Sprite2D" parent="ClippingSpace/PositioningWrapper" unique_id=1238162573]
 position = Vector2(-5.3191495, 512.766)
-scale = Vector2(0.34042558, 0.75531924)
+scale = Vector2(0.680851, 1.510638)
 texture = ExtResource("4_t7xyj")
 
 [node name="TopDownHead" type="Sprite2D" parent="ClippingSpace/PositioningWrapper" unique_id=940362607]
 position = Vector2(0, 353.19153)
-scale = Vector2(0.26595747, 0.26595747)
+scale = Vector2(0.531915, 0.531915)
 texture = ExtResource("5_a0cqg")
 
 [node name="UnclippedAnglePerspective" type="Sprite2D" parent="." unique_id=1147643259]
 position = Vector2(0, -15.1)
-scale = Vector2(0.032, 0.032)
+scale = Vector2(0.064, 0.064)
 texture = ExtResource("4_t7xyj")

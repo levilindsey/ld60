@@ -89,10 +89,10 @@ const _ROLL_FLING_MIN_SPEED := 60.0
 ## the pointy end at the bottom. The art's world scale turns
 ## these into pixels on the bench (head about 24 px across,
 ## shaft about 11, head to tip about 41).
-const _HEAD_LOCAL := Vector2(19.0, -264.0)
-const _TIP_LOCAL := Vector2(19.0, 1005.0)
-const _HEAD_RADIUS_LOCAL := 376.0
-const _SHAFT_RADIUS_LOCAL := 173.5
+const _HEAD_LOCAL := Vector2(9.5, -132)
+const _TIP_LOCAL := Vector2(9.5, 502.5)
+const _HEAD_RADIUS_LOCAL := 188
+const _SHAFT_RADIUS_LOCAL := 86.75
 
 ## The screw head's art, seen from the top. The twists turn it. If it is an
 ## `AnimatedSprite2D`, its frames are the `HeadFrame` states in order.

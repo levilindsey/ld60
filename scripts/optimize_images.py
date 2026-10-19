@@ -68,6 +68,19 @@ def scaled_vector(match: re.Match, factor: float) -> str:
     return "Vector2(%s)" % ", ".join(fmt(v) for v in values)
 
 
+# Textures left full-size on purpose: the drawer rig
+# (src/level/Drawer.tscn, drawer_new.tscn) is laid out in
+# texture pixels -- clip parents, pivots and animation tracks
+# all speak canvas pixels -- so halving its art would mean
+# rewriting the whole rig, not just sprite scales.
+EXCLUDED = {
+    "res://assets/images/room/drawer_top.png",
+    "res://assets/images/room/drawer_front.png",
+    "res://assets/images/room/drawer_side.png",
+    "res://assets/images/room/drawer_clip_mask.png",
+}
+
+
 def halved_images() -> dict:
     """res:// path -> (width, height) for each PNG being halved."""
     found = {}
@@ -75,7 +88,8 @@ def halved_images() -> dict:
         with Image.open(png) as image:
             if image.width >= MIN_WIDTH:
                 rel = png.relative_to(ROOT).as_posix()
-                found["res://" + rel] = image.size
+                if "res://" + rel not in EXCLUDED:
+                    found["res://" + rel] = image.size
     return found
 
 
@@ -141,6 +155,18 @@ class SceneEdit:
             else:
                 refs = re.findall(r'ExtResource\("([^"]+)"\)', body)
                 sub_halved[sub_id.group(1)] = any(is_halved(r) for r in refs)
+        # Second pass: a SpriteFrames whose frames are
+        # AtlasTextures on halved atlases is halved too (the
+        # screwdrivers' frames are one level removed).
+        for header, body in sections:
+            if not header or not header.startswith("[sub_resource"):
+                continue
+            sub_id = re.search(r'id="([^"]+)"', header)
+            if not sub_id or sub_halved.get(sub_id.group(1)):
+                continue
+            refs = re.findall(r'SubResource\("([^"]+)"\)', body)
+            if any(sub_halved.get(r, False) for r in refs):
+                sub_halved[sub_id.group(1)] = True
 
         new_sections = []
         for header, body in sections:
@@ -285,6 +311,12 @@ def edit_code(path: Path, halved: dict, dry_run: bool) -> list:
         notes.append("part _ART rects x%d" % count)
     elif path.name == "exterior.gd":
         text, count = RECT2_RE.subn(halve_rect, text)
+        text = re.sub(
+            r"const _IMAGE_SIZE := Vector2\([^)]*\)",
+            lambda m: "const _IMAGE_SIZE := "
+            + scaled_vector(VECTOR2_RE.search(m.group(0)), FACTOR),
+            text,
+        )
         notes.append("exterior image rects x%d" % count)
     elif path.name == "screw.gd":
         text = re.sub(

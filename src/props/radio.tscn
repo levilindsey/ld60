@@ -10,7 +10,7 @@ script = ExtResource("1_radio")
 [node name="Art" type="Sprite2D" parent="." unique_id=1112514980]
 unique_name_in_owner = true
 texture = ExtResource("2_texture")
-offset = Vector2(-40, -1217)
+offset = Vector2(-20, -608.5)
 
 [node name="Static" type="AudioStreamPlayer" parent="." unique_id=23297000]
 unique_name_in_owner = true

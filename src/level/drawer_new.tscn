@@ -1,4 +1,4 @@
-﻿[gd_scene format=3 uid="uid://x4y22cyrn3q1"]
+[gd_scene format=3 uid="uid://x4y22cyrn3q1"]
 
 [ext_resource type="Script" uid="uid://b65kcr1bl02yl" path="res://src/level/drawer.gd" id="1_xw6od"]
 [ext_resource type="Texture2D" uid="uid://badq70cmht8dc" path="res://assets/images/room/drawer_top.png" id="2_bcngq"]

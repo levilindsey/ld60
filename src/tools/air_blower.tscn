@@ -60,9 +60,11 @@ rotation = -0.710349
 scale = Vector2(0.6999998, 0.6999998)
 
 [node name="PlumpSprite" type="Sprite2D" parent="Wrapper/Art" unique_id=310003821]
+scale = Vector2(2, 2)
 texture = ExtResource("2_plump")
 
 [node name="SqueezedSprite" type="Sprite2D" parent="Wrapper/Art" unique_id=1193908240]
+scale = Vector2(2, 2)
 visible = false
 texture = ExtResource("3_squeezed")
 

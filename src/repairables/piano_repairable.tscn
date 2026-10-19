@@ -50,6 +50,7 @@ art = NodePath("Art")
 shape = NodePath("Shape")
 
 [node name="Art" type="Sprite2D" parent="Layers/Body" unique_id=512754600]
+scale = Vector2(2, 2)
 texture = ExtResource("body_tex")
 
 [node name="Shape" type="Area2D" parent="Layers/Body"]
@@ -82,9 +83,10 @@ fall_target_offset = Vector2(250, 300)
 art = NodePath("KeyArt")
 
 [node name="KeyArt" type="Sprite2D" parent="Layers/Body/BrokenPiece" unique_id=1982356378]
+scale = Vector2(2, 2)
 texture = ExtResource("key_tex")
 region_enabled = true
-region_rect = Rect2(1030, 1012, 163, 549)
+region_rect = Rect2(515, 506, 81.5, 274.5)
 
 [node name="GrimeA" parent="Layers/Body" unique_id=728618149 instance=ExtResource("6_grime")]
 position = Vector2(-1054, -340)
@@ -98,9 +100,10 @@ accepted_part = 5
 installed_art = NodePath("GoodLed")
 
 [node name="GoodLed" type="Sprite2D" parent="Layers/Body/Led" unique_id=2041530734]
+scale = Vector2(2, 2)
 texture = ExtResource("good_led_tex")
 region_enabled = true
-region_rect = Rect2(227, 718, 418, 110)
+region_rect = Rect2(113.5, 359, 209, 55)
 
 [node name="CollisionShape2D" parent="Layers/Body/Led" index="0"]
 shape = SubResource("led_shape")
@@ -112,9 +115,10 @@ visible = false
 visible = false
 
 [node name="BadLed" type="Sprite2D" parent="Layers/Body/Led/BrokenPart"]
+scale = Vector2(2, 2)
 texture = ExtResource("bad_led_tex")
 region_enabled = true
-region_rect = Rect2(227, 721, 417, 109)
+region_rect = Rect2(113.5, 360.5, 208.5, 54.5)
 
 [node name="Shape" type="Area2D" parent="." unique_id=649372155]
 

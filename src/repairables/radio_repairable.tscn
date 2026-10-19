@@ -51,6 +51,7 @@ art = NodePath("Art")
 shape = NodePath("Shape")
 
 [node name="Art" type="Sprite2D" parent="Layers/Inside" unique_id=961759978]
+scale = Vector2(2, 2)
 texture = ExtResource("inside_tex")
 
 [node name="Shape" type="Area2D" parent="Layers/Inside"]
@@ -68,9 +69,10 @@ accepted_part = 1
 installed_art = NodePath("GoodBulb")
 
 [node name="GoodBulb" type="Sprite2D" parent="Layers/Inside/Bulb" unique_id=162835107]
+scale = Vector2(2, 2)
 texture = ExtResource("good_tex")
 region_enabled = true
-region_rect = Rect2(2118, 1175, 455, 994)
+region_rect = Rect2(1059, 587.5, 227.5, 497)
 
 [node name="CollisionShape2D" parent="Layers/Inside/Bulb" index="0"]
 shape = SubResource("bulb_shape")
@@ -82,9 +84,10 @@ visible = false
 visible = false
 
 [node name="BadBulb" type="Sprite2D" parent="Layers/Inside/Bulb/BrokenPart"]
+scale = Vector2(2, 2)
 texture = ExtResource("bad_tex")
 region_enabled = true
-region_rect = Rect2(2119, 1174, 455, 1020)
+region_rect = Rect2(1059.5, 587, 227.5, 510)
 
 [node name="DustA" parent="Layers/Inside" unique_id=348260882 instance=ExtResource("7_dust")]
 position = Vector2(-954, -40)
@@ -102,6 +105,7 @@ art = NodePath("Art")
 shape = NodePath("Shape")
 
 [node name="Art" type="Sprite2D" parent="Layers/Front" unique_id=321204554]
+scale = Vector2(2, 2)
 texture = ExtResource("front_tex")
 
 [node name="Shape" type="Area2D" parent="Layers/Front"]
@@ -137,9 +141,10 @@ fall_target_offset = Vector2(300, 150)
 art = NodePath("DialArt")
 
 [node name="DialArt" type="Sprite2D" parent="Layers/Front/DialPiece" unique_id=961528273]
+scale = Vector2(2, 2)
 texture = ExtResource("dial_tex")
 region_enabled = true
-region_rect = Rect2(2550, 1842, 280, 282)
+region_rect = Rect2(1275, 921, 140, 141)
 
 [node name="Shape" type="Area2D" parent="." unique_id=1327465798]
 

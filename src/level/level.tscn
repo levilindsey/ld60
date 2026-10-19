@@ -36,16 +36,17 @@ part_scene = ExtResource("10_part")
 
 [node name="Room" type="Sprite2D" parent="Background" unique_id=1576706779]
 position = Vector2(7, 2)
-scale = Vector2(0.36922747, 0.29375002)
+scale = Vector2(0.738455, 0.5875)
 texture = ExtResource("2_n4rap")
 
 [node name="OutsideStuff" type="Sprite2D" parent="Background" unique_id=801979164]
 clip_children = 1
 position = Vector2(7, 2)
-scale = Vector2(0.36922747, 0.29375002)
+scale = Vector2(0.738455, 0.5875)
 texture = ExtResource("4_5yot2")
 
 [node name="Forest" type="Sprite2D" parent="Background/OutsideStuff" unique_id=1516800600]
+scale = Vector2(2, 2)
 texture = ExtResource("4_gj0ym")
 
 [node name="BirdPeak" parent="Background/OutsideStuff" unique_id=2100001022 instance=ExtResource("21_bird_peak")]
@@ -66,18 +67,18 @@ position = Vector2(-18, 721.702)
 [node name="Window" type="Sprite2D" parent="Background" unique_id=1872835696]
 unique_name_in_owner = true
 position = Vector2(7, 2)
-scale = Vector2(0.36922747, 0.29375002)
+scale = Vector2(0.738455, 0.5875)
 texture = ExtResource("8_5yot2")
 
 [node name="Workbench" type="Sprite2D" parent="Background" unique_id=43193686]
 position = Vector2(7, 2)
-scale = Vector2(0.36922747, 0.29375002)
+scale = Vector2(0.738455, 0.5875)
 texture = ExtResource("5_ascnc")
 
 [node name="Radio" parent="." unique_id=675782899 instance=ExtResource("18_radio")]
 unique_name_in_owner = true
 position = Vector2(-290, 145)
-scale = Vector2(0.06, 0.06)
+scale = Vector2(0.12, 0.12)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1488511100]
 unique_name_in_owner = true

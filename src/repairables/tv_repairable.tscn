@@ -57,6 +57,7 @@ art = NodePath("Art")
 shape = NodePath("Shape")
 
 [node name="Art" type="Sprite2D" parent="Layers/Body" unique_id=1462883350]
+scale = Vector2(2, 2)
 texture = ExtResource("body_tex")
 
 [node name="Shape" type="Area2D" parent="Layers/Body"]
@@ -69,10 +70,11 @@ monitorable = false
 polygon = PackedVector2Array(-983, -949, 1358, -949, 1358, 901, -983, 901)
 
 [node name="Screen" type="Sprite2D" parent="Layers/Body" unique_id=2023733748]
+scale = Vector2(2, 2)
 position = Vector2(-218, 236)
 texture = ExtResource("static1_tex")
 region_enabled = true
-region_rect = Rect2(1108, 1120, 857, 712)
+region_rect = Rect2(554, 560, 428.5, 356)
 
 [node name="CaseSurface" type="Area2D" parent="Layers/Body" unique_id=843460334]
 collision_layer = 32
@@ -94,14 +96,16 @@ band_max = 0.65
 bench_dust_spew_count = 8
 
 [node name="AntennaBent" type="Sprite2D" parent="Layers/Body/Antenna" unique_id=1446214726]
+scale = Vector2(2, 2)
 texture = ExtResource("bent_tex")
 region_enabled = true
-region_rect = Rect2(1380, 406, 306, 151)
+region_rect = Rect2(690, 203, 153, 75.5)
 
 [node name="AntennaStraight" type="Sprite2D" parent="Layers/Body/Antenna" unique_id=1167577550]
+scale = Vector2(2, 2)
 texture = ExtResource("straight_tex")
 region_enabled = true
-region_rect = Rect2(1363, 316, 323, 217)
+region_rect = Rect2(681.5, 158, 161.5, 108.5)
 
 [node name="Controls" parent="Layers/Body" unique_id=1830129670 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
 position = Vector2(747, 187)
@@ -109,9 +113,10 @@ accepted_part = 2
 installed_art = NodePath("GoodControls")
 
 [node name="GoodControls" type="Sprite2D" parent="Layers/Body/Controls" unique_id=1312169053]
+scale = Vector2(2, 2)
 texture = ExtResource("good_tex")
 region_enabled = true
-region_rect = Rect2(2217, 919, 567, 1015)
+region_rect = Rect2(1108.5, 459.5, 283.5, 507.5)
 
 [node name="CollisionShape2D" parent="Layers/Body/Controls" index="0"]
 shape = SubResource("controls_shape")
@@ -123,9 +128,10 @@ visible = false
 visible = false
 
 [node name="BadControls" type="Sprite2D" parent="Layers/Body/Controls/BrokenPart"]
+scale = Vector2(2, 2)
 texture = ExtResource("bad_tex")
 region_enabled = true
-region_rect = Rect2(2217, 919, 567, 1015)
+region_rect = Rect2(1108.5, 459.5, 283.5, 507.5)
 
 [node name="FinalWhack" parent="Layers/Body" unique_id=24686342 instance=ExtResource("6_stuck")]
 position = Vector2(188, -24)

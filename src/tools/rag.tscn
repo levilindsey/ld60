@@ -58,10 +58,11 @@ metadata/_edit_lock_ = true
 scale = Vector2(0.55, 0.55)
 
 [node name="HangingSprite" type="Sprite2D" parent="Wrapper/Art" unique_id=1267473586]
-scale = Vector2(0.8, 0.8)
+scale = Vector2(1.6, 1.6)
 texture = ExtResource("2_hanging")
 
 [node name="HeldSprite" type="Sprite2D" parent="Wrapper/Art" unique_id=561255560]
+scale = Vector2(2, 2)
 visible = false
 texture = ExtResource("3_held")
 flip_h = true

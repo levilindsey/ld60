@@ -49,6 +49,7 @@ art = NodePath("Art")
 shape = NodePath("Shape")
 
 [node name="Art" type="Sprite2D" parent="Layers/Inside" unique_id=732337514]
+scale = Vector2(2, 2)
 texture = ExtResource("inside_tex")
 
 [node name="Shape" type="Area2D" parent="Layers/Inside"]
@@ -66,9 +67,10 @@ accepted_part = 7
 installed_art = NodePath("GoodChip")
 
 [node name="GoodChip" type="Sprite2D" parent="Layers/Inside/Chip" unique_id=580524989]
+scale = Vector2(2, 2)
 texture = ExtResource("good_tex")
 region_enabled = true
-region_rect = Rect2(839, 809, 537, 765)
+region_rect = Rect2(419.5, 404.5, 268.5, 382.5)
 
 [node name="CollisionShape2D" parent="Layers/Inside/Chip" index="0"]
 shape = SubResource("chip_shape")
@@ -80,9 +82,10 @@ visible = false
 visible = false
 
 [node name="BadChip" type="Sprite2D" parent="Layers/Inside/Chip/BrokenPart"]
+scale = Vector2(2, 2)
 texture = ExtResource("bad_tex")
 region_enabled = true
-region_rect = Rect2(839, 809, 537, 765)
+region_rect = Rect2(419.5, 404.5, 268.5, 382.5)
 
 [node name="DustA" parent="Layers/Inside" unique_id=1373847957 instance=ExtResource("7_dust")]
 position = Vector2(-300, -250)
@@ -99,6 +102,7 @@ art = NodePath("Art")
 shape = NodePath("Shape")
 
 [node name="Art" type="Sprite2D" parent="Layers/Front" unique_id=387462139]
+scale = Vector2(2, 2)
 texture = ExtResource("front_tex")
 
 [node name="Shape" type="Area2D" parent="Layers/Front"]
@@ -137,9 +141,10 @@ fall_target_offset = Vector2(250, 300)
 art = NodePath("DpadArt")
 
 [node name="DpadArt" type="Sprite2D" parent="Layers/Front/DpadPiece" unique_id=2058444850]
+scale = Vector2(2, 2)
 texture = ExtResource("dpad_tex")
 region_enabled = true
-region_rect = Rect2(760, 1300, 345, 356)
+region_rect = Rect2(380, 650, 172.5, 178)
 
 [node name="Shape" type="Area2D" parent="." unique_id=1290128072]
 

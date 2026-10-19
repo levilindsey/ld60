@@ -59,7 +59,7 @@ metadata/_edit_lock_ = true
 [node name="Sprite" type="Sprite2D" parent="Wrapper/Art" unique_id=74328494]
 position = Vector2(-79.99999, -35)
 rotation = -0.046457015
-scale = Vector2(0.7, 0.7)
+scale = Vector2(1.4, 1.4)
 texture = ExtResource("2_t6h3i")
 flip_h = true
 
