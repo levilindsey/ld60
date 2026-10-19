@@ -5,6 +5,9 @@ extends Node2D
 ## How tall the pointer cursors are drawn, in pixels. The source
 ## art is much larger than any OS pointer.
 const _CURSOR_HEIGHT_PX := 56
+## Dev-only choices that stay on this machine across runs, like the M
+## music mute.
+const _DEV_CONFIG_PATH := "user://dev.cfg"
 
 @export var settings: Settings
 
@@ -25,6 +28,9 @@ func _ready() -> void:
 	G.print("main._ready", ScaffolderLog.CATEGORY_SYSTEM_INITIALIZATION)
 
 	randomize()
+
+	if settings.dev_mode:
+		_load_dev_config()
 
 	get_tree().paused = true
 
@@ -68,12 +74,11 @@ func _unhandled_input(event: InputEvent) -> void:
 				):
 					G.level.active_repairable.complete_for_dev()
 			KEY_M:
-				var bus_index := AudioServer.get_bus_index(&"Music")
-				var is_muted := not AudioServer.is_bus_mute(bus_index)
-				AudioServer.set_bus_mute(bus_index, is_muted)
-				G.print(
-					"Music %s" % ("muted" if is_muted else "unmuted"),
-					ScaffolderLog.CATEGORY_CORE_SYSTEMS)
+				_set_music_muted(
+					not AudioServer.is_bus_mute(
+						AudioServer.get_bus_index(&"Music")
+					)
+				)
 			KEY_O:
 				if is_instance_valid(G.hud):
 					G.hud.visible = not G.hud.visible
@@ -201,3 +206,26 @@ func _move_window() -> void:
 			(usable_rect.size.y - window_height) / 2
 		)
 		DisplayServer.window_set_position(Vector2i(position_x, position_y))
+
+
+## Mutes or unmutes the Music bus and remembers it in the dev config.
+func _set_music_muted(is_muted: bool) -> void:
+	AudioServer.set_bus_mute(AudioServer.get_bus_index(&"Music"), is_muted)
+	var config := ConfigFile.new()
+	config.load(_DEV_CONFIG_PATH)
+	config.set_value("audio", "music_muted", is_muted)
+	config.save(_DEV_CONFIG_PATH)
+	G.print(
+		"Music %s" % ("muted" if is_muted else "unmuted"),
+		ScaffolderLog.CATEGORY_CORE_SYSTEMS,
+	)
+
+
+func _load_dev_config() -> void:
+	var config := ConfigFile.new()
+	if config.load(_DEV_CONFIG_PATH) != OK:
+		return
+	AudioServer.set_bus_mute(
+		AudioServer.get_bus_index(&"Music"),
+		config.get_value("audio", "music_muted", false),
+	)
