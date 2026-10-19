@@ -166,6 +166,10 @@ func _resized_cursor(
 	if is_equal_approx(scale_factor, 1.0):
 		return texture
 	var image := texture.get_image()
+	# Textures import lossy, and a compressed image cannot be
+	# resized until it is decompressed.
+	if image.is_compressed():
+		image.decompress()
 	var size := Vector2(image.get_size()) * scale_factor
 	image.resize(
 		maxi(1, roundi(size.x)),

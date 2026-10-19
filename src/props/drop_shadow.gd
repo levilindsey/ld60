@@ -1,4 +1,4 @@
-﻿class_name DropShadow
+class_name DropShadow
 extends Node2D
 ## A bench shadow under a thing that is resting there. Two kinds:
 ##
@@ -418,11 +418,35 @@ func _get_used_rect(texture: Texture2D) -> Rect2i:
 	if _used_rects.has(texture):
 		return _used_rects[texture] as Rect2i
 	var rect := Rect2i(Vector2i.ZERO, Vector2i(texture.get_size()))
-	var image := texture.get_image()
+	var image := _read_image(texture)
 	if is_instance_valid(image) and not image.is_empty():
 		rect = image.get_used_rect()
 	_used_rects[texture] = rect
 	return rect
+
+
+## A texture's pixels as a readable image, or null when it has
+## none. Textures import lossy, and a compressed image's pixels
+## cannot be read (or cut from an atlas) until decompressed, so
+## atlas frames are cut out of their decompressed atlas here
+## instead of asking the AtlasTexture for its image.
+func _read_image(texture: Texture2D) -> Image:
+	if texture is AtlasTexture:
+		var atlas := (texture as AtlasTexture).atlas
+		if not is_instance_valid(atlas):
+			return null
+		var atlas_image := atlas.get_image()
+		if not is_instance_valid(atlas_image) or atlas_image.is_empty():
+			return null
+		if atlas_image.is_compressed():
+			atlas_image.decompress()
+		return atlas_image.get_region(
+			Rect2i((texture as AtlasTexture).region)
+		)
+	var image := texture.get_image()
+	if is_instance_valid(image) and image.is_compressed():
+		image.decompress()
+	return image
 
 
 func _collect_sprites(node: Node, into: Array) -> void:

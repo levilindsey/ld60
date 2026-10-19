@@ -15,9 +15,9 @@ dest_files=["res://.godot/imported/glue0002.png-dbf2f8e680537aa3d357bc42206734cc
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.85
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
