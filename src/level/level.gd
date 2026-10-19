@@ -49,8 +49,6 @@ var hint_tracker: HintTracker
 var tools_by_type: Dictionary[Tool.Type, Tool] = {}
 ## The item on the bench, or null while the next one is on its way.
 var active_repairable: Repairable
-## The type of the item on the bench, or of the last one.
-var active_repairable_type := Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE
 ## How many items of `Settings.item_queue` have been spawned.
 var next_item_index := 0
 
@@ -200,8 +198,8 @@ func spawn_tool(type: Tool.Type) -> void:
 	tool.snap_to_holder()
 
 
-## Dev only: swaps the item on the bench for one of the next type,
-## cycling through every type. Does nothing between items.
+## Dev only: swaps the item on the bench for the next one in the queue,
+## starting over after the last. Does nothing between items.
 func swap_item_for_dev() -> void:
 	if not is_instance_valid(active_repairable):
 		return
@@ -213,10 +211,9 @@ func swap_item_for_dev() -> void:
 	cleanup_loose_parts()
 	set_outbox_outline_shown(false)
 	item.queue_free()
-	spawn_repairable(
-		(active_repairable_type + 1) % Repairable.Type.size()
-		as Repairable.Type
-	)
+	if _is_queue_finished():
+		next_item_index = 0
+	_spawn_next_item()
 
 
 ## Drops an item of a type onto the bench and returns it. The camera
@@ -231,7 +228,6 @@ func spawn_repairable(type: Repairable.Type) -> Repairable:
 	item.global_position = %ItemSpawnPosition.global_position
 	item.reset_physics_interpolation()
 	active_repairable = item
-	active_repairable_type = type
 	for piece in item.get_broken_pieces():
 		register_broken_piece(piece)
 

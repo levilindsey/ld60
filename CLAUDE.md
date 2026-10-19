@@ -162,7 +162,7 @@ Game flow helpers: `G.level.win()` -> CREDITS overlay;
 - **Dev hotkeys** (`settings.dev_mode`): `P` screenshot (to
   `user://screenshots/`), `O` toggle HUD, `C` complete the item on the
   bench, `R` toggle the radio glitch, `N` swap the item on the bench for the
-  next item type, `M` mute the music (remembered in
+  next one in `item_queue`, `M` mute the music (remembered in
   `user://dev.cfg`). `Esc` pauses in any mode.
 
 ## Configuration
