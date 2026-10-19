@@ -91,6 +91,9 @@ func _run() -> void:
 		not _point.is_holding,
 		"no hold starts before glue is applied",
 	)
+	# Rest it clear of the point, so later grabs do not
+	# start the hold before the probe means to.
+	await _move_to(_point.global_position + Vector2(120, 44))
 	await _release_at(_point.global_position)
 
 	# Glue first. Without it the hold never starts.
@@ -110,6 +113,11 @@ func _run() -> void:
 	)
 	await _squeeze_glue_at(glue, _point.global_position, 0.6)
 	_expect(_point.has_glue, "glue sticks to the broken point")
+	_expect(
+		is_instance_valid(_point.glue_decal)
+		and is_instance_valid(_point.glue_decal.texture),
+		"the point's glue shows as a glue decal",
+	)
 
 	# Glue off the point smears, free until the item finishes.
 	var cover := _item.layers[_item.layers.size() - 1]
@@ -120,6 +128,11 @@ func _run() -> void:
 	if _expect(
 		is_instance_valid(smear), "off target glue leaves a smear"
 	):
+		_expect(
+			is_instance_valid(smear.glue_decal)
+			and is_instance_valid(smear.glue_decal.texture),
+			"the smear shows as a glue decal",
+		)
 		_expect(
 			_item.quality.get_defect_count() == defects_before,
 			"a fresh smear costs nothing yet",
@@ -143,6 +156,10 @@ func _run() -> void:
 			"a cleaned smear never costs points",
 		)
 		await _put_tool_away(rag)
+		_expect(
+			not is_instance_valid(smear.glue_decal),
+			"the wiped smear's glue decal is gone",
+		)
 	else:
 		await _put_tool_away(glue)
 
@@ -164,7 +181,13 @@ func _run() -> void:
 		turn_error < 0.15,
 		"the grabbed piece turns to its target rotation",
 	)
-	await _move_to(_point.global_position)
+	await _move_to(_point.global_position + Vector2(45, 0))
+	await _physics_frames(12)
+	_expect(
+		not _point.is_holding,
+		"the hold waits until the piece is dragged closer",
+	)
+	await _move_to(_point.global_position + Vector2(20, 0))
 	_expect(
 		await _wait_for_hold_start(),
 		"holding the piece on the point starts the hold",
@@ -178,12 +201,28 @@ func _run() -> void:
 		< _point.global_position.y - 50.0,
 		"the hold ring floats above the point",
 	)
-	await _move_to(_point.global_position + Vector2(230, 0))
+	await _seconds(0.35)
+	_expect(
+		_piece.global_position.distance_to(
+			_point.global_position
+		) < 6.0,
+		"the piece settles onto the point's exact centre",
+	)
+	var fail_position := _point.global_position + Vector2(230, 0)
+	await _move_to(fail_position)
 	await _physics_frames(4)
 	_expect(
 		not _point.is_holding
 		and _hand.get_loose_broken_piece() == null,
 		"leaving the ring fails the hold and drops the piece",
+	)
+	_expect(
+		await _wait_for_flick_end(),
+		"the failed piece's flick lands",
+	)
+	_expect(
+		_piece.global_position.distance_to(fail_position) > 25.0,
+		"the failed piece is flicked up and to a side",
 	)
 	_expect(
 		_point.has_glue
@@ -284,6 +323,14 @@ func _wait_for_piece_rest() -> bool:
 func _wait_for_hold_start() -> bool:
 	for frame in 90:
 		if _point.is_holding:
+			return true
+		await get_tree().physics_frame
+	return false
+
+
+func _wait_for_flick_end() -> bool:
+	for frame in 180:
+		if not _piece.is_flicking:
 			return true
 		await get_tree().physics_frame
 	return false

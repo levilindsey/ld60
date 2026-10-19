@@ -57,11 +57,14 @@ Ledger: **LX66**. A snapped off piece is two placeable nodes.
   point (`broken_hold_ring_offset_px`) so the finger holding the
   piece is not over it. The dot is the piece's offset from the
   point (`broken_hold_dot_scale`) plus a drift that changes
-  direction every `broken_hold_drift_retarget_sec`. Fully inside
-  the inner circle banks time. Straddling the wide band warns
-  (amber) and pauses the timer. Past the band fails: the piece
-  drops where it is, the glue stays. `hold_sec` on the point
-  (default 5) is the still time.
+  direction every `broken_hold_drift_retarget_sec`. The game
+  only starts once the piece is dragged within
+  `broken_hold_start_radius_px`, and starting tweens it onto
+  the point's exact centre. Fully inside the inner circle
+  banks time. Straddling the wide band warns (amber) and
+  pauses the timer. Past the band fails: the hand lets go and
+  the piece is flicked up and to a side, the glue stays.
+  `hold_sec` on the point (default 5) is the still time.
 - **Glue contact:** glue leaves the bottle's working end, never
   the cursor marker or the bottle origin. A broken point glues
   when the click lands with the tool's InteractionArea
@@ -70,6 +73,8 @@ Ledger: **LX66**. A snapped off piece is two placeable nodes.
 
 ## Glue smears
 
+- Glue bits (a broken point's dab, a smear) show as glue decals
+  from the glue blob set, on the layer's art.
 - Squeezing where no crack or broken point takes the glue, over a
   surface, leaves a `GlueSmear` point (optional, not required).
 - The rag wipes a smear off like grime. A cleaned smear costs

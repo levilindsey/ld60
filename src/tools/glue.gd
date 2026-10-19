@@ -171,3 +171,4 @@ func _smear_on_surface(at_position: Vector2) -> void:
 	smear.global_position = at_position
 	smear.rotation = randf() * TAU
 	smear.reset_physics_interpolation()
+	smear.setup_decal()

@@ -13,9 +13,11 @@ const REPAIRABLES_BEFORE_SMACK := 0
 #const SMACK_DELAY_SEC := 8.0
 const SMACK_DELAY_SEC := 1.0
 ## Seconds into the smack animation when the bird reaches the
-## glass (the splat frame is the 25th shown of 26 at 15 fps):
-## the smack and caw sounds, and the window shake, land there.
-const SMACK_HIT_SEC := 1.6
+## glass. It grows until frame 15 of the art (the 15th frame
+## shown; the splat near the end is the aftermath), so at
+## 15 fps the smack and caw sounds, and the window shake,
+## land 14 frames in.
+const SMACK_HIT_SEC := 0.93
 #const PEAK_INTERVAL_MIN_SEC := 20.0
 #const PEAK_INTERVAL_MAX_SEC := 45.0
 const PEAK_INTERVAL_MIN_SEC := 4.0
@@ -75,8 +77,10 @@ func _play_smack() -> void:
 
 func _play_smack_hit() -> void:
 	G.audio.play_sound(&"window_smack")
-	G.audio.play_sound(&"caw")
 	_shake_window()
+
+	await get_tree().create_timer(0.15).timeout
+	G.audio.play_sound(&"caw")
 
 
 ## Kicks the window sprite around its home spot for a few

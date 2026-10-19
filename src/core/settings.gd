@@ -341,6 +341,13 @@ enum PhysicsLayer {
 ## How far above the point the hold ring draws, in world
 ## pixels, so the player's finger is not over the game.
 @export var broken_hold_ring_offset_px := 96.0
+## How close the held piece's centre must be to its point,
+## in world pixels, before the hold game starts at all. On
+## starting, the piece tweens to the exact centre.
+@export var broken_hold_start_radius_px := 28.0
+## Seconds the piece takes to settle onto the point's exact
+## centre when the hold game starts.
+@export var broken_hold_align_sec := 0.18
 ## How much the held piece's offset moves the dot, so a
 ## small hand movement reads clearly in the ring.
 @export var broken_hold_dot_scale := 1.6

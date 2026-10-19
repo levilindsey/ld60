@@ -61,6 +61,7 @@ var _loose_layer: RepairLayer
 var _loose_part: Part
 var _loose_broken_piece: BrokenPiece
 var _loose_drag_offset := Vector2.ZERO
+var _hold_align_tween: Tween
 ## The pointer's speed, smoothed over the last frames of
 ## a drag, and how many frames it has stayed fast. A fast
 ## enough release throws the piece with this speed.
@@ -724,20 +725,51 @@ func get_loose_broken_piece() -> BrokenPiece:
 	return _loose_broken_piece
 
 
+## The hold game started. The drag offset eases so the piece
+## settles onto its point's exact centre while the pointer
+## stays where it is. Moving the pointer still drags it.
+func begin_broken_piece_hold(
+	piece: BrokenPiece, target_global_position: Vector2
+) -> void:
+	if _loose_broken_piece != piece:
+		return
+	_stop_hold_alignment()
+	_hold_align_tween = create_tween()
+	_hold_align_tween.set_process_mode(
+		Tween.TWEEN_PROCESS_PHYSICS
+	)
+	_hold_align_tween.set_trans(Tween.TRANS_QUAD).set_ease(
+		Tween.EASE_OUT
+	)
+	_hold_align_tween.tween_property(
+		self,
+		"_loose_drag_offset",
+		target_global_position - pointer_position,
+		G.settings.broken_hold_align_sec,
+	)
+
+
+func _stop_hold_alignment() -> void:
+	if is_instance_valid(_hold_align_tween):
+		_hold_align_tween.kill()
+
+
 ## Stops dragging a broken piece without setting it down.
 ## Its point calls this when the piece glues on.
 func clear_loose_broken_piece(piece: BrokenPiece) -> void:
 	if _loose_broken_piece == piece:
 		_loose_broken_piece = null
+		_stop_hold_alignment()
 
 
-## The hold game failed. The piece drops where it is, and
-## its glue stays on the point for the next attempt.
+## The hold game failed. The hand lets go and the piece is
+## flicked up and to a side. Its glue stays for next time.
 func fail_broken_piece_hold(piece: BrokenPiece) -> void:
 	if _loose_broken_piece != piece:
 		return
 	_loose_broken_piece = null
-	_set_down_broken_piece(piece, Vector2.ZERO)
+	_stop_hold_alignment()
+	piece.flick_away()
 
 
 ## Lets go of a dragged broken piece. It rests where it
@@ -748,6 +780,7 @@ func _drop_loose_broken_piece(
 ) -> void:
 	var piece := _loose_broken_piece
 	_loose_broken_piece = null
+	_stop_hold_alignment()
 	if not is_instance_valid(piece):
 		return
 	if piece.is_installed:

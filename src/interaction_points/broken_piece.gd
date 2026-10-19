@@ -38,9 +38,12 @@ var item: Repairable
 var is_installed := false
 ## True while the level flies it back to the workable area.
 var is_returning := false
+## True while a failed hold's flick is still in the air.
+var is_flicking := false
 
 var _has_detached := false
 var _turn_tween: Tween
+var _flick_tween: Tween
 var _shadow_attached := false
 
 
@@ -70,6 +73,7 @@ func _attach_shadow() -> void:
 				_has_detached
 				and not is_installed
 				and not is_returning
+				and not is_flicking
 				and is_instance_valid(G.level)
 				and is_instance_valid(G.level.hand)
 				and G.level.hand.get_loose_broken_piece() != self
@@ -111,7 +115,7 @@ func has_detached() -> bool:
 ## True when a press here would grab the piece: the item has
 ## landed, any covering layer is off, and the piece rests.
 func can_grab() -> bool:
-	if is_installed or is_returning:
+	if is_installed or is_returning or is_flicking:
 		return false
 	if not is_visible_in_tree():
 		return false
@@ -136,11 +140,14 @@ func on_grabbed() -> void:
 		G.level.cancel_bench_return(self)
 		if not _has_detached:
 			_detach_to_bench()
-	if not is_instance_valid(target_point):
-		return
-	var target := target_point.global_rotation
+	if is_instance_valid(target_point):
+		align_rotation_to(target_point.global_rotation)
+
+
+## Turns to a world rotation the short way, in the fingers.
+func align_rotation_to(target_global_rotation: float) -> void:
 	var nearest := rotation + wrapf(
-		target - rotation, -PI, PI
+		target_global_rotation - rotation, -PI, PI
 	)
 	if is_instance_valid(_turn_tween):
 		_turn_tween.kill()
@@ -152,10 +159,70 @@ func on_grabbed() -> void:
 	_turn_tween.tween_property(self, "rotation", nearest, _TURN_SEC)
 
 
+## A failed hold tosses the piece: a little hop up and to a
+## random side, turning as it goes, then it rests there.
+func flick_away() -> void:
+	if is_installed:
+		return
+	if is_instance_valid(_flick_tween):
+		_flick_tween.kill()
+	if is_instance_valid(_turn_tween):
+		_turn_tween.kill()
+	is_flicking = true
+	var side := 1.0 if randf() < 0.5 else -1.0
+	var from_position := global_position
+	var target := from_position + Vector2(
+		side * randf_range(48.0, 84.0), randf_range(6.0, 22.0)
+	)
+	if is_instance_valid(G.level):
+		target = G.level.get_workable_area_target(
+			target,
+			get_radius_px() + G.settings.workable_edge_padding_px,
+		)
+	var from_rotation := rotation
+	var target_rotation := (
+		from_rotation + side * randf_range(0.4, 0.9)
+	)
+	_flick_tween = create_tween()
+	_flick_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_flick_tween.tween_method(
+		_set_flick_progress.bind(
+			from_position, target, from_rotation, target_rotation
+		),
+		0.0,
+		1.0,
+		0.38,
+	)
+	_flick_tween.tween_callback(_on_flick_landed)
+
+
+func _set_flick_progress(
+	progress: float,
+	from_position: Vector2,
+	target: Vector2,
+	from_rotation: float,
+	target_rotation: float,
+) -> void:
+	var rise := sin(progress * PI) * 42.0
+	global_position = from_position.lerp(target, progress) + (
+		Vector2(0.0, -rise)
+	)
+	rotation = lerpf(from_rotation, target_rotation, progress)
+
+
+func _on_flick_landed() -> void:
+	is_flicking = false
+	reset_physics_interpolation()
+	G.audio.play_sound(&"thud")
+
+
 ## The point's hold finished. The piece leaves the hand,
 ## snaps onto the point and stays there with the item.
 func attach_to_point(point: BrokenPoint) -> void:
 	is_installed = true
+	if is_instance_valid(_flick_tween):
+		_flick_tween.kill()
+	is_flicking = false
 	if is_instance_valid(_turn_tween):
 		_turn_tween.kill()
 	if is_instance_valid(G.level):
@@ -202,6 +269,9 @@ func detach_for_fall(target_global_position: Vector2) -> void:
 ## The level starts flying this piece back in.
 func start_bench_return() -> void:
 	is_returning = true
+	if is_instance_valid(_flick_tween):
+		_flick_tween.kill()
+	is_flicking = false
 	if is_instance_valid(_turn_tween):
 		_turn_tween.kill()
 

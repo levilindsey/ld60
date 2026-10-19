@@ -11,7 +11,6 @@
 [ext_resource type="PackedScene" path="res://src/decals/decal_spawner.tscn" id="6_decals"]
 [ext_resource type="PackedScene" uid="uid://dinrtvteq5ayd" path="res://src/ui/ticket/ticket_card.tscn" id="7_ticket"]
 [ext_resource type="Texture2D" uid="uid://b3sw3o5rkhqg8" path="res://assets/images/window.png" id="8_5yot2"]
-[ext_resource type="PackedScene" path="res://src/ui/receipt/receipt.tscn" id="8_receipt"]
 [ext_resource type="PackedScene" path="res://src/parts/part.tscn" id="10_part"]
 [ext_resource type="PackedScene" path="res://src/manual/instruction_manual.tscn" id="12_manual"]
 [ext_resource type="Texture2D" uid="uid://cltb8asp20jge" path="res://assets/images/manual/manual_page0000.png" id="13_page0"]

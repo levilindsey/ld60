@@ -6,9 +6,6 @@ extends InteractionPoint
 ## inside a ring while a timer fills. Leaving the ring fails
 ## the attempt, but the glue stays.
 
-## Where the piece has to be held, in world pixels from the
-## point, before the hold starts.
-const _START_RADIUS_PX := 56.0
 ## How close the glue nozzle has to land, in world pixels.
 const _GLUE_HIT_RADIUS_PX := 30.0
 ## Draw order of the hold game while it runs, over the tools
@@ -28,6 +25,8 @@ var is_holding := false
 var hold_progress_sec := 0.0
 ## The piece that belongs here. Its own target export sets it.
 var piece: BrokenPiece
+## The glue decal on the layer's art, once glue lands here.
+var glue_decal: Sprite2D
 
 var _dot_drift := Vector2.ZERO
 var _dot_drift_velocity := Vector2.ZERO
@@ -68,10 +67,6 @@ func _draw() -> void:
 	draw_arc(
 		Vector2.ZERO, 18.0, 0.0, TAU, 24, scar, 2.0, true
 	)
-	if has_glue and mode != Mode.FINISHED:
-		draw_circle(
-			Vector2.ZERO, 11.0, Color(1.0, 0.96, 0.75, 0.75)
-		)
 	if mode == Mode.FINISHED:
 		draw_arc(
 			Vector2.ZERO,
@@ -130,10 +125,31 @@ func on_glued(
 	var reach := maxf(radius, _GLUE_HIT_RADIUS_PX)
 	if global_position.distance_to(at_position) > reach:
 		return false
-	has_glue = true
+	if not has_glue:
+		has_glue = true
+		_spawn_glue_decal()
 	mode = Mode.ACTIVE
 	queue_redraw()
 	return true
+
+
+## The dab of glue shows as a glue decal on the layer's art.
+func _spawn_glue_decal() -> void:
+	if is_instance_valid(glue_decal):
+		return
+	var layer := get_layer()
+	if not is_instance_valid(layer):
+		return
+	if not is_instance_valid(layer.art):
+		return
+	if not is_instance_valid(G.level):
+		return
+	glue_decal = G.level.spawn_decal(
+		DecalSpawner.Kind.GLUE_BLOB,
+		layer.art,
+		global_position,
+		34.0,
+	)
 
 
 ## 0 good, 1 warning, 2 failed, from the dot and the band.
@@ -181,7 +197,7 @@ func _try_start_hold() -> void:
 	if G.level.hand.get_loose_broken_piece() != piece:
 		return
 	if global_position.distance_to(piece.global_position) > (
-		_START_RADIUS_PX
+		G.settings.broken_hold_start_radius_px
 	):
 		return
 	is_holding = true
@@ -192,6 +208,10 @@ func _try_start_hold() -> void:
 	# The game draws over the tools, the piece and the hand.
 	z_as_relative = false
 	z_index = _HOLD_Z_INDEX
+	# Settled work starts from the ideal spot: the hand eases
+	# the piece onto this point's exact centre and rotation.
+	G.level.hand.begin_broken_piece_hold(piece, global_position)
+	piece.align_rotation_to(global_rotation)
 	G.audio.play_sound(&"click")
 
 
