@@ -1,0 +1,20 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/interaction_points/glue_smear.gd" id="1_smear"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_smear"]
+radius = 22.0
+
+[node name="GlueSmear" type="Area2D" node_paths=PackedStringArray("art")]
+collision_layer = 4
+collision_mask = 0
+monitoring = false
+script = ExtResource("1_smear")
+art = NodePath("Art")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_smear")
+
+[node name="Art" type="Polygon2D" parent="."]
+color = Color(1, 0.96, 0.75, 0.8)
+polygon = PackedVector2Array(-16, -6, -8, -13, 5, -11, 15, -4, 13, 8, 2, 13, -11, 10, -17, 2)

@@ -328,6 +328,24 @@ enum PhysicsLayer {
 @export var glue_blob_coverage := 1.5
 ## How close the nozzle must be to a crack sample, in pixels.
 @export var glue_radius_px := 10.0
+## The smear an off target squeeze leaves for the rag.
+@export var glue_smear_scene: PackedScene
+## Radius of the hold game's safe core, in pixels. A dot
+## fully inside it banks still time.
+@export var broken_hold_inner_radius_px := 18.0
+## Radius of the wide band around a broken point, in pixels.
+## A dot overlapping it warns. A dot past it fails the hold.
+@export var broken_hold_outer_radius_px := 46.0
+## Radius of the hold game's dot itself, in pixels.
+@export var broken_hold_dot_radius_px := 8.0
+## How much the held piece's offset moves the dot, so a
+## small hand movement reads clearly in the ring.
+@export var broken_hold_dot_scale := 1.6
+## How fast the dot drifts on its own, in pixels per second.
+## The player counters it by nudging the piece.
+@export var broken_hold_drift_speed_px_per_sec := 14.0
+## Seconds between fresh drift directions.
+@export var broken_hold_drift_retarget_sec := 0.45
 @export_group("")
 
 @export_group("Quality")

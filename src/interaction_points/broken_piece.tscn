@@ -1,0 +1,11 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/interaction_points/broken_piece.gd" id="1_piece"]
+
+[node name="BrokenPiece" type="Node2D" node_paths=PackedStringArray("art")]
+script = ExtResource("1_piece")
+art = NodePath("Art")
+
+[node name="Art" type="Polygon2D" parent="."]
+color = Color(0.85, 0.55, 0.3, 1)
+polygon = PackedVector2Array(-18, -12, 14, -16, 19, 4, 6, 17, -14, 13, -20, 0)

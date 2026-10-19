@@ -18,6 +18,8 @@ enum Type {
 	CRACK,
 	PHILLIPS_SCREW,
 	RUST_SPOT,
+	BROKEN_POINT,
+	GLUE_SMEAR,
 }
 
 enum Mode {

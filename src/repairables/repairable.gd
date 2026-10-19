@@ -122,6 +122,23 @@ func get_repair_sequence() -> RepairSequence:
 	return _repair_sequence
 
 
+## Every broken piece placed anywhere inside this item.
+func get_broken_pieces() -> Array[BrokenPiece]:
+	var pieces: Array[BrokenPiece] = []
+	_collect_broken_pieces(self, pieces)
+	return pieces
+
+
+func _collect_broken_pieces(
+	node: Node, pieces: Array[BrokenPiece]
+) -> void:
+	for child in node.get_children():
+		if child is BrokenPiece:
+			pieces.append(child as BrokenPiece)
+		else:
+			_collect_broken_pieces(child, pieces)
+
+
 ## The outermost layer still on, or null.
 func get_exposed_layer() -> RepairLayer:
 	for index in range(layers.size() - 1, -1, -1):
@@ -236,6 +253,7 @@ func shake() -> void:
 ## It starts turned a little, overshoots and straightens as it lands.
 ## `landed` fires at the end, and then the item is UNDER_REPAIR.
 func arrive(target_global_position: Vector2) -> void:
+	_detach_fallen_pieces(target_global_position)
 	mode = Mode.ENTERING
 	var angle_max := deg_to_rad(G.settings.item_arrival_angle_max_deg)
 	rotation = randf_range(-angle_max, angle_max)
@@ -466,6 +484,35 @@ func _depart() -> void:
 	queue_free()
 
 
+## Pieces that fall on their own leave with the level as
+## parent and land apart from the item, at their own offset.
+func _detach_fallen_pieces(
+	target_global_position: Vector2,
+) -> void:
+	for piece in get_broken_pieces():
+		if piece.starts_detached and not piece.has_detached():
+			piece.detach_for_fall(
+				target_global_position + piece.fall_target_offset
+			)
+
+
+## Glue smears still on the item when it finishes are paid
+## for now, one blob defect each. Cleaned ones cost nothing.
+func _charge_remaining_smears() -> void:
+	for layer in layers:
+		for point in layer.get_points():
+			var smear := point as GlueSmear
+			if not is_instance_valid(smear):
+				continue
+			if smear.mode == InteractionPoint.Mode.FINISHED:
+				continue
+			quality.add_defect(
+				RepairQuality.Defect.GLUE_BLOB,
+				smear.global_position,
+				smear,
+			)
+
+
 func _update_state() -> void:
 	for layer in layers:
 		layer.update_outline()
@@ -474,6 +521,7 @@ func _update_state() -> void:
 		return
 	has_finished = is_now_finished
 	if has_finished:
+		_charge_remaining_smears()
 		G.print(
 			"Item finished: %s" % item_name,
 			ScaffolderLog.CATEGORY_GAME_STATE,

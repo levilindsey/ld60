@@ -58,6 +58,12 @@ func _physics_process(delta: float) -> void:
 				spot.on_wiped(damage, delta)
 				_cleaned_total += damage
 				_update_dirt_tint()
+		elif area is GlueSmear:
+			var smear := area as GlueSmear
+			if smear.is_exposed() and smear.is_visible_in_tree():
+				smear.on_wiped(damage, delta)
+				_cleaned_total += damage
+				_update_dirt_tint()
 		elif area is Surface:
 			(area as Surface).on_wiped(distance_px)
 

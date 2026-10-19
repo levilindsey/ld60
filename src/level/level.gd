@@ -71,6 +71,11 @@ var _outbox_label_tween: Tween
 ## untyped so a freed part never lands in a typed variable.
 var _drawer_parts: Array = []
 
+## Every broken piece of the item on the bench, on the item,
+## loose on the bench or glued back on. Installed pieces stay
+## in the list by flag. Untyped, like the drawer parts.
+var _broken_pieces: Array = []
+
 ## The fade tween currently running on each drawer's stored
 ## parts, keyed by the drawer, so a new fade kills the old one.
 var _part_fade_tweens: Dictionary = {}
@@ -205,6 +210,8 @@ func spawn_repairable(type: Repairable.Type) -> Repairable:
 	item.global_position = %ItemSpawnPosition.global_position
 	item.reset_physics_interpolation()
 	active_repairable = item
+	for piece in item.get_broken_pieces():
+		register_broken_piece(piece)
 
 	item.quality.defect_added.connect(_on_defect_added)
 	item.impacted.connect(_on_item_impacted)
@@ -428,6 +435,86 @@ func get_loose_part_of_type(part_type: Part.Type) -> Part:
 			continue
 		return part
 	return null
+
+
+## Notes a broken piece so presses and returns can find it.
+func register_broken_piece(piece: BrokenPiece) -> void:
+	if is_instance_valid(piece) and not _broken_pieces.has(piece):
+		_broken_pieces.append(piece)
+
+
+## Every broken piece noted for the bench, freed ones skipped.
+func get_broken_pieces() -> Array[BrokenPiece]:
+	var pieces: Array[BrokenPiece] = []
+	for entry: Variant in _broken_pieces:
+		if is_instance_valid(entry):
+			pieces.append(entry as BrokenPiece)
+	return pieces
+
+
+## The grabbable broken piece nearest a world position, or
+## null. A press near its middle counts, like a loose part.
+func get_loose_broken_piece_at(
+	global_point: Vector2,
+) -> BrokenPiece:
+	var best: BrokenPiece = null
+	var best_distance := INF
+	for piece in get_broken_pieces():
+		if piece.is_installed or not piece.can_grab():
+			continue
+		var distance := piece.global_position.distance_to(
+			global_point
+		)
+		if distance <= piece.grab_radius_px and distance < (
+			best_distance
+		):
+			best_distance = distance
+			best = piece
+	return best
+
+
+## Starts a detached piece's own fall to its landing spot,
+## with the loose pieces' flight, bounce, skid and spin.
+func start_broken_piece_fall(
+	piece: BrokenPiece, target_global_position: Vector2
+) -> void:
+	if not is_instance_valid(piece):
+		return
+	if not _start_bench_return(
+		piece,
+		piece,
+		piece.global_position,
+		piece.get_radius_px(),
+		target_global_position,
+		Vector2.ZERO,
+	):
+		piece.finish_bench_return()
+
+
+## Brings a dropped broken piece back to the workable area,
+## the way try_return_part() does for a drawer part.
+func try_return_broken_piece(
+	piece: BrokenPiece,
+	release_velocity := Vector2.ZERO,
+) -> bool:
+	if not is_instance_valid(piece):
+		return false
+	return _start_bench_return(
+		piece,
+		piece,
+		piece.global_position,
+		piece.get_radius_px(),
+		Vector2.INF,
+		release_velocity,
+	)
+
+
+## Frees the loose broken pieces of an item that shipped.
+func cleanup_broken_pieces(item: Repairable) -> void:
+	for piece in get_broken_pieces():
+		if piece.item == item and not piece.is_installed:
+			_broken_pieces.erase(piece)
+			piece.queue_free()
 
 
 ## The stored part of a kind inside a drawer, visible or not, or
@@ -1008,6 +1095,8 @@ func _start_bench_return(
 	)
 	if owner is Part:
 		(owner as Part).start_bench_return()
+	elif owner is BrokenPiece:
+		(owner as BrokenPiece).start_bench_return()
 	elif owner is Screw:
 		(owner as Screw).start_bench_return()
 	elif owner is RepairLayer:
@@ -1522,6 +1611,8 @@ func _finish_bench_return(entry: Dictionary) -> void:
 	var owner := entry.get("owner") as Object
 	if owner is Part:
 		(owner as Part).finish_bench_return()
+	elif owner is BrokenPiece:
+		(owner as BrokenPiece).finish_bench_return()
 	elif owner is Screw:
 		(owner as Screw).finish_bench_return()
 	elif owner is RepairLayer:
@@ -1622,6 +1713,7 @@ func _spawn_next_item() -> void:
 func _send_to_outbox(item: Repairable) -> void:
 	set_outbox_outline_shown(false)
 	cleanup_loose_parts()
+	cleanup_broken_pieces(item)
 	active_repairable = null
 	item.departed.connect(_on_item_departed.bind(item), CONNECT_ONE_SHOT)
 	item.leave(

@@ -59,6 +59,7 @@ var _drag_previous_pointer := Vector2.ZERO
 var _loose_screw: Screw
 var _loose_layer: RepairLayer
 var _loose_part: Part
+var _loose_broken_piece: BrokenPiece
 var _loose_drag_offset := Vector2.ZERO
 ## The pointer's speed, smoothed over the last frames of
 ## a drag, and how many frames it has stayed fast. A fast
@@ -111,6 +112,7 @@ func _physics_process(delta: float) -> void:
 func _track_drag_velocity(delta: float) -> void:
 	var is_dragging := (
 		is_instance_valid(_loose_part)
+		or is_instance_valid(_loose_broken_piece)
 		or is_instance_valid(_loose_screw)
 		or is_instance_valid(_loose_layer)
 		or held is Repairable
@@ -352,6 +354,7 @@ func _handle_press(global_point: Vector2) -> bool:
 	return (
 		_press_resting_screw(global_point)
 		or _press_set_aside_layer(global_point)
+		or _press_loose_broken_piece(global_point)
 		or _press_loose_part(global_point)
 		or _press_drawer(global_point)
 		or _press_rack(global_point)
@@ -456,6 +459,7 @@ func _press_drawer_modal(global_point: Vector2) -> bool:
 				and not is_instance_valid(_loose_screw)
 				and not is_instance_valid(_loose_layer)
 				and not is_instance_valid(_loose_part)
+				and not is_instance_valid(_loose_broken_piece)
 			):
 				_loose_part = part
 				_loose_drag_offset = part.global_position - global_point
@@ -490,6 +494,32 @@ func _press_drawer_modal(global_point: Vector2) -> bool:
 	if drawer.has_global_point(global_point):
 		return true
 	drawer.close_drawer()
+	return true
+
+
+## Over a broken piece, on its item or loose on the bench:
+## start dragging it, empty handed. It turns to the rotation
+## its point expects as it is taken. With a tool in the hand
+## the press falls through to the tool.
+func _press_loose_broken_piece(global_point: Vector2) -> bool:
+	var piece := G.level.get_loose_broken_piece_at(global_point)
+	if not is_instance_valid(piece):
+		return false
+	if _is_tool_ready():
+		return false
+	if (
+		is_empty()
+		and not is_instance_valid(_loose_screw)
+		and not is_instance_valid(_loose_layer)
+		and not is_instance_valid(_loose_part)
+		and not is_instance_valid(_loose_broken_piece)
+	):
+		_loose_broken_piece = piece
+		_loose_drag_offset = (
+			piece.global_position - global_point
+		)
+		piece.on_grabbed()
+		G.audio.play_sound(&"click")
 	return true
 
 
@@ -593,6 +623,9 @@ func _handle_release(global_point: Vector2) -> bool:
 			input_owner.on_pointer_released(global_point)
 		return true
 	var release_velocity := get_drag_release_velocity()
+	if is_instance_valid(_loose_broken_piece):
+		_drop_loose_broken_piece(release_velocity)
+		return true
 	if is_instance_valid(_loose_part):
 		_drop_loose_part(global_point, release_velocity)
 		return true
@@ -615,7 +648,11 @@ func _handle_release(global_point: Vector2) -> bool:
 ## area too. They are only set down on release, and a release
 ## outside the workable area sends them back in.
 func _drag_loose_piece() -> void:
-	if is_instance_valid(_loose_part):
+	if is_instance_valid(_loose_broken_piece):
+		_loose_broken_piece.global_position = (
+			pointer_position + _loose_drag_offset
+		)
+	elif is_instance_valid(_loose_part):
 		# A part may be carried anywhere, over the drawers too. It
 		# is only set down, fitted or put away on release.
 		_loose_part.global_position = (
@@ -680,6 +717,52 @@ func get_loose_layer() -> RepairLayer:
 ## The loose part being dragged, or null.
 func get_loose_part() -> Part:
 	return _loose_part
+
+
+## The broken piece being dragged, or null.
+func get_loose_broken_piece() -> BrokenPiece:
+	return _loose_broken_piece
+
+
+## Stops dragging a broken piece without setting it down.
+## Its point calls this when the piece glues on.
+func clear_loose_broken_piece(piece: BrokenPiece) -> void:
+	if _loose_broken_piece == piece:
+		_loose_broken_piece = null
+
+
+## The hold game failed. The piece drops where it is, and
+## its glue stays on the point for the next attempt.
+func fail_broken_piece_hold(piece: BrokenPiece) -> void:
+	if _loose_broken_piece != piece:
+		return
+	_loose_broken_piece = null
+	_set_down_broken_piece(piece, Vector2.ZERO)
+
+
+## Lets go of a dragged broken piece. It rests where it
+## fell, unless that is outside the workable area, which
+## flies it back in. A fast release throws it.
+func _drop_loose_broken_piece(
+	release_velocity := Vector2.ZERO,
+) -> void:
+	var piece := _loose_broken_piece
+	_loose_broken_piece = null
+	if not is_instance_valid(piece):
+		return
+	if piece.is_installed:
+		return
+	_set_down_broken_piece(piece, release_velocity)
+
+
+func _set_down_broken_piece(
+	piece: BrokenPiece,
+	release_velocity := Vector2.ZERO,
+) -> void:
+	if G.level.try_return_broken_piece(piece, release_velocity):
+		return
+	G.audio.play_sound(&"thud")
+	piece.z_index = 16
 
 
 ## Lets go of a dragged part. Released over a socket, it tries to
@@ -795,6 +878,7 @@ func _update_cursor() -> void:
 		is_instance_valid(_loose_screw)
 		or is_instance_valid(_loose_layer)
 		or is_instance_valid(_loose_part)
+		or is_instance_valid(_loose_broken_piece)
 		or is_instance_valid(held)
 	):
 		_apply_cursor(Input.MOUSE_MODE_VISIBLE, Input.CURSOR_DRAG)
@@ -875,6 +959,10 @@ func _can_take(global_point: Vector2) -> bool:
 		if prop.is_point_on_prop(global_point):
 			return true
 	if is_instance_valid(G.level.get_loose_part_at(global_point)):
+		return true
+	if is_instance_valid(
+		G.level.get_loose_broken_piece_at(global_point)
+	):
 		return true
 	var open_drawer := G.level.get_open_drawer()
 	if (

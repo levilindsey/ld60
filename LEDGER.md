@@ -190,6 +190,15 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX66** · Broken interaction points and pieces for glue:
+  placeable `BrokenPoint` + `BrokenPiece` (attached, hidden behind
+  a covering layer, or falling separately on arrival with the bench
+  pieces' flight), glue first, then a hold still ring game
+  (`hold_sec` per point, default 5); off target glue leaves a rag
+  cleanable `GlueSmear`, charged as a blob only if left when the
+  item finishes. Done (2026-10-18), covered in
+  `tests/broken_glue/` (25 checks). Levi still to play it by hand
+  (LX41). Design: `docs/design/glue.md` "Broken pieces".
 - **LX63** · `level.tscn` loaded `drawer.tscn` for `Drawer.tscn`. Done
   in fd489cd (2026-10-18).
 - **LX64** · Screws of a given type are interchangeable: a resting

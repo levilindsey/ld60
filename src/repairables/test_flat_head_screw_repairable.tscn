@@ -8,6 +8,8 @@
 [ext_resource type="PackedScene" path="res://src/interaction_points/grime_spot.tscn" id="6_grime"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/dust_clump.tscn" id="7_dust"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/phillips_screw.tscn" id="8_aj7g0"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/broken_point.tscn" id="9_brokenpoint"]
+[ext_resource type="PackedScene" path="res://src/interaction_points/broken_piece.tscn" id="10_brokenpiece"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_drop"]
 size = Vector2(100, 100)
@@ -55,6 +57,15 @@ is_required = false
 position = Vector2(30, -30)
 is_required = false
 
+[node name="BrokenPointHidden" parent="Layers/Inside" instance=ExtResource("9_brokenpoint")]
+position = Vector2(-32, 30)
+is_required = false
+
+[node name="BrokenPieceHidden" parent="Layers/Inside" node_paths=PackedStringArray("target_point", "covering_layer") instance=ExtResource("10_brokenpiece")]
+position = Vector2(30, 32)
+target_point = NodePath("../BrokenPointHidden")
+covering_layer = NodePath("../../Cover")
+
 [node name="Cover" type="Node2D" parent="Layers" unique_id=2076810840 node_paths=PackedStringArray("art")]
 script = ExtResource("3_layer")
 art = NodePath("Art")
@@ -81,3 +92,13 @@ position = Vector2(-30, -30)
 
 [node name="ScrewRight" parent="Layers/Cover" unique_id=268084832 instance=ExtResource("8_aj7g0")]
 position = Vector2(30, 30)
+
+[node name="BrokenPointFallen" parent="Layers/Cover" instance=ExtResource("9_brokenpoint")]
+position = Vector2(32, -10)
+is_required = false
+
+[node name="BrokenPieceFallen" parent="Layers/Cover" node_paths=PackedStringArray("target_point") instance=ExtResource("10_brokenpiece")]
+position = Vector2(-32, 10)
+target_point = NodePath("../BrokenPointFallen")
+starts_detached = true
+fall_target_offset = Vector2(150, 40)

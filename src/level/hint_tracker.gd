@@ -308,6 +308,10 @@ func _is_working_on_current(level: Level) -> bool:
 		for part_socket in _candidate_sockets:
 			if loose_part.type == part_socket.accepted_part:
 				return true
+	var broken_piece := hand.get_loose_broken_piece()
+	if is_instance_valid(broken_piece):
+		if _candidate_points.has(broken_piece.target_point):
+			return true
 	if _target_is_outbox and hand.held == _item:
 		return true
 	return false
@@ -395,6 +399,13 @@ func _get_point_fingerprint(point: InteractionPoint) -> String:
 		fields += ":%d" % roundi(
 			(point as SeatPart).seat_progress * 20.0,
 		)
+	elif point is BrokenPoint:
+		var broken := point as BrokenPoint
+		fields += ":%d:%d:%d" % [
+			int(broken.has_glue),
+			int(broken.is_holding),
+			roundi(broken.hold_progress_sec * 20.0),
+		]
 	return fields
 
 
