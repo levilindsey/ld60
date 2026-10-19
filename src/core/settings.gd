@@ -203,6 +203,29 @@ enum PhysicsLayer {
 ## The day's order: the items that arrive, one after another. The game is
 ## won after the last one goes into the outbox.
 @export var item_queue: Array[Repairable.Type] = []
+
+## Which single repairable, if any, jumps to the front as the
+## first thing handled, ahead of `item_queue`. A playtesting
+## convenience: pick one here and it is the first item on the
+## bench, then the day's order follows (skipping that item's
+## later slot). `None` plays the queue as authored. The two
+## test boxes stay on the list: the flat-head one exercises
+## every interaction mechanic.
+enum FirstRepairable {
+	NONE,
+	TEST_FLAT_HEAD,
+	TEST_PHILLIPS,
+	ATARI_JOYSTICK,
+	KEYBOARD,
+	TV,
+	PIANO,
+	GAME_N_WATCH,
+	RADIO,
+	TOASTER,
+	SHRINK_RAY,
+}
+
+@export var first_repairable_override := FirstRepairable.NONE
 @export_group("")
 
 @export_group("Tools")
@@ -536,6 +559,34 @@ func get_defect_points(defect: RepairQuality.Defect) -> int:
 		_:
 			G.fatal()
 	return points
+
+
+## The override repairable for the front of the queue, as
+## a `Repairable.Type`, or -1 when the override is `NONE`.
+func get_first_repairable_override() -> int:
+	match first_repairable_override:
+		FirstRepairable.TEST_FLAT_HEAD:
+			return Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE
+		FirstRepairable.TEST_PHILLIPS:
+			return Repairable.Type.TEST_PHILLIPS_REPAIRABLE
+		FirstRepairable.ATARI_JOYSTICK:
+			return Repairable.Type.ATARI_JOYSTICK
+		FirstRepairable.KEYBOARD:
+			return Repairable.Type.KEYBOARD
+		FirstRepairable.TV:
+			return Repairable.Type.TV
+		FirstRepairable.PIANO:
+			return Repairable.Type.PIANO
+		FirstRepairable.GAME_N_WATCH:
+			return Repairable.Type.GAME_N_WATCH
+		FirstRepairable.RADIO:
+			return Repairable.Type.RADIO
+		FirstRepairable.TOASTER:
+			return Repairable.Type.TOASTER
+		FirstRepairable.SHRINK_RAY:
+			return Repairable.Type.SHRINK_RAY
+		_:
+			return -1
 
 
 func get_repairable_scene_from_type(type: Repairable.Type) -> PackedScene:

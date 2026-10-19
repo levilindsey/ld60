@@ -1,10 +1,10 @@
-[gd_scene format=3 uid="uid://x4y22cyrn3q1"]
+﻿[gd_scene format=3 uid="uid://x4y22cyrn3q1"]
 
 [ext_resource type="Script" uid="uid://b65kcr1bl02yl" path="res://src/level/drawer.gd" id="1_xw6od"]
-[ext_resource type="Texture2D" uid="uid://bu03v7tk0qdlw" path="res://assets/images/drawer_top.png" id="2_bcngq"]
-[ext_resource type="Texture2D" uid="uid://cjuoou6bne70g" path="res://assets/images/drawer_front.png" id="3_bcngq"]
-[ext_resource type="Texture2D" uid="uid://bec35vjs774qv" path="res://assets/images/drawer_side.png" id="4_xw6od"]
-[ext_resource type="Texture2D" path="res://assets/images/drawer_clip_mask.png" id="5_mask"]
+[ext_resource type="Texture2D" uid="uid://badq70cmht8dc" path="res://assets/images/room/drawer_top.png" id="2_bcngq"]
+[ext_resource type="Texture2D" uid="uid://vwm1i1bwfxqg" path="res://assets/images/room/drawer_front.png" id="3_bcngq"]
+[ext_resource type="Texture2D" uid="uid://c3a6u8ob5mir1" path="res://assets/images/room/drawer_side.png" id="4_xw6od"]
+[ext_resource type="Texture2D" uid="uid://cg7koo21o1ppc" path="res://assets/images/room/drawer_clip_mask.png" id="5_mask"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_60exv"]
 size = Vector2(1234, 1009.41174)

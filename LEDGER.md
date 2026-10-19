@@ -111,6 +111,22 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   overlap-aware draw order inside each group (a piece rises
   only once dragged clear of what covers it).
 
+- **LX69** · Radio bespoke arc not built yet: scripted glitch X seconds
+  into repairs 2, 3 and 4, hammer-fix each time; after the third fix a
+  special card is flicked/spinning onto the bench, then the radio is
+  repaired in place (flat screws, tube yank, blow out, hammer, glue the
+  fallen dial) for a reward card but no outbox trip. Design:
+  `docs/design/new_items.md`.
+- **LX70** · Dragging/repositioning the main repairable body (never
+  rotating it) is designed only, not built. Design:
+  `docs/design/new_items.md`.
+- **LX71** · Art still needed from Levi/Taryn to replace placeholders:
+  Gear PNG, Spring PNG, Joystick PNG (export from
+  `assets/images/atari_joystick.kra`), Circuit PNG, radio dial fallen
+  piece, piano good/replacement middle key, and confirmation whether
+  the TV bad dial is baked into `tv_bad_controls.png`. Until then
+  GEAR/SPRING/JOYSTICK/CIRCUIT parts keep placeholder shapes.
+
 ## Residuals (known, not fixed)
 
 - **LX68** · The toaster's late beats (the hammer target that appears

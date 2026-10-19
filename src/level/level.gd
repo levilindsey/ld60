@@ -61,6 +61,10 @@ var tools_by_type: Dictionary[Tool.Type, Tool] = {}
 var active_repairable: Repairable
 ## How many items of `Settings.item_queue` have been spawned.
 var next_item_index := 0
+## The day's order as played: `Settings.item_queue`, with
+## the settings' first-repairable override (if any) moved
+## to the front. Built once when the level starts.
+var _effective_queue: Array[Repairable.Type] = []
 
 ## The player's hand: what is held, the cursor and press routing.
 var hand: Hand:
@@ -157,6 +161,7 @@ func _ready() -> void:
 		drawer.opened.connect(_on_drawer_opened.bind(drawer))
 		drawer.close_started.connect(_on_drawer_close_started.bind(drawer))
 
+	_build_effective_queue()
 	%TicketCard.done_closed.connect(_on_ticket_done_closed)
 
 	hint_tracker = HintTracker.new()
@@ -1851,15 +1856,32 @@ func _prune_bench_dust() -> void:
 			_bench_dust.remove_at(index)
 
 
+## Builds the played order from the authored queue and the
+## first-repairable override: the override (if any) goes
+## first, and its authored slot is skipped.
+func _build_effective_queue() -> void:
+	_effective_queue.clear()
+	var override := G.settings.get_first_repairable_override()
+	var has_override := override >= 0
+	var override_type: Repairable.Type = Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE
+	if has_override:
+		override_type = override
+		_effective_queue.append(override_type)
+	for type in G.settings.item_queue:
+		if has_override and type == override_type:
+			continue
+		_effective_queue.append(type)
+
+
 ## True once every item of the day's order has been spawned.
 func _is_queue_finished() -> bool:
-	return next_item_index >= G.settings.item_queue.size()
+	return next_item_index >= _effective_queue.size()
 
 
 func _spawn_next_item() -> void:
 	if _is_queue_finished():
 		return
-	var type: Repairable.Type = G.settings.item_queue[next_item_index]
+	var type: Repairable.Type = _effective_queue[next_item_index]
 	next_item_index += 1
 	spawn_repairable(type)
 

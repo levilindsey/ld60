@@ -334,10 +334,18 @@ func return_to(target_global_position: Vector2) -> void:
 
 ## Sends the item into the outbox: it drops into the tray, then slides to
 ## the exit. `departed` fires at the end and the item frees itself.
+## Mess left on it is charged now, as it goes, not when the
+## last required step finished: the player can keep cleaning
+## (blow the dust off, wipe the smear) after it is finished
+## and only pays when they drop it in the outbox dirty.
 func leave(
 	tray_global_position: Vector2,
 	exit_global_position: Vector2,
 ) -> void:
+	_charge_remaining_mess()
+	if is_instance_valid(G.level):
+		G.level.charge_bench_dust(self)
+		G.level.clear_bench_dust()
 	mode = Mode.LEAVING
 	z_index = _LEAVING_Z_INDEX
 	set_physics_process(false)
@@ -509,10 +517,11 @@ func _detach_fallen_pieces(
 			)
 
 
-## Mess still on the item when it finishes is paid for now.
-## A glue smear costs a blob defect each, and a grime spot
-## or dust clump that was never cleaned costs a leftover
-## dirt defect each. Cleaned mess costs nothing.
+## Mess still on the item when it leaves through the outbox
+## is paid for then (see `leave()`). A glue smear costs a
+## blob defect each, and a grime spot or dust clump that was
+## never cleaned costs a leftover dirt defect each. Cleaned
+## mess costs nothing.
 func _charge_remaining_mess() -> void:
 	for layer in layers:
 		for point in layer.get_points():
@@ -540,10 +549,6 @@ func _update_state() -> void:
 		return
 	has_finished = is_now_finished
 	if has_finished:
-		_charge_remaining_mess()
-		if is_instance_valid(G.level):
-			G.level.charge_bench_dust(self)
-			G.level.clear_bench_dust()
 		G.print(
 			"Item finished: %s" % item_name,
 			ScaffolderLog.CATEGORY_GAME_STATE,

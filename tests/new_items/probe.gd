@@ -24,12 +24,18 @@ func _ready() -> void:
 	main.process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_child(main)
 	await _seconds(0.3)
+	G.settings.first_repairable_override = Settings.FirstRepairable.TV
 	G.state.transition(StateMain.State.GAME)
 	if not _expect(await _wait_for_landing(), "the first item lands"):
 		_finish(1)
 		return
 	_level = G.level
 	_hand = G.level.hand
+	_expect(
+		G.level.active_repairable.item_name == "TV",
+		"the first-repairable override puts the TV first",
+	)
+	G.settings.first_repairable_override = Settings.FirstRepairable.NONE
 	await _check_tv()
 	await _check_keyboard()
 	await _check_piano()
