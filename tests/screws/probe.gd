@@ -56,7 +56,7 @@ const _WATCHED_SOUNDS: Array[String] = [
 	"pop",
 	"click",
 	"scrape",
-	"skid",
+	"tap_metal",
 	"grind",
 	"clunk",
 ]
@@ -453,7 +453,7 @@ func _check_correcting() -> void:
 		_count("creak") == 4
 		and _count("ratchet") == 3
 		and _count("pop") == 1
-		and _count("skid") == 0
+		and _count("tap_metal") == 0
 		and _count("scrape") == 0,
 		"sounds: a creak per twist, a ratchet between twists, a pop (%s)"
 		% _sounds_text(),
@@ -560,12 +560,13 @@ func _check_never_correcting() -> void:
 		"the driver hops back to the hand and the pointer is free",
 	)
 	_expect(
-		_count("skid") == 1
+		_count("tap_metal") == 1
 		and _count("scrape") >= 1
 		and _count("creak") == _UNSEAT_TWIST
 		and _count("ratchet") == _UNSEAT_TWIST - 1
 		and _count("pop") == 0,
-		"sounds: a scrape near the end, then one skid (%s)" % _sounds_text(),
+		"sounds: a scrape near the end, then one tap metal (%s)"
+		% _sounds_text(),
 	)
 	var px := screw.get_slide_height_px()
 	var kept_slide := screw.slide
@@ -767,7 +768,7 @@ func _check_yanks() -> void:
 				and screw.health == screw.max_health
 				and absf(screw.tip_offset_px - screw.seat_tolerance_px)
 				< 0.01
-				and _count("skid") == 0,
+				and _count("tap_metal") == 0,
 				"LX47: a hard push in the pause stops at the slot's end"
 				+ " (offset %.2f of %.2f px, health %d)"
 				% [
@@ -791,7 +792,7 @@ func _check_yanks() -> void:
 			_expect(
 				screw.mode == InteractionPoint.Mode.UNSTARTED
 				and screw.health == screw.max_health - 1
-				and _count("skid") == 1,
+				and _count("tap_metal") == 1,
 				"LX47: a push during the twist slides the tip out"
 				+ " (health %d)" % screw.health,
 			)
@@ -811,7 +812,7 @@ func _check_yanks() -> void:
 			== Screw._PLACEHOLDER_FRAME_TINTS[screw.get_head_frame()]
 		)
 		tints.append(screw.head.modulate)
-		skids += _count("skid")
+		skids += _count("tap_metal")
 	_expect(
 		str(healths) == "[2, 1, 0]" and str(frames) == "[1, 2, 3]",
 		"LX10: each skid costs 1 health and shows the next frame (health %s,"

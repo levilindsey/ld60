@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://ccydqj4w4t5dw"
+path="res://.godot/imported/drawer openclose 2.wav-ab00f3a88a0a827d62b50685201af154.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/drawer/drawer openclose 2.wav"
+dest_files=["res://.godot/imported/drawer openclose 2.wav-ab00f3a88a0a827d62b50685201af154.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

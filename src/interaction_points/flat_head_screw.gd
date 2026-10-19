@@ -102,6 +102,7 @@ func place_engaged_tool() -> void:
 
 ## Lets go of the driver and gives the pointer back to the hand.
 func release_tool() -> void:
+	G.audio.stop_screw_twist_loop()
 	if is_instance_valid(G.level):
 		G.level.hand.clear_input_owner(self)
 	_set_in_danger(false)
@@ -237,6 +238,7 @@ func _telegraph() -> void:
 
 
 func _start_twist() -> void:
+	G.audio.start_screw_twist_loop()
 	_phase = Phase.TWIST
 	_phase_sec = 0.0
 	_is_turning_tool = true
@@ -268,6 +270,7 @@ func _turn_and_drift() -> void:
 
 
 func _finish_twist() -> void:
+	G.audio.stop_screw_twist_loop()
 	_twists_done += 1
 	head.rotation = _twist_to_rotation
 	slide = _twist_to_slide
@@ -296,7 +299,8 @@ func _unseat() -> void:
 		seat_tolerance_px,
 	)
 	_set_in_danger(false)
-	G.audio.play_sound(&"skid", true)
+	G.audio.stop_screw_twist_loop()
+	G.audio.play_sound(&"tap_metal", true)
 	var layer := get_layer()
 	if is_instance_valid(layer) and is_instance_valid(layer.art):
 		# The scratch starts at the end of the slot and runs the way the tip

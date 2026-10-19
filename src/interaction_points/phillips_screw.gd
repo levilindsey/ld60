@@ -108,6 +108,10 @@ func _set_driver_twist_animation(is_active: bool) -> void:
 	var driver := engaged_tool as PhillipsScrewDriver
 	if is_instance_valid(driver):
 		driver.set_twist_animation_active(is_active)
+	if is_active:
+		G.audio.start_screw_twist_loop()
+	else:
+		G.audio.stop_screw_twist_loop()
 
 
 func can_engage() -> bool:
@@ -407,7 +411,7 @@ func _complete() -> void:
 ## The bit cams out: a scrape, sparks, and the driver hops back
 ## to the hand. The turns so far are kept, like a flathead unseat.
 func _cam_out() -> void:
-	G.audio.play_sound(&"scrape", true)
+	G.audio.play_sound(&"tap_metal", true)
 	sparks.global_position = head.global_position
 	sparks.restart()
 	var driver := engaged_tool

@@ -206,7 +206,7 @@ func _set_mode(to_mode: Mode, _from_mode: Mode) -> void:
 
 ## Called by the hand when it takes this tool.
 func pick_up() -> void:
-	G.audio.play_sound(&"click")
+	G.audio.play_sound(&"tool_pickup")
 	var from_tip := get_tip_position()
 	_tip_left_holder = false
 	mode = Mode.HELD
@@ -232,7 +232,7 @@ func put_away() -> void:
 
 ## The put-away glide reached the holder.
 func _on_put_away_landed() -> void:
-	G.audio.play_sound(&"clunk")
+	G.audio.play_sound(&"tool_set_down")
 
 
 ## Puts the tool straight into its holder, with no glide.

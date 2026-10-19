@@ -312,7 +312,7 @@ func start_bench_return() -> void:
 ## The sound of the part hitting the bench, played by the
 ## level at its first bounce, not when it comes to rest.
 func play_landing_sound() -> void:
-	G.audio.play_sound(&"thud")
+	G.audio.play_sound(&"part_drop_large")
 
 
 ## The part has come to rest inside the workable area.
@@ -485,7 +485,7 @@ func install_into(socket: PartSocket) -> void:
 	reparent(socket)
 	global_position = from_global_position
 	reset_physics_interpolation()
-	G.audio.play_sound(&"snap")
+	G.audio.play_sound(&"rattle_snap")
 	var tween := create_tween()
 	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

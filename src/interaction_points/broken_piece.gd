@@ -353,7 +353,7 @@ func _set_flick_progress(
 func _on_flick_landed() -> void:
 	is_flicking = false
 	reset_physics_interpolation()
-	G.audio.play_sound(&"thud")
+	G.audio.play_sound(&"part_drop_large")
 
 
 ## The point's hold finished. The piece leaves the hand,
@@ -379,7 +379,7 @@ func attach_to_point(point: BrokenPoint) -> void:
 	reset_physics_interpolation()
 	z_index = 0
 	z_as_relative = true
-	G.audio.play_sound(&"snap")
+	G.audio.play_sound(&"rattle_snap")
 	var tween := create_tween()
 	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -433,7 +433,7 @@ func start_bench_return() -> void:
 ## The sound of the piece hitting the bench, played by the
 ## level at its first bounce, not when it comes to rest.
 func play_landing_sound() -> void:
-	G.audio.play_sound(&"thud")
+	G.audio.play_sound(&"part_drop_large")
 
 
 ## The piece has come to rest inside the workable area.

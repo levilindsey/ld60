@@ -31,7 +31,7 @@ func on_struck(strength: float) -> void:
 	if is_instance_valid(layer):
 		layer.squish(strength)
 	if strength < band_min:
-		G.audio.play_sound(&"click")
+		G.audio.play_sound(&"hammer_whack_light")
 		pulse()
 		return
 	mode = Mode.ACTIVE
@@ -49,7 +49,10 @@ func on_struck(strength: float) -> void:
 		G.level.shake_camera(7.0, 0.15)
 	else:
 		G.level.shake_camera(4.0, 0.15)
-	G.audio.play_sound(&"thud", true)
+	if is_over:
+		G.audio.play_sound(&"hammer_whack_heavy", true)
+	else:
+		G.audio.play_sound(&"hammer_whack_light", true)
 	if (
 		bench_dust_spew_count > 0
 		and is_instance_valid(G.level)

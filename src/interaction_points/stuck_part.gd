@@ -21,5 +21,5 @@ func apply_hit(_strength: float, _is_over: bool) -> void:
 	hits_done += 1
 	pulse()
 	if hits_done >= hits_needed:
-		G.audio.play_sound(&"pop")
+		G.audio.play_sound(&"lid_pop")
 		finish()

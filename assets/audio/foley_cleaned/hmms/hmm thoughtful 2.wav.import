@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://crqsq04vrthy8"
+path="res://.godot/imported/hmm thoughtful 2.wav-c187e43f403040ae84b1d981a7be9e29.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/hmms/hmm thoughtful 2.wav"
+dest_files=["res://.godot/imported/hmm thoughtful 2.wav-c187e43f403040ae84b1d981a7be9e29.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

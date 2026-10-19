@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cooykwcyq13fw"
+path="res://.godot/imported/lid snap.wav-f4177b5de12ebd327b6c66444a9da2ca.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/parts/lid snap.wav"
+dest_files=["res://.godot/imported/lid snap.wav-f4177b5de12ebd327b6c66444a9da2ca.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

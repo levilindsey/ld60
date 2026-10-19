@@ -1,27 +1,32 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://dhsibya3xlycm"]
 
-[ext_resource type="Script" path="res://src/parts/bolt_part.gd" id="1_part"]
+[ext_resource type="Script" uid="uid://fix6hnsab0y" path="res://src/parts/bolt_part.gd" id="1_part"]
+[ext_resource type="Texture2D" uid="uid://0i8syejosu7" path="res://assets/images/repairables/bolt.png" id="2_tex"]
 
-[node name="BoltPart" type="Node2D" node_paths=PackedStringArray("shape")]
+[node name="BoltPart" type="Node2D" unique_id=321918478 node_paths=PackedStringArray("shape")]
 z_index = 10
 z_as_relative = false
 script = ExtResource("1_part")
 shape = NodePath("Shape")
 
-[node name="Art" type="Polygon2D" parent="."]
+[node name="Art" type="Polygon2D" parent="." unique_id=1946407587]
 unique_name_in_owner = true
+visible = false
 color = Color(0.6, 0.62, 0.68, 1)
 polygon = PackedVector2Array(-8, -20, 8, -20, 8, -6, 4, -6, 4, 20, -4, 20, -4, -6, -8, -6)
 
-[node name="Sprite" type="Sprite2D" parent="."]
+[node name="Sprite" type="Sprite2D" parent="." unique_id=1469297815]
 unique_name_in_owner = true
-visible = false
+scale = Vector2(0.221954, 0.221954)
+texture = ExtResource("2_tex")
+region_enabled = true
+region_rect = Rect2(646, 295.5, 236, 414.5)
 
-[node name="Shape" type="Area2D" parent="."]
+[node name="Shape" type="Area2D" parent="." unique_id=1046010845]
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape"]
-polygon = PackedVector2Array(-8, -20, 8, -20, 8, -6, 4, -6, 4, 20, -4, 20, -4, -6, -8, -6)
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape" unique_id=8900259]
+polygon = PackedVector2Array(-10, -12, -16, -26, -13, -33, 1, -46, 22, -40, 26, -23, 23, -15, 12, -6, 8, -7, -9, 36, -15, 38, -21, 35, -23, 28, -8, -11, -8, -6)

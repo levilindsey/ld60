@@ -14,6 +14,8 @@ var _is_wiping := false
 var _last_tip_position := Vector2.ZERO
 var _last_move_direction := Vector2.ZERO
 var _cleaned_total := 0.0
+## Distance dragged since the last wipe sound, in pixels.
+var _wipe_sound_distance_px := 0.0
 
 
 func _ready() -> void:
@@ -43,6 +45,10 @@ func _physics_process(delta: float) -> void:
 		):
 			is_reversed = true
 		_last_move_direction = direction
+	_wipe_sound_distance_px += distance_px
+	if _wipe_sound_distance_px >= 48.0:
+		_wipe_sound_distance_px = 0.0
+		G.audio.play_sound(&"rag_wipe")
 	var speed_share := clampf(
 		speed / maxf(G.settings.rag_speed_cap_px_per_sec, 1.0),
 		0.0,
@@ -75,11 +81,12 @@ func is_effect_tool() -> bool:
 ## A press with the rag starts a wipe where it lands.
 func on_effect_pressed(_global_point: Vector2) -> void:
 	_is_wiping = true
+	_wipe_sound_distance_px = 0.0
 	_last_tip_position = get_tip_position()
 	_last_move_direction = Vector2.ZERO
 	if is_instance_valid(G.level):
 		G.level.hand.set_input_owner(self)
-	G.audio.play_sound(&"scrape")
+	G.audio.play_sound(&"rag_wipe")
 
 
 ## A finger can land anywhere, so movement counts from the press.
@@ -110,6 +117,7 @@ func _show_held_art(is_held: bool) -> void:
 
 func _stop_wiping() -> void:
 	_is_wiping = false
+	_wipe_sound_distance_px = 0.0
 	if is_instance_valid(G.level):
 		G.level.hand.clear_input_owner(self)
 

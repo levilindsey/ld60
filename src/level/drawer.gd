@@ -53,6 +53,11 @@ const _PUT_AWAY_CLEARANCE_PX := 50.0
 ## children, not drawer children, so they keep their own
 ## scale while the drawer grows around them.
 const _CENTER_SCALE_MULTIPLIER := 2.0
+## Hovering an open drawer rustles its parts: the pointer must
+## travel this far inside it between rustles, and at most one
+## rustle plays per cooldown.
+const _RUSTLE_COOLDOWN_SEC := 0.45
+const _RUSTLE_MIN_MOVE_PX := 14.0
 
 var state := State.CLOSED
 ## This drawer's slot in the level's stack, counting from 0.
@@ -68,12 +73,38 @@ var _fraction_tween: Tween
 ## short never resumes and moves the drawer later.
 var _generation := 0
 var _scaler_home_scale := Vector2.ONE
+var _rustle_cooldown_sec := 0.0
+var _rustle_last_pointer := Vector2.INF
 
 
 func _ready() -> void:
 	_scaler_home_scale = _get_scaler().scale
 	_set_clipped(true)
 	_apply_open_fraction(0.0)
+
+
+func _process(delta: float) -> void:
+	if _rustle_cooldown_sec > 0.0:
+		_rustle_cooldown_sec -= delta
+	if state != State.OPEN:
+		_rustle_last_pointer = Vector2.INF
+		return
+	if not is_instance_valid(G.level) or not is_instance_valid(G.level.hand):
+		return
+	var pointer := G.level.hand.pointer_position
+	if not has_global_point(pointer):
+		_rustle_last_pointer = Vector2.INF
+		return
+	if _rustle_last_pointer == Vector2.INF:
+		_rustle_last_pointer = pointer
+		return
+	if _rustle_cooldown_sec > 0.0:
+		return
+	if pointer.distance_to(_rustle_last_pointer) < _RUSTLE_MIN_MOVE_PX:
+		return
+	_rustle_last_pointer = pointer
+	_rustle_cooldown_sec = _RUSTLE_COOLDOWN_SEC
+	G.audio.play_sound(&"drawer_rustle")
 
 
 ## The wrapper that carries the drawer art. Scaling it grows

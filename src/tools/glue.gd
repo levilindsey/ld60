@@ -17,6 +17,7 @@ const _OFF_TARGET_BLOB_SEC := 0.5
 
 var _is_squeezing := false
 var _off_target_sec := 0.0
+var _glug_cooldown_sec := 0.0
 
 
 func _ready() -> void:
@@ -26,6 +27,8 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
+	if _glug_cooldown_sec > 0.0:
+		_glug_cooldown_sec -= delta
 	if not _is_squeezing or delta <= 0.0:
 		return
 	# Glue leaves the working end, never the cursor marker or
@@ -65,6 +68,9 @@ func _physics_process(delta: float) -> void:
 			hit = true
 	if hit:
 		_off_target_sec = 0.0
+		if _glug_cooldown_sec <= 0.0:
+			_glug_cooldown_sec = 0.3
+			G.audio.play_sound(&"glug")
 		return
 	_off_target_sec += delta
 	if _off_target_sec >= _OFF_TARGET_BLOB_SEC:
@@ -84,6 +90,7 @@ func is_effect_tool() -> bool:
 func on_effect_pressed(_global_point: Vector2) -> void:
 	_is_squeezing = true
 	_off_target_sec = 0.0
+	_glug_cooldown_sec = 0.3
 	art.scale = Vector2(1.0, 0.9)
 	if is_instance_valid(G.level):
 		G.level.hand.set_input_owner(self)
@@ -94,7 +101,7 @@ func on_effect_pressed(_global_point: Vector2) -> void:
 				G.settings.glue_radius_px,
 				1.0,
 			)
-	G.audio.play_sound(&"scrape")
+	G.audio.play_sound(&"glug")
 
 
 ## The broken point under the working end right now, by the

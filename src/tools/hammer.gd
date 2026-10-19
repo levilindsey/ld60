@@ -275,22 +275,22 @@ func _strike() -> void:
 		var strength := 0.0 if is_tiny else charge
 		_locked_surface.on_struck(_locked_point, strength)
 		if strength >= G.settings.hammer_surface_damage_charge:
-			G.audio.play_sound(&"thud", true)
+			G.audio.play_sound(&"hammer_whack_heavy", true)
 			G.level.shake_camera(5.0, 0.15)
 		else:
-			G.audio.play_sound(&"click")
+			G.audio.play_sound(&"hammer_whack_light")
 	elif is_instance_valid(_locked_layer):
 		var strength := 0.0 if is_tiny else charge
 		_locked_layer.on_struck(_locked_point, strength)
 		if strength >= G.settings.hammer_surface_damage_charge:
-			G.audio.play_sound(&"thud", true)
+			G.audio.play_sound(&"hammer_whack_heavy", true)
 			G.level.shake_camera(5.0, 0.15)
 		else:
-			G.audio.play_sound(&"click")
+			G.audio.play_sound(&"hammer_whack_light")
 	elif is_instance_valid(_locked_prop):
 		_locked_prop.on_struck(charge)
 	else:
-		G.audio.play_sound(&"thud", true)
+		G.audio.play_sound(&"hammer_wood", true)
 	G.audio.sound_pitch_scale = 1.0
 	_phase = WindPhase.HOLDING
 	if is_instance_valid(_swing_tween):

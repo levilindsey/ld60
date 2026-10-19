@@ -1,11 +1,11 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://coawtc7eybcv7"]
 
-[ext_resource type="Script" path="res://src/interaction_points/bent_part.gd" id="1_bent"]
+[ext_resource type="Script" uid="uid://cgj4ga0u81e46" path="res://src/interaction_points/bent_part.gd" id="1_bent"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_bent"]
 radius = 16.0
 
-[node name="BentPart" type="Area2D" node_paths=PackedStringArray("art")]
+[node name="BentPart" type="Area2D" unique_id=1546136308 node_paths=PackedStringArray("art")]
 collision_layer = 4
 collision_mask = 0
 monitoring = false
@@ -13,11 +13,11 @@ script = ExtResource("1_bent")
 art = NodePath("Art")
 accepted_tools = Array[int]([3])
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=278447904]
 shape = SubResource("CircleShape2D_bent")
 
-[node name="Art" type="Node2D" parent="."]
+[node name="Art" type="Node2D" parent="." unique_id=1436220082]
 
-[node name="Bar" type="Polygon2D" parent="Art"]
+[node name="Bar" type="Polygon2D" parent="Art" unique_id=747350548]
 color = Color(0.6, 0.62, 0.66, 1)
 polygon = PackedVector2Array(0, -4, 34, -4, 34, 4, 0, 4)

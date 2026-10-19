@@ -371,7 +371,7 @@ func set_install_mode() -> void:
 ## stays ACTIVE until it is out of the hole, so its layer waits for it, and
 ## then finish() tells the layer and the item.
 func remove() -> void:
-	G.audio.play_sound(&"pop")
+	G.audio.play_sound(&"lid_pop")
 	slide = 1.0
 	release_tool()
 	removed.emit()
@@ -418,7 +418,7 @@ func start_bench_return() -> void:
 ## The sound of the screw hitting the bench, played by the
 ## level at its first bounce, not when it comes to rest.
 func play_landing_sound() -> void:
-	G.audio.play_sound(&"click")
+	G.audio.play_sound(&"screw_drop")
 
 
 func finish_bench_return() -> void:
@@ -730,7 +730,7 @@ func _leave_hole() -> void:
 	bench_art.reset_physics_interpolation()
 	_rest_rotation = bench_art.rotation
 	travel = Travel.RESTING
-	G.audio.play_sound(&"click")
+	G.audio.play_sound(&"screw_drop")
 	if is_instance_valid(G.level):
 		G.level.register_resting_screw(self)
 	if is_install_mode:
@@ -740,7 +740,7 @@ func _leave_hole() -> void:
 
 func _reach_rest_spot() -> void:
 	travel = Travel.RESTING
-	G.audio.play_sound(&"click")
+	G.audio.play_sound(&"screw_drop")
 	if is_install_mode:
 		_start_outline()
 
@@ -757,7 +757,7 @@ func _reach_rest_spot() -> void:
 ## microgame finishes: only a set-down after being carried
 ## counts.
 func on_set_down(release_velocity := Vector2.ZERO) -> void:
-	G.audio.play_sound(&"click")
+	G.audio.play_sound(&"screw_drop")
 	_roll_from_position = bench_art.global_position
 	_roll_from_rotation = bench_art.rotation
 	var head_start := bench_art.to_global(_HEAD_LOCAL)
@@ -835,7 +835,7 @@ func _trade_holes_with(other: Screw) -> void:
 ## Over the hole: the clipped art takes over again and sinks into the
 ## hole, turned back like a loose screw.
 func _reach_hole() -> void:
-	G.audio.play_sound(&"click")
+	G.audio.play_sound(&"screw_seated")
 	bench_art.reparent(self, false)
 	bench_art.position = _bench_art_home_position
 	bench_art.rotation = _bench_art_home_rotation

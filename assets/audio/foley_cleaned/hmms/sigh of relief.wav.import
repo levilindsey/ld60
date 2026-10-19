@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://ct0c10sibidnw"
+path="res://.godot/imported/sigh of relief.wav-d1c2aebcea830a3fa6f11bb22b865d6e.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/hmms/sigh of relief.wav"
+dest_files=["res://.godot/imported/sigh of relief.wav-d1c2aebcea830a3fa6f11bb22b865d6e.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

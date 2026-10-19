@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bh4jnm0ryemsc"
+path="res://.godot/imported/air puff.wav-5f4bf9f12e67ac6598447c3163e16172.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/tools/air puff.wav"
+dest_files=["res://.godot/imported/air puff.wav-5f4bf9f12e67ac6598447c3163e16172.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

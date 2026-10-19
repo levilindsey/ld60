@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://1s7lms6owk8r"
+path="res://.godot/imported/slosh glug 3.wav-4a630b45fdecc973a845de6fdb8fb89b.sample"
+
+[deps]
+
+source_file="res://assets/audio/foley_cleaned/tools/slosh glug 3.wav"
+dest_files=["res://.godot/imported/slosh glug 3.wav-4a630b45fdecc973a845de6fdb8fb89b.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

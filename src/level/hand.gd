@@ -453,7 +453,7 @@ func _press_resting_screw(global_point: Vector2) -> bool:
 		)
 		screw.is_carried = true
 		screw.on_picked_up()
-		G.audio.play_sound(&"click")
+		G.audio.play_sound(&"screw_pickup")
 	return true
 
 
@@ -915,7 +915,7 @@ func _set_down_broken_piece(
 ) -> void:
 	if G.level.try_return_broken_piece(piece, release_velocity):
 		return
-	G.audio.play_sound(&"thud")
+	G.audio.play_sound(&"part_drop_large")
 	piece.z_index = 16
 
 
@@ -969,7 +969,7 @@ func _set_down_part(
 	if G.level.try_return_part(part, release_velocity):
 		return
 	part.on_set_down()
-	G.audio.play_sound(&"thud")
+	G.audio.play_sound(&"part_drop_large")
 	# A part that is out stays in front of the drawers.
 	part.z_index = 16
 

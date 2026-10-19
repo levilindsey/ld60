@@ -2,55 +2,94 @@
 
 [ext_resource type="Script" uid="uid://b5hrwox1n2lt0" path="res://src/core/audio_main.gd" id="1_tdp82"]
 [ext_resource type="AudioStream" uid="uid://boxpn3wxfkxio" path="res://assets/audio/foley_cleaned/click.wav" id="2_click"]
+[ext_resource type="AudioStream" uid="uid://c2ndu6c3b0bsh" path="res://assets/audio/music/LeviLearnsFLStudio/SongDoodle.ogg" id="3_b6bxq"]
 [ext_resource type="AudioStream" uid="uid://cgy2wr77bgnt2" path="res://assets/audio/foley_cleaned/wood tap_b.wav" id="3_clunk"]
 [ext_resource type="AudioStream" uid="uid://hu4gkjsbex18" path="res://assets/audio/foley_cleaned/part drop 4.wav" id="4_thud"]
-[ext_resource type="AudioStream" uid="uid://c1lbq31leivcb" path="res://assets/audio/foley_cleaned/Hammer light metal 2_a.wav" id="5_ding"]
-[ext_resource type="AudioStream" uid="uid://bp142r33ukg74" path="res://assets/audio/foley_cleaned/drawer openclose 3_b.wav" id="7_creak"]
+[ext_resource type="AudioStream" uid="uid://c1lbq31leivcb" path="res://assets/audio/foley_cleaned/tools/Hammer light metal 2_a.wav" id="5_ding"]
+[ext_resource type="AudioStream" uid="uid://bp142r33ukg74" path="res://assets/audio/foley_cleaned/drawer/drawer openclose 3_b.wav" id="7_creak"]
 [ext_resource type="AudioStream" uid="uid://dlp54vv5fe75e" path="res://assets/audio/foley_cleaned/rattle snap on_a.wav" id="8_ratchet"]
 [ext_resource type="AudioStream" uid="uid://dxra0c1lh1kw3" path="res://assets/audio/foley_cleaned/pliers scrape.wav" id="9_scrape"]
 [ext_resource type="AudioStream" uid="uid://cofxsoi0h2ir5" path="res://assets/audio/foley_cleaned/metal tap slide.wav" id="10_skid"]
-[ext_resource type="AudioStream" uid="uid://dnpxyugakh2iw" path="res://assets/audio/foley_cleaned/lid pop off 2.wav" id="11_pop"]
-[ext_resource type="AudioStream" path="res://assets/audio/zap.wav" id="40_zap"]
 [ext_resource type="AudioStream" uid="uid://wm4lqvpkt0v3" path="res://assets/audio/foley_cleaned/unscrew 2.wav" id="12_grind"]
-[ext_resource type="AudioStream" uid="uid://bh4jnm0ryemsc" path="res://assets/audio/foley_cleaned/air puff.wav" id="13_whoosh"]
+[ext_resource type="AudioStream" uid="uid://bh4jnm0ryemsc" path="res://assets/audio/foley_cleaned/tools/air puff.wav" id="13_whoosh"]
 [ext_resource type="AudioStream" uid="uid://bga4bllx1ealr" path="res://assets/audio/foley_cleaned/parts together 2_b.wav" id="14_snap"]
-[ext_resource type="AudioStream" uid="uid://bk1pr2w54mipc" path="res://assets/audio/foley_cleaned/humming.wav" id="15_humming"]
-[ext_resource type="AudioStream" uid="uid://c8bknwl4n5yva" path="res://assets/audio/foley_cleaned/hmm questioning.wav" id="16_hmm_q"]
-[ext_resource type="AudioStream" uid="uid://dc5icqn0hvwbl" path="res://assets/audio/foley_cleaned/hmm questioning 2.wav" id="17_hmm_q2"]
-[ext_resource type="AudioStream" uid="uid://df5pcyc3y1cch" path="res://assets/audio/foley_cleaned/hmm questioning 3.wav" id="18_hmm_q3"]
-[ext_resource type="AudioStream" uid="uid://cr835328hlcfc" path="res://assets/audio/foley_cleaned/hmm questioning 4.wav" id="19_hmm_q4"]
-[ext_resource type="AudioStream" uid="uid://ph4xsug6q3wk" path="res://assets/audio/foley_cleaned/hmm curious_b.wav" id="20_hmm_curious"]
-[ext_resource type="AudioStream" uid="uid://b4fegbufmlkp5" path="res://assets/audio/foley_cleaned/hmm thoughtful.wav" id="21_hmm_thought"]
-[ext_resource type="AudioStream" uid="uid://crqsq04vrthy8" path="res://assets/audio/foley_cleaned/hmm thoughtful 2.wav" id="22_hmm_thought2"]
-[ext_resource type="AudioStream" uid="uid://2ufby7ou7kta" path="res://assets/audio/foley_cleaned/hmm appreciative.wav" id="23_hmm_appr"]
-[ext_resource type="AudioStream" uid="uid://0jcu5m01fk5c" path="res://assets/audio/foley_cleaned/hmm contented.wav" id="24_hmm_content"]
-[ext_resource type="AudioStream" uid="uid://dqblthd0h4nek" path="res://assets/audio/foley_cleaned/hmm grumpy.wav" id="25_hmm_grumpy"]
-[ext_resource type="AudioStream" uid="uid://cx1j44rtoufp0" path="res://assets/audio/foley_cleaned/hmm grumpy 2.wav" id="26_hmm_grumpy2"]
-[ext_resource type="AudioStream" uid="uid://ct0c10sibidnw" path="res://assets/audio/foley_cleaned/sigh of relief.wav" id="27_sigh_relief"]
-[ext_resource type="AudioStream" uid="uid://ceoh7wl32vjnk" path="res://assets/audio/foley_cleaned/sigh 2.wav" id="28_sigh2"]
-[ext_resource type="AudioStream" uid="uid://ctenvqgdv6a1" path="res://assets/audio/foley_cleaned/page flip 3_a.wav" id="29_page_flip_a"]
-[ext_resource type="AudioStream" uid="uid://bgr1fwenjxgn" path="res://assets/audio/foley_cleaned/page flip 5_a.wav" id="30_page_flip_b"]
-[ext_resource type="AudioStream" uid="uid://ussraeifyrv0" path="res://assets/audio/foley_cleaned/page flip 6.wav" id="31_page_flip_c"]
-[ext_resource type="AudioStream" uid="uid://bidob388a3ymb" path="res://assets/audio/foley_cleaned/many pages flipping.wav" id="32_pages_flip"]
-[ext_resource type="AudioStream" uid="uid://b76iajfxbeius" path="res://assets/audio/foley_cleaned/card land and pickup_a.wav" id="33_card_land"]
-[ext_resource type="AudioStream" uid="uid://bift6glytf1b2" path="res://assets/audio/foley_cleaned/card land and pickup_b.wav" id="34_card_pickup_a"]
-[ext_resource type="AudioStream" uid="uid://djsul07kh1uj5" path="res://assets/audio/foley_cleaned/card pickup 2_a.wav" id="35_card_pickup_b"]
-[ext_resource type="AudioStream" uid="uid://c3csyorh2ipha" path="res://assets/audio/foley_cleaned/scrawling 3.wav" id="36_scrawling"]
-[ext_resource type="AudioStream" uid="uid://bnufjsbbfstnu" path="res://assets/audio/foley_cleaned/hmm frustrated 2.wav" id="37_frust2"]
-[ext_resource type="AudioStream" uid="uid://bjo1au86rrxpe" path="res://assets/audio/foley_cleaned/hmm frustrated 3.wav" id="38_frust3"]
-[ext_resource type="AudioStream" uid="uid://dyi4bknkxbvvs" path="res://assets/audio/foley_cleaned/hmm frustrated 4_a.wav" id="39_frust4"]
-[ext_resource type="AudioStream" uid="uid://oltxq6g2gnwu" path="res://assets/audio/foley_cleaned/hmm frustrated 5.wav" id="40_frust5"]
-[ext_resource type="AudioStream" uid="uid://cbn720l383p0l" path="res://assets/audio/foley_cleaned/hmm frustrated 6.wav" id="41_frust6"]
-[ext_resource type="AudioStream" uid="uid://i0gek3tvppcq" path="res://assets/audio/foley_cleaned/hmm frustrated 7_a.wav" id="42_frust7"]
-[ext_resource type="AudioStream" uid="uid://ckctna4ybfybq" path="res://assets/audio/foley_cleaned/hmm frustrated 8.wav" id="43_frust8"]
-[ext_resource type="AudioStream" uid="uid://blaqjwunbg8mk" path="res://assets/audio/foley_cleaned/hmm frustrated 9.wav" id="44_frust9"]
-[ext_resource type="AudioStream" uid="uid://ryyckchtajdp" path="res://assets/audio/foley_cleaned/hmm frustrated_b.wav" id="45_frust1"]
-[ext_resource type="AudioStream" uid="uid://byhonrp2iy8i8" path="res://assets/audio/music/buy_something_radio_edit.ogg" id="46_main_theme"]
-[ext_resource type="AudioStream" uid="uid://cchte7fdssrl4" path="res://assets/audio/foley_cleaned/drawer open.wav" id="47_drawer_open"]
-[ext_resource type="AudioStream" uid="uid://cedtk3x7j81ry" path="res://assets/audio/foley_cleaned/drawer close.wav" id="48_drawer_close"]
-[ext_resource type="AudioStream" uid="uid://b0tmho6tmtbxe" path="res://assets/audio/foley_cleaned/caw.wav" id="49_caw"]
+[ext_resource type="AudioStream" uid="uid://bk1pr2w54mipc" path="res://assets/audio/foley_cleaned/hmms/humming.wav" id="15_humming"]
+[ext_resource type="AudioStream" uid="uid://c8bknwl4n5yva" path="res://assets/audio/foley_cleaned/hmms/hmm questioning.wav" id="16_hmm_q"]
+[ext_resource type="AudioStream" uid="uid://dc5icqn0hvwbl" path="res://assets/audio/foley_cleaned/hmms/hmm questioning 2.wav" id="17_hmm_q2"]
+[ext_resource type="AudioStream" uid="uid://df5pcyc3y1cch" path="res://assets/audio/foley_cleaned/hmms/hmm questioning 3.wav" id="18_hmm_q3"]
+[ext_resource type="AudioStream" uid="uid://cr835328hlcfc" path="res://assets/audio/foley_cleaned/hmms/hmm questioning 4.wav" id="19_hmm_q4"]
+[ext_resource type="AudioStream" uid="uid://ph4xsug6q3wk" path="res://assets/audio/foley_cleaned/hmms/hmm curious_b.wav" id="20_hmm_curious"]
+[ext_resource type="AudioStream" uid="uid://b4fegbufmlkp5" path="res://assets/audio/foley_cleaned/hmms/hmm thoughtful.wav" id="21_hmm_thought"]
+[ext_resource type="AudioStream" uid="uid://crqsq04vrthy8" path="res://assets/audio/foley_cleaned/hmms/hmm thoughtful 2.wav" id="22_hmm_thought2"]
+[ext_resource type="AudioStream" uid="uid://2ufby7ou7kta" path="res://assets/audio/foley_cleaned/hmms/hmm appreciative.wav" id="23_hmm_appr"]
+[ext_resource type="AudioStream" uid="uid://0jcu5m01fk5c" path="res://assets/audio/foley_cleaned/hmms/hmm contented.wav" id="24_hmm_content"]
+[ext_resource type="AudioStream" uid="uid://dqblthd0h4nek" path="res://assets/audio/foley_cleaned/hmms/hmm grumpy.wav" id="25_hmm_grumpy"]
+[ext_resource type="AudioStream" uid="uid://cx1j44rtoufp0" path="res://assets/audio/foley_cleaned/hmms/hmm grumpy 2.wav" id="26_hmm_grumpy2"]
+[ext_resource type="AudioStream" uid="uid://ct0c10sibidnw" path="res://assets/audio/foley_cleaned/hmms/sigh of relief.wav" id="27_sigh_relief"]
+[ext_resource type="AudioStream" uid="uid://ceoh7wl32vjnk" path="res://assets/audio/foley_cleaned/hmms/sigh 2.wav" id="28_sigh2"]
+[ext_resource type="AudioStream" uid="uid://ctenvqgdv6a1" path="res://assets/audio/foley_cleaned/paper/page flip 3_a.wav" id="29_page_flip_a"]
+[ext_resource type="AudioStream" uid="uid://bgr1fwenjxgn" path="res://assets/audio/foley_cleaned/paper/page flip 5_a.wav" id="30_page_flip_b"]
+[ext_resource type="AudioStream" uid="uid://ussraeifyrv0" path="res://assets/audio/foley_cleaned/paper/page flip 6.wav" id="31_page_flip_c"]
+[ext_resource type="AudioStream" uid="uid://bidob388a3ymb" path="res://assets/audio/foley_cleaned/paper/many pages flipping.wav" id="32_pages_flip"]
+[ext_resource type="AudioStream" uid="uid://b76iajfxbeius" path="res://assets/audio/foley_cleaned/paper/card land and pickup_a.wav" id="33_card_land"]
+[ext_resource type="AudioStream" uid="uid://bift6glytf1b2" path="res://assets/audio/foley_cleaned/paper/card land and pickup_b.wav" id="34_card_pickup_a"]
+[ext_resource type="AudioStream" uid="uid://djsul07kh1uj5" path="res://assets/audio/foley_cleaned/paper/card pickup 2_a.wav" id="35_card_pickup_b"]
+[ext_resource type="AudioStream" uid="uid://c3csyorh2ipha" path="res://assets/audio/foley_cleaned/paper/scrawling 3.wav" id="36_scrawling"]
+[ext_resource type="AudioStream" uid="uid://bnufjsbbfstnu" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated 2.wav" id="37_frust2"]
+[ext_resource type="AudioStream" uid="uid://bjo1au86rrxpe" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated 3.wav" id="38_frust3"]
+[ext_resource type="AudioStream" uid="uid://dyi4bknkxbvvs" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated 4_a.wav" id="39_frust4"]
+[ext_resource type="AudioStream" uid="uid://oltxq6g2gnwu" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated 5.wav" id="40_frust5"]
+[ext_resource type="AudioStream" uid="uid://bxyj0nwhyfg78" path="res://assets/audio/zap.wav" id="40_zap"]
+[ext_resource type="AudioStream" uid="uid://cbn720l383p0l" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated 6.wav" id="41_frust6"]
+[ext_resource type="AudioStream" uid="uid://i0gek3tvppcq" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated 7_a.wav" id="42_frust7"]
+[ext_resource type="AudioStream" uid="uid://ckctna4ybfybq" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated 8.wav" id="43_frust8"]
+[ext_resource type="AudioStream" uid="uid://blaqjwunbg8mk" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated 9.wav" id="44_frust9"]
+[ext_resource type="AudioStream" uid="uid://ryyckchtajdp" path="res://assets/audio/foley_cleaned/hmms/hmm frustrated_b.wav" id="45_frust1"]
+[ext_resource type="AudioStream" uid="uid://cchte7fdssrl4" path="res://assets/audio/foley_cleaned/drawer/drawer open.wav" id="47_drawer_open"]
+[ext_resource type="AudioStream" uid="uid://cedtk3x7j81ry" path="res://assets/audio/foley_cleaned/drawer/drawer close.wav" id="48_drawer_close"]
+[ext_resource type="AudioStream" uid="uid://b0tmho6tmtbxe" path="res://assets/audio/foley_cleaned/bird/caw.wav" id="49_caw"]
 [ext_resource type="AudioStream" uid="uid://b315yss232ppn" path="res://assets/audio/music/beepstart.ogg" id="49_menu_theme"]
-[ext_resource type="AudioStream" uid="uid://d1lqlhunwsgtq" path="res://assets/audio/foley_cleaned/window smack.wav" id="50_window_smack"]
+[ext_resource type="AudioStream" uid="uid://d1lqlhunwsgtq" path="res://assets/audio/foley_cleaned/bird/window smack.wav" id="50_window_smack"]
+[ext_resource type="AudioStream" uid="uid://1d7j3akn8v0g" path="res://assets/audio/foley_cleaned/part drop.wav" id="51_part_drop_1"]
+[ext_resource type="AudioStream" uid="uid://bg6fcq53trqpp" path="res://assets/audio/foley_cleaned/part drop 2.wav" id="52_part_drop_2"]
+[ext_resource type="AudioStream" uid="uid://dgnl37ocve02e" path="res://assets/audio/foley_cleaned/screw drop.wav" id="53_screw_drop_1"]
+[ext_resource type="AudioStream" uid="uid://c8kd3n0sc5837" path="res://assets/audio/foley_cleaned/screw drop 3.wav" id="54_screw_drop_3"]
+[ext_resource type="AudioStream" uid="uid://cyptflprm3usn" path="res://assets/audio/foley_cleaned/screw drop 5.wav" id="55_screw_drop_5"]
+[ext_resource type="AudioStream" uid="uid://cnimafbmohd5n" path="res://assets/audio/foley_cleaned/parts rustle.wav" id="56_rustle_1"]
+[ext_resource type="AudioStream" uid="uid://wsbhgmr85knc" path="res://assets/audio/foley_cleaned/parts rustle 2.wav" id="57_rustle_2"]
+[ext_resource type="AudioStream" uid="uid://bv80u0pvy1obk" path="res://assets/audio/foley_cleaned/parts rustle 3.wav" id="58_rustle_3"]
+[ext_resource type="AudioStream" uid="uid://nietusbi2nvt" path="res://assets/audio/foley_cleaned/parts separate.wav" id="59_separate_1"]
+[ext_resource type="AudioStream" uid="uid://b07glpxcek75r" path="res://assets/audio/foley_cleaned/parts separate 2.wav" id="60_separate_2"]
+[ext_resource type="AudioStream" uid="uid://2inycgu0plfp" path="res://assets/audio/foley_cleaned/pliers pinch.wav" id="61_pinch_1"]
+[ext_resource type="AudioStream" uid="uid://dvr84dh37knd1" path="res://assets/audio/foley_cleaned/pliers pinch 2.wav" id="62_pinch_2"]
+[ext_resource type="AudioStream" uid="uid://bwrkjjx042t76" path="res://assets/audio/foley_cleaned/screw drop into screws 2.wav" id="63_screw_into_2"]
+[ext_resource type="AudioStream" uid="uid://mn17ri7unxvn" path="res://assets/audio/foley_cleaned/rattle snap on 2.wav" id="64_rattle_2"]
+[ext_resource type="AudioStream" uid="uid://dv1vo8cd520qw" path="res://assets/audio/foley_cleaned/rattle snap on 3.wav" id="65_rattle_3"]
+[ext_resource type="AudioStream" uid="uid://dtlsm8a525gdu" path="res://assets/audio/foley_cleaned/screw twists.wav" id="66_screw_twists"]
+[ext_resource type="AudioStream" uid="uid://c3kksbhyeibix" path="res://assets/audio/foley_cleaned/Set down hammer (1)_b.wav" id="67_setdown_1"]
+[ext_resource type="AudioStream" uid="uid://bx0titucxjmf3" path="res://assets/audio/foley_cleaned/Set down hammer_b.wav" id="68_setdown_2"]
+[ext_resource type="AudioStream" uid="uid://bcv5r66kdgdpt" path="res://assets/audio/foley_cleaned/Tap metal (1).wav" id="69_tap_metal"]
+[ext_resource type="AudioStream" uid="uid://uva51tch6u05" path="res://assets/audio/foley_cleaned/tap metal light.wav" id="70_tap_light"]
+[ext_resource type="AudioStream" uid="uid://cym7o3w6ymjs5" path="res://assets/audio/foley_cleaned/Tap metal_a.wav" id="71_tap_a"]
+[ext_resource type="AudioStream" uid="uid://djniynudev4bs" path="res://assets/audio/foley_cleaned/tool pickup 3_a.wav" id="72_tool_pickup_3a"]
+[ext_resource type="AudioStream" uid="uid://b8m2vvk3qr6od" path="res://assets/audio/foley_cleaned/tool pickup 4.wav" id="73_tool_pickup_4"]
+[ext_resource type="AudioStream" uid="uid://c5fu30t675t3" path="res://assets/audio/foley_cleaned/tool pickup 5.wav" id="74_tool_pickup_5"]
+[ext_resource type="AudioStream" uid="uid://b3ema4rsda0ik" path="res://assets/audio/foley_cleaned/tools/Hammer metal 2.wav" id="75_hammer_metal_2"]
+[ext_resource type="AudioStream" uid="uid://cbi0hmg0suy7d" path="res://assets/audio/foley_cleaned/tools/Hammer metal 3.wav" id="76_hammer_metal_3"]
+[ext_resource type="AudioStream" uid="uid://dpqvmd8177geq" path="res://assets/audio/foley_cleaned/tools/Hammer metal 4_b.wav" id="77_hammer_metal_4b"]
+[ext_resource type="AudioStream" uid="uid://cycp4o6nbgfw6" path="res://assets/audio/foley_cleaned/tools/Hammer metal_b.wav" id="78_hammer_metal_b"]
+[ext_resource type="AudioStream" uid="uid://bkhr74m1ttgva" path="res://assets/audio/foley_cleaned/tools/Hammer light metal.wav" id="79_hammer_light_metal"]
+[ext_resource type="AudioStream" uid="uid://dl3ynf5o06xf" path="res://assets/audio/foley_cleaned/tools/Hammer - wood.wav" id="80_hammer_wood_1"]
+[ext_resource type="AudioStream" uid="uid://b3yd8cijkcody" path="res://assets/audio/foley_cleaned/tools/Hammer - wood 2.wav" id="81_hammer_wood_2"]
+[ext_resource type="AudioStream" uid="uid://b25ghl0a4s7rq" path="res://assets/audio/foley_cleaned/tools/glug small.wav" id="82_glug_small"]
+[ext_resource type="AudioStream" uid="uid://cgs6pgkn6k3cf" path="res://assets/audio/foley_cleaned/tools/glug small 2_a.wav" id="83_glug_2a"]
+[ext_resource type="AudioStream" uid="uid://dogx4wdcgeqvi" path="res://assets/audio/foley_cleaned/tools/wipe 2.wav" id="84_wipe_2"]
+[ext_resource type="AudioStream" uid="uid://castykdvv6yid" path="res://assets/audio/foley_cleaned/tools/wipe 3.wav" id="85_wipe_3"]
+[ext_resource type="AudioStream" uid="uid://k2u3qosimyca" path="res://assets/audio/foley_cleaned/tools/wipe_a.wav" id="86_wipe_a"]
+[ext_resource type="AudioStream" uid="uid://cdg5epunfvjaq" path="res://assets/audio/foley_cleaned/parts/lid pop 2_b.wav" id="87_lid_2b"]
+[ext_resource type="AudioStream" uid="uid://ucwnxc0a7uwv" path="res://assets/audio/foley_cleaned/parts/lid pop off 3.wav" id="88_lid_off_3"]
+[ext_resource type="AudioStream" uid="uid://dw3coxma7foxx" path="res://assets/audio/foley_cleaned/parts/lid pop off_a.wav" id="89_lid_off_a"]
+[ext_resource type="AudioStream" uid="uid://dn2lx0ww5b5yf" path="res://assets/audio/foley_cleaned/parts/lid pop_b.wav" id="90_lid_pop_b"]
 
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_hmm"]
 streams_count = 4
@@ -104,6 +143,86 @@ streams_count = 2
 stream_0/stream = ExtResource("34_card_pickup_a")
 stream_1/stream = ExtResource("35_card_pickup_b")
 
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_lid_pop"]
+streams_count = 4
+stream_0/stream = ExtResource("87_lid_2b")
+stream_1/stream = ExtResource("88_lid_off_3")
+stream_2/stream = ExtResource("89_lid_off_a")
+stream_3/stream = ExtResource("90_lid_pop_b")
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_rattle_snap"]
+streams_count = 3
+stream_0/stream = ExtResource("64_rattle_2")
+stream_1/stream = ExtResource("65_rattle_3")
+stream_2/stream = ExtResource("8_ratchet")
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_screw_drop"]
+streams_count = 5
+stream_0/stream = ExtResource("51_part_drop_1")
+stream_1/stream = ExtResource("52_part_drop_2")
+stream_2/stream = ExtResource("53_screw_drop_1")
+stream_3/stream = ExtResource("54_screw_drop_3")
+stream_4/stream = ExtResource("55_screw_drop_5")
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_rustle"]
+streams_count = 3
+stream_0/stream = ExtResource("56_rustle_1")
+stream_1/stream = ExtResource("57_rustle_2")
+stream_2/stream = ExtResource("58_rustle_3")
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_screw_pickup"]
+streams_count = 2
+stream_0/stream = ExtResource("59_separate_1")
+stream_1/stream = ExtResource("60_separate_2")
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_screw_seated"]
+streams_count = 4
+stream_0/stream = ExtResource("14_snap")
+stream_1/stream = ExtResource("61_pinch_1")
+stream_2/stream = ExtResource("62_pinch_2")
+stream_3/stream = ExtResource("63_screw_into_2")
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_tool_setdown"]
+streams_count = 2
+stream_0/stream = ExtResource("67_setdown_1")
+stream_1/stream = ExtResource("68_setdown_2")
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_hammer_whack"]
+streams_count = 2
+stream_0/stream = ExtResource("70_tap_light")
+stream_1/stream = ExtResource("71_tap_a")
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_tool_pickup"]
+streams_count = 3
+stream_0/stream = ExtResource("72_tool_pickup_3a")
+stream_1/stream = ExtResource("73_tool_pickup_4")
+stream_2/stream = ExtResource("74_tool_pickup_5")
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_hammer_heavy"]
+streams_count = 6
+stream_0/stream = ExtResource("79_hammer_light_metal")
+stream_1/stream = ExtResource("5_ding")
+stream_2/stream = ExtResource("75_hammer_metal_2")
+stream_3/stream = ExtResource("76_hammer_metal_3")
+stream_4/stream = ExtResource("77_hammer_metal_4b")
+stream_5/stream = ExtResource("78_hammer_metal_b")
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_hammer_wood"]
+streams_count = 2
+stream_0/stream = ExtResource("80_hammer_wood_1")
+stream_1/stream = ExtResource("81_hammer_wood_2")
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_glug"]
+streams_count = 2
+stream_0/stream = ExtResource("82_glug_small")
+stream_1/stream = ExtResource("83_glug_2a")
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_rag_wipe"]
+streams_count = 3
+stream_0/stream = ExtResource("84_wipe_2")
+stream_1/stream = ExtResource("85_wipe_3")
+stream_2/stream = ExtResource("86_wipe_a")
+
 [node name="AudioMain" type="Node2D" unique_id=2137804085]
 process_mode = 3
 script = ExtResource("1_tdp82")
@@ -116,7 +235,7 @@ bus = &"Music"
 
 [node name="MainTheme" type="AudioStreamPlayer" parent="." unique_id=629921982]
 unique_name_in_owner = true
-stream = ExtResource("46_main_theme")
+stream = ExtResource("3_b6bxq")
 bus = &"Music"
 
 [node name="Humming" type="AudioStreamPlayer" parent="." unique_id=1732202267]
@@ -234,7 +353,7 @@ bus = &"SFX"
 
 [node name="Pop" type="AudioStreamPlayer" parent="." unique_id=219562715]
 unique_name_in_owner = true
-stream = ExtResource("11_pop")
+stream = SubResource("AudioStreamRandomizer_lid_pop")
 bus = &"SFX"
 
 [node name="Zap" type="AudioStreamPlayer" parent="." unique_id=1903317541]
@@ -255,7 +374,7 @@ bus = &"SFX"
 
 [node name="Snap" type="AudioStreamPlayer" parent="." unique_id=1750923586]
 unique_name_in_owner = true
-stream = ExtResource("14_snap")
+stream = SubResource("AudioStreamRandomizer_rattle_snap")
 bus = &"SFX"
 
 [node name="DrawerOpen" type="AudioStreamPlayer" parent="." unique_id=386257150]
@@ -277,4 +396,69 @@ bus = &"SFX"
 unique_name_in_owner = true
 stream = ExtResource("50_window_smack")
 volume_db = 24.0
+bus = &"SFX"
+
+[node name="ScrewDrop" type="AudioStreamPlayer" parent="." unique_id=1100000001]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_screw_drop")
+bus = &"SFX"
+
+[node name="DrawerRustle" type="AudioStreamPlayer" parent="." unique_id=1100000002]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_rustle")
+bus = &"SFX"
+
+[node name="ScrewPickup" type="AudioStreamPlayer" parent="." unique_id=1100000003]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_screw_pickup")
+bus = &"SFX"
+
+[node name="ScrewSeated" type="AudioStreamPlayer" parent="." unique_id=1100000004]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_screw_seated")
+bus = &"SFX"
+
+[node name="ScrewTwistLoop" type="AudioStreamPlayer" parent="." unique_id=1100000005]
+unique_name_in_owner = true
+stream = ExtResource("66_screw_twists")
+bus = &"SFX"
+
+[node name="ToolSetDown" type="AudioStreamPlayer" parent="." unique_id=1100000006]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_tool_setdown")
+bus = &"SFX"
+
+[node name="TapMetal" type="AudioStreamPlayer" parent="." unique_id=1100000007]
+unique_name_in_owner = true
+stream = ExtResource("69_tap_metal")
+bus = &"SFX"
+
+[node name="HammerWhack" type="AudioStreamPlayer" parent="." unique_id=1100000008]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_hammer_whack")
+bus = &"SFX"
+
+[node name="ToolPickup" type="AudioStreamPlayer" parent="." unique_id=1100000009]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_tool_pickup")
+bus = &"SFX"
+
+[node name="HammerWhackHeavy" type="AudioStreamPlayer" parent="." unique_id=1100000010]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_hammer_heavy")
+bus = &"SFX"
+
+[node name="HammerWood" type="AudioStreamPlayer" parent="." unique_id=1100000011]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_hammer_wood")
+bus = &"SFX"
+
+[node name="GlueGlug" type="AudioStreamPlayer" parent="." unique_id=1100000012]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_glug")
+bus = &"SFX"
+
+[node name="RagWipe" type="AudioStreamPlayer" parent="." unique_id=1100000013]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamRandomizer_rag_wipe")
 bus = &"SFX"

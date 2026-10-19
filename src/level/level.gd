@@ -262,7 +262,7 @@ func win() -> void:
 		return
 	G.print("Game won", ScaffolderLog.CATEGORY_GAME_STATE)
 	has_won = true
-	G.audio.play_sound(&"sigh_relief")
+	G.audio.play_sound(&"sigh")
 	(%CreditsCard as CreditsCard).show_credits()
 	G.state.transition(StateMain.State.CREDITS)
 

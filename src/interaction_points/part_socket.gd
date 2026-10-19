@@ -327,7 +327,7 @@ func on_part_installed() -> void:
 		for child in get_children():
 			if child is Part:
 				(child as Part).hide()
-	G.audio.play_sound(&"click")
+	G.audio.play_sound(&"rattle_snap")
 	# The locking fastener goes back in over the new part,
 	# so it must count as unfinished again before this
 	# socket's finish can finish the item.
@@ -453,7 +453,7 @@ func _pop_out() -> void:
 	has_broken_part = false
 	_refresh_yank_indicator()
 	_stop_wiggle()
-	G.audio.play_sound(&"pop", true)
+	G.audio.play_sound(&"lid_pop", true)
 	if was_yanked:
 		var item := get_item()
 		if is_instance_valid(item):
