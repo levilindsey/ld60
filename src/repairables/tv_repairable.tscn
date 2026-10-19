@@ -113,16 +113,36 @@ texture = ExtResource("straight_tex")
 region_enabled = true
 region_rect = Rect2(681.5, 158, 161.5, 108.5)
 
-[node name="Controls" parent="Layers/Body" unique_id=1830129670 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
+[node name="Controls" parent="Layers/Body" unique_id=1830129670 node_paths=PackedStringArray("installed_art", "bad_part_shape", "good_part_shape") instance=ExtResource("5_socket")]
 position = Vector2(747, 187)
 accepted_part = 2
 installed_art = NodePath("GoodControls")
+bad_part_shape = NodePath("BrokenPart/BadPartShape")
+good_part_shape = NodePath("GoodPartShape")
 
 [node name="GoodControls" type="Sprite2D" parent="Layers/Body/Controls" unique_id=1312169053]
 scale = Vector2(2, 2)
 texture = ExtResource("good_tex")
 region_enabled = true
 region_rect = Rect2(1108.5, 459.5, 283.5, 507.5)
+
+[node name="GoodPartShape" type="Area2D" parent="Layers/Body/Controls" unique_id=1312169054]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Controls/GoodPartShape" unique_id=1312169055]
+polygon = PackedVector2Array(-283, -488, 283, -488, 283, 488, -283, 488)
+
+[node name="BadPartShape" type="Area2D" parent="Layers/Body/Controls/BrokenPart" unique_id=1312169056]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Controls/BrokenPart/BadPartShape" unique_id=1312169057]
+polygon = PackedVector2Array(-283, -488, 283, -488, 283, 488, -283, 488)
 
 [node name="FinalWhack" parent="Layers/Body" unique_id=24686342 instance=ExtResource("6_stuck")]
 position = Vector2(188, -24)

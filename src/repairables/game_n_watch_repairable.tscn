@@ -75,9 +75,9 @@ good_part_shape = NodePath("GoodPartShape")
 [node name="CollisionShape2D" parent="Layers/Inside/Chip" index="0"]
 shape = SubResource("chip_hit_shape")
 
-[node name="GoodPartShape" type="Area2D" parent="Layers/Inside/Chip"]
+[node name="GoodPartShape" type="Area2D" parent="Layers/Inside/Chip" unique_id=717497200]
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Inside/Chip/GoodPartShape"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Inside/Chip/GoodPartShape" unique_id=440680039]
 polygon = PackedVector2Array(-250, -360, 250, -360, 250, 360, -250, 360)
 
 [node name="BadPartShape" type="Area2D" parent="Layers/Inside/Chip/BrokenPart"]
@@ -146,9 +146,9 @@ shape = NodePath("Shape")
 [node name="CollisionShape2D" parent="Layers/Front/DpadPoint" index="0"]
 shape = SubResource("dpad_point_hit_shape")
 
-[node name="Shape" type="Area2D" parent="Layers/Front/DpadPoint"]
+[node name="Shape" type="Area2D" parent="Layers/Front/DpadPoint" unique_id=933234338]
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Front/DpadPoint/Shape"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Front/DpadPoint/Shape" unique_id=821000671]
 polygon = PackedVector2Array(-172.5, -178, 172.5, -178, 172.5, 178, -172.5, 178)
 
 [node name="DpadPiece" parent="Layers/Front" unique_id=1950599730 node_paths=PackedStringArray("target_point", "art", "shape") instance=ExtResource("10_piece")]
@@ -159,9 +159,9 @@ fall_target_offset = Vector2(250, 300)
 art = NodePath("DpadArt")
 shape = NodePath("Shape")
 
-[node name="Shape" type="Area2D" parent="Layers/Front/DpadPiece"]
+[node name="Shape" type="Area2D" parent="Layers/Front/DpadPiece" unique_id=263986056]
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Front/DpadPiece/Shape"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Front/DpadPiece/Shape" unique_id=877123123]
 polygon = PackedVector2Array(-172.5, -178, 172.5, -178, 172.5, 178, -172.5, 178)
 
 [node name="DpadArt" type="Sprite2D" parent="Layers/Front/DpadPiece" unique_id=2058444850]

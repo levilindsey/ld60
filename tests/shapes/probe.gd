@@ -225,6 +225,33 @@ func _check_authored_shapes() -> void:
 				far_point.distance_to(antenna.global_position) > 8.0,
 				"the antenna Shape reaches past its small circle",
 			)
+		var controls: PartSocket
+		for layer in tv.layers:
+			for point in layer.get_points():
+				if point is PartSocket:
+					controls = point as PartSocket
+		if _expect(
+			is_instance_valid(controls),
+			"the TV has a controls socket",
+		):
+			var bad_points := controls.get_bad_part_world_polygon()
+			_expect(
+				bad_points.size() >= 3
+				and controls.get_good_part_world_polygon().size()
+				>= 3,
+				"the controls socket carries good and bad shapes",
+			)
+			if bad_points.size() >= 3:
+				var far_point := _farthest_point(
+					bad_points, controls.global_position
+				)
+				_expect(
+					controls.is_point_in_bad_part_shape(far_point)
+					and far_point.distance_to(
+						controls.global_position
+					) > 10.0,
+					"the bad controls grab past the socket's circle",
+				)
 		tv.queue_free()
 		await _physics_frames(1)
 	var piano := _spawn_item(

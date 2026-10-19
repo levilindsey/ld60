@@ -95,6 +95,24 @@ func _ready() -> void:
 	if %BrokenArt.visible and Part.has_art(accepted_part):
 		var broken_sprite := Sprite2D.new()
 		Part.apply_art(broken_sprite, accepted_part)
+		# Where the scene authors the fitted sprite, the broken
+		# one sits exactly where it will sit once fitted: the
+		# fitted sprite's transform is in this item's own units,
+		# where the bench size `apply_art()` used is in world
+		# pixels. On a scaled item (the TV at 0.13) the bench
+		# size alone shrank the broken controls to a postage
+		# stamp beside the panel they belong on.
+		if installed_art is Sprite2D:
+			var fitted := installed_art as Sprite2D
+			var broken_part := %BrokenPart as Node2D
+			broken_sprite.transform = (
+				broken_part.transform.affine_inverse()
+				* fitted.transform
+			)
+			broken_sprite.centered = fitted.centered
+			broken_sprite.offset = fitted.offset
+			broken_sprite.flip_h = fitted.flip_h
+			broken_sprite.flip_v = fitted.flip_v
 		broken_sprite.modulate = Color.WHITE.darkened(0.45)
 		%BrokenPart.add_child(broken_sprite)
 		%BrokenArt.hide()

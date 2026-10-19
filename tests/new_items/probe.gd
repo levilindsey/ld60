@@ -203,6 +203,7 @@ func _check_tv() -> void:
 			_has_broken_sprite(controls),
 			"the TV's bad controls sprite shows before the yank",
 		)
+		_expect_broken_art_matches(controls, "TV controls")
 		controls._pop_out()
 		await _seconds(0.6)
 		var scene_part := (
@@ -367,6 +368,8 @@ func _check_game_n_watch() -> void:
 		is_instance_valid(chip) and _has_broken_sprite(chip),
 		"the Game n Watch's bad chip sprite shows before the yank",
 	)
+	if is_instance_valid(chip):
+		_expect_broken_art_matches(chip, "chip")
 	_expect(
 		Part.has_art(Part.Type.CIRCUIT),
 		"the drawer circuit shows its real art",
@@ -437,6 +440,47 @@ func _check_radio_front_size() -> void:
 	front.queue_free()
 	item.queue_free()
 	await _physics_frames(2)
+
+
+## The socket's broken part sprite, or null.
+func _get_broken_sprite(socket: PartSocket) -> Sprite2D:
+	var broken := socket.get_node("BrokenPart")
+	for child in broken.get_children():
+		if child is Sprite2D and (child as CanvasItem).visible:
+			return child as Sprite2D
+	return null
+
+
+## The auto-made broken art must cover the same world
+## footprint as the fitted art: on a scaled item it once
+## shrank to a postage stamp beside its panel (the TV's bad
+## controls, the Game n Watch's bad chip).
+func _expect_broken_art_matches(
+	socket: PartSocket, name: String
+) -> void:
+	var broken_sprite := _get_broken_sprite(socket)
+	var fitted := socket.installed_art as Sprite2D
+	if not _expect(
+		is_instance_valid(broken_sprite)
+		and is_instance_valid(fitted),
+		"the %s has broken and fitted sprites" % name,
+	):
+		return
+	var broken_size := (
+		broken_sprite.get_rect().size
+		* broken_sprite.global_transform.get_scale().abs()
+	)
+	var fitted_size := (
+		fitted.get_rect().size
+		* fitted.global_transform.get_scale().abs()
+	)
+	_expect(
+		absf(broken_size.x - fitted_size.x) < 1.0
+		and absf(broken_size.y - fitted_size.y) < 1.0,
+		"the %s broken art matches the fitted size"
+		% name
+		+ " (broken %s, fitted %s)" % [broken_size, fitted_size],
+	)
 
 
 ## True when the socket's broken part carries a real sprite
