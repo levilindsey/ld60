@@ -63,6 +63,11 @@ const _ART := {
 		Rect2(227, 718, 418, 110),
 		42.0,
 	],
+	Type.JOYSTICK: [
+		"res://assets/images/repairables/atari_joystick_good.png",
+		Rect2(1235, 467, 836, 995),
+		46.0,
+	],
 }
 
 @export var type := Type.GEAR

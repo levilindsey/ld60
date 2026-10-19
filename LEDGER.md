@@ -121,11 +121,11 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   rotating it) is designed only, not built. Design:
   `docs/design/new_items.md`.
 - **LX71** · Art still needed from Levi/Taryn to replace placeholders:
-  Gear PNG, Spring PNG, Joystick PNG (export from
-  `assets/images/atari_joystick.kra`), Circuit PNG, radio dial fallen
-  piece, piano good/replacement middle key, and confirmation whether
+  Gear PNG, Spring PNG, Circuit PNG, and confirmation whether
   the TV bad dial is baked into `tv_bad_controls.png`. Until then
-  GEAR/SPRING/JOYSTICK/CIRCUIT parts keep placeholder shapes.
+  GEAR/SPRING/CIRCUIT parts keep placeholder shapes. (Joystick and
+  radio dial art landed 2026-10-19 and are wired in; the piano's
+  broken middle key is glued back on, so there is no good key.)
 
 ## Residuals (known, not fixed)
 

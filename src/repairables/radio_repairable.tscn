@@ -8,7 +8,8 @@
 [ext_resource type="PackedScene" path="res://src/interaction_points/dust_clump.tscn" id="7_dust"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/broken_point.tscn" id="9_point"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/broken_piece.tscn" id="10_piece"]
-[ext_resource type="Texture2D" uid="uid://8aaa5q1tdpsf" path="res://assets/images/repairables/radio.png" id="front_tex"]
+[ext_resource type="Texture2D" uid="uid://dce70xpdrp18y" path="res://assets/images/repairables/radio_front_with_gaps.png" id="front_tex"]
+[ext_resource type="Texture2D" uid="uid://iyhhgd8idgey" path="res://assets/images/repairables/radio_dial.png" id="dial_tex"]
 [ext_resource type="Texture2D" uid="uid://bjm15dp86ks2j" path="res://assets/images/repairables/radio_inside.png" id="inside_tex"]
 [ext_resource type="Texture2D" uid="uid://5lq8n6qwe2yw" path="res://assets/images/repairables/radio_bad_bulb.png" id="bad_tex"]
 [ext_resource type="Texture2D" uid="uid://2tb724cejrw0" path="res://assets/images/repairables/radio_good_bulb.png" id="good_tex"]
@@ -117,12 +118,20 @@ shape = SubResource("whack_shape")
 visible = false
 
 [node name="DialPoint" parent="Layers/Front" instance=ExtResource("9_point")]
-position = Vector2(946, 560)
-is_required = false
+position = Vector2(936, 743)
 
-[node name="DialPiece" parent="Layers/Front" node_paths=PackedStringArray("target_point") instance=ExtResource("10_piece")]
-position = Vector2(1246, 710)
+[node name="DialPiece" parent="Layers/Front" node_paths=PackedStringArray("target_point", "art") instance=ExtResource("10_piece")]
+position = Vector2(936, 743)
 target_point = NodePath("../DialPoint")
+art = NodePath("DialArt")
 starts_detached = true
 fall_target_offset = Vector2(300, 150)
+
+[node name="Art" parent="Layers/Front/DialPiece"]
+visible = false
+
+[node name="DialArt" type="Sprite2D" parent="Layers/Front/DialPiece"]
+texture = ExtResource("dial_tex")
+region_enabled = true
+region_rect = Rect2(2550, 1842, 280, 282)
 

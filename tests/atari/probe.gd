@@ -1,18 +1,16 @@
 extends "res://tests/probe_base.gd"
 ## The Atari joystick repair, played end to end with real
-## inputs: grab the flathead driver, drive its shell screw
-## out, drag the shell off, wiggle the dead joystick out of
-## its socket, fetch a new joystick from its drawer and fit
-## it, put the shell back, bring the screw back and drive
-## it in. The item finishes.
+## inputs: grab the flathead driver, drive the screw out of
+## the dead stick's base tab (that screw locks the socket),
+## wiggle the dead joystick out, fetch a new joystick from
+## its drawer and fit it, bring the screw back and drive
+## it in over the new stick. The item finishes.
 
 
 const _MAIN_SCENE_PATH := "res://src/core/main.tscn"
 const _TIMEOUT_SEC := 120.0
 
 var _item: Repairable
-var _inside: RepairLayer
-var _cover: RepairLayer
 var _screw: FlatHeadScrew
 var _socket: PartSocket
 var _driver: Tool
@@ -40,8 +38,6 @@ func _ready() -> void:
 		return
 	_hand = G.level.hand
 	_item = G.level.active_repairable
-	_inside = _item.layers[0]
-	_cover = _item.layers[_item.layers.size() - 1]
 	for layer in _item.layers:
 		for point in layer.get_points():
 			if point is FlatHeadScrew:
@@ -53,27 +49,34 @@ func _ready() -> void:
 	]
 	_expect(
 		is_instance_valid(_screw) and is_instance_valid(_socket),
-		"the Atari has a shell screw and a joystick socket",
+		"the Atari has a tab screw and a joystick socket",
 	)
 	_expect(
-		not _socket.is_exposed(),
-		"the socket is covered until the shell comes off",
+		_socket.is_locked() and not _socket.has_tuggable_part(),
+		"the screwed-down stick cannot be tugged yet",
 	)
-	await _unscrew_shell()
-	await _take_shell_off()
+	_expect(
+		not _socket.is_yank_indicator_visible(),
+		"the yank arrows stay hidden while the stick is screwed down",
+	)
+	_expect(
+		Part.has_art(Part.Type.JOYSTICK),
+		"the drawer joystick shows its real art",
+	)
+	await _unscrew_stick()
 	await _yank_and_refit()
-	await _rescrew_shell()
+	await _rescrew_stick()
 	_finish(0 if _failures.is_empty() else 1)
 
 
-func _unscrew_shell() -> void:
+func _unscrew_stick() -> void:
 	await _grab_tool(_driver)
 	_expect(_hand.held == _driver, "take the flathead driver")
 	await _press_tool_at(_driver, _screw.global_position)
 	_expect(
 		_driver.mode == Tool.Mode.IN_USE
 		and _screw.mode == InteractionPoint.Mode.ACTIVE,
-		"the driver engages the shell screw",
+		"the driver engages the tab screw",
 	)
 	var start_rotation := _screw.head.rotation
 	await _drive(0.6)
@@ -90,23 +93,14 @@ func _unscrew_shell() -> void:
 		"driving the screw out finishes it",
 	)
 	_expect(
-		_cover.is_loose(),
-		"with its screw out, the shell is loose",
+		not _socket.is_locked() and _socket.has_tuggable_part(),
+		"with its screw out, the stick can be tugged",
+	)
+	_expect(
+		_socket.is_yank_indicator_visible(),
+		"the yank arrows show once the stick is free to tug",
 	)
 	await _put_tool_away(_driver)
-
-
-func _take_shell_off() -> void:
-	var grab_point := _cover.global_position + Vector2(-50, 30)
-	await _press_down(grab_point)
-	await _move_to(Vector2(340, 60))
-	await _release_at(Vector2(340, 60))
-	await _physics_frames(4)
-	_expect(not _cover.is_on, "the shell drags off")
-	_expect(
-		_socket.is_exposed(),
-		"the joystick socket is exposed with the shell off",
-	)
 
 
 func _yank_and_refit() -> void:
@@ -146,26 +140,22 @@ func _yank_and_refit() -> void:
 	)
 
 
-func _rescrew_shell() -> void:
+func _rescrew_stick() -> void:
 	await _wait_until(
 		func() -> bool: return not G.level.are_drawers_busy()
-	)
-	await _press_down(_cover.global_position)
-	await _move_to(_item.global_position)
-	await _release_at(_item.global_position)
-	await _seconds(0.6)
-	_expect(
-		_cover.is_on and not _cover.is_moving,
-		"the shell goes back on",
 	)
 	_expect(
 		_screw.can_come_back(),
 		"the screw waits on the bench to come back",
 	)
+	_expect(
+		not _item.has_finished,
+		"the item is not finished until the screw is back in",
+	)
 	await _press_resting_screw(_screw)
 	_expect(
 		await _wait_for_travel(_screw, Screw.Travel.HOME),
-		"the screw comes back into the shell",
+		"the screw comes back into the new stick's tab",
 	)
 	await _grab_tool(_driver)
 	await _press_tool_at(_driver, _screw.global_position)

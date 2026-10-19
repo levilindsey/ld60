@@ -161,9 +161,11 @@ func _check_atari() -> void:
 		is_instance_valid(_find_socket(item, Part.Type.JOYSTICK)),
 		"the Atari has a joystick socket to yank and refit",
 	)
+	var socket := _find_socket(item, Part.Type.JOYSTICK)
 	_expect(
-		item.layers.size() == 2,
-		"the Atari opens: a cover over an inside",
+		is_instance_valid(socket)
+		and socket.locking_fastener == screw,
+		"the Atari's tab screw locks its joystick socket",
 	)
 	item.queue_free()
 	await _physics_frames(2)

@@ -28,6 +28,13 @@ const _ROCK_SHIFT_PX := 20.0
 ## part itself is a small placeholder shape; this sprite is
 ## the real fitted piece at scene scale. Hidden until then.
 @export var installed_art: Node2D
+## Optional fastener that locks this socket while it is
+## fastened (the Atari's stick is screwed down through its
+## base tab). The broken part cannot be tugged, and the
+## yank arrows stay hidden, until that fastener comes out.
+## When the new part lands, the fastener goes into install
+## mode so it can be driven back in to finish the item.
+@export var locking_fastener: InteractionPoint
 
 ## True while the broken part still sits in the socket.
 var has_broken_part := false
@@ -62,6 +69,8 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	# The locking fastener can change this at any time.
+	_refresh_yank_indicator()
 	if not is_instance_valid(_yank_indicator) or not _yank_indicator.visible:
 		return
 	_yank_time += delta
@@ -81,9 +90,17 @@ func is_yank_indicator_visible() -> bool:
 	)
 
 
+## True while the locking fastener still holds this socket down.
+func is_locked() -> bool:
+	return (
+		is_instance_valid(locking_fastener)
+		and locking_fastener.is_fastened()
+	)
+
+
 ## True while a broken part sits here for the hand to tug out.
 func has_tuggable_part() -> bool:
-	return has_broken_part and mode != Mode.FINISHED
+	return has_broken_part and mode != Mode.FINISHED and not is_locked()
 
 
 ## True while the player is mid-tug on the broken part.
@@ -169,6 +186,11 @@ func on_part_installed() -> void:
 	if is_instance_valid(installed_art):
 		installed_art.show()
 	G.audio.play_sound(&"click")
+	# The locking fastener goes back in over the new part,
+	# so it must count as unfinished again before this
+	# socket's finish can finish the item.
+	if is_instance_valid(locking_fastener):
+		locking_fastener.set_install_mode()
 	finish()
 
 
