@@ -121,11 +121,11 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   rotating it) is designed only, not built. Design:
   `docs/design/new_items.md`.
 - **LX71** · Art still needed from Levi/Taryn to replace placeholders:
-  Gear PNG, Spring PNG, Circuit PNG, and confirmation whether
-  the TV bad dial is baked into `tv_bad_controls.png`. Until then
-  GEAR/SPRING/CIRCUIT parts keep placeholder shapes. (Joystick and
-  radio dial art landed 2026-10-19 and are wired in; the piano's
-  broken middle key is glued back on, so there is no good key.)
+  Gear PNG and Spring PNG. Until then GEAR/SPRING parts keep
+  placeholder shapes. (Joystick, radio dial and Game n Watch art
+  landed 2026-10-19 and are wired in; the piano's broken middle
+  key is glued back on, so there is no good key; the TV's
+  controls are its dial replacement, so there is no TV dial.)
 
 ## Residuals (known, not fixed)
 

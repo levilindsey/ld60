@@ -68,6 +68,11 @@ const _ART := {
 		Rect2(1235, 467, 836, 995),
 		46.0,
 	],
+	Type.CIRCUIT: [
+		"res://assets/images/repairables/gamenwatch_chip_good.png",
+		Rect2(839, 809, 537, 765),
+		46.0,
+	],
 }
 
 @export var type := Type.GEAR

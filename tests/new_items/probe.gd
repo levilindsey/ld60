@@ -40,6 +40,7 @@ func _ready() -> void:
 	await _check_keyboard()
 	await _check_piano()
 	await _check_atari()
+	await _check_game_n_watch()
 	await _check_placeholders()
 	_finish(0 if _failures.is_empty() else 1)
 
@@ -171,9 +172,53 @@ func _check_atari() -> void:
 	await _physics_frames(2)
 
 
+func _check_game_n_watch() -> void:
+	var item := _spawn(
+		"res://src/repairables/game_n_watch_repairable.tscn"
+	)
+	if not _expect(is_instance_valid(item), "the Game n Watch loads"):
+		return
+	var phillips_count := 0
+	var covered_count := 0
+	for layer in item.layers:
+		for point in layer.get_points():
+			if point is PhillipsScrew:
+				phillips_count += 1
+				var screw := point as PhillipsScrew
+				if is_instance_valid(screw.covering_grime):
+					covered_count += 1
+	_expect(
+		phillips_count == 2,
+		"the Game n Watch faceplate has two Phillips screws",
+	)
+	_expect(
+		covered_count == 2,
+		"both Game n Watch screws start under grime",
+	)
+	_expect(
+		is_instance_valid(_find_socket(item, Part.Type.CIRCUIT)),
+		"the Game n Watch has a circuit socket to yank and refit",
+	)
+	_expect(
+		Part.has_art(Part.Type.CIRCUIT),
+		"the drawer circuit shows its real art",
+	)
+	var has_dpad := false
+	var dust_count := 0
+	for layer in item.layers:
+		for point in layer.get_points():
+			if point is BrokenPoint:
+				has_dpad = true
+			if point is DustClump:
+				dust_count += 1
+	_expect(has_dpad, "the Game n Watch has a D-pad to glue back on")
+	_expect(dust_count >= 2, "the Game n Watch has dirt to blow away")
+	item.queue_free()
+	await _physics_frames(2)
+
+
 func _check_placeholders() -> void:
 	for scene_path in [
-		"res://src/repairables/game_n_watch_repairable.tscn",
 		"res://src/repairables/radio_repairable.tscn",
 		"res://src/repairables/toaster.tscn",
 		"res://src/repairables/shrink_ray_repairable.tscn",
