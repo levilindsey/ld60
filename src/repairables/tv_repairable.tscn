@@ -30,6 +30,7 @@ radius = 230.0
 [node name="TvRepairable" type="Node2D"]
 scale = Vector2(0.13, 0.13)
 script = ExtResource("1_item")
+shadow_offset = Vector2(5, 22)
 item_name = "TV"
 ticket = "Grandpa just says it needs a good whack, but I don't think that's enough..."
 
@@ -40,13 +41,14 @@ collision_mask = 0
 monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea"]
-position = Vector2(188, -24)
+position = Vector2(188, -332)
 shape = SubResource("drop_shape")
 
 [node name="Layers" type="Node2D" parent="."]
 unique_name_in_owner = true
 
 [node name="Body" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+position = Vector2(0, -308)
 script = ExtResource("2_layer")
 art = NodePath("Art")
 

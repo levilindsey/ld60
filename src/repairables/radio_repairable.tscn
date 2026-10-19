@@ -29,6 +29,7 @@ radius = 220.0
 [node name="RadioRepairable" type="Node2D"]
 scale = Vector2(0.12, 0.12)
 script = ExtResource("1_item")
+shadow_offset = Vector2(5, 7)
 item_name = "Radio"
 ticket = "Son of a {biscuit} this {flipping} radio!"
 
@@ -39,13 +40,14 @@ collision_mask = 0
 monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DropArea"]
-position = Vector2(-40, -2)
+position = Vector2(-40, -460)
 shape = SubResource("drop_shape")
 
 [node name="Layers" type="Node2D" parent="."]
 unique_name_in_owner = true
 
 [node name="Inside" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+position = Vector2(0, -458)
 script = ExtResource("2_layer")
 art = NodePath("Art")
 
@@ -91,6 +93,7 @@ is_required = false
 shape = SubResource("dust_shape")
 
 [node name="Front" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+position = Vector2(0, -458)
 script = ExtResource("2_layer")
 art = NodePath("Art")
 
