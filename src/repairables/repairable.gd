@@ -59,6 +59,9 @@ const _LEAVING_Z_INDEX := 16
 @export var item_name := ""
 ## The customer's complaint, shown on the ticket.
 @export_multiline var ticket := ""
+## The ticket is tossed up from below the screen instead of falling from
+## above.
+@export var ticket_flings_up := false
 @export var par_time_sec := 90.0
 ## How far the item reaches from its middle on the bench, in pixels.
 @export var bench_radius_px := 50.0

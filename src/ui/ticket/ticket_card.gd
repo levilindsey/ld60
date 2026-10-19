@@ -42,6 +42,13 @@ const _FALL_SWAY_CYCLES := 2.0
 const _FALL_SWING_LIFT_PX := 25.0
 ## How far the ticket rocks as it falls.
 const _FALL_ROCK_RADIANS := 0.35
+const _FLING_DURATION_SEC := 0.9
+## How far below its desk spot the ticket starts its toss.
+const _FLING_DEPTH_PX := 600.0
+## How high above its desk spot the toss peaks.
+const _FLING_PEAK_PX := 120.0
+## How far the ticket spins on the way up, settling flat as it lands.
+const _FLING_SPIN_RADIANS := -1.2
 const _LEAVE_DURATION_SEC := 0.35
 ## How far the ticket rises as it fades away.
 const _LEAVE_RISE_PX := 60.0
@@ -93,10 +100,11 @@ func _ready() -> void:
 	visible = false
 
 
-## Drops the ticket onto the desk with the customer's complaint. A ticket
-## that is still showing swaps its text and drops again. Words in braces,
-## like `{darn}`, are scribbled out.
-func show_item(complaint: String) -> void:
+## Drops the ticket onto the desk with the customer's complaint, or tosses
+## it up from below when `flings_up`. A ticket that is still showing swaps
+## its text and drops again. Words in braces, like `{darn}`, are scribbled
+## out.
+func show_item(complaint: String, flings_up := false) -> void:
 	_set_complaint(complaint)
 	_fit_complaint()
 	%TimeLabel.text = ""
@@ -106,14 +114,15 @@ func show_item(complaint: String) -> void:
 	modulate.a = 1.0
 	visible = true
 	state = State.FALLING
-	_set_fall(0.0)
+	var motion := "_set_fling" if flings_up else "_set_fall"
+	call(motion, 0.0)
 	reset_physics_interpolation()
 	_motion_tween_id = G.time.tween_method(
 		self,
-		"_set_fall",
+		motion,
 		0.0,
 		1.0,
-		_FALL_DURATION_SEC,
+		_FLING_DURATION_SEC if flings_up else _FALL_DURATION_SEC,
 		"linear",
 		0.0,
 		TimeType.PLAY_PHYSICS,
@@ -418,6 +427,22 @@ func _set_fall(progress: float) -> void:
 		-_FALL_HEIGHT_PX + _FALL_SWING_LIFT_PX * cos(2.0 * swing_angle),
 	)
 	global_rotation += _FALL_ROCK_RADIANS * cos(swing_angle) * remaining
+
+
+## 0 is below the desk spot, off screen; 1 has landed on it. The ticket
+## flies up past its spot like a thrown thing, spinning, peaks at
+## `_FLING_PEAK_PX` and drops back onto it.
+func _set_fling(progress: float) -> void:
+	_set_lift(0.0)
+	# The parabola from the depth to the spot whose top is the peak.
+	var depth := _FLING_DEPTH_PX
+	var gravity := (
+		depth + 2.0 * _FLING_PEAK_PX
+		+ sqrt(pow(depth + 2.0 * _FLING_PEAK_PX, 2.0) - depth * depth)
+	)
+	var launch := -depth - gravity
+	global_position.y += gravity * progress * progress + launch * progress + depth
+	global_rotation += _FLING_SPIN_RADIANS * pow(1.0 - progress, 2.0)
 
 
 ## 0 is where the ticket left from; 1 has risen and faded away.

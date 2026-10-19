@@ -1909,7 +1909,7 @@ func _on_item_impacted(strength: float) -> void:
 
 func _on_item_landed(item: Repairable) -> void:
 	restock_parts(item)
-	%TicketCard.show_item(item.ticket)
+	%TicketCard.show_item(item.ticket, item.ticket_flings_up)
 	G.audio.play_sound_delayed(&"hmm_curious", 0.45)
 
 
