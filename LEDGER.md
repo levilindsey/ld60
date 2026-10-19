@@ -82,7 +82,7 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 - **LX24** · Art: screw states, decals, part states, effects, UI
   (`docs/design/decals.md` "The art list"). Placeholders to replace:
   the skid texture (`src/decals/skid_decal_set.tres`), the receipt's
-  code-drawn star (`src/ui/receipt/star_icon.gd`), the hand's
+  oof / ok / great stamps (`TicketCard.stamp_textures`, empty), the hand's
   `%NopeIcon` (`src/level/level.tscn`), the layers' ready glow
   (`src/repairables/repair_layer.gd`), and the screw's tinted head frames
   and polygon rust (`src/interaction_points/screw.gd`). The finished

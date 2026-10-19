@@ -43,11 +43,13 @@ slip (2 points) doesn't.
 
 ## Receipt
 
-When the item goes into the outbox, a receipt card slides in. It lists
-the item's name, each defect with its count and points, the time, the
-total and the stars. The stars pop in one at a time with a ding, and 3
-stars add a sparkle. It goes away on a click or after 3 s, and the next
-item drops in behind it.
+The repair ticket is the receipt. When the item goes into the outbox,
+its ticket lifts to the receipt spot (`ReceiptSpot` in the level), and
+the time writes itself in by hand at the bottom of the paper: "Fixed in
+2 min 12 sec". Then a stamp rates the repair by its stars: oof (1), ok
+(2) or great (3), from `TicketCard.stamp_textures`. The score and the
+defect list stay hidden. The receipt leaves on a tap or after 2 s, and
+the next item drops in after it (`src/ui/ticket/ticket_card.gd`).
 
 ## Building it
 
@@ -71,7 +73,7 @@ enum Defect {
 ```
 
 - Methods: `add_defect(defect, global_position)`, `get_score()`,
-  `get_stars()`, plus the defect list for the receipt.
+  `get_stars()`, plus the defect list (not shown to the player).
 - Each `Repairable` owns one (`repairable.quality`). The points come
   from settings through a `match`, like `get_tool_scene_from_type()`.
 - Time over par is worked out at the end from `par_time_sec`; it is not

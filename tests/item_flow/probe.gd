@@ -24,6 +24,7 @@ var _level: Level
 var _item: Repairable
 var _spawn_ticks: Array[int] = []
 var _departed_tick := 0
+var _receipt_closed_tick := 0
 var _landed_msec := 0
 var _landed_position := Vector2.ZERO
 var _landed_rotation := 0.0
@@ -382,10 +383,8 @@ func _check_outbox() -> void:
 	var outbox: Area2D = _level.get_node("%Outbox")
 	var inside := outbox.global_position + _OUTBOX_INSIDE_OFFSET
 	var ticket: TicketCard = _level.get_node("%TicketCard")
-	var receipt: Receipt = _level.get_node("%Receipt")
+	ticket.done_closed.connect(_on_receipt_closed)
 	var leaving_item := _item
-	var item_name := _item.item_name
-	var score := _item.quality.get_score()
 	_departed_msec = 0
 	await _press_down(home)
 	await _move_to(inside)
@@ -408,35 +407,40 @@ func _check_outbox() -> void:
 		not _level.is_outbox_outline_shown(),
 		"5. the outbox outline goes with it",
 	)
-	var has_hidden := await _wait_until(
-		func() -> bool: return not ticket.visible,
-		1.0,
-	)
-	_expect(has_hidden, "5. the ticket goes away with the item")
+	_expect(ticket.visible, "5. the ticket stays while the item leaves")
 	var has_departed := await _wait_until(
 		func() -> bool: return _departed_msec > 0,
 		2.0,
 	)
 	_expect(has_departed, "5. the item slides off the screen")
 	_expect(not is_instance_valid(leaving_item), "5. and is freed")
-	var name_label: Label = receipt.get_node("%NameLabel")
-	var total_label: Label = receipt.get_node("%TotalLabel")
 	_expect(
-		receipt.visible
-		and name_label.text == item_name
-		and total_label.text == str(score),
-		"5. the receipt opens with the item's score (%d, shows %s)"
-		% [score, total_label.text],
+		ticket.state == TicketCard.State.SHOWING_DONE,
+		"5. the ticket comes up as the receipt",
 	)
+	var time_label: RichTextLabel = ticket.get_node("%TimeLabel")
 	_expect(
-		receipt.mouse_filter == Control.MOUSE_FILTER_STOP,
-		"the open receipt takes the clicks",
+		time_label.get_parsed_text().begins_with("Fixed in "),
+		"5. the receipt writes the repair time (%s)"
+		% time_label.get_parsed_text(),
 	)
 
 
 func _check_next_item() -> void:
-	var receipt: Receipt = _level.get_node("%Receipt")
+	var ticket: TicketCard = _level.get_node("%TicketCard")
 	_landed_msec = 0
+	await _seconds(1.5)
+	await _shot("5_receipt")
+	_expect(
+		not is_instance_valid(_level.active_repairable),
+		"5. the next item waits for the receipt",
+	)
+	# A tap skips the receipt.
+	await _press_at(_home())
+	_expect(
+		ticket.state == TicketCard.State.LEAVING,
+		"6. a tap sends the receipt away",
+	)
 	var has_spawned := await _wait_until(
 		func() -> bool: return is_instance_valid(_level.active_repairable),
 		2.0,
@@ -445,11 +449,11 @@ func _check_next_item() -> void:
 		return
 	_item = _level.active_repairable
 	# Counted in physics ticks, so a screenshot's stall doesn't count.
-	var delay_ticks: int = _spawn_ticks.back() - _departed_tick
+	var delay_ticks: int = _spawn_ticks.back() - _receipt_closed_tick
 	var delay_sec := float(delay_ticks) / Engine.physics_ticks_per_second
 	_expect(
 		delay_sec >= 0.45 and delay_sec <= 0.65,
-		"5. it starts 0.5 s after the receipt opens (%.2f s)" % delay_sec,
+		"5. it starts 0.5 s after the receipt leaves (%.2f s)" % delay_sec,
 	)
 	_expect(
 		_item.mode == Repairable.Mode.ENTERING
@@ -462,26 +466,13 @@ func _check_next_item() -> void:
 	)
 	_expect(has_landed, "the second item lands")
 	_expect(
-		receipt.visible,
-		"the receipt is still open when the next item lands",
-	)
-	await _shot("5_receipt")
-	# The click that closes the receipt doesn't reach the bench.
-	await _press_at(_home())
-	_expect(
-		not is_instance_valid(_item._shake_tween),
-		"6. the click that closes the receipt doesn't reach the bench",
-	)
-	await _seconds(0.6)
-	_expect(not receipt.visible, "6. the click closed the receipt")
-	_expect(
 		not _level.has_won and G.state.state == StateMain.State.GAME,
 		"6. the first receipt closing doesn't end the game",
 	)
 
 
 func _check_second_item() -> void:
-	var receipt: Receipt = _level.get_node("%Receipt")
+	var ticket: TicketCard = _level.get_node("%TicketCard")
 	var outbox: Area2D = _level.get_node("%Outbox")
 	var inside := outbox.global_position + _OUTBOX_INSIDE_OFFSET
 	var item := _level.active_repairable
@@ -527,25 +518,12 @@ func _check_second_item() -> void:
 		_is_popup_alive_at_departure,
 		"7. the popup outlives the item that left",
 	)
-	var total_label: Label = receipt.get_node("%TotalLabel")
-	_expect(
-		receipt.visible and total_label.text == str(score),
-		"the second receipt shows the score with the defect (%d, shows %s)"
-		% [score, total_label.text],
-	)
-	var has_defect_row := false
-	var lines: Node = receipt.get_node("%Lines")
-	for row in lines.get_children():
-		var first_label := row.get_child(0) as Label
-		if first_label != null and first_label.text.begins_with("Small dent"):
-			has_defect_row = true
-	_expect(has_defect_row, "7. the receipt lists the defect")
 	await _seconds(1.0)
 	_expect(
 		_level.active_repairable == null
 		and _level.next_item_index == 2
 		and not _level.has_won
-		and receipt.visible,
+		and ticket.state == TicketCard.State.SHOWING_DONE,
 		"the queue is done: no third item, and the game waits for the receipt",
 	)
 
@@ -623,6 +601,10 @@ func _on_landed(item: Repairable) -> void:
 	_landed_rotation = item.rotation
 	_landed_mode = item.mode
 	_largest_shake_before_landing_px = _largest_shake_px
+
+
+func _on_receipt_closed() -> void:
+	_receipt_closed_tick = Engine.get_physics_frames()
 
 
 func _on_departed() -> void:

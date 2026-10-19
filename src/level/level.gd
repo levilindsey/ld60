@@ -137,7 +137,7 @@ func _ready() -> void:
 		drawer.opened.connect(_on_drawer_opened.bind(drawer))
 		drawer.close_started.connect(_on_drawer_close_started.bind(drawer))
 
-	%Receipt.closed.connect(_on_receipt_closed)
+	%TicketCard.done_closed.connect(_on_ticket_done_closed)
 
 	hint_tracker = HintTracker.new()
 	hint_tracker.name = "HintTracker"
@@ -1623,7 +1623,6 @@ func _send_to_outbox(item: Repairable) -> void:
 	set_outbox_outline_shown(false)
 	cleanup_loose_parts()
 	active_repairable = null
-	%TicketCard.hide_card()
 	item.departed.connect(_on_item_departed.bind(item), CONNECT_ONE_SHOT)
 	item.leave(
 		%Outbox.global_position,
@@ -1644,17 +1643,14 @@ func _on_item_landed(item: Repairable) -> void:
 	G.audio.play_sound_delayed(&"hmm_curious", 0.45)
 
 
-## The item slid off the screen: its receipt opens and, unless that was
-## the last item, the next one arrives a moment later. The game is won
-## when the last receipt closes.
+## The item slid off the screen: its ticket comes up as the receipt,
+## with the repair time and the rating stamp.
 func _on_item_departed(item: Repairable) -> void:
 	G.session.fixed_item_count += 1
-	%Receipt.open(item.item_name, item.quality)
-	if _is_queue_finished():
-		return
-	var tween := create_tween()
-	tween.tween_interval(G.settings.next_item_delay_sec)
-	tween.tween_callback(_spawn_next_item)
+	%TicketCard.show_done(
+		item.quality.repair_time_sec,
+		item.quality.get_stars(),
+	)
 
 
 ## A drawer finished opening in the center: its stored parts
@@ -1719,7 +1715,13 @@ func _on_defect_added(
 	DefectPopup.spawn(self, points, world_position)
 
 
-func _on_receipt_closed() -> void:
-	# Only the last item's receipt ends the game.
-	if _is_queue_finished() and not is_instance_valid(active_repairable):
-		win()
+## The receipt left. The next item arrives a moment later, or, after the
+## last item, the game is won.
+func _on_ticket_done_closed() -> void:
+	if _is_queue_finished():
+		if not is_instance_valid(active_repairable):
+			win()
+		return
+	var tween := create_tween()
+	tween.tween_interval(G.settings.next_item_delay_sec)
+	tween.tween_callback(_spawn_next_item)

@@ -4,9 +4,16 @@
 [ext_resource type="FontFile" uid="uid://dpjyugfnnu6wc" path="res://assets/fonts/reenie_beanie/ReenieBeanie.ttf" id="4_handwriting"]
 [ext_resource type="Shader" uid="uid://thfeaa7qcy2v" path="res://assets/shaders/perspective_quad.gdshader" id="5_perspective"]
 [ext_resource type="Texture2D" uid="uid://ciwpguv1cbffl" path="res://assets/images/manual/repairticket.png" id="7_paper"]
+[ext_resource type="Script" path="res://src/ui/ticket/ink_write_effect.gd" id="8_ink"]
+[ext_resource type="Texture2D" uid="uid://csi0e2pfynhcy" path="res://assets/images/manual/repair_oof.png" id="9_oof"]
+[ext_resource type="Texture2D" uid="uid://dl5wlm5l7chkb" path="res://assets/images/manual/repair_ok.png" id="10_ok"]
+[ext_resource type="Texture2D" uid="uid://s054wl0a6nns" path="res://assets/images/manual/repair_great.png" id="11_great"]
 
 [sub_resource type="Theme" id="Theme_paper"]
 Label/colors/font_color = Color(0.22, 0.15, 0.08, 1)
+
+[sub_resource type="RichTextEffect" id="RichTextEffect_ink"]
+script = ExtResource("8_ink")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_display"]
 shader = ExtResource("5_perspective")
@@ -19,6 +26,7 @@ shader_parameter/bottom_left = Vector2(-360, 300)
 visible = false
 z_index = 95
 script = ExtResource("1_ticket")
+stamp_textures = Array[Texture2D]([ExtResource("9_oof"), ExtResource("10_ok"), ExtResource("11_great")])
 warped_sprite = NodePath("Display")
 
 shadow = NodePath("DisplayShadow")
@@ -62,7 +70,7 @@ anchor_bottom = 1.0
 offset_left = 32.0
 offset_top = 72.0
 offset_right = -16.0
-offset_bottom = -8.0
+offset_bottom = -76.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -75,6 +83,41 @@ theme_override_fonts/font = ExtResource("4_handwriting")
 theme_override_font_sizes/font_size = 40
 text = "Complaint"
 autowrap_mode = 3
+
+[node name="TimeLabel" type="RichTextLabel" parent="ContentViewport/Paper"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = -72.0
+offset_right = -16.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.22, 0.15, 0.08, 1)
+theme_override_fonts/normal_font = ExtResource("4_handwriting")
+theme_override_font_sizes/normal_font_size = 40
+bbcode_enabled = true
+scroll_active = false
+autowrap_mode = 0
+custom_effects = [SubResource("RichTextEffect_ink")]
+
+[node name="Stamp" type="TextureRect" parent="ContentViewport/Paper"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(261.5, 242)
+mouse_filter = 2
+expand_mode = 1
 
 [node name="DisplayShadow" type="Sprite2D" parent="."]
 unique_name_in_owner = true

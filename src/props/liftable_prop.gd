@@ -56,12 +56,15 @@ var _lifted_z_index := 0
 ## The sibling the prop follows while lifted.
 var _lifted_after: Node
 var _has_preview_material := false
+## Where a lift goes. `open_spot` unless a subclass picks another pose.
+var _lift_spot: Node2D
 
 
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		_preview_in_editor()
 		return
+	_lift_spot = open_spot
 	_rest_position = global_position
 	_rest_rotation = global_rotation
 	_rest_scale = global_scale
@@ -117,7 +120,7 @@ func _tween_lift(
 	on_completed: Callable,
 ) -> void:
 	_stop_lift()
-	if not is_instance_valid(open_spot):
+	if not is_instance_valid(_lift_spot):
 		on_completed.call()
 		return
 	_lift_tween_id = G.time.tween_method(
@@ -160,19 +163,19 @@ func _set_resting_order(is_resting: bool) -> void:
 	parent.move_child(self, target_index)
 
 
-## 0 rests where the level placed the prop; 1 is at `open_spot`.
+## 0 rests where the level placed the prop; 1 is at `_lift_spot`.
 func _set_lift(lift: float) -> void:
 	if is_instance_valid(shadow):
 		shadow.visible = is_zero_approx(lift)
-	if is_instance_valid(open_spot):
-		global_position = _rest_position.lerp(open_spot.global_position, lift)
+	if is_instance_valid(_lift_spot):
+		global_position = _rest_position.lerp(_lift_spot.global_position, lift)
 		global_rotation = lerp_angle(
 			_rest_rotation,
-			open_spot.global_rotation,
+			_lift_spot.global_rotation,
 			lift,
 		)
-		global_scale = _rest_scale.lerp(open_spot.global_scale, lift)
-		global_skew = lerpf(_rest_skew, open_spot.global_skew, lift)
+		global_scale = _rest_scale.lerp(_lift_spot.global_scale, lift)
+		global_skew = lerpf(_rest_skew, _lift_spot.global_skew, lift)
 
 	var flat_corners := _get_flat_corners()
 	if desk_corners.size() != flat_corners.size():
