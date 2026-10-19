@@ -106,7 +106,9 @@ and can be dragged to the outbox ([outbox.md](outbox.md)).
   `Material` class): PLASTIC, METAL, GLASS, CIRCUIT_BOARD, CONTACTS,
   RUBBER, PAPER_LABEL, PAINTED, GREASED, FELT or STICKER.
 - Tools ask what is under them. The hammer dents METAL and cracks
-  PLASTIC and GLASS, the rag smears a PAPER_LABEL, and oil contaminates
+  PLASTIC and GLASS, unless the layer's `hammer_decal` overrules
+  its set (`DENT` or `CRACK` per piece; `DEFAULT` keeps the
+  material's choice), the rag smears a PAPER_LABEL, and oil contaminates
   CONTACTS and RUBBER.
 - A surface is a child of its layer, so it comes off with it, and it is
   only active while that layer is exposed.

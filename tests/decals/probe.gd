@@ -183,6 +183,29 @@ func _check_surface_damage() -> void:
 		"a hard hit dents a metal surface, with a decal",
 	)
 
+	# The piece can overrule the material's set: a metal screen
+	# cracks, a plastic panel dents.
+	_cover.hammer_decal = RepairLayer.HammerDecal.CRACK
+	cracks_before = _decal_count(art, "decals/cracks")
+	dents_before = _decal_count(art, "decals/dents")
+	surface.on_struck(center, 1.0)
+	_expect(
+		_decal_count(art, "decals/cracks") == cracks_before + 1
+		and _decal_count(art, "decals/dents") == dents_before,
+		"a piece set to crack cracks even on metal",
+	)
+	_cover.hammer_decal = RepairLayer.HammerDecal.DENT
+	surface.type = Surface.Type.PLASTIC
+	cracks_before = _decal_count(art, "decals/cracks")
+	dents_before = _decal_count(art, "decals/dents")
+	surface.on_struck(center, 1.0)
+	_expect(
+		_decal_count(art, "decals/dents") == dents_before + 1
+		and _decal_count(art, "decals/cracks") == cracks_before,
+		"a piece set to dent dents even on plastic",
+	)
+	_cover.hammer_decal = RepairLayer.HammerDecal.DEFAULT
+
 
 ## An over hard hit on a strikable point leaves its decal too.
 func _check_strikable_damage() -> void:
@@ -214,6 +237,25 @@ func _check_strikable_damage() -> void:
 		and _decal_count(art, "decals/dents") == dents_before + 1,
 		"a hard hit flips the bend and dents the part, with a decal",
 	)
+
+	# The piece's set wins over the point's own choice too: a
+	# seating on a dent piece dents instead of cracking.
+	_cover.hammer_decal = RepairLayer.HammerDecal.DENT
+	var seat_again: SeatPart = (
+		(load(_SEAT_SCENE_PATH) as PackedScene).instantiate()
+	)
+	_cover.add_child(seat_again)
+	seat_again.position = Vector2(-25, -25)
+	await _physics_frames(2)
+	cracks_before = _decal_count(art, "decals/cracks")
+	dents_before = _decal_count(art, "decals/dents")
+	seat_again.on_struck(1.0)
+	_expect(
+		_decal_count(art, "decals/dents") == dents_before + 1
+		and _decal_count(art, "decals/cracks") == cracks_before,
+		"a seating on a dent piece dents instead of cracking",
+	)
+	_cover.hammer_decal = RepairLayer.HammerDecal.DEFAULT
 
 
 ## The dirt points pick a texture from the configured set, wear

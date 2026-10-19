@@ -1,0 +1,221 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0000.png" id="1_pk00"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0001.png" id="1_pk01"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0002.png" id="1_pk02"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0003.png" id="1_pk03"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0004.png" id="1_pk04"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0005.png" id="1_pk05"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0006.png" id="1_pk06"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0007.png" id="1_pk07"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0008.png" id="1_pk08"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0009.png" id="1_pk09"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0010.png" id="1_pk10"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0011.png" id="1_pk11"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0012.png" id="1_pk12"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0013.png" id="1_pk13"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0014.png" id="1_pk14"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0015.png" id="1_pk15"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0016.png" id="1_pk16"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0017.png" id="1_pk17"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0018.png" id="1_pk18"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0019.png" id="1_pk19"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0020.png" id="1_pk20"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0021.png" id="1_pk21"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0022.png" id="1_pk22"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0023.png" id="1_pk23"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0024.png" id="1_pk24"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0025.png" id="1_pk25"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0026.png" id="1_pk26"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0027.png" id="1_pk27"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0028.png" id="1_pk28"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0029.png" id="1_pk29"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0030.png" id="1_pk30"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0031.png" id="1_pk31"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0032.png" id="1_pk32"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0033.png" id="1_pk33"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0034.png" id="1_pk34"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0035.png" id="1_pk35"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0036.png" id="1_pk36"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0037.png" id="1_pk37"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0038.png" id="1_pk38"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0039.png" id="1_pk39"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0040.png" id="1_pk40"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0041.png" id="1_pk41"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0042.png" id="1_pk42"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0043.png" id="1_pk43"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0044.png" id="1_pk44"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0045.png" id="1_pk45"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0046.png" id="1_pk46"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0047.png" id="1_pk47"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0048.png" id="1_pk48"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0049.png" id="1_pk49"]
+[ext_resource type="Texture2D" path="res://assets/images/bread/peaking/breadframe0050.png" id="1_pk50"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_bird"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_pk00")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk01")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk02")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk03")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk04")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk05")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk06")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk07")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk08")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk09")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk10")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk11")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk12")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk13")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk14")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk15")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk16")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk17")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk18")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk19")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk20")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk21")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk22")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk23")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk24")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk25")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk26")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk27")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk28")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk29")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk30")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk31")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk32")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk33")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk34")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk35")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk36")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk37")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk38")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk39")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk40")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk41")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk42")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk43")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk44")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk45")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk46")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk47")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk48")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk49")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_pk50")
+}],
+"loop": 0,
+"name": &"peak",
+"speed": 15.0
+}]
+
+[node name="BirdPeak" type="Node2D" unique_id=2100001011]
+visible = false
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2100001012]
+sprite_frames = SubResource("SpriteFrames_bird")
+animation = &"peak"

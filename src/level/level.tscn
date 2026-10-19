@@ -19,6 +19,9 @@
 [ext_resource type="PackedScene" uid="uid://dq0q06p1k4wyo" path="res://src/level/Drawer.tscn" id="17_drawer"]
 [ext_resource type="PackedScene" path="res://src/props/radio.tscn" id="18_radio"]
 [ext_resource type="FontFile" uid="uid://dpjyugfnnu6wc" path="res://assets/fonts/reenie_beanie/ReenieBeanie.ttf" id="19_handwriting"]
+[ext_resource type="PackedScene" path="res://src/level/bird_smack.tscn" id="20_bird_smack"]
+[ext_resource type="PackedScene" path="res://src/level/bird_peak.tscn" id="21_bird_peak"]
+[ext_resource type="Script" path="res://src/level/bird_controller.gd" id="22_bird_controller"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_giktf"]
 radius = 34.058773
@@ -41,6 +44,12 @@ texture = ExtResource("4_ascnc")
 
 [node name="Scaler" type="Node2D" parent="Background/OutsideStuff" unique_id=2086735917]
 scale = Vector2(0.001, 0.002)
+
+[node name="BirdSmack" parent="Background/OutsideStuff/Scaler" unique_id=2100001021 instance=ExtResource("20_bird_smack")]
+unique_name_in_owner = true
+
+[node name="BirdPeak" parent="Background/OutsideStuff/Scaler" unique_id=2100001022 instance=ExtResource("21_bird_peak")]
+unique_name_in_owner = true
 
 [node name="Window" type="Sprite2D" parent="Background" unique_id=1872835696]
 position = Vector2(7, 2)
@@ -270,3 +279,6 @@ unique_name_in_owner = true
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="WorkableArea" unique_id=638619667]
 polygon = PackedVector2Array(526, 132, 531, 251, 374, 271, 364, 296, -361, 292, -381, 258, -506, 264, -455, 137)
+
+[node name="BirdController" type="Node" parent="." unique_id=2100001023]
+script = ExtResource("22_bird_controller")

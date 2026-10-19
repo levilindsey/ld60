@@ -99,18 +99,23 @@ func on_struck(at_position: Vector2, strength: float) -> void:
 	if strength < damage_at:
 		return
 	var is_far := strength >= damage_at + G.settings.hammer_far_margin
+	# The material picks the damage, unless the piece overrules
+	# its set (a metal screen cracks, a plastic panel dents).
+	var defect: RepairQuality.Defect
 	match type:
 		Type.METAL:
-			_add_defect(
+			defect = (
 				RepairQuality.Defect.DENT_LARGE
 				if is_far
-				else RepairQuality.Defect.DENT_SMALL,
-				at_position,
+				else RepairQuality.Defect.DENT_SMALL
 			)
 		Type.PLASTIC, Type.GLASS:
-			_add_defect(RepairQuality.Defect.CRACK, at_position)
+			defect = RepairQuality.Defect.CRACK
 		_:
-			pass
+			return
+	if is_instance_valid(layer):
+		defect = layer.get_hammer_defect(is_far, defect)
+	_add_defect(defect, at_position)
 
 
 func _add_defect(

@@ -47,6 +47,8 @@
 [ext_resource type="AudioStream" uid="uid://byhonrp2iy8i8" path="res://assets/audio/music/buy_something_radio_edit.ogg" id="46_main_theme"]
 [ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/drawer open.wav" id="47_drawer_open"]
 [ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/drawer close.wav" id="48_drawer_close"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/caw.wav" id="49_caw"]
+[ext_resource type="AudioStream" path="res://assets/audio/foley_cleaned/window smack.wav" id="50_window_smack"]
 [ext_resource type="AudioStream" uid="uid://b315yss232ppn" path="res://assets/audio/music/beepstart.ogg" id="49_menu_theme"]
 
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_hmm"]
@@ -291,4 +293,14 @@ bus = &"SFX"
 [node name="DrawerClose" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
 stream = ExtResource("48_drawer_close")
+bus = &"SFX"
+
+[node name="Caw" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("49_caw")
+bus = &"SFX"
+
+[node name="WindowSmack" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("50_window_smack")
 bus = &"SFX"

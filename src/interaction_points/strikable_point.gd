@@ -36,7 +36,12 @@ func on_struck(strength: float) -> void:
 		var is_far := (
 			strength > band_max + G.settings.hammer_far_margin
 		)
-		add_hammer_defect(get_over_defect(is_far))
+		# The point picks the defect, unless the piece overrules
+		# its set (a seating on a dent piece dents, not cracks).
+		var defect := get_over_defect(is_far)
+		if is_instance_valid(layer):
+			defect = layer.get_hammer_defect(is_far, defect)
+		add_hammer_defect(defect)
 		G.level.shake_camera(7.0, 0.15)
 	else:
 		G.level.shake_camera(4.0, 0.15)

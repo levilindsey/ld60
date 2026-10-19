@@ -43,7 +43,12 @@ to 1):
 
 A strike that lands on no target hits whatever `Surface` is there.
 Light hits are harmless. Hits above the surface's threshold dent METAL
-and crack PLASTIC or GLASS.
+and crack PLASTIC or GLASS, unless the piece overrules its set:
+each `RepairLayer` has a `hammer_decal` (`DEFAULT`, `DENT` or
+`CRACK`), so a metal screen can crack and a plastic panel can
+dent. The recorded defect matches the decal. The piece's set
+wins over a point's own choice too (a seating on a dent piece
+dents instead of cracking the board).
 
 ## Input
 

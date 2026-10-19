@@ -27,6 +27,17 @@ const _SQUISH_MIN_SHARE := 0.35
 ## Polygon2D, so a press can be tested against it.
 @export var art: CanvasItem
 
+## The decal set a hard hammer hit stamps on this piece, and the
+## defect it records to match: panels dent, screens crack.
+## DEFAULT keeps the choice the surface material or the point
+## already makes.
+enum HammerDecal {
+	DEFAULT,
+	DENT,
+	CRACK,
+}
+@export var hammer_decal := HammerDecal.DEFAULT
+
 ## The item this layer belongs to. The item sets it.
 var item: Repairable
 ## False while the layer is off the item.
@@ -318,6 +329,28 @@ func is_showing_outline() -> bool:
 	if is_instance_valid(_outline_hint) and _outline_hint.is_active():
 		return true
 	return is_instance_valid(_outlined_art)
+
+
+## The defect a hard hammer hit leaves on this piece: this
+## piece's configured set when it has one, else `fallback` (the
+## choice the surface material or the point already made). A
+## dent still comes in small and large by how far over the hit
+## was; a crack is just a crack.
+func get_hammer_defect(
+	is_far: bool,
+	fallback: RepairQuality.Defect,
+) -> RepairQuality.Defect:
+	match hammer_decal:
+		HammerDecal.DENT:
+			return (
+				RepairQuality.Defect.DENT_LARGE
+				if is_far
+				else RepairQuality.Defect.DENT_SMALL
+			)
+		HammerDecal.CRACK:
+			return RepairQuality.Defect.CRACK
+		_:
+			return fallback
 
 
 ## One short pulse, the hint that this layer can go back on.

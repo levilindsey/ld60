@@ -46,6 +46,8 @@ extends Node2D
 	"snap" = %Snap,
 	"drawer_open" = %DrawerOpen,
 	"drawer_close" = %DrawerClose,
+	"caw" = %Caw,
+	"window_smack" = %WindowSmack,
 }
 
 var initial_volumes := {}

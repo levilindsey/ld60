@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://b6ecv1c6fqqyp"]
+[gd_scene format=3]
 
 [ext_resource type="Texture2D" uid="uid://y2d4xpq8kryi" path="res://assets/images/bread/window_smack/frame0000.png" id="1_pmkwv"]
 [ext_resource type="Texture2D" uid="uid://1rd5fw5ndrty" path="res://assets/images/bread/window_smack/frame0001.png" id="2_nel5i"]
@@ -42,13 +42,8 @@
 [ext_resource type="Texture2D" uid="uid://buqsyl7qok5kj" path="res://assets/images/bread/window_smack/frame0040.png" id="40_ymhsv"]
 [ext_resource type="Texture2D" uid="uid://cv23gicu1xlxf" path="res://assets/images/bread/window_smack/frame0014.png" id="41_tcdhj"]
 
-[sub_resource type="SpriteFrames" id="SpriteFrames_60exv"]
+[sub_resource type="SpriteFrames" id="SpriteFrames_bird"]
 animations = [{
-"frames": [],
-"loop": 1,
-"name": &"default",
-"speed": 5.0
-}, {
 "frames": [{
 "duration": 1.0,
 "texture": ExtResource("1_pmkwv")
@@ -91,6 +86,9 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": ExtResource("14_r1m40")
+}, {
+"duration": 1.0,
+"texture": ExtResource("41_tcdhj")
 }, {
 "duration": 1.0,
 "texture": ExtResource("15_s1d6r")
@@ -169,17 +167,15 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": ExtResource("40_ymhsv")
-}, {
-"duration": 1.0,
-"texture": ExtResource("41_tcdhj")
 }],
-"loop": 1,
-"name": &"flyingbread",
+"loop": 0,
+"name": &"smack",
 "speed": 15.0
 }]
 
-[node name="Breadthebird" type="Node2D" unique_id=173528399]
+[node name="BirdSmack" type="Node2D" unique_id=2100001001]
+visible = false
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=759711257]
-sprite_frames = SubResource("SpriteFrames_60exv")
-animation = &"flyingbread"
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2100001002]
+sprite_frames = SubResource("SpriteFrames_bird")
+animation = &"smack"
