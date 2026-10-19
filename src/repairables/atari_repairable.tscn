@@ -35,13 +35,23 @@ shape = SubResource("drop_shape")
 [node name="Layers" type="Node2D" parent="." unique_id=1367025518]
 unique_name_in_owner = true
 
-[node name="Body" type="Node2D" parent="Layers" unique_id=674076723 node_paths=PackedStringArray("art")]
+[node name="Body" type="Node2D" parent="Layers" unique_id=674076723 node_paths=PackedStringArray("art", "shape")]
 script = ExtResource("2_layer")
 art = NodePath("Art")
+shape = NodePath("Shape")
 
 [node name="Art" type="Sprite2D" parent="Layers/Body" unique_id=226079780]
 scale = Vector2(0.16, 0.16)
 texture = ExtResource("body_tex")
+
+[node name="Shape" type="Area2D" parent="Layers/Body"]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape"]
+polygon = PackedVector2Array(-95.52, -66.72, 111.84, -66.72, 111.84, 110.24, -95.52, 110.24)
 
 [node name="Joystick" parent="Layers/Body" unique_id=967882368 node_paths=PackedStringArray("installed_art", "locking_fastener") instance=ExtResource("5_socket")]
 position = Vector2(2, 0)

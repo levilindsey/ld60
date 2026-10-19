@@ -172,6 +172,23 @@ enum PhysicsLayer {
 @export var part_grab_radius_px := 30.0
 @export_group("")
 
+@export_group("Parts")
+## One dedicated scene per part kind. Each scene's root sets
+## its own kind, so the level spawns the kind's scene and the
+## shared `part.tscn` stays for probes that set the kind by
+## hand.
+@export var gear_part_scene: PackedScene
+@export var tube_part_scene: PackedScene
+@export var spring_part_scene: PackedScene
+@export var tv_controls_part_scene: PackedScene
+@export var letter_key_part_scene: PackedScene
+@export var spacebar_part_scene: PackedScene
+@export var led_part_scene: PackedScene
+@export var joystick_part_scene: PackedScene
+@export var circuit_part_scene: PackedScene
+@export var crystal_part_scene: PackedScene
+@export_group("")
+
 @export_group("Logs")
 ## Logs with these categories won't be shown.
 @export var excluded_log_categories: Array[StringName] = [
@@ -616,6 +633,33 @@ func get_repairable_scene_from_type(type: Repairable.Type) -> PackedScene:
 			return radio_repairable_scene
 		Repairable.Type.SHRINK_RAY:
 			return shrink_ray_repairable_scene
+		_:
+			G.fatal()
+			return null
+
+
+func get_part_scene_from_type(type: Part.Type) -> PackedScene:
+	match type:
+		Part.Type.GEAR:
+			return gear_part_scene
+		Part.Type.TUBE:
+			return tube_part_scene
+		Part.Type.SPRING:
+			return spring_part_scene
+		Part.Type.TV_CONTROLS:
+			return tv_controls_part_scene
+		Part.Type.LETTER_KEY:
+			return letter_key_part_scene
+		Part.Type.SPACEBAR:
+			return spacebar_part_scene
+		Part.Type.LED:
+			return led_part_scene
+		Part.Type.JOYSTICK:
+			return joystick_part_scene
+		Part.Type.CIRCUIT:
+			return circuit_part_scene
+		Part.Type.CRYSTAL:
+			return crystal_part_scene
 		_:
 			G.fatal()
 			return null

@@ -36,9 +36,10 @@ shape = SubResource("RectangleShape2D_drop")
 [node name="Layers" type="Node2D" parent="." unique_id=1698067149]
 unique_name_in_owner = true
 
-[node name="Body" type="Node2D" parent="Layers" unique_id=1660206715 node_paths=PackedStringArray("art")]
+[node name="Body" type="Node2D" parent="Layers" unique_id=1660206715 node_paths=PackedStringArray("art", "shape")]
 script = ExtResource("2_layer")
 art = NodePath("Art")
+shape = NodePath("Shape")
 
 [node name="SecondWheel" type="Node2D" parent="Layers/Body" unique_id=1131159358 node_paths=PackedStringArray("target_point", "art")]
 unique_name_in_owner = true
@@ -59,6 +60,15 @@ region_rect = Rect2(30, 345, 65, 60)
 scale = Vector2(0.55, 0.55)
 texture = ExtResource("3_body")
 offset = Vector2(7, -18.5)
+
+[node name="Shape" type="Area2D" parent="Layers/Body"]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape"]
+polygon = PackedVector2Array(-112.2, -78.925, 112.2, -78.925, 112.2, 78.925, -112.2, 78.925)
 
 [node name="Face" type="Sprite2D" parent="Layers/Body" unique_id=773536517]
 unique_name_in_owner = true

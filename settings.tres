@@ -26,6 +26,16 @@
 [ext_resource type="PackedScene" path="res://src/repairables/game_n_watch_repairable.tscn" id="21_gnw"]
 [ext_resource type="PackedScene" path="res://src/repairables/radio_repairable.tscn" id="22_radio"]
 [ext_resource type="PackedScene" path="res://src/repairables/shrink_ray_repairable.tscn" id="23_shrink"]
+[ext_resource type="PackedScene" path="res://src/parts/gear_part.tscn" id="24_gear"]
+[ext_resource type="PackedScene" path="res://src/parts/tube_part.tscn" id="25_tube"]
+[ext_resource type="PackedScene" path="res://src/parts/spring_part.tscn" id="26_spring"]
+[ext_resource type="PackedScene" path="res://src/parts/tv_controls_part.tscn" id="27_tvctl"]
+[ext_resource type="PackedScene" path="res://src/parts/letter_key_part.tscn" id="28_letter"]
+[ext_resource type="PackedScene" path="res://src/parts/spacebar_part.tscn" id="29_space"]
+[ext_resource type="PackedScene" path="res://src/parts/led_part.tscn" id="30_led"]
+[ext_resource type="PackedScene" path="res://src/parts/joystick_part.tscn" id="31_joy"]
+[ext_resource type="PackedScene" path="res://src/parts/circuit_part.tscn" id="32_circuit"]
+[ext_resource type="PackedScene" path="res://src/parts/crystal_part.tscn" id="33_crystal"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("5_outline")
@@ -56,6 +66,16 @@ piano_repairable_scene = ExtResource("20_piano")
 game_n_watch_repairable_scene = ExtResource("21_gnw")
 radio_repairable_scene = ExtResource("22_radio")
 shrink_ray_repairable_scene = ExtResource("23_shrink")
+gear_part_scene = ExtResource("24_gear")
+tube_part_scene = ExtResource("25_tube")
+spring_part_scene = ExtResource("26_spring")
+tv_controls_part_scene = ExtResource("27_tvctl")
+letter_key_part_scene = ExtResource("28_letter")
+spacebar_part_scene = ExtResource("29_space")
+led_part_scene = ExtResource("30_led")
+joystick_part_scene = ExtResource("31_joy")
+circuit_part_scene = ExtResource("32_circuit")
+crystal_part_scene = ExtResource("33_crystal")
 item_queue = Array[int]([3, 4, 5, 6, 7, 8, 2, 9])
 flat_head_screw_driver_scene = ExtResource("2_xmm7k")
 rag_scene = ExtResource("9_rag")

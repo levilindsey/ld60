@@ -1,0 +1,27 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/parts/gear_part.gd" id="1_part"]
+
+[node name="GearPart" type="Node2D" node_paths=PackedStringArray("shape")]
+z_index = 10
+z_as_relative = false
+script = ExtResource("1_part")
+shape = NodePath("Shape")
+
+[node name="Art" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+color = Color(0.85, 0.65, 0.2, 1)
+polygon = PackedVector2Array(19, 0, 12.4724, 5.1662, 13.435, 13.435, 5.1662, 12.4724, 0, 19, -5.1662, 12.4724, -13.435, 13.435, -12.4724, 5.1662, -19, 0, -12.4724, -5.1662, -13.435, -13.435, -5.1662, -12.4724, 0, -19, 5.1662, -12.4724, 13.435, -13.435, 12.4724, -5.1662)
+
+[node name="Sprite" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+visible = false
+
+[node name="Shape" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape"]
+polygon = PackedVector2Array(19, 0, 12.4724, 5.1662, 13.435, 13.435, 5.1662, 12.4724, 0, 19, -5.1662, 12.4724, -13.435, 13.435, -12.4724, 5.1662, -19, 0, -12.4724, -5.1662, -13.435, -13.435, -5.1662, -12.4724, 0, -19, 5.1662, -12.4724, 13.435, -13.435, 12.4724, -5.1662)

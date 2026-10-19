@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/parts/joystick_part.gd" id="1_part"]
+[ext_resource type="Texture2D" path="res://assets/images/repairables/atari_joystick_good.png" id="2_tex"]
+
+[node name="JoystickPart" type="Node2D" node_paths=PackedStringArray("shape")]
+z_index = 10
+z_as_relative = false
+script = ExtResource("1_part")
+shape = NodePath("Shape")
+
+[node name="Art" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+visible = false
+color = Color(0.8, 0.25, 0.25, 1)
+polygon = PackedVector2Array(-6, -20, 6, -20, 6, 2, 16, 2, 16, 14, -16, 14, -16, 2, -6, 2)
+
+[node name="Sprite" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+scale = Vector2(0.159799, 0.159799)
+texture = ExtResource("2_tex")
+region_enabled = true
+region_rect = Rect2(1235, 467, 836, 995)
+
+[node name="Shape" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape"]
+polygon = PackedVector2Array(-66.796, -79.5, 66.796, -79.5, 66.796, 79.5, -66.796, 79.5)

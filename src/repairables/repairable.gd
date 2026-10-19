@@ -141,7 +141,7 @@ func _ready() -> void:
 			if is_instance_valid(layer.art):
 				arts.append(layer.art)
 		DropShadow.attach_silhouette(
-			self, arts, shadow_offset, show_shadow
+			self, arts, shadow_offset, show_shadow, 1.0, true
 		)
 	else:
 		DropShadow.attach(

@@ -69,6 +69,7 @@ $Runs = @(
     @{ Name = "yank_tap"; Probe = "yank_tap"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
     @{ Name = "new_items"; Probe = "new_items"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
     @{ Name = "atari"; Probe = "atari"; UserArguments = @(); TimeoutSeconds = 150; WindowedArguments = @() }
+    @{ Name = "shapes"; Probe = "shapes"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
 )
 
 

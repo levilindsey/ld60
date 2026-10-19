@@ -33,9 +33,10 @@ shape = SubResource("RectangleShape2D_drop")
 [node name="Layers" type="Node2D" parent="." unique_id=753972576]
 unique_name_in_owner = true
 
-[node name="Inside" type="Node2D" parent="Layers" unique_id=49909011 node_paths=PackedStringArray("art")]
+[node name="Inside" type="Node2D" parent="Layers" unique_id=49909011 node_paths=PackedStringArray("art", "shape")]
 script = ExtResource("3_layer")
 art = NodePath("Art")
+shape = NodePath("Shape")
 
 [node name="Art" type="ColorRect" parent="Layers/Inside" unique_id=1670914782]
 offset_left = -46.0
@@ -44,6 +45,15 @@ offset_right = 46.0
 offset_bottom = 46.0
 mouse_filter = 2
 color = Color(0.22, 0.2, 0.18, 1)
+
+[node name="Shape" type="Area2D" parent="Layers/Inside"]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Inside/Shape"]
+polygon = PackedVector2Array(-46, -46, 46, -46, 46, 46, -46, 46)
 
 [node name="Crack" parent="Layers/Inside" unique_id=108359088 instance=ExtResource("5_crack")]
 position = Vector2(-40, 5)
@@ -63,9 +73,10 @@ is_required = false
 [node name="Rust" parent="Layers/Inside" unique_id=371671890 instance=ExtResource("8_rust")]
 position = Vector2(30, 28)
 
-[node name="Cover" type="Node2D" parent="Layers" unique_id=2082957175 node_paths=PackedStringArray("art")]
+[node name="Cover" type="Node2D" parent="Layers" unique_id=2082957175 node_paths=PackedStringArray("art", "shape")]
 script = ExtResource("3_layer")
 art = NodePath("Art")
+shape = NodePath("Shape")
 
 [node name="Art" type="ColorRect" parent="Layers/Cover" unique_id=118879814]
 offset_left = -50.0
@@ -74,6 +85,15 @@ offset_right = 50.0
 offset_bottom = 50.0
 mouse_filter = 2
 color = Color(0.35, 0.55, 0.8, 1)
+
+[node name="Shape" type="Area2D" parent="Layers/Cover"]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Cover/Shape"]
+polygon = PackedVector2Array(-50, -50, 50, -50, 50, 50, -50, 50)
 
 [node name="CaseSurface" type="Area2D" parent="Layers/Cover" unique_id=1349592897]
 collision_layer = 32

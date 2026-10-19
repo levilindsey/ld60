@@ -26,6 +26,12 @@ const _SQUISH_MIN_SHARE := 0.35
 ## are its siblings, not its children. A ColorRect, Sprite2D or
 ## Polygon2D, so a press can be tested against it.
 @export var art: CanvasItem
+## The layer's own outline, an Area2D with polygon or shape
+## children tracing the art. It carries no collision state
+## of its own: the layer switches its layers and monitoring
+## off at ready and tests points against it by hand, so it
+## never shows up in the hand's physics picking.
+@export var shape: Area2D
 
 ## The decal set a hard hammer hit stamps on this piece, and the
 ## defect it records to match: panels dent, screens crack.
@@ -75,6 +81,7 @@ var _is_hint_active := false
 
 func _ready() -> void:
 	G.check(is_instance_valid(art))
+	_configure_shape()
 	_home_parent = get_parent()
 	_home_index = get_index()
 	_home_position = position
@@ -94,6 +101,104 @@ func _ready() -> void:
 				and not G.level.hand.is_dragging_loose_layer(self)
 			),
 	)
+
+
+## The Shape areas arrive with no collision state configured
+## (they were added in the editor as bare outlines). Strip
+## anything that could make physics see them: no layer, no
+## mask, no monitoring either way. Points are tested against
+## them by hand in `is_point_in_shape()`.
+func _configure_shape() -> void:
+	if not is_instance_valid(shape):
+		return
+	shape.collision_layer = 0
+	shape.collision_mask = 0
+	shape.monitoring = false
+	shape.monitorable = false
+
+
+## True when a world point lands on the layer's Shape: any
+## of its polygons, or inside any of its collision shapes.
+## False when the layer has no Shape configured.
+func is_point_in_shape(world_point: Vector2) -> bool:
+	if not is_instance_valid(shape):
+		return false
+	for child in shape.get_children():
+		if child is CollisionPolygon2D:
+			var polygon_node := child as CollisionPolygon2D
+			if polygon_node.polygon.size() < 3:
+				continue
+			var local := (
+				polygon_node.global_transform.affine_inverse()
+				* world_point
+			)
+			if Geometry2D.is_point_in_polygon(
+				local, polygon_node.polygon
+			):
+				return true
+		elif child is CollisionShape2D:
+			var shape_node := child as CollisionShape2D
+			if not is_instance_valid(shape_node.shape):
+				continue
+			var local := (
+				shape_node.global_transform.affine_inverse()
+				* world_point
+			)
+			if _is_point_in_collision_shape(local, shape_node.shape):
+				return true
+	return false
+
+
+## The Shape's first polygon, in world points, for outlines
+## and hints that want the layer's real outline.
+func get_shape_world_polygon() -> PackedVector2Array:
+	var points := PackedVector2Array()
+	if not is_instance_valid(shape):
+		return points
+	for child in shape.get_children():
+		if child is CollisionPolygon2D:
+			var polygon_node := child as CollisionPolygon2D
+			for point in polygon_node.polygon:
+				points.append(
+					polygon_node.global_transform * point
+				)
+			return points
+	return points
+
+
+func _is_point_in_collision_shape(
+	local_point: Vector2, collision_shape: Shape2D
+) -> bool:
+	if collision_shape is RectangleShape2D:
+		var rectangle := collision_shape as RectangleShape2D
+		return Rect2(
+			-rectangle.size * 0.5, rectangle.size
+		).has_point(local_point)
+	if collision_shape is CircleShape2D:
+		var circle := collision_shape as CircleShape2D
+		return local_point.length() <= circle.radius
+	if collision_shape is CapsuleShape2D:
+		var capsule := collision_shape as CapsuleShape2D
+		var half := capsule.height * 0.5 - capsule.radius
+		var nearest := Vector2(
+			0.0, clampf(local_point.y, -half, half)
+		)
+		return local_point.distance_to(nearest) <= capsule.radius
+	return false
+
+
+## True when the layer has a Shape with an outline to test.
+func _has_usable_shape() -> bool:
+	if not is_instance_valid(shape):
+		return false
+	for child in shape.get_children():
+		if child is CollisionPolygon2D:
+			if (child as CollisionPolygon2D).polygon.size() >= 3:
+				return true
+		elif child is CollisionShape2D:
+			if is_instance_valid((child as CollisionShape2D).shape):
+				return true
+	return false
 
 
 ## The points on this layer. Points inside the art don't count.
@@ -426,10 +531,13 @@ func spawn_decal(
 	)
 
 
-## True when a world position is on this layer's art.
+## True when a world position is on this layer. The authored
+## Shape wins when it has one; the art test is the fallback.
 func has_point(global_point: Vector2) -> bool:
 	if not is_instance_valid(art) or not art.is_visible_in_tree():
 		return false
+	if _has_usable_shape():
+		return is_point_in_shape(global_point)
 	var local_point := (
 		art.get_global_transform().affine_inverse() * global_point
 	)

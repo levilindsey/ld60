@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/parts/tv_controls_part.gd" id="1_part"]
+[ext_resource type="Texture2D" path="res://assets/images/repairables/tv_controls.png" id="2_tex"]
+
+[node name="TvControlsPart" type="Node2D" node_paths=PackedStringArray("shape")]
+z_index = 10
+z_as_relative = false
+script = ExtResource("1_part")
+shape = NodePath("Shape")
+
+[node name="Art" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+visible = false
+color = Color(0.75, 0.45, 0.3, 1)
+polygon = PackedVector2Array(-14, -18, 14, -18, 14, 18, -14, 18)
+
+[node name="Sprite" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+scale = Vector2(0.13004926, 0.13004926)
+texture = ExtResource("2_tex")
+region_enabled = true
+region_rect = Rect2(2217, 919, 567, 1015)
+
+[node name="Shape" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape"]
+polygon = PackedVector2Array(-36.869, -66, 36.869, -66, 36.869, 66, -36.869, 66)

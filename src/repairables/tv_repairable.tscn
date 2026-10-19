@@ -49,13 +49,24 @@ shape = SubResource("drop_shape")
 [node name="Layers" type="Node2D" parent="." unique_id=456005890]
 unique_name_in_owner = true
 
-[node name="Body" type="Node2D" parent="Layers" unique_id=312171283 node_paths=PackedStringArray("art")]
+[node name="Body" type="Node2D" parent="Layers" unique_id=312171283 node_paths=PackedStringArray("art", "shape")]
 position = Vector2(0, -308)
 script = ExtResource("2_layer")
 art = NodePath("Art")
 
+shape = NodePath("Shape")
+
 [node name="Art" type="Sprite2D" parent="Layers/Body" unique_id=1462883350]
 texture = ExtResource("body_tex")
+
+[node name="Shape" type="Area2D" parent="Layers/Body"]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape"]
+polygon = PackedVector2Array(-983, -949, 1358, -949, 1358, 901, -983, 901)
 
 [node name="Screen" type="Sprite2D" parent="Layers/Body" unique_id=2023733748]
 position = Vector2(-218, 236)

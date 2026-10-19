@@ -120,7 +120,10 @@ var _bench_returns: Array = []
 var _workable_polygon_global: PackedVector2Array = []
 var _outbox_polygon_global: PackedVector2Array = []
 
-## The scene a drawer part comes from.
+## The shared part scene, kept as a fallback for a kind
+## whose dedicated scene is not assigned in settings. Each
+## kind normally spawns its own scene (see
+## `Settings.get_part_scene_from_type()`).
 @export var part_scene: PackedScene
 
 ## The workbench surface, in this level's local coordinates: loose
@@ -618,7 +621,6 @@ func restock_parts(item: Repairable) -> void:
 	_drawer_parts.clear()
 	if not is_instance_valid(item):
 		return
-	G.check(is_instance_valid(part_scene))
 
 	# One of every part kind in the game, so the full set is
 	# on show across the drawers for every repairable.
@@ -658,7 +660,11 @@ func restock_parts(item: Repairable) -> void:
 	if drawers.is_empty():
 		return
 	for part_type in part_types:
-		var part := part_scene.instantiate() as Part
+		var scene := G.settings.get_part_scene_from_type(part_type)
+		if not is_instance_valid(scene):
+			scene = part_scene
+		G.check(is_instance_valid(scene))
+		var part := scene.instantiate() as Part
 		G.check(is_instance_valid(part))
 		add_child(part)
 		part.setup(part_type)

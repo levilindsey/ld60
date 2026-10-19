@@ -1,4 +1,4 @@
-﻿[gd_scene format=3 uid="uid://crw5iclamtou6"]
+[gd_scene format=3 uid="uid://crw5iclamtou6"]
 
 [ext_resource type="Script" uid="uid://b40vyfwtlqdt0" path="res://src/repairables/repairable.gd" id="1_item"]
 [ext_resource type="Script" uid="uid://bexc8yuqwibs5" path="res://src/repairables/repair_layer.gd" id="2_layer"]
@@ -44,13 +44,24 @@ shape = SubResource("drop_shape")
 [node name="Layers" type="Node2D" parent="." unique_id=1323642180]
 unique_name_in_owner = true
 
-[node name="Body" type="Node2D" parent="Layers" unique_id=1431940832 node_paths=PackedStringArray("art")]
+[node name="Body" type="Node2D" parent="Layers" unique_id=1431940832 node_paths=PackedStringArray("art", "shape")]
 position = Vector2(0, -215)
 script = ExtResource("2_layer")
 art = NodePath("Art")
 
+shape = NodePath("Shape")
+
 [node name="Art" type="Sprite2D" parent="Layers/Body" unique_id=1622340983]
 texture = ExtResource("body_tex")
+
+[node name="Shape" type="Area2D" parent="Layers/Body"]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape"]
+polygon = PackedVector2Array(-1316, 84, 1294, 84, 1294, 629, -1316, 629)
 
 [node name="CaseSurface" type="Area2D" parent="Layers/Body" unique_id=1128330153]
 collision_layer = 32

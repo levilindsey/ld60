@@ -81,6 +81,7 @@ func _run() -> void:
 	await _check_right_part_fits()
 	await _check_wrong_part()
 	await _check_cleanup()
+	await _check_dropped_part_shadow()
 
 
 ## The drawers hold one of every part kind in the game, plus
@@ -543,9 +544,10 @@ func _check_cleanup() -> void:
 
 
 ## Turns `part` a quarter turn and back, and checks that its
-## drop shadow kept the same bearing from it: the shadow's
-## offset follows the part's global turn, so the shadow sits
-## at the same relative spot however the part itself is turned.
+## drop shadow still bears down-screen from it: the offset is
+## in the world frame, so the shadow sits at the same world
+## offset however the part itself is turned. The silhouette's
+## shape still turns with the part, so it matches the sprite.
 func _check_shadow_turns_with(shadow: DropShadow, part: Part) -> void:
 	if not _expect(
 		is_instance_valid(shadow),
@@ -557,21 +559,95 @@ func _check_shadow_turns_with(shadow: DropShadow, part: Part) -> void:
 	part.reset_physics_interpolation()
 	await get_tree().process_frame
 	await get_tree().process_frame
-	var expected_offset := shadow.offset_px.rotated(
-		part.global_rotation
-	)
+	var expected_offset := shadow.offset_px
 	var actual_offset := (
 		shadow.global_position - part.global_position
 	)
 	_expect(
 		actual_offset.distance_to(expected_offset) < 0.5,
-		"a loose part's shadow offset turns with it"
+		"a loose part's shadow bears down-screen at the same"
+		+ " world offset however it is turned"
 		+ " (offset %s, want %s)" % [actual_offset, expected_offset],
+	)
+	_expect(
+		absf(
+			wrapf(
+				shadow.global_rotation - part.global_rotation,
+				-PI,
+				PI,
+			),
+		) < 0.01,
+		"a loose part's shadow shape turns with it",
 	)
 	part.rotation = rest_rotation
 	part.reset_physics_interpolation()
 	await get_tree().process_frame
 	await get_tree().process_frame
+
+
+## Drops a part with real art loose on the bench and checks
+## that its silhouette shadow actually draws: the copies built
+## before `setup()` assigned the sprite must have picked the
+## texture up, or the shadow draws nothing.
+func _check_dropped_part_shadow() -> void:
+	var scene_part := (
+		(load("res://src/parts/part.tscn") as PackedScene)
+		.instantiate() as Part
+	)
+	if not _expect(
+		is_instance_valid(scene_part), "a dropped part spawns"
+	):
+		return
+	_level.add_child(scene_part)
+	scene_part.setup(Part.Type.TV_CONTROLS)
+	scene_part.is_stored = false
+	scene_part.is_installed = false
+	scene_part.global_position = Vector2(120.0, 120.0)
+	scene_part.show()
+	await _physics_frames(4)
+	await _seconds(0.3)
+	var shadow: DropShadow = null
+	for sibling in scene_part.get_parent().get_children():
+		if sibling is DropShadow and (sibling as DropShadow)._host == scene_part:
+			shadow = sibling as DropShadow
+	if not _expect(
+		is_instance_valid(shadow),
+		"a dropped part on the bench has a drop shadow",
+	):
+		scene_part.queue_free()
+		return
+	_expect(
+		shadow.visible and shadow._fade > 0.9,
+		"a dropped part's shadow is visible on the bench"
+		+ " (fade %.2f)" % shadow._fade,
+	)
+	_expect(
+		shadow.get_copy_count() > 0,
+		"a dropped part's shadow has copies (%d copies)"
+		% shadow.get_copy_count(),
+	)
+	var sprite := scene_part.get_node("%Sprite") as Sprite2D
+	var sprite_copy_count := 0
+	var textured_copy_count := 0
+	for pair in shadow._copies:
+		var copy := pair[0] as CanvasItem
+		var source := pair[1] as CanvasItem
+		if copy is Sprite2D and source == sprite:
+			sprite_copy_count += 1
+			if (
+				is_instance_valid((copy as Sprite2D).texture)
+				and (copy as Sprite2D).texture == sprite.texture
+			):
+				textured_copy_count += 1
+	_expect(
+		sprite_copy_count > 0
+		and textured_copy_count == sprite_copy_count,
+		"a dropped part's shadow copies carry the part sprite's"
+		+ " texture (%d of %d copies)"
+		% [textured_copy_count, sprite_copy_count],
+	)
+	scene_part.queue_free()
+	await _physics_frames(2)
 
 
 func _open_drawer(drawer: Drawer) -> void:

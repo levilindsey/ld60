@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/parts/led_part.gd" id="1_part"]
+[ext_resource type="Texture2D" path="res://assets/images/repairables/piano_good_led.png" id="2_tex"]
+
+[node name="LedPart" type="Node2D" node_paths=PackedStringArray("shape")]
+z_index = 10
+z_as_relative = false
+script = ExtResource("1_part")
+shape = NodePath("Shape")
+
+[node name="Art" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+visible = false
+color = Color(0.95, 0.3, 0.25, 1)
+polygon = PackedVector2Array(11, 0, 9.5263, 5.5, 5.5, 9.5263, 0, 11, -5.5, 9.5263, -9.5263, 5.5, -11, 0, -9.5263, -5.5, -5.5, -9.5263, 0, -11, 5.5, -9.5263, 9.5263, -5.5)
+
+[node name="Sprite" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+scale = Vector2(0.11004785, 0.11004785)
+texture = ExtResource("2_tex")
+region_enabled = true
+region_rect = Rect2(227, 718, 418, 110)
+
+[node name="Shape" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Shape"]
+polygon = PackedVector2Array(-23, -6.0526, 23, -6.0526, 23, 6.0526, -23, 6.0526)

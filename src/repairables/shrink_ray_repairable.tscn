@@ -41,15 +41,25 @@ shape = SubResource("drop_shape")
 [node name="Layers" type="Node2D" parent="."]
 unique_name_in_owner = true
 
-[node name="Body" type="Node2D" parent="Layers" node_paths=PackedStringArray("art")]
+[node name="Body" type="Node2D" parent="Layers" node_paths=PackedStringArray("art", "shape")]
 position = Vector2(0, -32)
 script = ExtResource("2_layer")
 art = NodePath("Art")
+shape = NodePath("Shape")
 
 [node name="Art" type="Sprite2D" parent="Layers/Body"]
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("3_body")
 offset = Vector2(-10.5, -6.5)
+
+[node name="Shape" type="Area2D" parent="Layers/Body"]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape"]
+polygon = PackedVector2Array(-126.9, -92.7, 126.9, -92.7, 126.9, 93.3, -126.9, 93.3)
 
 [node name="Jam" parent="Layers/Body" instance=ExtResource("7_stuck")]
 unique_name_in_owner = true

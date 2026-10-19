@@ -320,6 +320,12 @@ func find_point_for_tool(tool: Tool) -> InteractionPoint:
 	parameters.collide_with_areas = true
 	parameters.collide_with_bodies = false
 	var space := get_world_2d().direct_space_state
+	# The nearest exposed point wins: a big socket's shape can
+	# cover a small screw beside it (the Atari's tab screw sits
+	# inside its socket's circle), and the physics result order
+	# is not a preference order.
+	var nearest: InteractionPoint = null
+	var nearest_distance := INF
 	for result in space.intersect_shape(parameters, _QUERY_MAX_RESULTS):
 		var point := result.collider as InteractionPoint
 		if (
@@ -327,8 +333,13 @@ func find_point_for_tool(tool: Tool) -> InteractionPoint:
 			and point.is_visible_in_tree()
 			and point.is_exposed()
 		):
-			return point
-	return null
+			var distance := shape_node.global_position.distance_squared_to(
+				point.global_position
+			)
+			if distance < nearest_distance:
+				nearest = point
+				nearest_distance = distance
+	return nearest
 
 
 ## The first active surface under a world position, or null.

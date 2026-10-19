@@ -43,13 +43,24 @@ shape = SubResource("drop_shape")
 [node name="Layers" type="Node2D" parent="." unique_id=325245771]
 unique_name_in_owner = true
 
-[node name="Inside" type="Node2D" parent="Layers" unique_id=678278356 node_paths=PackedStringArray("art")]
+[node name="Inside" type="Node2D" parent="Layers" unique_id=678278356 node_paths=PackedStringArray("art", "shape")]
 position = Vector2(0, -458)
 script = ExtResource("2_layer")
 art = NodePath("Art")
 
+shape = NodePath("Shape")
+
 [node name="Art" type="Sprite2D" parent="Layers/Inside" unique_id=961759978]
 texture = ExtResource("inside_tex")
+
+[node name="Shape" type="Area2D" parent="Layers/Inside"]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Inside/Shape"]
+polygon = PackedVector2Array(-1410, -466, 1418, -466, 1418, 1159, -1410, 1159)
 
 [node name="Bulb" parent="Layers/Inside" unique_id=1846858400 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
 position = Vector2(592, 444)
@@ -83,13 +94,24 @@ is_required = false
 position = Vector2(46, 760)
 is_required = false
 
-[node name="Front" type="Node2D" parent="Layers" unique_id=391483119 node_paths=PackedStringArray("art")]
+[node name="Front" type="Node2D" parent="Layers" unique_id=391483119 node_paths=PackedStringArray("art", "shape")]
 position = Vector2(0, -458)
 script = ExtResource("2_layer")
 art = NodePath("Art")
 
+shape = NodePath("Shape")
+
 [node name="Art" type="Sprite2D" parent="Layers/Front" unique_id=321204554]
 texture = ExtResource("front_tex")
+
+[node name="Shape" type="Area2D" parent="Layers/Front"]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Front/Shape"]
+polygon = PackedVector2Array(-1551, -1220, 1471, -1220, 1471, 1217, -1551, 1217)
 
 [node name="ScrewLeft" parent="Layers/Front" unique_id=605067206 instance=ExtResource("4_screw")]
 position = Vector2(-1266, -249)

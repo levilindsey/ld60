@@ -13,8 +13,10 @@ extends Node2D
 ## Sizes and offset lengths are world pixels: the drawing
 ## compensates for any scale above it, the same lesson the
 ## outline hint learned, so a scaled-down prop does not shrink
-## its shadow. The offset's direction is the host's own: it
-## turns with the host (see `offset_px`).
+## its shadow. The offset stays in the world frame (see
+## `offset_px`): the light is above, so the shadow always
+## sits down-screen from the host. A silhouette's shape still
+## turns with the host so it matches the rotated sprite.
 ## Only shown while its `show_when` callable says the host is at
 ## rest and not being held or carried, fading in and out.
 
@@ -57,9 +59,10 @@ void fragment() {
 ## World size of the ellipse (ELLIPSE kind).
 var size_px := Vector2(60.0, 18.0)
 ## Offset from the host's origin to the shadow's centre, in
-## the host's own frame. It turns with the host, so the shadow
-## keeps the same bearing from the screw, part or piece
-## however that thing is turned. Its length is in world pixels.
+## the world frame. It does not turn with the host, so the
+## shadow always bears down-screen from the screw, part or
+## piece however that thing is turned. Its length is in
+## world pixels.
 var offset_px := Vector2(4.0, 10.0)
 ## Judges whether the host is at rest and unheld right now.
 var show_when: Callable
@@ -163,12 +166,12 @@ func _process(delta: float) -> void:
 	var centre: Vector2 = host_node.global_position
 	if is_instance_valid(anchor):
 		centre = anchor.global_position
-	# The offset is in the host's frame: turn it by the host's
-	# global turn, so the shadow's global bearing from the host
-	# is the same however the host itself is turned.
-	global_position = centre + offset_px.rotated(
-		host_node.global_rotation
-	)
+	# The offset is in the world frame: the light is above,
+	# so the shadow always sits down-screen from the host
+	# however the host itself is turned. The shadow's own
+	# turn still follows the host, so a silhouette's shape
+	# matches the rotated sprite.
+	global_position = centre + offset_px
 	global_rotation = host_node.global_rotation
 	_sync_silhouette()
 	_update_clip()
@@ -270,7 +273,14 @@ func _rebuild() -> void:
 				Vector2.ZERO,
 			).basis_xform(shift)
 			_copies.append(
-				[copy, source, float(grow[2]), base_scale, factor],
+				[
+					copy,
+					source,
+					float(grow[2]),
+					base_scale,
+					factor,
+					Vector2(float(grow[0]), float(grow[1])),
+				],
 			)
 	_update_clip()
 
@@ -428,6 +438,10 @@ func _make_copy(source: CanvasItem) -> CanvasItem:
 
 ## Keeps the silhouette matched to the host: transform per grow
 ## layer, per-copy visibility, animation frames and darkness.
+## Sprite copies also track their source's texture and region,
+## so a sprite whose art is assigned after the shadow was built
+## (a part's `setup()`) still casts. The grow is recomputed
+## only when a tracked value actually changes.
 func _sync_silhouette() -> void:
 	if kind != Kind.SILHOUETTE or _copies.is_empty():
 		return
@@ -443,26 +457,112 @@ func _sync_silhouette() -> void:
 	for pair in _copies:
 		var copy := pair[0] as CanvasItem
 		var source := pair[1] as CanvasItem
-		copy.scale = (pair[3] as Vector2) * (pair[4] as Vector2) * size_scale
-		copy.visible = source.is_visible_in_tree() and _host.visible
+		if copy is Sprite2D and source is Sprite2D:
+			_sync_sprite_copy(pair)
 		if copy is Polygon2D and source is Polygon2D:
 			var polygon_copy := copy as Polygon2D
 			var polygon_source := source as Polygon2D
 			if polygon_copy.polygon != polygon_source.polygon:
 				polygon_copy.polygon = polygon_source.polygon
+				_refresh_grow(pair)
+			if polygon_copy.offset != polygon_source.offset:
+				polygon_copy.offset = polygon_source.offset
+				_refresh_grow(pair)
 		if copy is AnimatedSprite2D and source is AnimatedSprite2D:
-			(copy as AnimatedSprite2D).animation = (
-				source as AnimatedSprite2D
-			).animation
-			(copy as AnimatedSprite2D).frame = (
-				source as AnimatedSprite2D
-			).frame
+			var animated_copy := copy as AnimatedSprite2D
+			var animated_source := source as AnimatedSprite2D
+			if animated_copy.sprite_frames != animated_source.sprite_frames:
+				animated_copy.sprite_frames = animated_source.sprite_frames
+				_refresh_grow(pair)
+			if animated_copy.centered != animated_source.centered:
+				animated_copy.centered = animated_source.centered
+				_refresh_grow(pair)
+			if animated_copy.offset != animated_source.offset:
+				animated_copy.offset = animated_source.offset
+				_refresh_grow(pair)
+			if animated_copy.flip_h != animated_source.flip_h:
+				animated_copy.flip_h = animated_source.flip_h
+			if animated_copy.flip_v != animated_source.flip_v:
+				animated_copy.flip_v = animated_source.flip_v
+			animated_copy.animation = animated_source.animation
+			animated_copy.frame = animated_source.frame
+		copy.scale = (pair[3] as Vector2) * (pair[4] as Vector2) * size_scale
+		copy.visible = source.is_visible_in_tree() and _host.visible
 		copy.modulate = Color(
 			0.0,
 			0.0,
 			0.0,
 			_get_alpha() * _fade * float(pair[2]),
 		)
+
+
+## Copies a `Sprite2D` source's art onto its shadow copy when
+## it has changed, and recomputes the grow when the art's size
+## or centre may have moved with it.
+func _sync_sprite_copy(pair: Array) -> void:
+	var sprite_copy := pair[0] as Sprite2D
+	var sprite_source := pair[1] as Sprite2D
+	var needs_grow := false
+	if sprite_copy.texture != sprite_source.texture:
+		sprite_copy.texture = sprite_source.texture
+		needs_grow = true
+	if sprite_copy.region_enabled != sprite_source.region_enabled:
+		sprite_copy.region_enabled = sprite_source.region_enabled
+		needs_grow = true
+	if sprite_copy.region_rect != sprite_source.region_rect:
+		sprite_copy.region_rect = sprite_source.region_rect
+		needs_grow = true
+	if sprite_copy.hframes != sprite_source.hframes:
+		sprite_copy.hframes = sprite_source.hframes
+		needs_grow = true
+	if sprite_copy.vframes != sprite_source.vframes:
+		sprite_copy.vframes = sprite_source.vframes
+		needs_grow = true
+	if sprite_copy.frame != sprite_source.frame:
+		sprite_copy.frame = sprite_source.frame
+	if sprite_copy.frame_coords != sprite_source.frame_coords:
+		sprite_copy.frame_coords = sprite_source.frame_coords
+	if sprite_copy.centered != sprite_source.centered:
+		sprite_copy.centered = sprite_source.centered
+		needs_grow = true
+	if sprite_copy.offset != sprite_source.offset:
+		sprite_copy.offset = sprite_source.offset
+		needs_grow = true
+	if sprite_copy.flip_h != sprite_source.flip_h:
+		sprite_copy.flip_h = sprite_source.flip_h
+	if sprite_copy.flip_v != sprite_source.flip_v:
+		sprite_copy.flip_v = sprite_source.flip_v
+	if needs_grow:
+		_refresh_grow(pair)
+
+
+## Recomputes a copy's grow factor and centre shift from its
+## source as it stands now, and refreshes the copy's base pose
+## from the source's current pose under the host. Called only
+## when the source's art has changed, so the used-rect lookup
+## stays rare (and cached).
+func _refresh_grow(pair: Array) -> void:
+	if pair.size() <= 5 or not is_instance_valid(_host):
+		return
+	var copy := pair[0] as Node2D
+	var source := pair[1] as CanvasItem
+	var margin := pair[5] as Vector2
+	var grow_info := _get_grow(source, margin)
+	var factor := grow_info[0] as Vector2
+	var centre := grow_info[1] as Vector2
+	var relative := (
+		_host.get_global_transform().affine_inverse()
+		* source.get_global_transform()
+	)
+	var base_scale := relative.get_scale()
+	pair[3] = base_scale
+	pair[4] = factor
+	var shift := base_scale * ((Vector2.ONE - factor) * centre)
+	copy.position = relative.origin + Transform2D(
+		relative.get_rotation(),
+		Vector2.ZERO,
+	).basis_xform(shift)
+	copy.rotation = relative.get_rotation()
 
 
 func _update_clip() -> void:
