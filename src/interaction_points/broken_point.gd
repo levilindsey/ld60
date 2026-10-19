@@ -273,11 +273,19 @@ func _end_hold() -> void:
 	_restore_draw_order()
 
 
-## The dot left the band. The piece drops where it is, and
-## the glue stays on the point for the next attempt.
+## The dot left the band. The piece drops where it is, the
+## glue stays on the point for the next attempt, and the
+## failed hold costs a defect on the item.
 func _fail_hold() -> void:
 	var dropped := piece
 	_end_hold()
+	var item := get_item()
+	if is_instance_valid(item):
+		item.quality.add_defect(
+			RepairQuality.Defect.FAILED_GLUE_HOLD,
+			global_position,
+			self,
+		)
 	G.audio.play_sound(&"clunk")
 	pulse()
 	if is_instance_valid(G.level) and is_instance_valid(dropped):

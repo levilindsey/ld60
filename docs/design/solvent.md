@@ -35,7 +35,8 @@ kept for when a solvent bottle lands.
 - **Grime** (`GrimeSpot` points, role REPAIR) has HP, and its alpha
   fades with it. A spot counts as clean with 10% HP left; the rest
   clears with a sparkle sweep and a ding, so nobody hunts the last
-  speck.
+  speck. A spot still dirty when the item finishes costs a left
+  dirty defect (-3).
 - The rag gets dirtier (tinted brown) as it cleans.
 - What it cleans: grime, battery crust, oil smears, fingerprints, tape
   heads, sticky keys, contacts.

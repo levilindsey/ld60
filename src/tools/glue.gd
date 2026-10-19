@@ -3,8 +3,10 @@ extends Tool
 ## The glue bottle (docs/design/glue.md). Press and hold to
 ## squeeze, then trace a crack to cover it, or dab a broken
 ## point so its piece can be held back on. Flooding a crack
-## leaves a blob. Squeezing over a plain surface leaves a
-## smear for the rag.
+## leaves a blob. Squeezing anywhere else on a piece the
+## hammer could dent (its surface, or the art of its exposed
+## layer when it has no surface there) leaves a smear for
+## the rag.
 
 
 ## How often an off-target squeeze smears, in seconds.
@@ -141,19 +143,20 @@ func _stop_squeezing() -> void:
 		G.level.hand.clear_input_owner(self)
 
 
-## Glue on a plain surface: a smear the rag can wipe off.
-## It costs nothing while it can still be cleaned. An item
-## that finishes with a smear on it pays for it then (see
-## Repairable). A spot already smeared does not smear again.
+## Glue where no point wanted it: a smear the rag can wipe
+## off. It lands on the same sorts of places the hammer can
+## dent: a surface, or, where a piece has no surface there,
+## the art of its exposed layer (a strikable point's layer,
+## say). It costs nothing while it can still be cleaned. An
+## item that finishes with a smear on it pays for it then
+## (see Repairable). A spot already smeared does not smear
+## again.
 func _smear_on_surface(at_position: Vector2) -> void:
 	if not is_instance_valid(G.level):
 		return
 	if not is_instance_valid(G.settings.glue_smear_scene):
 		return
-	var surface := G.level.hand.find_surface(at_position)
-	if not is_instance_valid(surface) or not surface.is_active():
-		return
-	var layer := surface.get_layer()
+	var layer := _find_smear_layer(at_position)
 	if not is_instance_valid(layer) or not is_instance_valid(layer.art):
 		return
 	for point in layer.get_points():
@@ -172,3 +175,19 @@ func _smear_on_surface(at_position: Vector2) -> void:
 	smear.rotation = randf() * TAU
 	smear.reset_physics_interpolation()
 	smear.setup_decal()
+
+
+## The layer a smear lands on at a world position: the
+## active surface's layer, or, where the exposed piece has
+## no surface there, the exposed layer whose art is under
+## the nozzle. The hammer dents both sorts of place.
+func _find_smear_layer(at_position: Vector2) -> RepairLayer:
+	var surface := G.level.hand.find_surface(at_position)
+	if is_instance_valid(surface) and surface.is_active():
+		return surface.get_layer()
+	if not is_instance_valid(G.level.active_repairable):
+		return null
+	for layer in G.level.active_repairable.layers:
+		if layer.is_exposed() and layer.has_point(at_position):
+			return layer
+	return null

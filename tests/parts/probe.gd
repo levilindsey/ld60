@@ -378,12 +378,13 @@ func _check_right_part_fits() -> void:
 		"picking a part up turns it a bit (%.1f deg)"
 		% rad_to_deg(pickup_turn),
 	)
-	var bench_spot := Vector2(-180.0, 80.0)
+	var bench_spot := Vector2(-180.0, 200.0)
 	var drag_start := part.global_position
 	for step in range(1, 7):
 		await _move_to(
 			drag_start.lerp(bench_spot, float(step) / 6.0)
 		)
+	await _seconds(0.2)
 	var rotation_before_drop := part.rotation
 	await _release_at(bench_spot)
 	await _seconds(0.35)

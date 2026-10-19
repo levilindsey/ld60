@@ -27,7 +27,9 @@ Defaults, tuned in settings (a "Quality" export group):
 | Smear on a sensitive surface, minor | -3 | The rag, about 30% wiped |
 | Smear, ruined (replaces the minor one) | -10 | The rag, fully wiped |
 | Oil drip or stain | -4 | Over-oiling, a drop off target |
-| Glue blob | -5 | Too much glue in one spot |
+| Glue blob | -5 | Too much glue in one spot, or a glue smear left uncleaned |
+| Left dirty | -3 | A grime spot or dust clump left uncleaned, per spot |
+| Failed glue hold | -5 | A broken piece hold that leaves its ring, per failure |
 | Over par time | -1 per 2 s, at most -30 | A slow repair |
 | Wrong tool or wrong part | 0 | It just bounces off |
 
@@ -69,6 +71,8 @@ enum Defect {
 	SMEAR_RUINED,
 	OIL_DRIP,
 	GLUE_BLOB,
+	LEFTOVER_DIRT,
+	FAILED_GLUE_HOLD,
 }
 ```
 

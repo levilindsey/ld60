@@ -496,21 +496,27 @@ func _detach_fallen_pieces(
 			)
 
 
-## Glue smears still on the item when it finishes are paid
-## for now, one blob defect each. Cleaned ones cost nothing.
-func _charge_remaining_smears() -> void:
+## Mess still on the item when it finishes is paid for now.
+## A glue smear costs a blob defect each, and a grime spot
+## or dust clump that was never cleaned costs a leftover
+## dirt defect each. Cleaned mess costs nothing.
+func _charge_remaining_mess() -> void:
 	for layer in layers:
 		for point in layer.get_points():
-			var smear := point as GlueSmear
-			if not is_instance_valid(smear):
+			if point.mode == InteractionPoint.Mode.FINISHED:
 				continue
-			if smear.mode == InteractionPoint.Mode.FINISHED:
-				continue
-			quality.add_defect(
-				RepairQuality.Defect.GLUE_BLOB,
-				smear.global_position,
-				smear,
-			)
+			if point is GlueSmear:
+				quality.add_defect(
+					RepairQuality.Defect.GLUE_BLOB,
+					point.global_position,
+					point,
+				)
+			elif point is GrimeSpot or point is DustClump:
+				quality.add_defect(
+					RepairQuality.Defect.LEFTOVER_DIRT,
+					point.global_position,
+					point,
+				)
 
 
 func _update_state() -> void:
@@ -521,7 +527,7 @@ func _update_state() -> void:
 		return
 	has_finished = is_now_finished
 	if has_finished:
-		_charge_remaining_smears()
+		_charge_remaining_mess()
 		G.print(
 			"Item finished: %s" % item_name,
 			ScaffolderLog.CATEGORY_GAME_STATE,

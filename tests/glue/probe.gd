@@ -1,7 +1,9 @@
 extends "res://tests/probe_base.gd"
 ## The glue bottle and crack (LX22). Boots the game, spawns a
 ## crack on the test item's cover, floods one spot, then traces
-## the crack and lets it dry.
+## the crack and lets it dry. It also squeezes glue onto piece
+## art with no surface under it, where a hammer could still
+## dent, and checks it smears there too.
 ##
 ## Run it with `tests/run.ps1 -Name glue`, or from the repo root
 ## (PowerShell):
@@ -85,6 +87,30 @@ func _run() -> void:
 	_expect(
 		_crack.mode == InteractionPoint.Mode.FINISHED,
 		"the covered crack dries into a seam",
+	)
+	await _check_smear_without_surface()
+
+
+## Squeezes glue onto the cover's art with its surface
+## disabled, so only the layer art is under the nozzle. The
+## hammer can dent a piece there, so glue smears there too.
+func _check_smear_without_surface() -> void:
+	var cover := _item.layers[_item.layers.size() - 1]
+	var surface := cover.get_node("CaseSurface") as Surface
+	surface.collision_layer = 0
+	await _physics_frames(2)
+	var spot := cover.to_global(Vector2(38, 38))
+	await _press_down(spot - _nozzle_offset)
+	await _seconds(0.9)
+	await _release_at(spot - _nozzle_offset)
+	surface.collision_layer = Settings.PhysicsLayer.SURFACES
+	var smear: GlueSmear = null
+	for point in cover.get_points():
+		if point is GlueSmear:
+			smear = point as GlueSmear
+	_expect(
+		is_instance_valid(smear),
+		"glue smears on piece art with no surface under it",
 	)
 
 

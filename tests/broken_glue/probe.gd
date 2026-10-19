@@ -12,6 +12,8 @@ extends "res://tests/probe_base.gd"
 
 
 const _MAIN_SCENE_PATH := "res://src/core/main.tscn"
+const _GRIME_SCENE_PATH := "res://src/interaction_points/grime_spot.tscn"
+const _DUST_SCENE_PATH := "res://src/interaction_points/dust_clump.tscn"
 const _TIMEOUT_SEC := 120.0
 
 var _item: Repairable
@@ -208,6 +210,7 @@ func _run() -> void:
 		) < 6.0,
 		"the piece settles onto the point's exact centre",
 	)
+	var defects_before_fail := _item.quality.get_defect_count()
 	var fail_position := _point.global_position + Vector2(230, 0)
 	await _move_to(fail_position)
 	await _physics_frames(4)
@@ -229,6 +232,10 @@ func _run() -> void:
 		and _point.mode != InteractionPoint.Mode.FINISHED,
 		"a failed hold leaves the glue on the point",
 	)
+	_expect(
+		_item.quality.get_defect_count() == defects_before_fail + 1,
+		"a failed hold costs a failed glue hold defect",
+	)
 
 	# Holding still, countering the drift, glues it back on.
 	await _press_down(_piece.global_position)
@@ -248,6 +255,39 @@ func _run() -> void:
 		"the held piece stays on its point",
 	)
 
+	# Dirt left when the repair ends is charged then, one
+	# defect per spot. Settle the item's own dirt first, so
+	# only the spots spawned here count.
+	for layer in _item.layers:
+		for point in layer.get_points():
+			if (
+				(point is GrimeSpot or point is DustClump)
+				and point.mode != InteractionPoint.Mode.FINISHED
+			):
+				point.finish()
+	var dirt_cover := _item.layers[_item.layers.size() - 1]
+	var grime := (
+		(load(_GRIME_SCENE_PATH) as PackedScene).instantiate()
+		as GrimeSpot
+	)
+	dirt_cover.add_child(grime)
+	grime.position = Vector2(38, -24)
+	var dust := (
+		(load(_DUST_SCENE_PATH) as PackedScene).instantiate()
+		as DustClump
+	)
+	dirt_cover.add_child(dust)
+	dust.position = Vector2(38, 24)
+	await _physics_frames(2)
+	var before_dirt_charge := _item.quality.get_defect_count()
+	_item._charge_remaining_mess()
+	_expect(
+		_item.quality.get_defect_count() == before_dirt_charge + 2,
+		"grime and dust left at the end cost one defect each",
+	)
+	grime.finish()
+	dust.finish()
+
 	# A smear left when the repair ends is charged then.
 	await _grab_tool_inside(glue)
 	var late_spot := cover.to_global(Vector2(-38, 24))
@@ -258,7 +298,7 @@ func _run() -> void:
 		is_instance_valid(late_smear), "a second smear lands"
 	):
 		var before_charge := _item.quality.get_defect_count()
-		_item._charge_remaining_smears()
+		_item._charge_remaining_mess()
 		_expect(
 			_item.quality.get_defect_count() == before_charge + 1,
 			"a smear left at the end costs a glue blob",

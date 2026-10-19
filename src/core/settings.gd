@@ -372,6 +372,11 @@ enum PhysicsLayer {
 @export var ruined_smear_points := 10
 @export var oil_drip_points := 4
 @export var glue_blob_points := 5
+## A grime spot or dust clump left uncleaned when the item
+## finishes, per spot.
+@export var leftover_dirt_points := 3
+## A broken piece hold that leaves its ring, per failure.
+@export var failed_glue_hold_points := 5
 ## A repair loses some points for every full interval it runs past its par
 ## time, up to a maximum.
 @export var time_penalty_interval_sec := 2.0
@@ -511,6 +516,10 @@ func get_defect_points(defect: RepairQuality.Defect) -> int:
 			points = oil_drip_points
 		RepairQuality.Defect.GLUE_BLOB:
 			points = glue_blob_points
+		RepairQuality.Defect.LEFTOVER_DIRT:
+			points = leftover_dirt_points
+		RepairQuality.Defect.FAILED_GLUE_HOLD:
+			points = failed_glue_hold_points
 		_:
 			G.fatal()
 	return points

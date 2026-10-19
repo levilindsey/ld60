@@ -26,8 +26,10 @@ crack without flooding it, then let it dry.
   decal becomes a glued seam.
 - **Too much:** a sample past 1.5 spawns a glue blob decal there and a
   glue blob defect (-5), once per sample.
-- **Off target:** squeezing over a plain surface (or missing a broken
-  point) leaves a `GlueSmear` there instead (see below).
+- **Off target:** squeezing over the same sorts of places the
+  hammer can dent (a surface, or the art of an exposed piece
+  with no surface there) leaves a `GlueSmear` there instead
+  (see below).
 
 ## Broken pieces
 
@@ -63,7 +65,8 @@ Ledger: **LX66**. A snapped off piece is two placeable nodes.
   the point's exact centre. Fully inside the inner circle
   banks time. Straddling the wide band warns (amber) and
   pauses the timer. Past the band fails: the hand lets go and
-  the piece is flicked up and to a side, the glue stays.
+  the piece is flicked up and to a side, the glue stays, and
+  the failure costs a failed glue hold defect (-5).
   `hold_sec` on the point (default 5) is the still time.
 - **Glue contact:** glue leaves the bottle's working end, never
   the cursor marker or the bottle origin. A broken point glues

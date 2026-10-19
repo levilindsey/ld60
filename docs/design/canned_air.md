@@ -28,7 +28,8 @@ blows away, and fans spin when blown on.
   - A dry fan (high friction) barely turns, stops at once and squeaks.
     That's the hint that it needs oil ([oil_can.md](oil_can.md)). After
     oiling, its friction drops.
-- No penalties. The worst case is wasted time.
+- Blowing itself has no penalty, but a dust clump still there
+  when the item finishes costs a left dirty defect (-3).
 
 ## Feedback
 
