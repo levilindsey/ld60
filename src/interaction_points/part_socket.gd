@@ -52,6 +52,19 @@ const _FLING_SPIN_RAD := 9.0
 ## Optional. Grime covering this socket. While it is not FINISHED the
 ## broken part can't be tugged out.
 @export var covering_grime: GrimeSpot
+## Optional outline of the broken part as it sits in the socket:
+## an Area2D with polygon or shape children, the way a part's own
+## Shape is authored. The empty hand can grab the broken part
+## anywhere inside it, not just on the socket's own circle, and
+## the hint follows it while the broken part sits here. It carries
+## no collision state of its own: the socket strips it at ready
+## and tests points against it by hand.
+@export var bad_part_shape: Area2D
+## Optional outline of the fitted part, the good one from the
+## drawer, as it sits in the socket. A drop of that part is judged
+## against it, and the hint and ghost outline follow it once the
+## socket is empty. Set up the same way as `bad_part_shape`.
+@export var good_part_shape: Area2D
 
 ## True while the broken part still sits in the socket.
 var has_broken_part := false
@@ -71,6 +84,8 @@ var _yank_time := 0.0
 
 func _ready() -> void:
 	super._ready()
+	_configure_shape_area(bad_part_shape)
+	_configure_shape_area(good_part_shape)
 	type = Type.PART_SOCKET
 	has_broken_part = starts_with_broken_part
 	%BrokenArt.polygon = Part.get_polygon(accepted_part)
@@ -88,7 +103,12 @@ func _ready() -> void:
 	# placeholder polygon: the polygon is tens of pixels across
 	# where the fitted stick stands well over a hundred, so the
 	# outline all but vanished against the real thing.
-	%Outline.polygon = _get_art_outline_points()
+	var good_outline := _get_shape_area_local_polygon(good_part_shape)
+	%Outline.polygon = (
+		good_outline
+		if good_outline.size() >= 3
+		else _get_art_outline_points()
+	)
 	%Outline.scale = Vector2.ONE
 	if is_instance_valid(installed_art):
 		installed_art.hide()
@@ -148,6 +168,47 @@ func has_tuggable_part() -> bool:
 ## True while the player is mid-tug on the broken part.
 func is_tugging() -> bool:
 	return _is_wiggling
+
+
+## True when a world point lands on the broken part's authored
+## shape. False when the socket has no bad part shape (or it
+## went away with the broken part it was parented under).
+func is_point_in_bad_part_shape(world_point: Vector2) -> bool:
+	return (
+		is_instance_valid(bad_part_shape)
+		and _is_point_in_shape_area(bad_part_shape, world_point)
+	)
+
+
+## True when a world point lands on the fitted part's authored
+## shape. False when the socket has no good part shape.
+func is_point_in_good_part_shape(world_point: Vector2) -> bool:
+	return (
+		is_instance_valid(good_part_shape)
+		and _is_point_in_shape_area(good_part_shape, world_point)
+	)
+
+
+## True when a world point lands on either authored part shape.
+func is_point_in_part_shape(world_point: Vector2) -> bool:
+	return (
+		is_point_in_bad_part_shape(world_point)
+		or is_point_in_good_part_shape(world_point)
+	)
+
+
+## The bad part shape's first polygon, in world points.
+func get_bad_part_world_polygon() -> PackedVector2Array:
+	if not is_instance_valid(bad_part_shape):
+		return PackedVector2Array()
+	return _get_shape_area_world_polygon(bad_part_shape)
+
+
+## The good part shape's first polygon, in world points.
+func get_good_part_world_polygon() -> PackedVector2Array:
+	if not is_instance_valid(good_part_shape):
+		return PackedVector2Array()
+	return _get_shape_area_world_polygon(good_part_shape)
 
 
 ## The empty hand pressed the socket. A broken part starts wiggling.
@@ -258,8 +319,16 @@ func on_part_installed() -> void:
 
 
 ## The hint outline follows the fitted art too, not the
-## socket's small hit circle.
+## socket's small hit circle. An authored part shape hugs the
+## art closer still: the broken part's while it sits here, the
+## fitted part's once it is out.
 func _get_hint_polygon() -> PackedVector2Array:
+	var shape_area := (
+		bad_part_shape if has_broken_part else good_part_shape
+	)
+	var shaped := _get_shape_area_local_polygon(shape_area)
+	if shaped.size() >= 3:
+		return shaped
 	var points := _get_art_outline_points()
 	if points.size() >= 3:
 		return points
@@ -280,16 +349,20 @@ func _get_art_outline_points() -> PackedVector2Array:
 		rect = fitted.transform * fitted.get_rect()
 		has_rect = true
 	else:
-		for child in %BrokenPart.get_children():
-			if child is Sprite2D:
-				var broken := child as Sprite2D
-				rect = (
-					(%BrokenPart as Node2D).transform
-					* broken.transform
-					* broken.get_rect()
-				)
-				has_rect = true
-				break
+		# The broken part flies off as scrap when it pops out,
+		# so it may be gone by the time a hint asks.
+		var broken_part := get_node_or_null("%BrokenPart") as Node2D
+		if is_instance_valid(broken_part):
+			for child in broken_part.get_children():
+				if child is Sprite2D:
+					var broken := child as Sprite2D
+					rect = (
+						broken_part.transform
+						* broken.transform
+						* broken.get_rect()
+					)
+					has_rect = true
+					break
 	if not has_rect:
 		var points := Part.get_polygon(accepted_part)
 		var scaled := PackedVector2Array()

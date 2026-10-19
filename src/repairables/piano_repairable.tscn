@@ -75,18 +75,28 @@ shape = SubResource("surface_shape")
 [node name="BrokenPoint" parent="Layers/Body" unique_id=665005877 instance=ExtResource("9_point")]
 position = Vector2(-643, 46)
 
-[node name="BrokenPiece" parent="Layers/Body" unique_id=49359959 node_paths=PackedStringArray("target_point", "art") instance=ExtResource("10_piece")]
+[node name="BrokenPiece" parent="Layers/Body" unique_id=49359959 node_paths=PackedStringArray("target_point", "art", "shape") instance=ExtResource("10_piece")]
 position = Vector2(-393, 346)
 target_point = NodePath("../BrokenPoint")
 starts_detached = true
 fall_target_offset = Vector2(250, 300)
 art = NodePath("KeyArt")
+shape = NodePath("Shape")
 
 [node name="KeyArt" type="Sprite2D" parent="Layers/Body/BrokenPiece" unique_id=1982356378]
 scale = Vector2(2, 2)
 texture = ExtResource("key_tex")
 region_enabled = true
 region_rect = Rect2(515, 506, 81.5, 274.5)
+
+[node name="Shape" type="Area2D" parent="Layers/Body/BrokenPiece" unique_id=49359960]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/BrokenPiece/Shape" unique_id=49359961]
+polygon = PackedVector2Array(52.5, -262.5, 46.5, -238.5, 8.5, -213.5, 6.5, -188.5, 6.5, -163.5, 8.5, -138.5, -11.5, -113.5, -13.5, -88.5, -17.5, -63.5, -23.5, -38.5, -59.5, -13.5, -59.5, 11.5, -81.5, 35.5, -81.5, 60.5, -79.5, 85.5, -77.5, 110.5, -73.5, 135.5, -71.5, 160.5, -71.5, 185.5, -71.5, 210.5, -71.5, 235.5, -71.5, 260.5, 78.5, 260.5, 78.5, 235.5, 74.5, 210.5, 70.5, 185.5, 70.5, 160.5, 70.5, 135.5, 70.5, 110.5, 70.5, 85.5, 72.5, 60.5, 74.5, 35.5, 74.5, 11.5, 74.5, -13.5, 74.5, -38.5, 74.5, -63.5, 74.5, -88.5, 74.5, -113.5, 76.5, -138.5, 78.5, -163.5, 78.5, -188.5, 78.5, -213.5, 78.5, -238.5, 78.5, -262.5)
 
 [node name="GrimeA" parent="Layers/Body" unique_id=728618149 instance=ExtResource("6_grime")]
 position = Vector2(-1054, -340)

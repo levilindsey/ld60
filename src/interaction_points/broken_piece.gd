@@ -37,6 +37,14 @@ const _FIT_SEC := 0.15
 ## The piece's art: a Polygon2D, so its shape can be redrawn
 ## per piece, or a Sprite2D.
 @export var art: CanvasItem
+## The piece's own outline, an Area2D with polygon or shape
+## children tracing the art. A press grabs the piece anywhere
+## inside it, not just within `grab_radius_px` of its middle,
+## and the outline sets how far the art reaches. It carries no
+## collision state of its own: the piece switches its layers
+## and monitoring off at ready and tests points against it by
+## hand, so it never shows up in the hand's physics picking.
+@export var shape: Area2D
 
 ## The item this piece broke off, or null between items.
 var item: Repairable
@@ -54,6 +62,7 @@ var _shadow_attached := false
 
 
 func _ready() -> void:
+	_configure_shape()
 	G.check(is_instance_valid(art))
 	item = _find_item()
 	if is_instance_valid(target_point):
@@ -107,8 +116,118 @@ func setup_target(point: BrokenPoint) -> void:
 		point.piece = self
 
 
+## The Shape areas arrive with no collision state configured
+## (they were added in the editor as bare outlines). Strip
+## anything that could make physics see them: no layer, no
+## mask, no monitoring either way. Points are tested against
+## them by hand in `is_point_in_shape()`.
+func _configure_shape() -> void:
+	if not is_instance_valid(shape):
+		return
+	shape.collision_layer = 0
+	shape.collision_mask = 0
+	shape.monitoring = false
+	shape.monitorable = false
+
+
+## True when the piece has a usable authored Shape: a polygon
+## with at least three points, or a collision shape.
+func has_shape() -> bool:
+	if not is_instance_valid(shape):
+		return false
+	for child in shape.get_children():
+		if child is CollisionPolygon2D:
+			if (child as CollisionPolygon2D).polygon.size() >= 3:
+				return true
+		elif child is CollisionShape2D:
+			if is_instance_valid((child as CollisionShape2D).shape):
+				return true
+	return false
+
+
+## True when a world point lands on the piece's Shape: any
+## of its polygons, or inside any of its collision shapes.
+## False when the piece has no Shape configured.
+func is_point_in_shape(world_point: Vector2) -> bool:
+	if not is_instance_valid(shape):
+		return false
+	for child in shape.get_children():
+		if child is CollisionPolygon2D:
+			var polygon_node := child as CollisionPolygon2D
+			if polygon_node.polygon.size() < 3:
+				continue
+			var local := (
+				polygon_node.global_transform.affine_inverse()
+				* world_point
+			)
+			if Geometry2D.is_point_in_polygon(
+				local, polygon_node.polygon
+			):
+				return true
+		elif child is CollisionShape2D:
+			var shape_node := child as CollisionShape2D
+			if not is_instance_valid(shape_node.shape):
+				continue
+			var local := (
+				shape_node.global_transform.affine_inverse()
+				* world_point
+			)
+			if _is_point_in_collision_shape(local, shape_node.shape):
+				return true
+	return false
+
+
+## The Shape's first polygon, in world points, for outlines
+## and hints that want the piece's real outline.
+func get_shape_world_polygon() -> PackedVector2Array:
+	var points := PackedVector2Array()
+	if not is_instance_valid(shape):
+		return points
+	for child in shape.get_children():
+		if child is CollisionPolygon2D:
+			var polygon_node := child as CollisionPolygon2D
+			for point in polygon_node.polygon:
+				points.append(
+					polygon_node.global_transform * point
+				)
+			return points
+	return points
+
+
+func _is_point_in_collision_shape(
+	local_point: Vector2, collision_shape: Shape2D
+) -> bool:
+	if collision_shape is RectangleShape2D:
+		var rectangle := collision_shape as RectangleShape2D
+		return Rect2(
+			-rectangle.size * 0.5, rectangle.size
+		).has_point(local_point)
+	if collision_shape is CircleShape2D:
+		var circle := collision_shape as CircleShape2D
+		return local_point.length() <= circle.radius
+	if collision_shape is CapsuleShape2D:
+		var capsule := collision_shape as CapsuleShape2D
+		var half := capsule.height * 0.5 - capsule.radius
+		var nearest := Vector2(
+			0.0, clampf(local_point.y, -half, half)
+		)
+		return local_point.distance_to(nearest) <= capsule.radius
+	return false
+
+
 ## How far the art reaches from the middle, in world pixels.
+## The authored Shape wins when it has one; the drawn art is
+## the fallback.
 func get_radius_px() -> float:
+	var shape_points := get_shape_world_polygon()
+	if shape_points.size() >= 3:
+		var shape_radius := 0.0
+		for point in shape_points:
+			shape_radius = maxf(
+				shape_radius,
+				point.distance_to(global_position),
+			)
+		return maxf(shape_radius, 1.0)
 	var radius := 20.0
 	if art is Polygon2D:
 		radius = 0.0

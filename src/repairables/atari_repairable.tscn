@@ -6,22 +6,18 @@
 [ext_resource type="PackedScene" uid="uid://cg17ymgfrol22" path="res://src/interaction_points/flat_head_screw.tscn" id="6_screw"]
 [ext_resource type="Texture2D" uid="uid://bqrp5b0s1dnbx" path="res://assets/images/repairables/atari_joystick_with_gaps.png" id="body_tex"]
 [ext_resource type="Texture2D" uid="uid://du62c2fga02r4" path="res://assets/images/repairables/atari_joystick_good.png" id="good_tex"]
-[ext_resource type="Texture2D" uid="uid://cb1cycyi1mevn" path="res://assets/images/repairables/atari_joystick_bad.png" id="bad_tex"]
 
 [sub_resource type="RectangleShape2D" id="drop_shape"]
 size = Vector2(215, 185)
-
-[sub_resource type="CircleShape2D" id="socket_shape"]
-radius = 70.0
 
 [node name="AtariRepairable" type="Node2D" unique_id=1191888130 node_paths=PackedStringArray("shape")]
 script = ExtResource("1_item")
 item_name = "Atari joystick"
 shape = NodePath("Shape")
 shadow_style = 1
-shadow_offset = Vector2(3, 8)
 ticket = "hi i movd it to strong and now it dont werk
 :("
+shadow_offset = Vector2(3, 8)
 
 [node name="DropArea" type="Area2D" parent="." unique_id=1445261071]
 unique_name_in_owner = true
@@ -51,30 +47,16 @@ collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape" unique_id=52556345]
-polygon = PackedVector2Array(-95.52, -66.72, 111.84, -66.72, 111.84, 110.24, -95.52, 110.24)
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape" unique_id=1806204762]
+polygon = PackedVector2Array(-91, -13, -2, -64, 18, -64, 96, -9, 100, 2, 93, 45, 7, 108, -1, 107, -87, 44, -93, 5)
 
-[node name="Joystick" parent="Layers/Body" unique_id=967882368 node_paths=PackedStringArray("installed_art", "locking_fastener") instance=ExtResource("5_socket")]
+[node name="Joystick" parent="Layers/Body" unique_id=967882368 node_paths=PackedStringArray("installed_art", "locking_fastener", "bad_part_shape", "good_part_shape") instance=ExtResource("5_socket")]
 position = Vector2(2, 0)
 accepted_part = 6
 installed_art = NodePath("GoodStick")
 locking_fastener = NodePath("../Screw")
-
-[node name="CollisionShape2D" parent="Layers/Body/Joystick" index="0"]
-shape = SubResource("socket_shape")
-
-[node name="Outline" parent="Layers/Body/Joystick" index="1"]
-visible = false
-
-[node name="BrokenArt" parent="Layers/Body/Joystick/BrokenPart" index="0"]
-visible = false
-
-[node name="BadStick" type="Sprite2D" parent="Layers/Body/Joystick/BrokenPart"]
-position = Vector2(2, -30)
-scale = Vector2(0.32, 0.32)
-texture = ExtResource("bad_tex")
-region_enabled = true
-region_rect = Rect2(617.5, 318.5, 543, 412.5)
+bad_part_shape = NodePath("BrokenPart/BadPartShape")
+good_part_shape = NodePath("GoodPartShape")
 
 [node name="GoodStick" type="Sprite2D" parent="Layers/Body/Joystick" unique_id=536495873]
 position = Vector2(-18, -44)
@@ -82,6 +64,27 @@ scale = Vector2(0.32, 0.32)
 texture = ExtResource("good_tex")
 region_enabled = true
 region_rect = Rect2(617.5, 233.5, 418, 497.5)
+
+[node name="GoodPartShape" type="Area2D" parent="Layers/Body/Joystick" unique_id=536495874]
+position = Vector2(-18, -44)
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Joystick/GoodPartShape" unique_id=536495875]
+position = Vector2(-1, 0)
+polygon = PackedVector2Array(-17, 20, -8, 15, 6, 10, 15, 8, 14, -25, 13, -71, 15, -75, 20, -78, 25, -79, 36, -79, 43, -76, 47, -71, 47, -44, 40, 12, 55, 20, 67, 37, 66.795975, 55.11661, 64, 63, 55, 73, 40, 79, 14, 79, -2, 75, -11, 64, -17, 52, -58, 53, -67, 46, -66.98875, 39.0782, -63, 31, -58, 28, -19, 28)
+
+[node name="BadPartShape" type="Area2D" parent="Layers/Body/Joystick/BrokenPart" unique_id=536495876]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Joystick/BrokenPart/BadPartShape" unique_id=536495877]
+position = Vector2(-1, 0)
+polygon = PackedVector2Array(-17, 20, -8, 15, 6, 10, 15, 8, 14, -25, 13, -71, 15, -75, 20, -78, 25, -79, 36, -79, 43, -76, 47, -71, 47, -44, 40, 12, 55, 20, 67, 37, 66.795975, 55.11661, 64, 63, 55, 73, 40, 79, 14, 79, -2, 75, -11, 64, -17, 52, -58, 53, -67, 46, -66.98875, 39.0782, -63, 31, -58, 28, -19, 28)
 
 [node name="Screw" parent="Layers/Body" unique_id=1956487963 instance=ExtResource("6_screw")]
 position = Vector2(-68, -2)

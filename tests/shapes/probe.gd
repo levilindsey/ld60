@@ -71,6 +71,7 @@ func _run() -> void:
 	_check_live_drawer_parts()
 	await _check_shared_part()
 	await _check_layers()
+	await _check_authored_shapes()
 
 
 func _check_dedicated_parts() -> void:
@@ -199,6 +200,171 @@ func _check_layers() -> void:
 		item.queue_free()
 		await _physics_frames(1)
 	_expect(layer_count == 14, "every repairable layer was checked")
+
+
+## The authored Shapes beyond parts and layers: the TV
+## antenna's BentPart shape, the piano key's BrokenPiece shape
+## and the Atari socket's good and bad part shapes.
+func _check_authored_shapes() -> void:
+	var tv := _spawn_item("res://src/repairables/tv_repairable.tscn")
+	if is_instance_valid(tv):
+		var antenna: BentPart
+		for layer in tv.layers:
+			for point in layer.get_points():
+				if point is BentPart:
+					antenna = point as BentPart
+		if _expect(
+			is_instance_valid(antenna), "the TV has an antenna point"
+		):
+			_check_point_shape(antenna, "antenna")
+			var far_point := _farthest_point(
+				antenna.get_shape_world_polygon(),
+				antenna.global_position,
+			)
+			_expect(
+				far_point.distance_to(antenna.global_position) > 8.0,
+				"the antenna Shape reaches past its small circle",
+			)
+		tv.queue_free()
+		await _physics_frames(1)
+	var piano := _spawn_item(
+		"res://src/repairables/piano_repairable.tscn"
+	)
+	if is_instance_valid(piano):
+		var key: BrokenPiece
+		for piece in piano.get_broken_pieces():
+			if is_instance_valid(piece.shape):
+				key = piece
+		if _expect(
+			is_instance_valid(key), "the piano key has a Shape"
+		):
+			_expect(
+				key.shape.collision_layer == 0
+				and key.shape.collision_mask == 0
+				and not key.shape.monitoring
+				and not key.shape.monitorable,
+				"the key Shape carries no live physics",
+			)
+			var points := key.get_shape_world_polygon()
+			_expect(
+				points.size() >= 3, "the key Shape has a polygon"
+			)
+			if points.size() >= 3:
+				_expect(
+					key.is_point_in_shape(_polygon_centre(points)),
+					"the key Shape holds its middle",
+				)
+				var expected_radius := 0.0
+				for point in points:
+					expected_radius = maxf(
+						expected_radius,
+						point.distance_to(key.global_position),
+					)
+				_expect(
+					absf(key.get_radius_px() - expected_radius) < 0.5,
+					"the key's radius comes from its Shape",
+				)
+		piano.queue_free()
+		await _physics_frames(1)
+	var atari := _spawn_item(
+		"res://src/repairables/atari_repairable.tscn"
+	)
+	if is_instance_valid(atari):
+		var socket: PartSocket
+		for layer in atari.layers:
+			for point in layer.get_points():
+				if point is PartSocket:
+					socket = point as PartSocket
+		if _expect(
+			is_instance_valid(socket), "the Atari has a socket"
+		):
+			var bad_points := socket.get_bad_part_world_polygon()
+			var good_points := socket.get_good_part_world_polygon()
+			_expect(
+				bad_points.size() >= 3,
+				"the socket has a bad part shape",
+			)
+			_expect(
+				good_points.size() >= 3,
+				"the socket has a good part shape",
+			)
+			if bad_points.size() >= 3:
+				var far_point := _farthest_point(
+					bad_points, socket.global_position
+				)
+				_expect(
+					socket.is_point_in_bad_part_shape(far_point)
+					and far_point.distance_to(
+						socket.global_position
+					) > 22.0,
+					"the broken stick is grabbable past the circle",
+				)
+				_expect(
+					not socket.is_point_in_bad_part_shape(
+						socket.global_position + Vector2(0.0, 500.0)
+					),
+					"below the stick is off its bad part shape",
+				)
+		atari.queue_free()
+		await _physics_frames(1)
+
+
+func _check_point_shape(point: InteractionPoint, name: String) -> void:
+	_expect(
+		is_instance_valid(point.shape),
+		"the %s point has a Shape" % name,
+	)
+	if not is_instance_valid(point.shape):
+		return
+	_expect(
+		point.shape.collision_layer == 0
+		and point.shape.collision_mask == 0
+		and not point.shape.monitoring
+		and not point.shape.monitorable,
+		"the %s Shape carries no live physics" % name,
+	)
+	var points := point.get_shape_world_polygon()
+	_expect(
+		points.size() >= 3, "the %s Shape has a polygon" % name
+	)
+	if points.size() < 3:
+		return
+	_expect(
+		point.is_point_in_shape(_polygon_centre(points)),
+		"the %s Shape holds its middle" % name,
+	)
+	_expect(
+		not point.is_point_in_shape(
+			point.global_position + Vector2(10000.0, 0.0)
+		),
+		"far from the %s is off its Shape" % name,
+	)
+
+
+func _spawn_item(scene_path: String) -> Repairable:
+	var item := (
+		(load(scene_path) as PackedScene).instantiate() as Repairable
+	)
+	if not is_instance_valid(item):
+		_expect(false, "authored-shape item loads: " + scene_path)
+		return null
+	_level.add_child(item)
+	item.mode = Repairable.Mode.UNDER_REPAIR
+	item.global_position = Vector2(0.0, 180.0)
+	return item
+
+
+func _farthest_point(
+	points: PackedVector2Array, from_point: Vector2
+) -> Vector2:
+	var farthest := from_point
+	for point in points:
+		if (
+			point.distance_squared_to(from_point)
+			> farthest.distance_squared_to(from_point)
+		):
+			farthest = point
+	return farthest
 
 
 func _check_part_shape(part: Part, name: String) -> void:

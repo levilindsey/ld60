@@ -105,8 +105,23 @@ func _unscrew_stick() -> void:
 
 func _yank_and_refit() -> void:
 	var broken_part := _socket.get_node("BrokenPart") as Node2D
-	await _press_down(_socket.global_position)
-	await _move_to(_socket.global_position + Vector2(25, 0))
+	# Grab the dead stick by the far end of its authored bad
+	# part shape, well outside the socket's own small circle:
+	# the shape, not the anchor, is what the player grabs.
+	var grab_point := _socket.global_position
+	for point in _socket.get_bad_part_world_polygon():
+		if (
+			point.distance_squared_to(_socket.global_position)
+			> grab_point.distance_squared_to(_socket.global_position)
+		):
+			grab_point = point
+	grab_point = grab_point.lerp(_socket.global_position, 0.2)
+	_expect(
+		grab_point.distance_to(_socket.global_position) > 30.0,
+		"the grab lands on the stick, off the socket's circle",
+	)
+	await _press_down(grab_point)
+	await _move_to(grab_point + Vector2(25, 0))
 	_expect(
 		absf(broken_part.rotation) > 0.01,
 		"the dead joystick rocks with the drag",

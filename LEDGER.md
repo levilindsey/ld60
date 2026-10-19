@@ -114,11 +114,21 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 - **LX70** · Dragging/repositioning the main repairable body (never
   rotating it) is designed only, not built. Design:
   `docs/design/new_items.md`.
+- **LX71** · Authored Shapes now exist on points and broken pieces
+  (TV antenna, piano key, Atari socket's good/bad parts). The other
+  BrokenPieces (Game n Watch D-pad, radio dial, toaster wheels)
+  still grab by their middle reach: give each a `Shape` child and
+  assign `BrokenPiece.shape` when their art lands.
 ## Residuals (known, not fixed)
 
 - **LX68** · The toaster's late beats (the hammer target that appears
   once it wanders, the second wheel knocked off mid-repair) are outside
   the `RepairSequence` built at spawn, so idle hints may skip them.
+- **LX72** · `tests/bench_drag/` fails 2 checks at 86e24cc plus the
+  holder-shadow working tree (verified identical on a stashed
+  baseline, 2026-10-19): "a resting screw's shadow keeps its turn
+  with it" and "a loose cover's shadow keeps its turn with it".
+  Owner: whoever next works `src/props/drop_shadow.gd`.
 - **LX59** · `full_loop`, `full_loop_booklet`, `item_flow`, `screws`
   and `parts` probes fail at HEAD 2d0096b (checked 2026-10-18 on a
   clean worktree, so not LX58 fallout): the Phillips-in-test-box and

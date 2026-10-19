@@ -7,27 +7,32 @@
 [ext_resource type="PackedScene" path="res://src/interaction_points/grime_spot.tscn" id="6_grime"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/dust_clump.tscn" id="7_dust"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/broken_point.tscn" id="9_point"]
-[ext_resource type="PackedScene" path="res://src/interaction_points/broken_piece.tscn" id="10_piece"]
+[ext_resource type="PackedScene" uid="uid://bry3apjrmmi0f" path="res://src/interaction_points/broken_piece.tscn" id="10_piece"]
 [ext_resource type="Texture2D" uid="uid://c13opm6rmaski" path="res://assets/images/repairables/gamenwatch_dpad_button.png" id="dpad_tex"]
 [ext_resource type="Texture2D" uid="uid://qaonmntramda" path="res://assets/images/repairables/gamenwatch_front_gaps.png" id="front_tex"]
 [ext_resource type="Texture2D" uid="uid://dp17n3vc0fto1" path="res://assets/images/repairables/gamenwatch_chip_good.png" id="good_tex"]
 [ext_resource type="Texture2D" uid="uid://kxlv2p5r08cr" path="res://assets/images/repairables/gamenwatch_insides_gap.png" id="inside_tex"]
-[ext_resource type="Texture2D" uid="uid://dr8dd4jd12bvm" path="res://assets/images/repairables/gamenwatch_chip_bad.png" id="bad_tex"]
 
 [sub_resource type="RectangleShape2D" id="drop_shape"]
 size = Vector2(2214, 1127)
 
-[sub_resource type="CircleShape2D" id="chip_shape"]
-radius = 280.0
+[sub_resource type="CircleShape2D" id="screw_grab_shape"]
+radius = 28.0
+
+[sub_resource type="RectangleShape2D" id="chip_hit_shape"]
+size = Vector2(500, 720)
+
+[sub_resource type="CircleShape2D" id="dpad_point_hit_shape"]
+radius = 150.0
 
 [node name="GameNWatchRepairable" type="Node2D" unique_id=516475280 node_paths=PackedStringArray("shape")]
 scale = Vector2(0.13, 0.13)
 script = ExtResource("1_item")
 item_name = "Game n Watch"
-shadow_style = 1
-shadow_offset = Vector2(3, 8)
 shape = NodePath("Shape")
+shadow_style = 1
 ticket = "How do you get this thing open?? --Gertrude"
+shadow_offset = Vector2(3, 8)
 
 [node name="DropArea" type="Area2D" parent="." unique_id=1060795931]
 unique_name_in_owner = true
@@ -45,45 +50,44 @@ unique_name_in_owner = true
 [node name="Inside" type="Node2D" parent="Layers" unique_id=1756376887 node_paths=PackedStringArray("art", "shape")]
 script = ExtResource("2_layer")
 art = NodePath("Art")
-
 shape = NodePath("Shape")
 
 [node name="Art" type="Sprite2D" parent="Layers/Inside" unique_id=732337514]
 scale = Vector2(2, 2)
 texture = ExtResource("inside_tex")
 
-[node name="Shape" type="Area2D" parent="Layers/Inside"]
+[node name="Shape" type="Area2D" parent="Layers/Inside" unique_id=1874799891]
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Inside/Shape"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Inside/Shape" unique_id=1767709296]
 polygon = PackedVector2Array(-1085, -580, 1129, -580, 1129, 547, -1085, 547)
 
-[node name="Chip" parent="Layers/Inside" unique_id=2042927819 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
+[node name="Chip" parent="Layers/Inside" unique_id=2042927819 node_paths=PackedStringArray("installed_art", "bad_part_shape", "good_part_shape") instance=ExtResource("5_socket")]
 position = Vector2(-647, -49)
 accepted_part = 7
 installed_art = NodePath("GoodChip")
+bad_part_shape = NodePath("BrokenPart/BadPartShape")
+good_part_shape = NodePath("GoodPartShape")
+
+[node name="CollisionShape2D" parent="Layers/Inside/Chip" index="0"]
+shape = SubResource("chip_hit_shape")
+
+[node name="GoodPartShape" type="Area2D" parent="Layers/Inside/Chip"]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Inside/Chip/GoodPartShape"]
+polygon = PackedVector2Array(-250, -360, 250, -360, 250, 360, -250, 360)
+
+[node name="BadPartShape" type="Area2D" parent="Layers/Inside/Chip/BrokenPart"]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Inside/Chip/BrokenPart/BadPartShape"]
+polygon = PackedVector2Array(-250, -360, 250, -360, 250, 360, -250, 360)
 
 [node name="GoodChip" type="Sprite2D" parent="Layers/Inside/Chip" unique_id=580524989]
 scale = Vector2(2, 2)
 texture = ExtResource("good_tex")
-region_enabled = true
-region_rect = Rect2(419.5, 404.5, 268.5, 382.5)
-
-[node name="CollisionShape2D" parent="Layers/Inside/Chip" index="0"]
-shape = SubResource("chip_shape")
-
-[node name="Outline" parent="Layers/Inside/Chip" index="1"]
-visible = false
-
-[node name="BrokenArt" parent="Layers/Inside/Chip/BrokenPart" index="0"]
-visible = false
-
-[node name="BadChip" type="Sprite2D" parent="Layers/Inside/Chip/BrokenPart"]
-scale = Vector2(2, 2)
-texture = ExtResource("bad_tex")
 region_enabled = true
 region_rect = Rect2(419.5, 404.5, 268.5, 382.5)
 
@@ -98,47 +102,73 @@ is_required = false
 [node name="Front" type="Node2D" parent="Layers" unique_id=2123949549 node_paths=PackedStringArray("art", "shape")]
 script = ExtResource("2_layer")
 art = NodePath("Art")
-
 shape = NodePath("Shape")
 
 [node name="Art" type="Sprite2D" parent="Layers/Front" unique_id=387462139]
 scale = Vector2(2, 2)
 texture = ExtResource("front_tex")
 
-[node name="Shape" type="Area2D" parent="Layers/Front"]
+[node name="Shape" type="Area2D" parent="Layers/Front" unique_id=1151444913]
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Front/Shape"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Front/Shape" unique_id=778430217]
 polygon = PackedVector2Array(-1085, -580, 1129, -580, 1129, 547, -1085, 547)
 
-[node name="ScrewLeft" parent="Layers/Front" unique_id=1502508361 node_paths=PackedStringArray("covering_grime") instance=ExtResource("4_screw")]
+[node name="ScrewLeft" parent="Layers/Front" unique_id=1502508361 node_paths=PackedStringArray("covering_grime", "shape") instance=ExtResource("4_screw")]
 position = Vector2(-1004, -540)
 scale = Vector2(8, 8)
 covering_grime = NodePath("../GrimeLeft")
+shape = NodePath("Shape")
+
+[node name="Shape" type="Area2D" parent="Layers/Front/ScrewLeft"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layers/Front/ScrewLeft/Shape"]
+shape = SubResource("screw_grab_shape")
 
 [node name="GrimeLeft" parent="Layers/Front" unique_id=1935334029 instance=ExtResource("6_grime")]
 position = Vector2(-1004, -540)
 
-[node name="ScrewRight" parent="Layers/Front" unique_id=119953423 node_paths=PackedStringArray("covering_grime") instance=ExtResource("4_screw")]
+[node name="ScrewRight" parent="Layers/Front" unique_id=119953423 node_paths=PackedStringArray("covering_grime", "shape") instance=ExtResource("4_screw")]
 position = Vector2(1046, -540)
 scale = Vector2(8, 8)
 covering_grime = NodePath("../GrimeRight")
+shape = NodePath("Shape")
+
+[node name="Shape" type="Area2D" parent="Layers/Front/ScrewRight"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layers/Front/ScrewRight/Shape"]
+shape = SubResource("screw_grab_shape")
 
 [node name="GrimeRight" parent="Layers/Front" unique_id=1693061728 instance=ExtResource("6_grime")]
 position = Vector2(1046, -540)
 
-[node name="DpadPoint" parent="Layers/Front" unique_id=1880826127 instance=ExtResource("9_point")]
+[node name="DpadPoint" parent="Layers/Front" unique_id=1880826127 node_paths=PackedStringArray("shape") instance=ExtResource("9_point")]
 position = Vector2(-822, 238)
+shape = NodePath("Shape")
 
-[node name="DpadPiece" parent="Layers/Front" unique_id=1950599730 node_paths=PackedStringArray("target_point", "art") instance=ExtResource("10_piece")]
+[node name="CollisionShape2D" parent="Layers/Front/DpadPoint" index="0"]
+shape = SubResource("dpad_point_hit_shape")
+
+[node name="Shape" type="Area2D" parent="Layers/Front/DpadPoint"]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Front/DpadPoint/Shape"]
+polygon = PackedVector2Array(-172.5, -178, 172.5, -178, 172.5, 178, -172.5, 178)
+
+[node name="DpadPiece" parent="Layers/Front" unique_id=1950599730 node_paths=PackedStringArray("target_point", "art", "shape") instance=ExtResource("10_piece")]
 position = Vector2(-822, 238)
 target_point = NodePath("../DpadPoint")
 starts_detached = true
 fall_target_offset = Vector2(250, 300)
 art = NodePath("DpadArt")
+shape = NodePath("Shape")
+
+[node name="Shape" type="Area2D" parent="Layers/Front/DpadPiece"]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Front/DpadPiece/Shape"]
+polygon = PackedVector2Array(-172.5, -178, 172.5, -178, 172.5, 178, -172.5, 178)
 
 [node name="DpadArt" type="Sprite2D" parent="Layers/Front/DpadPiece" unique_id=2058444850]
 scale = Vector2(2, 2)

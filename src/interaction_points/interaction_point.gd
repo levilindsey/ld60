@@ -47,6 +47,14 @@ const _POKE_ANGLE_RAD := 0.25
 @export var accepted_tools: Array[Tool.Type] = []
 ## What this point turns into when it breaks. Null means it can't break.
 @export var broken_scene: PackedScene
+## Optional outline of the piece this point acts on: an Area2D
+## with polygon or shape children tracing the art, the way a
+## part's own Shape is authored. Presses and tool tips land
+## anywhere inside it, not just on the point's own small circle,
+## and the hint follows it. It carries no collision state of
+## its own: the point strips it at ready and tests points
+## against it by hand, so it never shows up in physics picking.
+@export var shape: Area2D
 
 var mode := Mode.UNSTARTED
 ## The tool that is IN_USE on this point, or null.
@@ -59,6 +67,7 @@ var _is_hint_active := false
 
 
 func _ready() -> void:
+	_configure_shape_area(shape)
 	G.check(monitorable)
 	G.check(collision_layer == Settings.PhysicsLayer.INTERACTION_POINTS)
 
@@ -97,6 +106,39 @@ func get_item() -> Repairable:
 func is_exposed() -> bool:
 	var layer := get_layer()
 	return is_instance_valid(layer) and layer.is_exposed()
+
+
+## True when this point has a usable authored Shape: a polygon
+## with at least three points, or a collision shape.
+func has_shape() -> bool:
+	return (
+		is_instance_valid(shape) and _has_usable_shape_area(shape)
+	)
+
+
+## True when a world point lands on this point's authored
+## Shape. False when the point has no Shape configured (or its
+## Shape went away with the art it was parented under).
+func is_point_in_shape(world_point: Vector2) -> bool:
+	return (
+		is_instance_valid(shape)
+		and _is_point_in_shape_area(shape, world_point)
+	)
+
+
+## The authored Shape's first polygon, in world points.
+func get_shape_world_polygon() -> PackedVector2Array:
+	if not is_instance_valid(shape):
+		return PackedVector2Array()
+	return _get_shape_area_world_polygon(shape)
+
+
+## The authored Shape's first polygon, in this point's own
+## points, for outlines that draw as children here.
+func get_shape_local_polygon() -> PackedVector2Array:
+	if not is_instance_valid(shape):
+		return PackedVector2Array()
+	return _get_shape_area_local_polygon(shape)
 
 
 func accepts(tool: Tool) -> bool:
@@ -214,6 +256,9 @@ func is_hint_active() -> bool:
 
 
 func _get_hint_polygon() -> PackedVector2Array:
+	var shaped := get_shape_local_polygon()
+	if shaped.size() >= 3:
+		return shaped
 	for child in get_children():
 		if child is CollisionShape2D:
 			var points := OutlineHint.get_shape_polygon(
@@ -225,6 +270,121 @@ func _get_hint_polygon() -> PackedVector2Array:
 	for index in 12:
 		var angle := TAU * float(index) / 12.0
 		points.append(Vector2.from_angle(angle) * 22.0)
+	return points
+
+
+## An authored Shape arrives with no collision state configured
+## (it was added in the editor as a bare outline). Strip anything
+## that could make physics see it: no layer, no mask, no
+## monitoring either way. Points are tested against it by hand.
+## Shared with subclasses that carry more than one authored
+## shape (a socket's good and bad part shapes).
+func _configure_shape_area(shape_area: Area2D) -> void:
+	if not is_instance_valid(shape_area):
+		return
+	shape_area.collision_layer = 0
+	shape_area.collision_mask = 0
+	shape_area.monitoring = false
+	shape_area.monitorable = false
+
+
+## True when an authored Shape has an outline to test: a polygon
+## with at least three points, or a collision shape.
+func _has_usable_shape_area(shape_area: Area2D) -> bool:
+	if not is_instance_valid(shape_area):
+		return false
+	for child in shape_area.get_children():
+		if child is CollisionPolygon2D:
+			if (child as CollisionPolygon2D).polygon.size() >= 3:
+				return true
+		elif child is CollisionShape2D:
+			if is_instance_valid((child as CollisionShape2D).shape):
+				return true
+	return false
+
+
+## True when a world point lands on an authored Shape: any of
+## its polygons, or inside any of its collision shapes. False
+## when no such shape was given.
+func _is_point_in_shape_area(
+	shape_area: Area2D, world_point: Vector2
+) -> bool:
+	if not is_instance_valid(shape_area):
+		return false
+	for child in shape_area.get_children():
+		if child is CollisionPolygon2D:
+			var polygon_node := child as CollisionPolygon2D
+			if polygon_node.polygon.size() < 3:
+				continue
+			var local := (
+				polygon_node.global_transform.affine_inverse()
+				* world_point
+			)
+			if Geometry2D.is_point_in_polygon(
+				local, polygon_node.polygon
+			):
+				return true
+		elif child is CollisionShape2D:
+			var shape_node := child as CollisionShape2D
+			if not is_instance_valid(shape_node.shape):
+				continue
+			var local := (
+				shape_node.global_transform.affine_inverse()
+				* world_point
+			)
+			if _is_point_in_collision_shape(local, shape_node.shape):
+				return true
+	return false
+
+
+func _is_point_in_collision_shape(
+	local_point: Vector2, collision_shape: Shape2D
+) -> bool:
+	if collision_shape is RectangleShape2D:
+		var rectangle := collision_shape as RectangleShape2D
+		return Rect2(
+			-rectangle.size * 0.5, rectangle.size
+		).has_point(local_point)
+	if collision_shape is CircleShape2D:
+		var circle := collision_shape as CircleShape2D
+		return local_point.length() <= circle.radius
+	if collision_shape is CapsuleShape2D:
+		var capsule := collision_shape as CapsuleShape2D
+		var half := capsule.height * 0.5 - capsule.radius
+		var nearest := Vector2(
+			0.0, clampf(local_point.y, -half, half)
+		)
+		return local_point.distance_to(nearest) <= capsule.radius
+	return false
+
+
+## An authored Shape's first polygon, in world points.
+func _get_shape_area_world_polygon(
+	shape_area: Area2D
+) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	if not is_instance_valid(shape_area):
+		return points
+	for child in shape_area.get_children():
+		if child is CollisionPolygon2D:
+			var polygon_node := child as CollisionPolygon2D
+			for point in polygon_node.polygon:
+				points.append(
+					polygon_node.global_transform * point
+				)
+			return points
+	return points
+
+
+## An authored Shape's first polygon, in this point's own
+## points, for outlines that draw as children here.
+func _get_shape_area_local_polygon(
+	shape_area: Area2D
+) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	var to_local := global_transform.affine_inverse()
+	for world_point in _get_shape_area_world_polygon(shape_area):
+		points.append(to_local * world_point)
 	return points
 
 

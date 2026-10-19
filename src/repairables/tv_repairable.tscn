@@ -8,22 +8,18 @@
 [ext_resource type="PackedScene" path="res://src/interaction_points/stuck_part.tscn" id="6_stuck"]
 [ext_resource type="Texture2D" uid="uid://ll4k1f4aobj1" path="res://assets/images/repairables/tv_bent_antenna.png" id="bent_tex"]
 [ext_resource type="Texture2D" uid="uid://bcj46dyjdkhqg" path="res://assets/images/repairables/tv_with_gaps.png" id="body_tex"]
+[ext_resource type="Texture2D" uid="uid://wnluu85ums1p" path="res://assets/images/repairables/tv_fixed_channel_1.png" id="fixed1_tex"]
+[ext_resource type="Texture2D" uid="uid://bvjdk81a1qia0" path="res://assets/images/repairables/tv_fixed_channel_2.png" id="fixed2_tex"]
 [ext_resource type="Texture2D" uid="uid://bdhxoykfocdx7" path="res://assets/images/repairables/tv_controls.png" id="good_tex"]
 [ext_resource type="Texture2D" uid="uid://ci6a4d1p4f1cy" path="res://assets/images/repairables/tv_static_1.png" id="static1_tex"]
 [ext_resource type="Texture2D" uid="uid://bm2wv6hlqgeus" path="res://assets/images/repairables/tv_static_2.png" id="static2_tex"]
-[ext_resource type="Texture2D" uid="uid://wnluu85ums1p" path="res://assets/images/repairables/tv_fixed_channel_1.png" id="fixed1_tex"]
-[ext_resource type="Texture2D" uid="uid://bvjdk81a1qia0" path="res://assets/images/repairables/tv_fixed_channel_2.png" id="fixed2_tex"]
 [ext_resource type="Texture2D" uid="uid://cly16lbogiq7x" path="res://assets/images/repairables/tv_straight_antenna.png" id="straight_tex"]
-[ext_resource type="Texture2D" uid="uid://dyj7f66igylpa" path="res://assets/images/repairables/tv_bad_controls.png" id="bad_tex"]
 
 [sub_resource type="RectangleShape2D" id="drop_shape"]
 size = Vector2(2341, 1850)
 
 [sub_resource type="RectangleShape2D" id="surface_shape"]
 size = Vector2(2341, 1850)
-
-[sub_resource type="CircleShape2D" id="controls_shape"]
-radius = 330.0
 
 [node name="TvRepairable" type="Node2D" unique_id=550236401 node_paths=PackedStringArray("screen", "shape")]
 scale = Vector2(0.13, 0.13)
@@ -53,25 +49,24 @@ unique_name_in_owner = true
 position = Vector2(0, -308)
 script = ExtResource("2_layer")
 art = NodePath("Art")
-
 shape = NodePath("Shape")
 
 [node name="Art" type="Sprite2D" parent="Layers/Body" unique_id=1462883350]
 scale = Vector2(2, 2)
 texture = ExtResource("body_tex")
 
-[node name="Shape" type="Area2D" parent="Layers/Body"]
+[node name="Shape" type="Area2D" parent="Layers/Body" unique_id=373096009]
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape" unique_id=1566672197]
 polygon = PackedVector2Array(-983, -949, 1358, -949, 1358, 901, -983, 901)
 
 [node name="Screen" type="Sprite2D" parent="Layers/Body" unique_id=2023733748]
-scale = Vector2(2, 2)
 position = Vector2(-218, 236)
+scale = Vector2(2, 2)
 texture = ExtResource("static1_tex")
 region_enabled = true
 region_rect = Rect2(554, 560, 428.5, 356)
@@ -86,10 +81,11 @@ script = ExtResource("3_surface")
 position = Vector2(188, -24)
 shape = SubResource("surface_shape")
 
-[node name="Antenna" parent="Layers/Body" unique_id=783311866 node_paths=PackedStringArray("art", "straight_art") instance=ExtResource("4_bent")]
+[node name="Antenna" parent="Layers/Body" unique_id=783311866 node_paths=PackedStringArray("art", "straight_art", "shape") instance=ExtResource("4_bent")]
 position = Vector2(-221, -759)
 art = NodePath("AntennaBent")
 straight_art = NodePath("AntennaStraight")
+shape = NodePath("AntennaBent/AntennaShape")
 error_deg = 28.0
 band_min = 0.25
 band_max = 0.65
@@ -101,7 +97,17 @@ texture = ExtResource("bent_tex")
 region_enabled = true
 region_rect = Rect2(690, 203, 153, 75.5)
 
+[node name="AntennaShape" type="Area2D" parent="Layers/Body/Antenna/AntennaBent" unique_id=1446214727]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Antenna/AntennaBent/AntennaShape" unique_id=1446214728]
+polygon = PackedVector2Array(-3.5, -36, -6.5, -33, -10.5, -30, -14.5, -26, -19.5, -23, -22.5, -19, -26.5, -16, -31.5, -13, -34.5, -9, -37.5, -6, -41.5, -2, -45.5, 1, -49.5, 4, -53.5, 8, -71.5, 11, -72.5, 15, -75.5, 18, -76.5, 21, -75.5, 25, -75.5, 28, -72.5, 32, -69.5, 35, -56.5, 35, -54.5, 32, -52.5, 28, -51.5, 25, 66.5, 21, 69.5, 18, 72.5, 15, 73.5, 11, 69.5, 8, 65.5, 4, 59.5, 1, 54.5, -2, 50.5, -6, 45.5, -9, 42.5, -13, 36.5, -16, 32.5, -19, 28.5, -23, 23.5, -26, 19.5, -30, 15.5, -33, 10.5, -36)
+
 [node name="AntennaStraight" type="Sprite2D" parent="Layers/Body/Antenna" unique_id=1167577550]
+position = Vector2(-7.6923065, -53.84607)
 scale = Vector2(2, 2)
 texture = ExtResource("straight_tex")
 region_enabled = true
@@ -115,21 +121,6 @@ installed_art = NodePath("GoodControls")
 [node name="GoodControls" type="Sprite2D" parent="Layers/Body/Controls" unique_id=1312169053]
 scale = Vector2(2, 2)
 texture = ExtResource("good_tex")
-region_enabled = true
-region_rect = Rect2(1108.5, 459.5, 283.5, 507.5)
-
-[node name="CollisionShape2D" parent="Layers/Body/Controls" index="0"]
-shape = SubResource("controls_shape")
-
-[node name="Outline" parent="Layers/Body/Controls" index="1"]
-visible = false
-
-[node name="BrokenArt" parent="Layers/Body/Controls/BrokenPart" index="0"]
-visible = false
-
-[node name="BadControls" type="Sprite2D" parent="Layers/Body/Controls/BrokenPart"]
-scale = Vector2(2, 2)
-texture = ExtResource("bad_tex")
 region_enabled = true
 region_rect = Rect2(1108.5, 459.5, 283.5, 507.5)
 

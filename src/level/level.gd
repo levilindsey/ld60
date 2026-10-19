@@ -563,10 +563,14 @@ func get_broken_pieces() -> Array[BrokenPiece]:
 
 
 ## The grabbable broken piece nearest a world position, or
-## null. A press near its middle counts, like a loose part.
+## null. A press on a piece's authored Shape takes it, wherever
+## on the piece it lands; the nearest middle wins among
+## overlaps. A piece with no Shape keeps the old middle reach.
 func get_loose_broken_piece_at(
 	global_point: Vector2,
 ) -> BrokenPiece:
+	var shaped: BrokenPiece = null
+	var shaped_distance := INF
 	var best: BrokenPiece = null
 	var best_distance := INF
 	for piece in get_broken_pieces():
@@ -575,12 +579,18 @@ func get_loose_broken_piece_at(
 		var distance := piece.global_position.distance_to(
 			global_point
 		)
-		if distance <= piece.grab_radius_px and distance < (
-			best_distance
+		if piece.is_point_in_shape(global_point):
+			if distance < shaped_distance:
+				shaped_distance = distance
+				shaped = piece
+		elif (
+			not piece.has_shape()
+			and distance <= piece.grab_radius_px
+			and distance < best_distance
 		):
 			best_distance = distance
 			best = piece
-	return best
+	return shaped if is_instance_valid(shaped) else best
 
 
 ## Starts a detached piece's own fall to its landing spot,

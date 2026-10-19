@@ -301,6 +301,27 @@ func find_point(global_point: Vector2) -> InteractionPoint:
 			and point.is_exposed()
 		):
 			return point
+	return _find_point_by_shape(global_point)
+
+
+## The exposed point whose authored Shape holds a world position,
+## or null. Physics picking only sees a point's own small circle;
+## a piece whose art runs past that circle (the TV's bent
+## antenna) is pressed by its Shape instead.
+func _find_point_by_shape(global_point: Vector2) -> InteractionPoint:
+	if not is_instance_valid(G.level):
+		return null
+	var item := G.level.active_repairable
+	if not is_instance_valid(item):
+		return null
+	for layer in item.layers:
+		for point in layer.get_points():
+			if (
+				point.is_visible_in_tree()
+				and point.is_exposed()
+				and point.is_point_in_shape(global_point)
+			):
+				return point
 	return null
 
 
@@ -333,6 +354,33 @@ func find_point_for_tool(tool: Tool) -> InteractionPoint:
 			and point.is_visible_in_tree()
 			and point.is_exposed()
 		):
+			var distance := shape_node.global_position.distance_squared_to(
+				point.global_position
+			)
+			if distance < nearest_distance:
+				nearest = point
+				nearest_distance = distance
+	if is_instance_valid(nearest):
+		return nearest
+	# A point with an authored Shape can be engaged anywhere on
+	# its piece, not just where the tool's shape overlaps the
+	# point's own circle: the nearest such point to the working
+	# end wins.
+	if not is_instance_valid(G.level):
+		return null
+	var item := G.level.active_repairable
+	if not is_instance_valid(item):
+		return null
+	for layer in item.layers:
+		for point in layer.get_points():
+			if (
+				not point.is_visible_in_tree()
+				or not point.is_exposed()
+				or not point.is_point_in_shape(
+					shape_node.global_position
+				)
+			):
+				continue
 			var distance := shape_node.global_position.distance_squared_to(
 				point.global_position
 			)
@@ -443,6 +491,7 @@ func _press_loose_layer(global_point: Vector2) -> bool:
 		or not layer.is_loose()
 		or not layer.has_point(global_point)
 		or is_instance_valid(find_point(global_point))
+		or is_instance_valid(_find_socket(global_point))
 	):
 		return false
 	layer.take_off_for_drag()
@@ -630,6 +679,11 @@ func _press_with_empty_hand(global_point: Vector2) -> bool:
 		item.on_pressed()
 		return true
 	var point := find_point(global_point)
+	if not is_instance_valid(point):
+		# A socket's part can be grabbed by its authored shape,
+		# well outside the socket's own small circle: the Atari's
+		# broken stick is grabbed anywhere on the stick.
+		point = _find_socket(global_point)
 	if is_instance_valid(point):
 		point.on_poked()
 		return true
@@ -1083,7 +1137,10 @@ func _find_drawer(global_point: Vector2) -> Drawer:
 
 
 ## The first socket under a world position on an exposed layer, or
-## null. Finished sockets still count: pressing one nopes.
+## null. Finished sockets still count: pressing one nopes. A
+## socket with authored part shapes also counts anywhere inside
+## them: the broken part is grabbed by its whole outline, and a
+## drop lands anywhere the fitted part would sit.
 func _find_socket(
 	global_point: Vector2, fitting_part: Part = null
 ) -> PartSocket:
@@ -1101,6 +1158,25 @@ func _find_socket(
 			)
 		):
 			return socket
+	if not is_instance_valid(G.level):
+		return null
+	var item := G.level.active_repairable
+	if not is_instance_valid(item):
+		return null
+	for layer in item.layers:
+		for point in layer.get_points():
+			var socket := point as PartSocket
+			if (
+				is_instance_valid(socket)
+				and socket.is_visible_in_tree()
+				and socket.is_exposed()
+				and (
+					not is_instance_valid(fitting_part)
+					or socket.can_fit(fitting_part)
+				)
+				and socket.is_point_in_part_shape(global_point)
+			):
+				return socket
 	return null
 
 

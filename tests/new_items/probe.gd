@@ -46,6 +46,7 @@ func _ready() -> void:
 		% [G.level._effective_queue],
 	)
 	G.settings.first_repairable_override = Settings.FirstRepairable.NONE
+	await _check_tv_antenna_shape()
 	await _check_tv()
 	await _check_keyboard()
 	await _check_piano()
@@ -54,6 +55,76 @@ func _ready() -> void:
 	await _check_placeholders()
 	await _check_radio_front_size()
 	_finish(0 if _failures.is_empty() else 1)
+
+
+## On the landed TV, a hammer press on the bent antenna's
+## authored Shape, far outside its small circle, must strike
+## the antenna, not the final whack that any press on the
+## item's Shape would otherwise claim.
+func _check_tv_antenna_shape() -> void:
+	var item := G.level.active_repairable
+	var antenna: BentPart
+	var whack: StuckPart
+	for layer in item.layers:
+		for point in layer.get_points():
+			if point is BentPart:
+				antenna = point as BentPart
+			if point is StuckPart:
+				whack = point as StuckPart
+	if not _expect(
+		is_instance_valid(antenna), "the landed TV has an antenna"
+	):
+		return
+	var far_point := antenna.global_position
+	for point in antenna.get_shape_world_polygon():
+		if (
+			point.distance_squared_to(antenna.global_position)
+			> far_point.distance_squared_to(antenna.global_position)
+		):
+			far_point = point
+	far_point = far_point.lerp(antenna.global_position, 0.25)
+	_expect(
+		_hand.find_point(far_point) == antenna,
+		"a press on the antenna's Shape finds the antenna",
+	)
+	var hammer := G.level.tools_by_type[Tool.Type.HAMMER] as Hammer
+	await _grab_tool(hammer)
+	_expect(_hand.held == hammer, "the hand holds the hammer")
+	var settle_frames := 0
+	while settle_frames < 90 and (
+		hammer.follow_offset.length() > 0.5
+		or (
+			is_instance_valid(hammer.rotation_tween)
+			and hammer.rotation_tween.is_running()
+		)
+	):
+		await _physics_frames(1)
+		settle_frames += 1
+	var offset := (
+		hammer.get_work_end_position() - hammer.get_tip_position()
+	)
+	await _move_to(far_point - offset)
+	offset = hammer.get_work_end_position() - hammer.get_tip_position()
+	await _press_down(far_point - offset)
+	for frame in 300:
+		if hammer.charge >= 0.35:
+			break
+		await get_tree().physics_frame
+	await _release_at(far_point - offset)
+	await _seconds(0.6)
+	_expect(
+		antenna.current_error_deg < antenna.error_deg,
+		"a hammer hit on the antenna's Shape straightens it"
+		+ " (error %.1f of %.1f)"
+		% [antenna.current_error_deg, antenna.error_deg],
+	)
+	if is_instance_valid(whack):
+		_expect(
+			whack.hits_done == 0
+			and whack.mode != InteractionPoint.Mode.FINISHED,
+			"the antenna hit did not count as the final whack",
+		)
+	await _put_tool_away(hammer)
 
 
 func _check_tv() -> void:
@@ -261,6 +332,7 @@ func _check_game_n_watch() -> void:
 		return
 	var phillips_count := 0
 	var covered_count := 0
+	var art_sized_hit_count := 0
 	for layer in item.layers:
 		for point in layer.get_points():
 			if point is PhillipsScrew:
@@ -268,9 +340,19 @@ func _check_game_n_watch() -> void:
 				var screw := point as PhillipsScrew
 				if is_instance_valid(screw.covering_grime):
 					covered_count += 1
+				var hit_radius := (
+					(screw.hit_shape.shape as CircleShape2D).radius
+					* screw.hit_shape.global_transform.get_scale().x
+				)
+				if hit_radius >= 24.0:
+					art_sized_hit_count += 1
 	_expect(
 		phillips_count == 2,
 		"the Game n Watch faceplate has two Phillips screws",
+	)
+	_expect(
+		art_sized_hit_count == 2,
+		"both Game n Watch screw hit circles match their heads",
 	)
 	_expect(
 		covered_count == 2,
