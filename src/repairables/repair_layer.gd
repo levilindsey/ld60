@@ -9,6 +9,11 @@ extends Node2D
 ## under it is done, it gets the outline, and a press puts it back.
 
 
+## Visible size of the decal a hard hammer hit leaves, in pixels.
+const _DENT_SMALL_SIZE_PX := 30.0
+const _DENT_LARGE_SIZE_PX := 44.0
+const _CRACK_SIZE_PX := 52.0
+
 ## How far a set-aside layer may be turned from how it sits on the
 ## item, in degrees. A fresh turn in that range is picked each time
 ## it is set aside.
@@ -459,6 +464,52 @@ func get_hammer_defect(
 			return RepairQuality.Defect.CRACK
 		_:
 			return fallback
+
+
+## The hammer struck this piece where no authored Surface
+## covers it (docs/design/hammer.md). Every hit squishes the
+## piece a bit. A hard hit damages the art itself: this piece's
+## own set when it has one, a crack like plastic when it has
+## none. A struck Surface handles its own material instead and
+## only calls `record_hammer_damage()` below.
+func on_struck(at_position: Vector2, strength: float) -> void:
+	if not is_exposed():
+		return
+	squish(strength)
+	var damage_at := G.settings.hammer_surface_damage_charge
+	if strength < damage_at:
+		return
+	var is_far := strength >= damage_at + G.settings.hammer_far_margin
+	var defect := get_hammer_defect(
+		is_far, RepairQuality.Defect.CRACK
+	)
+	record_hammer_damage(defect, at_position, self)
+
+
+## Records a hammer defect on the item and stamps its decal on
+## this piece's art, so the recorded defect matches what shows.
+func record_hammer_damage(
+	defect: RepairQuality.Defect,
+	at_position: Vector2,
+	source: Object,
+) -> void:
+	if is_instance_valid(item):
+		item.quality.add_defect(defect, at_position, source)
+	match defect:
+		RepairQuality.Defect.DENT_SMALL:
+			spawn_decal(
+				DecalSpawner.Kind.DENT, at_position, _DENT_SMALL_SIZE_PX
+			)
+		RepairQuality.Defect.DENT_LARGE:
+			spawn_decal(
+				DecalSpawner.Kind.DENT, at_position, _DENT_LARGE_SIZE_PX
+			)
+		RepairQuality.Defect.CRACK:
+			spawn_decal(
+				DecalSpawner.Kind.CRACK, at_position, _CRACK_SIZE_PX
+			)
+		_:
+			pass
 
 
 ## One short pulse, the hint that this layer can go back on.

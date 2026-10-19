@@ -16,8 +16,8 @@
 [sub_resource type="RectangleShape2D" id="drop_shape"]
 size = Vector2(2214, 1127)
 
-[sub_resource type="CircleShape2D" id="screw_grab_shape"]
-radius = 28.0
+[sub_resource type="CircleShape2D" id="screw_hit_shape"]
+radius = 27.0
 
 [sub_resource type="RectangleShape2D" id="chip_hit_shape"]
 size = Vector2(500, 720)
@@ -117,30 +117,24 @@ monitorable = false
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Front/Shape" unique_id=778430217]
 polygon = PackedVector2Array(-1085, -580, 1129, -580, 1129, 547, -1085, 547)
 
-[node name="ScrewLeft" parent="Layers/Front" unique_id=1502508361 node_paths=PackedStringArray("covering_grime", "shape") instance=ExtResource("4_screw")]
+[node name="ScrewLeft" parent="Layers/Front" unique_id=1502508361 node_paths=PackedStringArray("covering_grime") instance=ExtResource("4_screw")]
 position = Vector2(-1004, -540)
 scale = Vector2(8, 8)
 covering_grime = NodePath("../GrimeLeft")
-shape = NodePath("Shape")
 
-[node name="Shape" type="Area2D" parent="Layers/Front/ScrewLeft"]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Layers/Front/ScrewLeft/Shape"]
-shape = SubResource("screw_grab_shape")
+[node name="CollisionShape2D" parent="Layers/Front/ScrewLeft" index="0"]
+shape = SubResource("screw_hit_shape")
 
 [node name="GrimeLeft" parent="Layers/Front" unique_id=1935334029 instance=ExtResource("6_grime")]
 position = Vector2(-1004, -540)
 
-[node name="ScrewRight" parent="Layers/Front" unique_id=119953423 node_paths=PackedStringArray("covering_grime", "shape") instance=ExtResource("4_screw")]
+[node name="ScrewRight" parent="Layers/Front" unique_id=119953423 node_paths=PackedStringArray("covering_grime") instance=ExtResource("4_screw")]
 position = Vector2(1046, -540)
 scale = Vector2(8, 8)
 covering_grime = NodePath("../GrimeRight")
-shape = NodePath("Shape")
 
-[node name="Shape" type="Area2D" parent="Layers/Front/ScrewRight"]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Layers/Front/ScrewRight/Shape"]
-shape = SubResource("screw_grab_shape")
+[node name="CollisionShape2D" parent="Layers/Front/ScrewRight" index="0"]
+shape = SubResource("screw_hit_shape")
 
 [node name="GrimeRight" parent="Layers/Front" unique_id=1693061728 instance=ExtResource("6_grime")]
 position = Vector2(1046, -540)

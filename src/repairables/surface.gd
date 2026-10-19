@@ -22,11 +22,6 @@ enum Type {
 	STICKER,
 }
 
-## Visible size of the decal a hard hit leaves, in pixels.
-const _DENT_SMALL_SIZE_PX := 30.0
-const _DENT_LARGE_SIZE_PX := 44.0
-const _CRACK_SIZE_PX := 52.0
-
 @export var type := Type.PLASTIC
 
 ## Pixels the rag has wiped over this surface.
@@ -101,7 +96,7 @@ func on_struck(at_position: Vector2, strength: float) -> void:
 	var is_far := strength >= damage_at + G.settings.hammer_far_margin
 	# The material picks the damage, unless the piece overrules
 	# its set (a metal screen cracks, a plastic panel dents).
-	var defect: RepairQuality.Defect
+	var defect := RepairQuality.Defect.CRACK
 	match type:
 		Type.METAL:
 			defect = (
@@ -112,7 +107,14 @@ func on_struck(at_position: Vector2, strength: float) -> void:
 		Type.PLASTIC, Type.GLASS:
 			defect = RepairQuality.Defect.CRACK
 		_:
-			return
+			# The material itself takes no hammer damage, but
+			# the piece's own set still wins: a board set to
+			# crack cracks.
+			if (
+				not is_instance_valid(layer)
+				or layer.hammer_decal == RepairLayer.HammerDecal.DEFAULT
+			):
+				return
 	if is_instance_valid(layer):
 		defect = layer.get_hammer_defect(is_far, defect)
 	_add_defect(defect, at_position)
@@ -125,21 +127,5 @@ func _add_defect(
 	var layer := get_layer()
 	if not is_instance_valid(layer):
 		return
-	if is_instance_valid(layer.item):
-		layer.item.quality.add_defect(defect, at_position, self)
 	# Hammer damage shows: a fitted dent or crack on the part.
-	match defect:
-		RepairQuality.Defect.DENT_SMALL:
-			layer.spawn_decal(
-				DecalSpawner.Kind.DENT, at_position, _DENT_SMALL_SIZE_PX
-			)
-		RepairQuality.Defect.DENT_LARGE:
-			layer.spawn_decal(
-				DecalSpawner.Kind.DENT, at_position, _DENT_LARGE_SIZE_PX
-			)
-		RepairQuality.Defect.CRACK:
-			layer.spawn_decal(
-				DecalSpawner.Kind.CRACK, at_position, _CRACK_SIZE_PX
-			)
-		_:
-			pass
+	layer.record_hammer_damage(defect, at_position, self)

@@ -116,9 +116,11 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   `docs/design/new_items.md`.
 - **LX71** · Authored Shapes now exist on points and broken pieces
   (TV antenna, piano key, Atari socket's good/bad parts). The other
-  BrokenPieces (Game n Watch D-pad, radio dial, toaster wheels)
-  still grab by their middle reach: give each a `Shape` child and
-  assign `BrokenPiece.shape` when their art lands.
+  BrokenPieces (radio dial, toaster wheels) still grab by their
+  middle reach: give each a `Shape` child and assign
+  `BrokenPiece.shape` when their art lands. (The Game n Watch
+  d-pad, its point, its chip socket and its screws got theirs in
+  the Game n Watch grab-shapes pass.)
 ## Residuals (known, not fixed)
 
 - **LX68** · The toaster's late beats (the hammer target that appears

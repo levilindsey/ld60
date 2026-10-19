@@ -40,6 +40,7 @@ var _wind_sec := 0.0
 var _locked_point := Vector2.ZERO
 var _locked_target: StrikablePoint
 var _locked_surface: Surface
+var _locked_layer: RepairLayer
 var _locked_prop: Node2D
 var _art_home_rotation := 0.0
 var _swing_tween: Tween
@@ -87,6 +88,12 @@ func get_locked_surface() -> Surface:
 	return _locked_surface
 
 
+## The layer locked by the current wind up where no surface
+## covers the strike point, or null. Its art takes the hit.
+func get_locked_layer() -> RepairLayer:
+	return _locked_layer
+
+
 ## True while the charge sits inside the locked target's band.
 func is_charge_in_band() -> bool:
 	return (
@@ -109,6 +116,7 @@ func on_effect_pressed(_global_point: Vector2) -> void:
 	_locked_point = get_work_end_position()
 	_locked_target = null
 	_locked_surface = null
+	_locked_layer = null
 	_locked_prop = null
 	if is_instance_valid(G.level):
 		var point := G.level.hand.find_point(_locked_point)
@@ -117,11 +125,11 @@ func on_effect_pressed(_global_point: Vector2) -> void:
 			_locked_target = _find_shape_target(_locked_point)
 		if not is_instance_valid(_locked_target):
 			_locked_surface = G.level.hand.find_surface(_locked_point)
-		if (
-			not is_instance_valid(_locked_target)
-			and not is_instance_valid(_locked_surface)
-		):
-			_locked_prop = _find_strikable_prop(_locked_point)
+		if not is_instance_valid(_locked_target):
+			if not is_instance_valid(_locked_surface):
+				_locked_layer = _find_layer_target(_locked_point)
+			if not is_instance_valid(_locked_layer):
+				_locked_prop = _find_strikable_prop(_locked_point)
 		G.level.hand.set_input_owner(self)
 	_phase = WindPhase.WINDING
 	_wind_sec = 0.0
@@ -151,6 +159,21 @@ func _find_shape_target(global_point: Vector2) -> StrikablePoint:
 				and layer_point.is_exposed()
 			):
 				return layer_point as StrikablePoint
+	return null
+
+
+## The exposed layer whose art is under a world position, or
+## null. Where a piece has no Surface there, its art still
+## takes a hammer hit (and a glue smear).
+func _find_layer_target(global_point: Vector2) -> RepairLayer:
+	if not is_instance_valid(G.level):
+		return null
+	var item := G.level.active_repairable
+	if not is_instance_valid(item):
+		return null
+	for layer in item.layers:
+		if layer.is_exposed() and layer.has_point(global_point):
+			return layer
 	return null
 
 
@@ -215,6 +238,14 @@ func _strike() -> void:
 			G.level.shake_camera(5.0, 0.15)
 		else:
 			G.audio.play_sound(&"click")
+	elif is_instance_valid(_locked_layer):
+		var strength := 0.0 if is_tiny else charge
+		_locked_layer.on_struck(_locked_point, strength)
+		if strength >= G.settings.hammer_surface_damage_charge:
+			G.audio.play_sound(&"thud", true)
+			G.level.shake_camera(5.0, 0.15)
+		else:
+			G.audio.play_sound(&"click")
 	elif is_instance_valid(_locked_prop):
 		_locked_prop.on_struck(charge)
 	else:
@@ -253,6 +284,7 @@ func _finish_swing() -> void:
 	charge = 0.0
 	_locked_target = null
 	_locked_surface = null
+	_locked_layer = null
 	_locked_prop = null
 	queue_redraw()
 	if is_instance_valid(G.level):

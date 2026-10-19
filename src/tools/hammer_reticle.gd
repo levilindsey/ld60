@@ -36,6 +36,7 @@ func _draw() -> void:
 	draw_arc(center, radius, 0.0, TAU, 48, Color(1, 1, 1, 0.3), 3.0, true)
 	var target := hammer.get_locked_target()
 	var surface := hammer.get_locked_surface()
+	var layer := hammer.get_locked_layer()
 	if is_instance_valid(target):
 		draw_arc(
 			center,
@@ -47,7 +48,7 @@ func _draw() -> void:
 			7.0,
 			true,
 		)
-	elif is_instance_valid(surface):
+	elif is_instance_valid(surface) or is_instance_valid(layer):
 		draw_arc(
 			center,
 			radius,
