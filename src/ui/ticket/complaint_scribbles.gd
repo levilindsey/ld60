@@ -6,12 +6,11 @@ extends Control
 
 ## Ink to match the handwriting.
 const _INK := Color(0.22, 0.15, 0.08, 1.0)
-const _STROKE_WIDTH := 5.0
-## How far apart the strokes are, in pixels. More than the stroke width,
-## so each one reads on its own.
-const _LINE_STEP_PX := 11.0
+const _STROKE_WIDTH := 2.5
+## The pen's zigzag: how far apart its turns are, in pixels.
+const _ZIG_STEP_PX := 5.0
 ## Overlapping passes of the pen over each word.
-const _PASS_COUNT := 1
+const _PASS_COUNT := 3
 ## Share of the glyph height the scribble covers, centered.
 const _HEIGHT_SHARE := 0.85
 
@@ -30,7 +29,7 @@ func _draw() -> void:
 		random.seed = range_index + 1
 		for rect in _get_line_rects(label, ranges[range_index]):
 			for _pass in _PASS_COUNT:
-				_draw_strokes(rect, random)
+				_draw_zigzag(rect, random)
 
 
 ## The crossed out range's bounds, one rect for each line it wraps onto.
@@ -50,25 +49,19 @@ func _get_line_rects(label: Label, char_range: Vector2i) -> Array[Rect2]:
 	return rects
 
 
-## A few thick strokes straight across the word, each a little uneven,
-## spread over the middle of the letters.
-func _draw_strokes(rect: Rect2, random: RandomNumberGenerator) -> void:
+func _draw_zigzag(rect: Rect2, random: RandomNumberGenerator) -> void:
 	var height := rect.size.y * _HEIGHT_SHARE
 	var top := rect.position.y + (rect.size.y - height) / 2.0
-	var stroke_count := maxi(roundi(height / _LINE_STEP_PX), 1)
-	var spacing := height / stroke_count
-	for stroke in stroke_count:
-		var y := top + spacing * (stroke + 0.5)
-		draw_line(
-			Vector2(
-				rect.position.x + random.randf_range(-4.0, 1.0),
-				y + random.randf_range(-1.5, 1.5),
-			),
-			Vector2(
-				rect.end.x + random.randf_range(-1.0, 4.0),
-				y + random.randf_range(-1.5, 1.5),
-			),
-			_INK,
-			_STROKE_WIDTH,
-			true,
-		)
+	var points := PackedVector2Array()
+	var x := rect.position.x - random.randf_range(0.0, 3.0)
+	var is_top := random.randf() < 0.5
+	while x < rect.end.x + 3.0:
+		var y := top + (0.0 if is_top else height)
+		points.append(Vector2(
+			x + random.randf_range(-1.5, 1.5),
+			y + random.randf_range(-3.0, 3.0),
+		))
+		is_top = not is_top
+		x += _ZIG_STEP_PX * random.randf_range(0.7, 1.3)
+	if points.size() >= 2:
+		draw_polyline(points, _INK, _STROKE_WIDTH, true)
