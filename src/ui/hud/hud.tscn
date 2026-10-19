@@ -91,7 +91,6 @@ horizontal_alignment = 1
 
 [node name="CreditsOverlay" type="Control" parent="." unique_id=865031995]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 mouse_filter = 2
 
@@ -128,12 +127,11 @@ horizontal_alignment = 1
 [node name="CreditsLabel" type="Label" parent="CreditsOverlay/CenterContainer/VBoxContainer" unique_id=754007448]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Made for Ludum Dare 60.
-Music: \"Buy Something!\" by Cleyton Kauffman (CC0)."
-horizontal_alignment = 1
+text = "Taryn Schwartzstein
+Zaven Muradyan
+Levi Lindsey
 
-[node name="ReplayLabel" type="Label" parent="CreditsOverlay/CenterContainer/VBoxContainer" unique_id=1492551707]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Press Z to play again."
+Made for Ludum Dare 60.
+
+Music: \"Buy Something!\" by Cleyton Kauffman (CC0)."
 horizontal_alignment = 1

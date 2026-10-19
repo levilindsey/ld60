@@ -467,6 +467,7 @@ func _press_drawer_modal(global_point: Vector2) -> bool:
 				part.is_stored = false
 				part.drawer_index = -1
 				part.modulate.a = 1.0
+				part.on_picked_up()
 				drawer.close_drawer()
 				G.audio.play_sound(&"click")
 			return true
@@ -541,6 +542,7 @@ func _press_loose_part(global_point: Vector2) -> bool:
 	):
 		_loose_part = part
 		_loose_drag_offset = part.global_position - global_point
+		part.on_picked_up()
 		G.audio.play_sound(&"click")
 	return true
 
@@ -837,6 +839,7 @@ func _set_down_part(
 ) -> void:
 	if G.level.try_return_part(part, release_velocity):
 		return
+	part.on_set_down()
 	G.audio.play_sound(&"thud")
 	# A part that is out stays in front of the drawers.
 	part.z_index = 16

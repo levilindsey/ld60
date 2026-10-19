@@ -33,6 +33,9 @@ extends Resource
 ## Multiplies the picture's colors. White leaves the art as it is.
 @export var tint: Color = Color.WHITE
 
-## Optional. A `CanvasItemMaterial` with `BLEND_MODE_MUL` darkens what is
-## under the decal instead of covering it, for dust, grime and rust.
+## Optional. The alpha-aware multiply material (see
+## `multiply_decal.gdshader`) darkens what is under the decal
+## instead of covering it, for grime, rust and dents. It must
+## respect the texture's alpha: a plain multiply blend paints
+## the whole trimmed quad, transparent margin included.
 @export var blend_material: Material

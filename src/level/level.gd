@@ -1777,6 +1777,9 @@ func _fade_drawer_parts(drawer: Drawer, is_fading_in: bool) -> void:
 	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	tween.set_parallel()
 	_part_fade_tweens[drawer] = tween
+	var fade_sec := G.settings.part_fade_sec
+	if not is_fading_in:
+		fade_sec *= 0.5
 	for part in parts:
 		if is_fading_in:
 			part.modulate.a = 0.0
@@ -1785,7 +1788,7 @@ func _fade_drawer_parts(drawer: Drawer, is_fading_in: bool) -> void:
 			part,
 			"modulate:a",
 			1.0 if is_fading_in else 0.0,
-			G.settings.part_fade_sec,
+			fade_sec,
 		)
 	if is_fading_in:
 		return

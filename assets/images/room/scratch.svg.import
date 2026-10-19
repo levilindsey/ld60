@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b3sw3o5rkhqg8"
-path="res://.godot/imported/window.png-c1c0742517b6bb7057d5a53ef090b5e2.ctex"
+uid="uid://ckua5wjn75rv8"
+path="res://.godot/imported/scratch.svg-10d3dc965ecadf2e8d7f88cd6a9d36d4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/window.png"
-dest_files=["res://.godot/imported/window.png-c1c0742517b6bb7057d5a53ef090b5e2.ctex"]
+source_file="res://assets/images/room/scratch.svg"
+dest_files=["res://.godot/imported/scratch.svg-10d3dc965ecadf2e8d7f88cd6a9d36d4.ctex"]
 
 [params]
 
@@ -38,3 +38,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
+svg/scale=1.0
+editor/scale_with_editor_scale=false
+editor/convert_colors_with_editor_theme=false

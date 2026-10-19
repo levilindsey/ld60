@@ -161,7 +161,8 @@ enum PhysicsLayer {
 ## and then to sink down into the drawer.
 @export var part_put_away_sec := 0.22
 ## Seconds a drawer's stored parts take to fade in as it finishes
-## opening, and back out as it starts to close.
+## opening. They fade back out in half this time as it starts to
+## close.
 @export var part_fade_sec := 0.25
 ## Wrong parts hidden alongside the parts an item needs, so the player
 ## has to pick the right one out of the drawers.
@@ -400,7 +401,7 @@ enum PhysicsLayer {
 ## tolerance in this range. The most is over 1, so one twist can unseat
 ## a tip the player does not correct during the twist.
 @export var flathead_slip_min := 0.85
-@export var flathead_slip_max := 1.05
+@export var flathead_slip_max := 1.02
 ## A touch drag moves the flathead's tip this many times as far as the
 ## finger (docs/design/flathead.md "Correcting"). Mouse motion is 1 to 1.
 @export var flathead_touch_gain := 2.0

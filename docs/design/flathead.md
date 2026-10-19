@@ -25,7 +25,7 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
   twist, so it is never sudden:
 
   ```
-  drift = sign * randf_range(0.85, 1.05) * seat_tolerance_px
+  drift = sign * randf_range(0.85, 1.02) * seat_tolerance_px
   ```
 
   - Each screw picks its drift direction at random. `sign` follows
@@ -33,8 +33,8 @@ tip centered. If it drifts off the end of the slot, the tip pops out.
     the other way.
   - `seat_tolerance_px` is how far the tip can move from the center
     before it leaves the slot, about half the slot's length.
-- **One twist can unseat it.** The largest drift is 1.05 of the
-  tolerance, so about a quarter of twists cross the end of the slot on
+- **One twist can unseat it.** The largest drift is 1.02 of the
+  tolerance, so about one in eight twists cross the end of the slot on
   their own. Recentering in the pause is not enough: the player has to
   correct during the twist too. A player who never corrects should
   still usually lose the tip before the screw is out, which is why
@@ -98,7 +98,7 @@ change: reset the twist count on unseat. LX6 kept the default.
 | `twist_angle_deg` | 90 | settings |
 | `pause_sec` | 0.25 | settings |
 | `telegraph_sec` | 0.15 | settings |
-| `slip_min`, `slip_max` | 0.85, 1.05 (`slip_max` over 1, so one twist can unseat) | settings |
+| `slip_min`, `slip_max` | 0.85, 1.02 (`slip_max` over 1, so one twist can unseat) | settings |
 | `flathead_touch_gain` | 2.0 | settings, "Flathead" group |
 | `seat_tolerance_px` | 12 | per screw |
 | `slip_bias` | 0.9 | per screw |
@@ -114,12 +114,12 @@ simulated screws using the drift formula above:
 
 | `slip_bias` | Median twists to unseat | Unseats on twist 1 | Unseats on twist 2 | Unseats within 4 twists |
 |---|---|---|---|---|
-| 0.5 | 2 | 24.9% | 37.8% | 87.1% |
-| 0.8 | 2 | 25.1% | 50.9% | 94.7% |
-| 0.9 | 2 | 25.1% | 61.4% | 98.3% |
-| 1.0 | 2 | 25.0% | 75.0% | 100% |
+| 0.5 | 2 | 11.6% | 44.2% | 82.8% |
+| 0.8 | 2 | 11.8% | 60.0% | 93.1% |
+| 0.9 | 2 | 11.9% | 72.1% | 97.7% |
+| 1.0 | 2 | 11.8% | 88.2% | 100% |
 
-At 0.5 about seven of every eight 4-twist screws still unseat under an idle player, so
+At 0.5 about four of every five 4-twist screws still unseat under an idle player, so
 the default is 0.9, where nearly all do. The twist-1 share is the same
 at every bias: it only depends on how much of the drift range passes 1. Use 1.0 on the pet egg (the
 tutorial), where one steady direction makes the lesson clear. For a

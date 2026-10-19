@@ -15,8 +15,8 @@ func start_game() -> void:
 	G.session.is_game_over = false
 
 	if is_instance_valid(level):
-		# Replay after a finished run: reload the level so all
-		# transient state resets together.
+		# A level already exists, so reload it and reset all
+		# transient state together.
 		restart_level()
 	else:
 		start_level()

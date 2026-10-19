@@ -269,5 +269,5 @@ bus = &"SFX"
 [node name="WindowSmack" type="AudioStreamPlayer" parent="." unique_id=881507891]
 unique_name_in_owner = true
 stream = ExtResource("50_window_smack")
-volume_db = 17.607
+volume_db = 24.0
 bus = &"SFX"

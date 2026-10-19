@@ -1,8 +1,9 @@
 extends "res://tests/probe_base.gd"
 ## The intro humming (foley round 2). Boots the game on the title,
 ## closes it into a run and checks the humming plays once, stops, and
-## does not come back on a pause resume. A fresh run from the credits
-## plays it again. It also checks a recorded defect answers with one
+## does not come back on a pause resume or after the credits. The
+## credits are terminal, so they never start another run in the
+## same session. It also checks a recorded defect answers with one
 ## of the frustrated takes (foley round 3).
 ##
 ## Run it with `tests/run.ps1 -Name audio`, or from the repo root
@@ -104,8 +105,18 @@ func _run() -> void:
 	await _seconds(0.4)
 	_expect(not _humming.playing, "a pause resume does not replay it")
 
-	# A fresh run from the credits starts with it again.
+	# The credits are terminal. Neither a play-again input nor a
+	# direct request for a new run may start one in this session.
 	G.state.transition(StateMain.State.CREDITS)
+	for action in [&"jump", &"ability"]:
+		var event := InputEventAction.new()
+		event.action = action
+		event.pressed = true
+		get_viewport().push_input(event)
+		await _physics_frames(2)
 	G.state.transition(StateMain.State.GAME)
 	await _seconds(0.4)
-	_expect(_humming.playing, "a fresh run plays the humming again")
+	_expect(
+		G.state.state == StateMain.State.CREDITS and not _humming.playing,
+		"the credits never start another run in the same session",
+	)

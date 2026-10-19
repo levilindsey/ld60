@@ -118,11 +118,13 @@ normally but skips TITLE and loads that level instead of
 State machine (`StateMain.State`): `TITLE`, `GAME`, `PAUSE`,
 `CREDITS`. Non-GAME states pause the SceneTree. `StateMain` runs
 with `process_mode = ALWAYS` and handles the `pause` action plus
-jump/ability on the TITLE/CREDITS screens. `transition()` branches
-are deliberately idempotent; there is no same-state early return.
+jump/ability on the TITLE screen. `CREDITS` is terminal: no
+transition leaves it, so a run cannot start again in the same
+session. `transition()` branches are deliberately idempotent;
+there is no same-state early return.
 
-Game flow helpers: `G.level.win()` -> CREDITS overlay (jump/ability
-restarts); `G.game_panel.restart_level()` -> a fresh Level instance.
+Game flow helpers: `G.level.win()` -> CREDITS overlay;
+`G.game_panel.restart_level()` -> a fresh Level instance.
 
 ## Core APIs Worth Knowing
 

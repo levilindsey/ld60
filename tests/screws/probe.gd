@@ -24,10 +24,10 @@ const _DRIFT_TABLE_SEED := 6060
 ## percent that unseat on twist 1, the percent that unseat on twist 2,
 ## the percent that unseat within 4.
 const _BIAS_TABLE := [
-	[0.5, 2, 24.9, 37.8, 87.1],
-	[0.8, 2, 25.1, 50.9, 94.7],
-	[0.9, 2, 25.1, 61.4, 98.3],
-	[1.0, 2, 25.0, 75.0, 100.0],
+	[0.5, 2, 11.6, 44.2, 82.8],
+	[0.8, 2, 11.8, 60.0, 93.1],
+	[0.9, 2, 11.9, 72.1, 97.7],
+	[1.0, 2, 11.8, 88.2, 100.0],
 ]
 ## The table rounds to a tenth of a percent, and the probe samples fewer
 ## screws than the table did.
@@ -383,6 +383,12 @@ func _check_correcting() -> void:
 		and _screw_left.mode == InteractionPoint.Mode.ACTIVE
 		and _hand.input_owner == _screw_left,
 		"LX11: the driver engages ScrewLeft, which takes the pointer",
+	)
+	_expect(
+		_tool.mode == Tool.Mode.IN_USE
+		and not bool(_tool._drop_shadow.show_when.call())
+		and not _tool._drop_shadow.visible,
+		"the flathead driver casts no drop shadow while in use",
 	)
 	_pull_out.watch(_screw_left)
 	await _drive(_screw_left, 10.0)

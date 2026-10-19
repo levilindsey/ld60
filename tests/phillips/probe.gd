@@ -285,6 +285,12 @@ func _check_cam_outs() -> void:
 		),
 		"idling with the driver seated costs no grip",
 	)
+	_expect(
+		_driver.mode == Tool.Mode.IN_USE
+		and not _driver._drop_shadow.visible
+		and _driver._drop_shadow._fade < 0.01,
+		"the phillips driver casts no drop shadow while in use",
+	)
 	var zone_start := _left.get_zone_center_rad_per_sec()
 	await _drag_circle(_left.global_position, 1.2, 1.0, -1.0)
 	_expect(

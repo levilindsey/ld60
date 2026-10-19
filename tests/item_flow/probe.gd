@@ -2,7 +2,7 @@ extends "res://tests/probe_base.gd"
 ## The item flow (LX9). Boots the game with a two-item queue and plays the
 ## item flow with pushed presses: the arrival, the ticket, an unfinished
 ## item that won't drag, finishing, dragging and the ease back, the outbox,
-## the receipt, the next item, a defect popup, the credits and a restart.
+## the receipt, the next item, a defect popup and the terminal credits.
 ##
 ## Run it with `tests/run.ps1 -Name item_flow`, or from the repo root
 ## (PowerShell):
@@ -74,7 +74,7 @@ func _run() -> void:
 	await _check_next_item()
 	await _check_second_item()
 	await _check_credits()
-	await _check_restart()
+	await _check_no_restart_after_credits()
 
 
 func _check_configuration() -> void:
@@ -544,32 +544,24 @@ func _check_credits() -> void:
 	)
 
 
-func _check_restart() -> void:
+func _check_no_restart_after_credits() -> void:
 	var old_level_id := _level.get_instance_id()
+	for action in [&"jump", &"ability"]:
+		var event := InputEventAction.new()
+		event.action = action
+		event.pressed = true
+		get_viewport().push_input(event)
+		await _physics_frames(2)
 	G.state.transition(StateMain.State.GAME)
-	var has_restarted := await _wait_until(
-		func() -> bool:
-			return (
-				is_instance_valid(G.level)
-				and G.level.get_instance_id() != old_level_id
-			),
-		3.0,
-	)
-	if not _expect(has_restarted, "9. a restart starts a fresh level"):
-		return
-	_bind_level()
-	_item = _level.active_repairable
+	await _seconds(0.4)
 	_expect(
-		is_instance_valid(_item)
-		and _level.next_item_index == 1
-		and not _level.has_won,
-		"9. the fresh level starts the queue over",
+		G.state.state == StateMain.State.CREDITS
+		and get_tree().paused
+		and is_instance_valid(G.level)
+		and G.level.get_instance_id() == old_level_id
+		and _level.has_won,
+		"9. the credits are terminal and never restart in this session",
 	)
-	var has_landed := await _wait_until(
-		func() -> bool: return _landed_msec > 0,
-		2.0,
-	)
-	_expect(has_landed, "9. and its first item lands")
 
 
 ## Connects the flow signals of the level's items, starting with the one

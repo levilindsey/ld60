@@ -26,8 +26,8 @@ enum Mode {
 ## the glue bottle sits on a shelf (an ellipse under the contact),
 ## the rag hangs on a hook (its full shape, offset down), and the
 ## rest rest on shoulders at a neck (only the shape at and below
-## the contact casts). While the tool is in use its full shape
-## always casts.
+## the contact casts). A tool casts no shadow while it is held or
+## in use.
 enum HolderShadow {
 	ELLIPSE_AT_HOLDER,
 	SILHOUETTE,
@@ -110,7 +110,8 @@ func _ready() -> void:
 		self,
 		[],
 		Vector2(0.0, 6.0),
-		func() -> bool: return mode != Mode.HELD,
+		func() -> bool:
+			return mode == Mode.ENTERING or mode == Mode.STORED,
 	)
 	_update_drop_shadow()
 
@@ -159,8 +160,10 @@ func _is_tip_over_own_holder() -> bool:
 	return false
 
 
-## Points the drop shadow at the treatment this mode calls for:
-## the holder treatment while stored, the full shape while in use.
+## Points the drop shadow at the holder treatment this mode
+## calls for. Held and in-use tools cast no shadow, so only the
+## stored treatments are configured here. The shadow's own
+## `show_when` hides it in the other modes.
 func _update_drop_shadow() -> void:
 	if not is_instance_valid(_drop_shadow):
 		return
@@ -183,11 +186,6 @@ func _update_drop_shadow() -> void:
 					_drop_shadow.clip_holder = _get_holder_shape()
 					_drop_shadow.offset_px = Vector2(0.0, 6.0)
 					_drop_shadow.kind = DropShadow.Kind.SILHOUETTE
-		Mode.IN_USE:
-			_drop_shadow.anchor = null
-			_drop_shadow.clip_holder = null
-			_drop_shadow.offset_px = Vector2(0.0, 6.0)
-			_drop_shadow.kind = DropShadow.Kind.SILHOUETTE
 
 
 func _set_mode(to_mode: Mode, _from_mode: Mode) -> void:

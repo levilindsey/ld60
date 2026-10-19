@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bclc8sopmd7hr"
-path="res://.godot/imported/circle-with-rectangle.png-1939f10cf3b5d3c63c91b304f03f9292.ctex"
+uid="uid://df5vuwbfr7psy"
+path="res://.godot/imported/outside.png-784da873210388d3e289465890590767.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/circle-with-rectangle.png"
-dest_files=["res://.godot/imported/circle-with-rectangle.png-1939f10cf3b5d3c63c91b304f03f9292.ctex"]
+source_file="res://assets/images/room/outside.png"
+dest_files=["res://.godot/imported/outside.png-784da873210388d3e289465890590767.ctex"]
 
 [params]
 

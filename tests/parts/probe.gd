@@ -193,6 +193,12 @@ func _check_outside_press_closes() -> void:
 	await _press_at(Vector2(460.0, 290.0))
 	_expect(
 		await _wait_until(
+			func() -> bool: return _drawer_parts_hidden(drawer), 9
+		),
+		"a closing drawer's parts fade out twice as fast as in",
+	)
+	_expect(
+		await _wait_until(
 			func() -> bool: return drawer.state == Drawer.State.CLOSED
 		),
 		"a press outside the open drawer closes it",
@@ -360,6 +366,37 @@ func _check_right_part_fits() -> void:
 		part.z_index > 0 and not part.z_as_relative,
 		"a loose part renders over the top of repairables",
 	)
+	var rotation_before_pickup := part.rotation
+	await _press_down(part.global_position)
+	await _seconds(0.35)
+	var pickup_turn := absf(
+		wrapf(part.rotation - rotation_before_pickup, -PI, PI)
+	)
+	_expect(
+		pickup_turn >= Part._TURN_MIN_RAD * 0.9
+		and pickup_turn <= Part._TURN_MAX_RAD * 1.1,
+		"picking a part up turns it a bit (%.1f deg)"
+		% rad_to_deg(pickup_turn),
+	)
+	var bench_spot := Vector2(-180.0, 80.0)
+	var drag_start := part.global_position
+	for step in range(1, 7):
+		await _move_to(
+			drag_start.lerp(bench_spot, float(step) / 6.0)
+		)
+	var rotation_before_drop := part.rotation
+	await _release_at(bench_spot)
+	await _seconds(0.35)
+	var drop_turn := absf(
+		wrapf(part.rotation - rotation_before_drop, -PI, PI)
+	)
+	_expect(
+		not part.is_installed
+		and drop_turn >= Part._TURN_MIN_RAD * 0.9
+		and drop_turn <= Part._TURN_MAX_RAD * 1.1,
+		"setting a part down turns it a bit (%.1f deg)"
+		% rad_to_deg(drop_turn),
+	)
 	await _drag(part.global_position, _socket.global_position)
 	_expect(
 		await _wait_until(
@@ -368,6 +405,12 @@ func _check_right_part_fits() -> void:
 		"the right part dragged to the socket finishes it",
 	)
 	_expect(part.is_installed, "the fitted part is installed")
+	_expect(
+		absf(wrapf(part.rotation, -PI, PI)) < 0.01,
+		"a part fitted into its socket takes its orientation"
+		+ " instead of a set-down turn (%.1f deg)"
+		% rad_to_deg(part.rotation),
+	)
 	_expect(
 		part.z_index == 0 and part.z_as_relative,
 		"an installed part layers with its item again",
@@ -568,6 +611,13 @@ func _find_socket() -> PartSocket:
 func _drawer_parts_opaque(drawer: Drawer) -> bool:
 	for part in _level.get_parts_in_drawer(drawer):
 		if part.modulate.a < 0.99:
+			return false
+	return true
+
+
+func _drawer_parts_hidden(drawer: Drawer) -> bool:
+	for part in _level.get_parts_in_drawer(drawer):
+		if part.visible:
 			return false
 	return true
 

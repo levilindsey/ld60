@@ -314,6 +314,12 @@ func _check_dirt_points() -> void:
 		.contains("decals/grime2"),
 		"the grime wears the second grime set",
 	)
+	_expect(
+		grime.art.material is ShaderMaterial
+		and grime_two.art.material is ShaderMaterial,
+		"the grime darkens with the alpha-aware multiply shader,"
+		+ " not a plain multiply that paints its whole quad",
+	)
 	grime.on_wiped(5.0, 0.1)
 	_expect(
 		grime.mode == InteractionPoint.Mode.FINISHED

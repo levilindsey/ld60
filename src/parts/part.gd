@@ -5,7 +5,9 @@ extends Node2D
 ## Dragging it onto an empty socket fits it; dragging it back over a
 ## drawer puts it away (docs/design/parts_bin.md). While loose it
 ## renders over the top of repairables (the z_index in part.tscn);
-## once installed it layers with its item.
+## once installed it layers with its item. Picking it up and setting
+## it down each turn it a bit in the fingers. Fitting it into its
+## socket instead turns it to the socket's own orientation.
 
 
 enum Type {
@@ -18,6 +20,12 @@ enum Type {
 const _FIT_SEC := 0.15
 ## How many times the part jerks in the "nope" shake.
 const _NOPE_SHAKE_STEPS := 4
+## Seconds a pick-up or set-down turn takes.
+const _TURN_SEC := 0.25
+## How far a pick-up or set-down turn goes, in radians. The least
+## still reads as a turn, so every grab and drop moves it a bit.
+const _TURN_MIN_RAD := 0.2
+const _TURN_MAX_RAD := 0.5
 
 @export var type := Type.GEAR
 
@@ -35,6 +43,7 @@ var drawer_index := -1
 var is_returning := false
 
 var _shake_tween: Tween
+var _turn_tween: Tween
 var _hint_hint: OutlineHint
 var _is_hint_active := false
 
@@ -74,6 +83,7 @@ func get_radius_px() -> float:
 ## its way into a drawer.
 func start_bench_return() -> void:
 	is_returning = true
+	_stop_turn()
 	if is_instance_valid(_shake_tween):
 		_shake_tween.kill()
 	%Art.position = Vector2.ZERO
@@ -139,9 +149,48 @@ func is_hint_active() -> bool:
 	)
 
 
-## Leaves the hand and snaps into a socket. The socket hears about it
-## when the part lands.
+## The player picked this loose part up, from a drawer or the
+## bench. It turns a bit in the fingers.
+func on_picked_up() -> void:
+	_turn_a_bit()
+
+
+## The player set this part down on the bench, not into a socket
+## or a drawer. It turns a bit as it lands.
+func on_set_down() -> void:
+	_turn_a_bit()
+
+
+## Turns the part a little either way, over `_TURN_SEC`. Every
+## turn moves at least `_TURN_MIN_RAD`, so it always reads.
+func _turn_a_bit() -> void:
+	if is_installed:
+		return
+	_stop_turn()
+	var direction := 1.0 if randf() < 0.5 else -1.0
+	var target_rotation := (
+		rotation
+		+ direction * randf_range(_TURN_MIN_RAD, _TURN_MAX_RAD)
+	)
+	_turn_tween = create_tween()
+	_turn_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_turn_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_turn_tween.tween_property(
+		self, "rotation", target_rotation, _TURN_SEC
+	)
+
+
+func _stop_turn() -> void:
+	if is_instance_valid(_turn_tween):
+		_turn_tween.kill()
+	_turn_tween = null
+
+
+## Leaves the hand and snaps into a socket. It turns to the
+## socket's own orientation instead of a set-down turn. The
+## socket hears about it when the part lands.
 func install_into(socket: PartSocket) -> void:
+	_stop_turn()
 	is_installed = true
 	var from_global_position := global_position
 	if G.level.hand.held == self:
