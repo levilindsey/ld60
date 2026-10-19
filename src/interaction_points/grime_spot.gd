@@ -8,13 +8,14 @@ extends DirtSpot
 ## color are configured on the shared `DirtSpot` base.
 
 
-## How much grime there is. More draws a bigger patch.
+## How many decals the patch renders. It reads as more
+## grime, but it does not change how long wiping takes.
 @export var amount := 1.0
-## How hard the grime is to wipe off. The wiping a spot needs
-## is its amount times its toughness.
+## How hard the grime is to wipe off. The wiping a spot
+## needs is its toughness alone.
 @export var toughness := 1.0
 
-## Hit points left. It starts at the amount times toughness.
+## Hit points left. It starts at the toughness.
 var hit_points_left := 0.0
 
 var _total_hit_points := 1.0
@@ -24,10 +25,11 @@ func _ready() -> void:
 	super._ready()
 	type = Type.GRIME_SPOT
 	role = Role.REPAIR
+	# Grime decals render at twice the configured size.
+	_decal_size_scale = 2.0
 	_set_up_art()
-	_art_home_scale *= sqrt(maxf(amount, 0.01))
-	art.scale = _art_home_scale
-	_total_hit_points = amount * toughness
+	_add_extra_decals(maxi(1, int(round(amount))))
+	_total_hit_points = maxf(toughness, 0.0)
 	hit_points_left = _total_hit_points
 	_update_alpha()
 

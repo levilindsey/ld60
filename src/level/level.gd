@@ -1976,7 +1976,7 @@ func spawn_bench_dust(
 		var dust := _BENCH_DUST_SCENE.instantiate() as BenchDust
 		if not G.check(is_instance_valid(dust)):
 			continue
-		dust.amount = randf_range(0.8, 1.0)
+		dust.toughness = randf_range(0.8, 1.0)
 		_get_bench_dust_holder().add_child(dust)
 		dust.global_position = clamp_to_bench(global_pos)
 		dust.reset_physics_interpolation()

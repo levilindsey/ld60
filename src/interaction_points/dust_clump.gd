@@ -14,9 +14,12 @@ const _BURST_PUFF_COUNT := 5
 const _PUFF_MIN_SEC := 0.45
 const _PUFF_MAX_SEC := 0.7
 
-## How much dust there is. More takes more puffs and draws a
-## bigger clump.
+## How many decals the clump renders. It reads as more dust,
+## but it does not change how much air the clump takes.
 @export var amount := 1.0
+## How much air the clump takes to blow away. The time it
+## takes is its toughness alone.
+@export var toughness := 1.0
 
 ## Hit points left.
 var hit_points_left := 0.0
@@ -30,10 +33,11 @@ func _ready() -> void:
 	super._ready()
 	type = Type.DUST_CLUMP
 	role = Role.REPAIR
+	# Dust decals render at twice the configured size.
+	_decal_size_scale = 2.0
 	_set_up_art()
-	_art_home_scale *= sqrt(maxf(amount, 0.01))
-	art.scale = _art_home_scale
-	hit_points_left = amount
+	_add_extra_decals(maxi(1, int(round(amount))))
+	hit_points_left = maxf(toughness, 0.0)
 	_update_alpha()
 
 
@@ -152,6 +156,6 @@ func _wobble() -> void:
 
 func _update_alpha() -> void:
 	var fraction := 0.0
-	if amount > 0.0:
-		fraction = clampf(hit_points_left / amount, 0.0, 1.0)
+	if toughness > 0.0:
+		fraction = clampf(hit_points_left / toughness, 0.0, 1.0)
 	_set_art_alpha(0.25 + 0.75 * fraction)

@@ -399,7 +399,60 @@ func _check_game_n_watch() -> void:
 	await _check_gnw_phillips_engages(covered_screw)
 	await _check_gnw_glue_smears(item, front_layer)
 	item.queue_free()
+	await _check_extra_dirt_offsets()
 	await _physics_frames(2)
+
+
+## The first dirt spot on a layer keeps its authored place;
+## every one after it sits a random nudge away, within the
+## nudge range, and the nudge varies from item to item.
+func _check_extra_dirt_offsets() -> void:
+	var first_positions: Array[Vector2] = []
+	var extra_positions: Array[Vector2] = []
+	for attempt in 4:
+		var item := _spawn(
+			"res://src/repairables/game_n_watch_repairable.tscn"
+		)
+		if not is_instance_valid(item):
+			continue
+		for layer in item.layers:
+			var spots: Array[DirtSpot] = []
+			for point in layer.get_points():
+				if point is GrimeSpot or point is DustClump:
+					spots.append(point as DirtSpot)
+			if spots.size() >= 2 and layer.name == "Inside":
+				first_positions.append(spots[0].position)
+				extra_positions.append(spots[1].position)
+		item.queue_free()
+		await _physics_frames(2)
+	var first_kept := first_positions.size() == 4
+	for at in first_positions:
+		first_kept = (
+			first_kept and at.is_equal_approx(Vector2(-300, -250))
+		)
+	_expect(
+		first_kept,
+		"the first dust spot keeps its authored place",
+	)
+	var range_local := 18.0 / 0.13 + 1.0
+	var extras_in_range := extra_positions.size() == 4
+	for at in extra_positions:
+		extras_in_range = (
+			extras_in_range
+			and at.distance_to(Vector2(350, 250)) <= range_local
+		)
+	_expect(
+		extras_in_range,
+		"extra dust spots sit within the nudge range",
+	)
+	var all_same := true
+	for at in extra_positions:
+		if not at.is_equal_approx(extra_positions[0]):
+			all_same = false
+	_expect(
+		not all_same,
+		"the extra spots' nudges vary from item to item",
+	)
 
 
 ## A hint pulse on a point placed big on a scaled item
@@ -457,6 +510,19 @@ func _check_gnw_dirt_is_bench_sized(screw: PhillipsScrew) -> void:
 		hit_radius >= 8.0,
 		"the Game n Watch grime hit circle is bench-sized"
 		+ " (%.0f world px)" % hit_radius,
+	)
+	_expect(
+		grime._decal_sprites.size()
+		== maxi(1, int(round(grime.amount))),
+		"the Game n Watch grime renders its amount of decals"
+		+ " (%d of %d)"
+		% [grime._decal_sprites.size(), int(round(grime.amount))],
+	)
+	_expect(
+		is_equal_approx(grime.hit_points_left, grime.toughness),
+		"the grime takes its toughness of wiping, amount aside"
+		+ " (%.2f of %.2f)"
+		% [grime.hit_points_left, grime.toughness],
 	)
 
 
