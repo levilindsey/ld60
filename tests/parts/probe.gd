@@ -102,6 +102,20 @@ func _check_stocked() -> void:
 			"a stocked part starts stored and hidden",
 		)
 	_expect(needed >= 1, "a stocked part fits the socket")
+	for part in stored:
+		var sprite := part.get_node("%Sprite") as Sprite2D
+		if Part.has_art(part.type):
+			_expect(
+				sprite.visible and not part.get_node("%Art").visible,
+				"a stocked %s shows its real texture"
+				% Part.get_display_name(part.type),
+			)
+		else:
+			_expect(
+				not sprite.visible and part.get_node("%Art").visible,
+				"a stocked %s keeps the placeholder shape"
+				% Part.get_display_name(part.type),
+			)
 
 
 ## Drags the item's loose cover off to a clear bench spot.
@@ -145,6 +159,9 @@ func _check_outside_press_closes() -> void:
 		),
 		"at rest the top view is scaled down above the front",
 	)
+	var scaler_home := (
+		drawer.get_node("Mover/Scaler") as Node2D
+	).scale
 	await _press_at(drawer.global_position)
 	_expect(
 		await _wait_until(
@@ -174,8 +191,19 @@ func _check_outside_press_closes() -> void:
 		"an open drawer keeps thin front and side strips, turned in",
 	)
 	await _shot("2_drawer_open")
+	var scaler := drawer.get_node("Mover/Scaler") as Node2D
+	_expect(
+		scaler.scale.distance_to(scaler_home * 2.0) < 0.02,
+		"an open drawer is scaled up twice on its trip in",
+	)
 	for part in _level.get_parts_in_drawer(drawer):
-		_expect(part.visible, "an open drawer shows its parts")
+		_expect(
+			part.visible
+			and part.global_transform.get_scale().distance_to(
+				Vector2.ONE
+			) < 0.02,
+			"an open drawer shows its parts, unscaled",
+		)
 	_expect(
 		await _wait_until(
 			func() -> bool: return _drawer_parts_opaque(drawer)
@@ -212,6 +240,10 @@ func _check_outside_press_closes() -> void:
 	_expect(
 		clipping_space.visible and not unclipped.visible,
 		"a closed drawer shows its clipped sprite group again",
+	)
+	_expect(
+		scaler.scale.distance_to(scaler_home) < 0.02,
+		"a closed drawer shrinks back to its slot scale",
 	)
 	for part in _level.get_parts_in_drawer(drawer):
 		_expect(not part.visible, "a closed drawer hides its parts")

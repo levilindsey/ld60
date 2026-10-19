@@ -1121,6 +1121,7 @@ func _start_bench_return(
 			"ground_velocity": Vector2.ZERO,
 			"bounce_height_px": 0.0,
 			"bounce_velocity": 0.0,
+			"has_landed": false,
 			"angular_velocity": clampf(
 				velocity.x / maxf(radius_px, 8.0),
 				-4.0,
@@ -1524,11 +1525,22 @@ func _step_return_guided(entry: Dictionary, delta: float) -> void:
 
 ## The landing: the downward speed becomes a bounce up and
 ## a skid across the bench. A slow landing only skids. A
-## bigger piece keeps less of both.
+## bigger piece keeps less of both. The owner's landing
+## sound plays here, at the first impact, not when the
+## piece finally comes to rest after its bounce and skid.
 func _land_bench_return(
 	entry: Dictionary,
 	impact_velocity: Vector2,
 ) -> void:
+	if not (entry.get("has_landed") as bool):
+		entry["has_landed"] = true
+		var owner := entry.get("owner") as Object
+		if owner is Part:
+			(owner as Part).play_landing_sound()
+		elif owner is BrokenPiece:
+			(owner as BrokenPiece).play_landing_sound()
+		elif owner is Screw:
+			(owner as Screw).play_landing_sound()
 	var target := entry.get("target") as Vector2
 	entry["ground"] = target
 	entry["phase"] = _RETURN_SETTLING

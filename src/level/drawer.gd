@@ -47,6 +47,12 @@ const _SLIDE_FRACTION := 0.375
 ## How far above its top edge a returning part rises, in world
 ## pixels, before it sinks back down inside.
 const _PUT_AWAY_CLEARANCE_PX := 50.0
+## How much bigger the drawer gets on its trip to the center,
+## as it turns from the front view to the top-down view. It
+## shrinks back on the way home. Stored parts are level
+## children, not drawer children, so they keep their own
+## scale while the drawer grows around them.
+const _CENTER_SCALE_MULTIPLIER := 2.0
 
 var state := State.CLOSED
 ## This drawer's slot in the level's stack, counting from 0.
@@ -61,11 +67,19 @@ var _fraction_tween: Tween
 ## Bumped by `reset_closed()`, so an open or close that was cut
 ## short never resumes and moves the drawer later.
 var _generation := 0
+var _scaler_home_scale := Vector2.ONE
 
 
 func _ready() -> void:
+	_scaler_home_scale = _get_scaler().scale
 	_set_clipped(true)
 	_apply_open_fraction(0.0)
+
+
+## The wrapper that carries the drawer art. Scaling it grows
+## the drawer on its trip to the center.
+func _get_scaler() -> Node2D:
+	return get_node("Mover/Scaler") as Node2D
 
 
 ## Shows the clipped sprite group in the slot, or the unclipped
@@ -206,6 +220,12 @@ func open_drawer() -> void:
 		_mover_center_position(),
 		G.settings.drawer_move_sec,
 	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	_tween.tween_property(
+		_get_scaler(),
+		"scale",
+		_scaler_home_scale * _CENTER_SCALE_MULTIPLIER,
+		G.settings.drawer_move_sec,
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	await _tween.finished
 	if generation != _generation:
 		return
@@ -251,6 +271,12 @@ func close_drawer() -> void:
 		Vector2.ZERO,
 		G.settings.drawer_move_sec,
 	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	_tween.tween_property(
+		_get_scaler(),
+		"scale",
+		_scaler_home_scale,
+		G.settings.drawer_move_sec,
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	await _tween.finished
 	if generation != _generation:
 		return
@@ -274,6 +300,7 @@ func reset_closed() -> void:
 	state = State.CLOSED
 	_set_clipped(true)
 	(%Mover as Node2D).position = Vector2.ZERO
+	_get_scaler().scale = _scaler_home_scale
 	_apply_open_fraction(0.0)
 
 

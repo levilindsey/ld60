@@ -32,6 +32,38 @@ const _TURN_SEC := 0.25
 ## still reads as a turn, so every grab and drop moves it a bit.
 const _TURN_MIN_RAD := 0.2
 const _TURN_MAX_RAD := 0.5
+## Real part art per kind, where it exists: the overlay image,
+## the piece's region on it, and how long its longer side
+## runs on the bench in world pixels. Kinds with no art yet
+## keep the placeholder polygon. A new kind gets art by
+## adding a row here; nothing else needs to change.
+const _ART := {
+	Type.TUBE: [
+		"res://assets/images/repairables/radio_good_bulb.png",
+		Rect2(2118, 1175, 455, 994),
+		46.0,
+	],
+	Type.TV_CONTROLS: [
+		"res://assets/images/repairables/tv_controls.png",
+		Rect2(2217, 919, 567, 1015),
+		46.0,
+	],
+	Type.LETTER_KEY: [
+		"res://assets/images/repairables/keyss_letter_key.png",
+		Rect2(1120, 1501, 120, 94),
+		36.0,
+	],
+	Type.SPACEBAR: [
+		"res://assets/images/repairables/keyss_spacebar.png",
+		Rect2(1296, 1562, 908, 100),
+		54.0,
+	],
+	Type.LED: [
+		"res://assets/images/repairables/piano_good_led.png",
+		Rect2(227, 718, 418, 110),
+		42.0,
+	],
+}
 
 @export var type := Type.GEAR
 
@@ -57,7 +89,7 @@ var _is_hint_active := false
 func _ready() -> void:
 	DropShadow.attach_silhouette(
 		self,
-		[get_node("%Art")],
+		[get_node("%Art"), get_node("%Sprite")],
 		Vector2(0.0, 6.0),
 		func() -> bool:
 			return (
@@ -95,19 +127,45 @@ func start_bench_return() -> void:
 	%Art.position = Vector2.ZERO
 
 
+## The sound of the part hitting the bench, played by the
+## level at its first bounce, not when it comes to rest.
+func play_landing_sound() -> void:
+	G.audio.play_sound(&"thud")
+
+
 ## The part has come to rest inside the workable area.
 func finish_bench_return() -> void:
 	is_returning = false
 	# A part that is out stays in front of the drawers.
 	z_index = 16
-	G.audio.play_sound(&"thud")
 
 
-## Sets the part's kind and rebuilds its placeholder art.
+## True when this kind has real art (see `_ART`).
+static func has_art(part_type: Type) -> bool:
+	return _ART.has(part_type)
+
+
+## Sets the part's kind and its art: the real texture where
+## the kind has one, the placeholder polygon where it doesn't.
 func setup(part_type: Type) -> void:
 	type = part_type
 	%Art.polygon = get_polygon(part_type)
 	%Art.color = get_color(part_type)
+	var sprite := get_node("%Sprite") as Sprite2D
+	if _ART.has(part_type):
+		var entry: Array = _ART[part_type]
+		var region := entry[1] as Rect2
+		sprite.texture = load(entry[0] as String) as Texture2D
+		sprite.region_enabled = true
+		sprite.region_rect = region
+		var longer_side := maxf(region.size.x, region.size.y)
+		var bench_px := entry[2] as float
+		sprite.scale = Vector2.ONE * (bench_px / longer_side)
+		sprite.show()
+		%Art.hide()
+	else:
+		sprite.hide()
+		%Art.show()
 
 
 ## The wrong socket, or a press that fits nowhere. No penalty.

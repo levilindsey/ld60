@@ -415,10 +415,15 @@ func start_bench_return() -> void:
 
 ## The screw has come to rest inside the workable area. The
 ## turn it landed at is the turn it rests at.
+## The sound of the screw hitting the bench, played by the
+## level at its first bounce, not when it comes to rest.
+func play_landing_sound() -> void:
+	G.audio.play_sound(&"click")
+
+
 func finish_bench_return() -> void:
 	is_returning = false
 	_rest_rotation = bench_art.rotation
-	G.audio.play_sound(&"click")
 
 
 ## True when a press on this resting screw would bring it back: its layer

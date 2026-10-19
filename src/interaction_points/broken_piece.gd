@@ -310,11 +310,16 @@ func start_bench_return() -> void:
 		_turn_tween.kill()
 
 
+## The sound of the piece hitting the bench, played by the
+## level at its first bounce, not when it comes to rest.
+func play_landing_sound() -> void:
+	G.audio.play_sound(&"thud")
+
+
 ## The piece has come to rest inside the workable area.
 func finish_bench_return() -> void:
 	is_returning = false
 	z_index = 16
-	G.audio.play_sound(&"thud")
 
 
 func _detach_to_bench() -> void:
