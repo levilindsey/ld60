@@ -17,6 +17,8 @@
 [ext_resource type="Texture2D" uid="uid://bu7larxhakoo4" path="res://assets/images/manual/manual_page0001.png" id="14_page1"]
 [ext_resource type="Texture2D" uid="uid://18c7q0emsdre" path="res://assets/images/manual/manual_page0002.png" id="15_page2"]
 [ext_resource type="Texture2D" uid="uid://dymg21offcncr" path="res://assets/images/manual/manual_page0003.png" id="16_page3"]
+[ext_resource type="Texture2D" path="res://assets/images/manual/manual_page0004.png" id="16_page4"]
+[ext_resource type="Texture2D" path="res://assets/images/manual/manual_page0005.png" id="16_page5"]
 [ext_resource type="PackedScene" uid="uid://dq0q06p1k4wyo" path="res://src/level/Drawer.tscn" id="17_drawer"]
 [ext_resource type="PackedScene" uid="uid://dwv1t1pd3n7li" path="res://src/props/radio.tscn" id="18_radio"]
 [ext_resource type="FontFile" uid="uid://dpjyugfnnu6wc" path="res://assets/fonts/reenie_beanie/ReenieBeanie.ttf" id="19_handwriting"]
@@ -291,7 +293,7 @@ default_color = Color(0.9, 0.15, 0.1, 1)
 [node name="InstructionManual" parent="." unique_id=742015103 node_paths=PackedStringArray("open_spot", "resting_draw_before") instance=ExtResource("12_manual")]
 position = Vector2(-460.00003, 188)
 scale = Vector2(0.45, 0.45)
-page_contents = Array[Texture2D]([ExtResource("13_page0"), ExtResource("14_page1"), ExtResource("15_page2"), ExtResource("16_page3")])
+page_contents = Array[Texture2D]([ExtResource("13_page0"), ExtResource("14_page1"), ExtResource("15_page2"), ExtResource("16_page3"), ExtResource("16_page4"), ExtResource("16_page5")])
 open_spot = NodePath("../ManualOpenSpot")
 desk_corners = PackedVector2Array(-162.7, -33.3, 22.3, -69.4, 206.5, 42.3, -39.9, 124.2)
 resting_draw_before = NodePath("../Repairables")

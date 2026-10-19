@@ -27,10 +27,9 @@ enum PhysicsLayer {
 ## winning does, instead of playing the day through. A
 ## playtesting convenience.
 @export var show_credits_at_start := false
-## Show the instruction manual on the bench. Off for now:
-## the level removes it before play, so it is neither seen
-## nor tapped.
-@export var show_instruction_manual := false
+## Show the instruction manual on the bench. Off, the level
+## removes it before play, so it is neither seen nor tapped.
+@export var show_instruction_manual := true
 @export var full_screen := false
 @export var move_preview_windows_to_other_display := true
 @export var mute_music := false
