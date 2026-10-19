@@ -192,6 +192,7 @@ enum PhysicsLayer {
 @export_group("Repairables")
 @export var flat_head_screw_repairable_scene: PackedScene
 @export var phillips_repairable_scene: PackedScene
+@export var toaster_scene: PackedScene
 ## The day's order: the items that arrive, one after another. The game is
 ## won after the last one goes into the outbox.
 @export var item_queue: Array[Repairable.Type] = []
@@ -531,6 +532,8 @@ func get_repairable_scene_from_type(type: Repairable.Type) -> PackedScene:
 			return flat_head_screw_repairable_scene
 		Repairable.Type.TEST_PHILLIPS_REPAIRABLE:
 			return phillips_repairable_scene
+		Repairable.Type.TOASTER:
+			return toaster_scene
 		_:
 			G.fatal()
 			return null

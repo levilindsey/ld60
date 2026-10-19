@@ -19,6 +19,9 @@ const _FIT_SEC := 0.15
 ## and lands at fall_target_offset. False: it rides in on
 ## the item until the player grabs it.
 @export var starts_detached := false
+## True: the piece starts glued on, with its point finished.
+## It only breaks when `knock_off()` is called.
+@export var starts_installed := false
 ## Where a detached piece lands, in world pixels from where
 ## the item itself lands.
 @export var fall_target_offset := Vector2(150.0, 40.0)
@@ -28,9 +31,9 @@ const _FIT_SEC := 0.15
 @export var covering_layer: RepairLayer
 ## How close a press may land and still grab it, in pixels.
 @export var grab_radius_px := 30.0
-## The piece's art. It is a Polygon2D in the scene, so its
-## shape can be redrawn per piece.
-@export var art: Polygon2D
+## The piece's art: a Polygon2D, so its shape can be redrawn
+## per piece, or a Sprite2D.
+@export var art: CanvasItem
 
 ## The item this piece broke off, or null between items.
 var item: Repairable
@@ -52,6 +55,9 @@ func _ready() -> void:
 	item = _find_item()
 	if is_instance_valid(target_point):
 		target_point.piece = self
+		if starts_installed:
+			is_installed = true
+			target_point.mode = InteractionPoint.Mode.FINISHED
 	# A piece that falls on arrival is reparented in the same
 	# call stack, before a shadow's deferred sibling insert
 	# could run. It gets its shadow once it has left instead.
@@ -100,10 +106,21 @@ func setup_target(point: BrokenPoint) -> void:
 ## How far the art reaches from the middle, in world pixels.
 func get_radius_px() -> float:
 	var radius := 20.0
-	if is_instance_valid(art):
+	if art is Polygon2D:
 		radius = 0.0
-		for point in art.polygon:
+		for point in (art as Polygon2D).polygon:
 			radius = maxf(radius, point.length())
+	elif art is Sprite2D:
+		var sprite := art as Sprite2D
+		var rect := sprite.get_rect()
+		radius = 0.0
+		for corner in [
+			rect.position,
+			rect.end,
+			Vector2(rect.position.x, rect.end.y),
+			Vector2(rect.end.x, rect.position.y),
+		]:
+			radius = maxf(radius, (corner * sprite.scale).length())
 	return maxf(radius, 1.0)
 
 
@@ -250,6 +267,18 @@ func attach_to_point(point: BrokenPoint) -> void:
 		point.global_rotation,
 		_FIT_SEC,
 	)
+
+
+## Breaks an installed piece off mid-repair: its point needs
+## glue and the piece again, and the piece falls to the bench
+## toward a world position.
+func knock_off(target_global_position: Vector2) -> void:
+	if not is_installed:
+		return
+	is_installed = false
+	if is_instance_valid(target_point):
+		target_point.reset_for_reglue()
+	detach_for_fall(target_global_position)
 
 
 ## Falls off as the item arrives, toward a world position.

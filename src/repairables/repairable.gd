@@ -29,6 +29,7 @@ signal departed
 enum Type {
 	TEST_FLAT_HEAD_SCREW_REPAIRABLE,
 	TEST_PHILLIPS_REPAIRABLE,
+	TOASTER,
 }
 
 enum Mode {
@@ -52,6 +53,11 @@ const _LEAVING_Z_INDEX := 16
 ## The customer's complaint, shown on the ticket.
 @export_multiline var ticket := ""
 @export var par_time_sec := 90.0
+## How far the item reaches from its middle on the bench, in pixels.
+@export var bench_radius_px := 50.0
+## The bench shadow's size, and where it sits from the item's middle.
+@export var shadow_size := Vector2(170.0, 32.0)
+@export var shadow_offset := Vector2(5.0, 62.0)
 
 var mode := Mode.ENTERING
 ## True while the level is bringing this finished item back
@@ -95,8 +101,8 @@ func _ready() -> void:
 	_repair_sequence = RepairSequence.build_for(self)
 	DropShadow.attach(
 		self,
-		Vector2(170.0, 32.0),
-		Vector2(5.0, 62.0),
+		shadow_size,
+		shadow_offset,
 		func() -> bool:
 			return (
 				mode == Mode.UNDER_REPAIR
@@ -280,7 +286,7 @@ func arrive(target_global_position: Vector2) -> void:
 ## much the item bounces and skids when it lands there. A
 ## big item like this bounces little and stops quickly.
 func get_bench_radius_px() -> float:
-	return 50.0
+	return bench_radius_px
 
 
 ## The level starts bringing this finished item back to the

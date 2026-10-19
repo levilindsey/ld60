@@ -113,6 +113,9 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Residuals (known, not fixed)
 
+- **LX68** · The toaster's late beats (the hammer target that appears
+  once it wanders, the second wheel knocked off mid-repair) are outside
+  the `RepairSequence` built at spawn, so idle hints may skip them.
 - **LX59** · `full_loop`, `full_loop_booklet`, `item_flow`, `screws`
   and `parts` probes fail at HEAD 2d0096b (checked 2026-10-18 on a
   clean worktree, so not LX58 fallout): the Phillips-in-test-box and
@@ -190,6 +193,10 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX67** · Toaster on wheels (`src/repairables/toaster.tscn`, last in
+  `item_queue`): glue the fallen wheel, it wanders, two hammer hits stop it
+  and knock the other wheel off, glue that, wipe grime, the face appears.
+  Done (2026-10-18). Zaven still to play it with a mouse (LX41).
 - **LX66** · Broken interaction points and pieces for glue:
   placeable `BrokenPoint` + `BrokenPiece` (attached, hidden behind
   a covering layer, or falling separately on arrival with the bench

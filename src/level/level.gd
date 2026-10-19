@@ -49,6 +49,8 @@ var hint_tracker: HintTracker
 var tools_by_type: Dictionary[Tool.Type, Tool] = {}
 ## The item on the bench, or null while the next one is on its way.
 var active_repairable: Repairable
+## The type of the item on the bench, or of the last one.
+var active_repairable_type := Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE
 ## How many items of `Settings.item_queue` have been spawned.
 var next_item_index := 0
 
@@ -198,6 +200,25 @@ func spawn_tool(type: Tool.Type) -> void:
 	tool.snap_to_holder()
 
 
+## Dev only: swaps the item on the bench for one of the next type,
+## cycling through every type. Does nothing between items.
+func swap_item_for_dev() -> void:
+	if not is_instance_valid(active_repairable):
+		return
+	if is_instance_valid(hand.held) and not hand.held is Tool:
+		hand.release()
+	var item := active_repairable
+	active_repairable = null
+	cleanup_broken_pieces(item)
+	cleanup_loose_parts()
+	set_outbox_outline_shown(false)
+	item.queue_free()
+	spawn_repairable(
+		(active_repairable_type + 1) % Repairable.Type.size()
+		as Repairable.Type
+	)
+
+
 ## Drops an item of a type onto the bench and returns it. The camera
 ## shakes on each bounce, and the ticket appears when it lands.
 func spawn_repairable(type: Repairable.Type) -> Repairable:
@@ -210,6 +231,7 @@ func spawn_repairable(type: Repairable.Type) -> Repairable:
 	item.global_position = %ItemSpawnPosition.global_position
 	item.reset_physics_interpolation()
 	active_repairable = item
+	active_repairable_type = type
 	for piece in item.get_broken_pieces():
 		register_broken_piece(piece)
 
@@ -1266,14 +1288,14 @@ func _step_bench_returns(delta: float) -> void:
 		return
 	for index in range(_bench_returns.size() - 1, -1, -1):
 		var entry := _bench_returns[index] as Dictionary
-		var owner := entry.get("owner") as Object
-		var moving_node := entry.get("node") as Node2D
+		# Checked before the casts: a freed owner can't be cast.
 		if (
-			not is_instance_valid(owner)
-			or not is_instance_valid(moving_node)
+			not is_instance_valid(entry.get("owner"))
+			or not is_instance_valid(entry.get("node"))
 		):
 			_bench_returns.remove_at(index)
 			continue
+		var owner := entry.get("owner") as Object
 		match entry.get("phase") as int:
 			_RETURN_FLYING:
 				_step_return_flight(entry, delta)

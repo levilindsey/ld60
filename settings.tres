@@ -17,6 +17,7 @@
 [ext_resource type="PackedScene" path="res://src/repairables/test_phillips_repairable.tscn" id="13_philitem"]
 [ext_resource type="PackedScene" uid="uid://ccdw1u28lthc5" path="res://src/tools/glue.tscn" id="14_glue"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/glue_smear.tscn" id="15_smear"]
+[ext_resource type="PackedScene" path="res://src/repairables/toaster.tscn" id="16_toaster"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("5_outline")
@@ -39,7 +40,8 @@ outline_hint_material = SubResource("ShaderMaterial_outline")
 finish_sparkle_scene = ExtResource("6_sparkle")
 flat_head_screw_repairable_scene = ExtResource("3_yixrw")
 phillips_repairable_scene = ExtResource("13_philitem")
-item_queue = Array[int]([0, 0, 0])
+toaster_scene = ExtResource("16_toaster")
+item_queue = Array[int]([0, 0, 0, 2])
 flat_head_screw_driver_scene = ExtResource("2_xmm7k")
 rag_scene = ExtResource("9_rag")
 air_blower_scene = ExtResource("10_blower")

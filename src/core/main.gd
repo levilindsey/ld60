@@ -73,6 +73,9 @@ func _unhandled_input(event: InputEvent) -> void:
 					== Repairable.Mode.UNDER_REPAIR
 				):
 					G.level.active_repairable.complete_for_dev()
+			KEY_N:
+				if is_instance_valid(G.level):
+					G.level.swap_item_for_dev()
 			KEY_M:
 				_set_music_muted(
 					not AudioServer.is_bus_mute(

@@ -15,6 +15,9 @@ const _HOLD_Z_INDEX := 40
 ## Seconds the piece must be held still. Per point, so one
 ## item can ask for a quick tack and another for a long hold.
 @export var hold_sec := 5.0
+## Draws the scar and the finished ring. Off when the item's art
+## already shows where the piece goes.
+@export var draws_scar := true
 
 ## True once glue has been squeezed onto this point. It
 ## survives a failed hold, so the player only glues once.
@@ -60,7 +63,15 @@ func _physics_process(delta: float) -> void:
 
 
 func _draw() -> void:
-	# The scar the piece left behind.
+	if draws_scar:
+		_draw_scar()
+	if mode == Mode.FINISHED or not is_holding:
+		return
+	_draw_hold()
+
+
+## The scar the piece left behind, ringed once it's mended.
+func _draw_scar() -> void:
 	var scar := Color(0.12, 0.1, 0.1, 0.9)
 	draw_line(Vector2(-14, -10), Vector2(12, 8), scar, 3.0, true)
 	draw_line(Vector2(-8, 12), Vector2(14, -8), scar, 3.0, true)
@@ -78,9 +89,9 @@ func _draw() -> void:
 			3.0,
 			true,
 		)
-		return
-	if not is_holding:
-		return
+
+
+func _draw_hold() -> void:
 	var inner := G.settings.broken_hold_inner_radius_px
 	var outer := G.settings.broken_hold_outer_radius_px
 	var dot_radius := G.settings.broken_hold_dot_radius_px
@@ -114,6 +125,18 @@ func _draw() -> void:
 			true,
 		)
 	draw_circle(ring + get_dot_offset(), dot_radius, band_color)
+
+
+## The piece broke off again: the point needs glue and the
+## piece once more.
+func reset_for_reglue() -> void:
+	mode = Mode.UNSTARTED
+	has_glue = false
+	hold_progress_sec = 0.0
+	if is_instance_valid(glue_decal):
+		glue_decal.queue_free()
+	glue_decal = null
+	queue_redraw()
 
 
 ## Glue flowed at a world point. True when it landed here.
