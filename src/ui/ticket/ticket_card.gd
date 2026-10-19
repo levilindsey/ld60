@@ -87,6 +87,8 @@ func _ready() -> void:
 ## that is still showing swaps its text and drops again.
 func show_item(complaint: String) -> void:
 	%ComplaintLabel.text = complaint
+	%TimeLabel.text = ""
+	%Stamp.visible = false
 	_stop_motion()
 	_is_leave_requested = false
 	modulate.a = 1.0
@@ -317,6 +319,8 @@ func _on_left() -> void:
 	_is_leave_requested = false
 	_leave_lift = 0.0
 	_lift_spot = open_spot
+	# The next ticket falls and rests behind the tools.
+	_set_resting_order(true)
 	if was_done:
 		done_closed.emit()
 
