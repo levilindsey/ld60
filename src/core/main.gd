@@ -67,6 +67,13 @@ func _unhandled_input(event: InputEvent) -> void:
 					== Repairable.Mode.UNDER_REPAIR
 				):
 					G.level.active_repairable.complete_for_dev()
+			KEY_M:
+				var bus_index := AudioServer.get_bus_index(&"Music")
+				var is_muted := not AudioServer.is_bus_mute(bus_index)
+				AudioServer.set_bus_mute(bus_index, is_muted)
+				G.print(
+					"Music %s" % ("muted" if is_muted else "unmuted"),
+					ScaffolderLog.CATEGORY_CORE_SYSTEMS)
 			KEY_O:
 				if is_instance_valid(G.hud):
 					G.hud.visible = not G.hud.visible
