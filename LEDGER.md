@@ -205,6 +205,19 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX80** · The radio's dial knob glues on before anything
+  else, and now a probe says so. Nothing orders the radio's
+  front-layer work: `DialPoint` is exposed from the start,
+  its piece falls on arrival, and `BrokenPoint` only asks
+  for glue and a steady hold. New probe `tests/radioknob/`
+  lands the radio (short shop wonk, the radio probe's way),
+  glues the dial while every other point is untouched, and
+  holds it on. Also verified before the accompanying itch
+  publish: the shipped `.pck` contains no
+  `first_repairable_override = 7` assignment (the bare
+  property name in the script source is the export's own
+  declaration), so the previous build never carried the
+  local level override. Done (2026-10-20).
 - **LX79** · Dirt never gates a finish. The toaster's three
   grime spots shipped authored required (no `is_required =
   false` like the other items' dirt), so the toaster could

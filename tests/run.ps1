@@ -85,6 +85,7 @@ $Runs = @(
     @{ Name = "highlight_audit"; Probe = "highlight_audit"; UserArguments = @(); TimeoutSeconds = 120; WindowedArguments = @() }
     @{ Name = "partgrab"; Probe = "partgrab"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
     @{ Name = "dirtfinish"; Probe = "dirtfinish"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
+    @{ Name = "radioknob"; Probe = "radioknob"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
 )
 
 
