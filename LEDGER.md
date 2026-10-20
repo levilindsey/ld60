@@ -205,6 +205,20 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX79** · Dirt never gates a finish. The toaster's three
+  grime spots shipped authored required (no `is_required =
+  false` like the other items' dirt), so the toaster could
+  not call itself finished until every spot was scrubbed.
+  They are optional now, like the Game n Watch's and
+  keyboard's dust: left grime still costs rating at ship
+  time, it just cannot hold the finish hostage. The TV's
+  whack-spewed bench dust already never gated (level-owned,
+  `is_required = false` in `BenchDust`); a new probe
+  `tests/dirtfinish/` proves both on the landed items: the
+  toaster finishes and ships wearing all three grime spots,
+  the TV finishes with its spewed dust on the bench. On the
+  old scene the toaster half of the probe fails, as the bug
+  said. Done (2026-10-20).
 - **LX78** · Socket parts win presses over the item body and its
   layers. On the keyboard the spacebar's art is a few world
   pixels tall, so a press landing just off it grabbed the
