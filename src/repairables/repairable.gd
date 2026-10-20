@@ -756,6 +756,24 @@ func _play_finish_payoff() -> void:
 			G.settings.finish_sparkle_scene.instantiate()
 		)
 		add_child(sparkle)
+		# The burst is authored in world pixels, but the item
+		# sits on the bench at a fraction of its art scale,
+		# which shrank it to a few specks. Counter-scale it
+		# back to world size and centre it on the outer art.
+		var item_scale := absf(global_transform.get_scale().x)
+		if item_scale > 0.0001:
+			sparkle.scale = Vector2.ONE / item_scale
+		var art := layers.back().art as Node2D
+		if is_instance_valid(art):
+			# The art's centre, not its origin: a sprite's
+			# origin sits wherever the scene put it (the
+			# TV's is at its base), and the burst should
+			# bloom over the whole item.
+			sparkle.global_position = (
+				art.to_global((art as Sprite2D).offset)
+				if art is Sprite2D
+				else art.global_position
+			)
 		sparkle.finished.connect(sparkle.queue_free)
 	_start_outline()
 

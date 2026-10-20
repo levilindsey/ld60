@@ -38,6 +38,8 @@ func _draw() -> void:
 		center, _RADIUS, 0.0, TAU, 48, Color(1, 1, 1, 0.35), 2.0, true
 	)
 	_draw_zone(center, screw)
+	if not screw.has_started_dragging():
+		_draw_drag_hint(center, screw)
 	# The grip ring around the hub.
 	var grip_color := Color(1.0, 0.3, 0.25).lerp(
 		Color(0.4, 1.0, 0.45), clampf(screw.grip_meter, 0.0, 1.0)
@@ -66,6 +68,33 @@ func _draw() -> void:
 	) * (_RADIUS - 4.0)
 	draw_line(center, needle_end, needle_color, 3.0, true)
 	draw_circle(center, 4.0, Color.WHITE)
+
+
+## Until the player starts circling, three chevrons chase
+## each other around the dial in the turning direction:
+## drag in circles, this way. They vanish the moment the
+## drag starts, so they only teach, never decorate.
+func _draw_drag_hint(center: Vector2, screw: PhillipsScrew) -> void:
+	var direction := 1.0 if screw.is_install_mode else -1.0
+	var spin := (
+		Time.get_ticks_msec() / 1000.0 * 1.6 * direction
+	)
+	var pulse := 0.55 + 0.35 * sin(
+		Time.get_ticks_msec() / 1000.0 * 4.0
+	)
+	var color := Color(1.0, 0.95, 0.6, pulse)
+	var hint_radius := _RADIUS + 15.0
+	for chevron in 3:
+		var angle := spin + chevron * TAU / 3.0
+		var tip := center + Vector2(cos(angle), sin(angle)) * hint_radius
+		var tangent := Vector2(-sin(angle), cos(angle)) * direction
+		var radial := Vector2(cos(angle), sin(angle))
+		draw_line(
+			tip - tangent * 7.0 - radial * 5.0, tip, color, 3.0, true
+		)
+		draw_line(
+			tip - tangent * 7.0 + radial * 5.0, tip, color, 3.0, true
+		)
 
 
 ## The face color right now: plain until the strip-out meter

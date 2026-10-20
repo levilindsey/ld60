@@ -231,7 +231,7 @@ func _check_zone_continuity() -> void:
 	screw._zone_target_climb_rad_per_sec = 2.0
 	screw._zone_retarget_left_sec = 10.0
 	var did_wrap := false
-	for step in 60:
+	for step in 90:
 		var before := screw._zone_center_rad_per_sec
 		screw._update_zone(1.0 / 60.0)
 		if screw._zone_center_rad_per_sec < before - 1.0:
@@ -330,12 +330,43 @@ func _check_cam_outs() -> void:
 	_left._zone_climb_rad_per_sec = 0.0
 	_left._zone_target_climb_rad_per_sec = 0.0
 	_left._zone_retarget_left_sec = 10.0
-	await _drag_circle(_left.global_position, 16.0, 5.0, -1.0)
+	await _drag_circle(_left.global_position, 20.0, 8.0, -1.0)
 	_expect(
 		_left.health == _left.max_health - 2,
 		"circling too fast cams the bit out",
 	)
 	await _seconds(0.7)
+	# The zone can wrap down over a barely-moving needle:
+	# creeping inside the green still turns nothing until
+	# the needle is really moving at turning speed.
+	await _press_tool_at(_driver, _left.global_position)
+	_left._zone_center_rad_per_sec = 1.0
+	_left._zone_climb_rad_per_sec = 0.0
+	_left._zone_target_climb_rad_per_sec = 0.0
+	_left._zone_retarget_left_sec = 10.0
+	var slide_before := _left.slide
+	await _drag_circle(_left.global_position, 0.4, 3.0, -1.0)
+	_expect(
+		not _left.is_in_range(),
+		"a creeping needle reads out of range even in the zone"
+		+ " (needle %.2f, zone %.2f)"
+		% [_left.pressure_rad_per_sec, _left._zone_center_rad_per_sec],
+	)
+	_expect(
+		is_equal_approx(_left.slide, slide_before),
+		"creeping in the green does not turn the screw",
+	)
+	await _release_at(_left.global_position)
+	# Put the zone back where an engaged screw starts with it.
+	_left._zone_center_rad_per_sec = (
+		(
+			G.settings.phillips_speed_min_rad_per_sec
+			+ G.settings.phillips_speed_max_rad_per_sec
+		)
+		/ 2.0
+	)
+	_left._zone_climb_rad_per_sec = 0.0
+	_left._pick_zone_target()
 
 
 func _check_removals() -> void:
@@ -343,13 +374,24 @@ func _check_removals() -> void:
 	# The removal check is about turning, not health.
 	_left.health = _left.max_health
 	await _press_tool_at(_driver, _left.global_position)
-	await _drag_circle(_left.global_position, 5.0, 2.0, -1.0, _left)
+	# Sample the animation mid-drag: with the eased zone a
+	# fixed-length tracked drag can take the screw all the
+	# way out, and a finished screw puts the driver down.
+	await _drag_circle(_left.global_position, 5.0, 0.5, -1.0, _left)
 	var driver_sprite := (
 		_driver.get_node("%AnimatedSprite2D") as AnimatedSprite2D
 	)
 	_expect(
 		driver_sprite.animation == &"twisting",
-		"the driver animation plays while the screw makes progress",
+		"the driver animation plays while the screw makes progress"
+		+ " (anim %s, slide %.2f, mode %s, needle %.2f, zone %.2f)"
+		% [
+			driver_sprite.animation,
+			_left.slide,
+			_left.mode,
+			_left.pressure_rad_per_sec,
+			_left._zone_center_rad_per_sec,
+		],
 	)
 	await _drag_to_resting(_left)
 	_expect(

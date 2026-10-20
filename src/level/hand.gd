@@ -692,11 +692,21 @@ func _press_with_tool(global_point: Vector2) -> bool:
 	var held_tool := get_held_tool()
 	if not is_instance_valid(held_tool) or held_tool.mode != Tool.Mode.HELD:
 		return false
-	held_tool.snap_tip_to(global_point)
 	if held_tool.is_effect_tool():
+		held_tool.snap_tip_to(global_point)
 		held_tool.on_effect_pressed(global_point)
 		return true
+	# A tap keeps the tool where it hovers: if the working
+	# end already overlaps an engageable point, the press
+	# engages it there instead of first snapping the tool
+	# to wherever the tap landed (a touch tap lands where
+	# it lands, and the snap carried the tool off the
+	# point it was hovering over). Only a press that finds
+	# nothing under the tool snaps it to the tap.
 	var target := find_point_for_tool(held_tool)
+	if not is_instance_valid(target):
+		held_tool.snap_tip_to(global_point)
+		target = find_point_for_tool(held_tool)
 	if is_instance_valid(target):
 		var covered_screw := target as Screw
 		if (

@@ -58,6 +58,7 @@ func _run() -> void:
 	)
 	await _check_holder_shadows()
 	_check_driver_art()
+	await _check_tap_keeps_hover()
 	await _check_holder_return()
 	await _check_rag()
 	await _check_air_blower()
@@ -218,6 +219,64 @@ func _union_canvas_rect(root: Node) -> Rect2:
 
 ## Dragging a held tool's tip over another tool's holder does
 ## nothing; over its own holder it puts the tool away.
+## A tap away from the point the driver already hovers over
+## still engages that point: the press must not snap the
+## tool to the tap first (touch taps land where they land).
+func _check_tap_keeps_hover() -> void:
+	# The test box's own flathead starts under grime, so
+	# stand a clean one on the cover for this.
+	var screw := _spawn_point(
+		"res://src/interaction_points/flat_head_screw.tscn",
+		Vector2(60, 120),
+	) as FlatHeadScrew
+	if not _expect(
+		is_instance_valid(screw) and screw.can_engage(),
+		"a flathead screw waits on the item",
+	):
+		return
+	var driver := await _grab(Tool.Type.FLAT_HEAD_SCREW_DRIVER)
+	# Hover the driver's working end over the screw: walk
+	# the pointer by however far the working end sits from
+	# the screw until it lands on it.
+	await _move_to(screw.global_position)
+	for attempt in 4:
+		await _physics_frames(20)
+		var miss: Vector2 = (
+			screw.global_position - driver.get_work_end_position()
+		)
+		if miss.length() < 2.0:
+			break
+		await _move_to(_hand.pointer_position + miss)
+	await _physics_frames(10)
+	var hovered := (
+		_hand.find_point_for_tool(driver) as FlatHeadScrew
+	)
+	if not _expect(
+		is_instance_valid(hovered),
+		"the hovering driver overlaps a screw",
+	):
+		await _put_tool_away(driver)
+		return
+	# Tap well away from the screw. The press engages the
+	# screw at the hover instead of snapping over there.
+	var tap_point := hovered.global_position + Vector2(-220, -150)
+	# A finger tap: the press lands with no pointer motion
+	# before it, so the tool is still at its hover when the
+	# press is routed.
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	_push_mouse(press, tap_point)
+	await _physics_frames(2)
+	_expect(
+		hovered.mode == InteractionPoint.Mode.ACTIVE,
+		"a tap away still engages the hovered screw",
+	)
+	await _release_at(tap_point)
+	await _put_tool_away(driver)
+	screw.queue_free()
+
+
 func _check_holder_return() -> void:
 	var driver := await _grab(Tool.Type.FLAT_HEAD_SCREW_DRIVER)
 	# Off the rack and away from the holders first.

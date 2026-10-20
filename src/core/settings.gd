@@ -181,7 +181,7 @@ enum PhysicsLayer {
 @export var decoy_part_count := 2
 ## How close a press may land to a loose part's center and still
 ## grab it, in world pixels.
-@export var part_grab_radius_px := 30.0
+@export var part_grab_radius_px := 38.0
 @export_group("")
 
 @export_group("Parts")
@@ -281,19 +281,19 @@ enum FirstRepairable {
 ## Width of the green speed zone, in radians per second. The zone
 ## slides counter-clockwise around the gauge, so its center keeps
 ## climbing and wraps from the fast end back to the slow end.
-@export var phillips_zone_width_rad_per_sec := 3.5
+@export var phillips_zone_width_rad_per_sec := 4.6
 ## Slowest and fastest rate the zone center climbs at, in radians
 ## per second per second. It eases between fresh targets in this
 ## range, so the pace never stays put for long.
-@export var phillips_zone_move_min_rad_per_sec := 0.8
-@export var phillips_zone_move_max_rad_per_sec := 2.2
+@export var phillips_zone_move_min_rad_per_sec := 0.6
+@export var phillips_zone_move_max_rad_per_sec := 1.6
 ## Seconds between fresh zone-pace targets.
 @export var phillips_zone_retarget_min_sec := 1.2
 @export var phillips_zone_retarget_max_sec := 2.6
 ## Grip gained per second while the speed is in the band.
-@export var phillips_fill_rate := 0.35
+@export var phillips_fill_rate := 0.45
 ## Grip lost per second while the speed is out of the band.
-@export var phillips_drain_rate := 0.28
+@export var phillips_drain_rate := 0.20
 ## Grip a removal starts with, and an install starts with. It
 ## starts full: the meter is only the time left before the bit
 ## strips or slips out, never progress toward done.
@@ -312,12 +312,12 @@ enum FirstRepairable {
 ## Dragging must add up to this much turning, in radians, before
 ## the grip or the screw starts to move. Sitting with the driver
 ## seated and not yet circling costs nothing until then.
-@export var phillips_start_drag_rad := 1.5
+@export var phillips_start_drag_rad := 1.1
 ## Seconds the speed needle smooths over. The needle carries
 ## the gauge's only momentum: the grip follows its position.
 @export var phillips_speed_smoothing_sec := 0.65
 ## Pointer steps shorter than this don't count toward the turning.
-@export var phillips_min_segment_px := 4.0
+@export var phillips_min_segment_px := 3.0
 @export_group("")
 
 @export_group("Rag")
@@ -335,9 +335,9 @@ enum FirstRepairable {
 
 @export_group("Air blower")
 ## How far a puff reaches, in pixels.
-@export var air_cone_length_px := 200.0
+@export var air_cone_length_px := 235.0
 ## Half of the puff cone's width, in degrees.
-@export var air_cone_half_angle_deg := 15.0
+@export var air_cone_half_angle_deg := 24.0
 ## Dust hit points removed per second of full strength spray.
 @export var air_blow_rate := 1.5
 ## One tap counts as this many seconds of spray.
@@ -483,7 +483,7 @@ enum FirstRepairable {
 ## Degrees one twist turns the screw and the driver while it comes out.
 @export var flathead_twist_angle_deg := 90.0
 ## Seconds between twists, with no drift. The window to recenter.
-@export var flathead_pause_sec := 0.25
+@export var flathead_pause_sec := 0.4
 ## Seconds after a re-engage with kept twists before the first
 ## twist starts. Much shorter than the pause, so picking a
 ## slipped screw back up resumes turning right away.

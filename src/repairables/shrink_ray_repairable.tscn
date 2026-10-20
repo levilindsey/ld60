@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://bexc8yuqwibs5" path="res://src/repairables/repair_layer.gd" id="2_layer"]
 [ext_resource type="Texture2D" uid="uid://0ve144e3robv" path="res://assets/images/repairables/shrinkray_with_gap.png" id="3_body"]
 [ext_resource type="Texture2D" uid="uid://cmj5ufmoe5yds" path="res://assets/images/repairables/shrinkray_fixed_crystal.png" id="5_crystal_good"]
+[ext_resource type="Texture2D" uid="uid://2x0h072q2p6k" path="res://assets/images/repairables/shrinkray_broken_crystal.png" id="12_crystal_bad"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/part_socket.tscn" id="6_socket"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/stuck_part.tscn" id="7_stuck"]
 [ext_resource type="PackedScene" path="res://src/interaction_points/grime_spot.tscn" id="8_grime"]
@@ -75,6 +76,12 @@ scale = Vector2(0.6, 0.6)
 texture = ExtResource("5_crystal_good")
 region_enabled = true
 region_rect = Rect2(326, 160, 60, 68)
+
+[node name="BustedCrystal" type="Sprite2D" parent="Layers/Body/Crystal/BrokenPart" unique_id=1100441440]
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("12_crystal_bad")
+region_enabled = true
+region_rect = Rect2(330, 163, 52, 59)
 
 [node name="CrystalGrime" parent="Layers/Body" unique_id=65784905 instance=ExtResource("8_grime")]
 position = Vector2(53.57143, -40.857143)

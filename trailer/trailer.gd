@@ -50,6 +50,8 @@ func _run() -> void:
 			await _clip_radio()
 		"receipt":
 			await _clip_receipt()
+		"phillips_hint":
+			await _clip_phillips_hint()
 		_:
 			await _clip_exterior()
 	# Hold the last pose until --quit-after ends the take.
@@ -327,6 +329,36 @@ func _clip_radio() -> void:
 	await _hold_tool_at(hammer, radio.get_art_center(), 0.3)
 	await _seconds(1.2)
 	await _put_tool_away(hammer)
+
+
+## Engage a Game & Watch Phillips screw and sit still:
+## the gauge's drag hint shows while nobody circles.
+func _clip_phillips_hint() -> void:
+	if not await _boot(Repairable.Type.GAME_N_WATCH):
+		return
+	await _seconds(0.6)
+	var screw: PhillipsScrew = null
+	for layer in _item.layers:
+		for point in layer.get_points():
+			if point is PhillipsScrew:
+				# The GnW's screws start under grime; clear
+				# it by hand for this take.
+				if is_instance_valid(point.covering_grime):
+					point.covering_grime.finish()
+				if point.can_engage():
+					screw = point as PhillipsScrew
+	if not is_instance_valid(screw):
+		return
+	var driver := (
+		G.level.tools_by_type[Tool.Type.PHILLIPS_SCREW_DRIVER]
+		as Tool
+	)
+	await _grab_tool(driver)
+	await _seconds(0.4)
+	await _press_tool_at(driver, screw.global_position)
+	await _seconds(3.0)
+	await _release_at(screw.global_position)
+	await _put_tool_away(driver)
 
 
 ## Finish the TV and send it off: the receipt card rates it.

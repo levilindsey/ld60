@@ -369,7 +369,11 @@ func _zone_distance(speed_rad_per_sec: float) -> float:
 ## fast circle whose needle happens to sweep through the green
 ## on its way around is still too fast.
 func _is_speed_in_zone(speed_rad_per_sec: float) -> bool:
-	if speed_rad_per_sec < 0.0:
+	# Below the slowest turning speed the needle has not
+	# started moving in any way that counts: the zone can
+	# wrap down past it, but sitting (or barely creeping)
+	# inside the green never turns the screw.
+	if speed_rad_per_sec < G.settings.phillips_speed_min_rad_per_sec:
 		return false
 	var cycle := maxf(G.settings.phillips_gauge_max_rad_per_sec, 0.01)
 	var half_width := _get_zone_width() / 2.0

@@ -205,6 +205,19 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX74** · Post-jam fixes on `postjam`: finish confetti at world
+  scale and centred on the item's art; bad parts show real bad art
+  (keyboard spacebar/letter, shrink-ray crystal; probe
+  `tests/badparts/`); Phillips gauge draws pulsing drag-hint
+  chevrons until the first drag, and a needle sitting or creeping
+  in the green below the slowest turning speed never turns the
+  screw; screws eased (wider/slower zone, faster fill, slower
+  drain, shorter start drag and pointer segments), flathead pause
+  lengthened; touch: wider air-blower cone, bigger loose-part grab
+  radius, and a tap engages the point a held tool already hovers
+  over instead of snapping the tool to the tap (probe
+  `tests/tools/`). TV repairs in any order, dust before or after
+  the other bits (probe `tests/tvorder/`). Done (2026-10-19).
 - **LX70** · Dragging the main repairable body: the empty hand
   drags the item by its innermost layer once exposed, at any
   time mid-repair; it rests where it is dropped inside the
