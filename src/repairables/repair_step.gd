@@ -37,10 +37,20 @@ var layer: RepairLayer
 var points: Array[InteractionPoint] = []
 ## The socket of an EXTRACT_PART, FETCH_PART or INSTALL_PART step.
 var socket: PartSocket
+## True for a step of optional work: dirt the item can ship
+## without, which only costs rating if left. The sequence
+## keeps these out of its step list (they never gate the
+## repair) and only offers them to the hint tracker when no
+## required step offers a point to light.
+var is_optional := false
 
 
 ## The points of this step that still need work and can be reached
-## now, in authored order.
+## now, in authored order. A point covered by grime cannot be
+## worked until the grime is scrubbed, so the grime stands in
+## as the candidate in its place: it is the work that actually
+## comes next, and it lights and takes the tool hint (the rag)
+## the covered point never could.
 func get_candidate_points() -> Array[InteractionPoint]:
 	var candidates: Array[InteractionPoint] = []
 	for point in points:
@@ -54,7 +64,7 @@ func get_candidate_points() -> Array[InteractionPoint]:
 			continue
 		if kind == Kind.REPAIR and point.type == InteractionPoint.Type.FAN:
 			continue
-		if kind == Kind.REPAIR and not point.needs_work():
+		if kind == Kind.REPAIR and not is_optional and not point.needs_work():
 			continue
 		if kind == Kind.EXTRACT_PART:
 			var part_socket := point as PartSocket
@@ -66,8 +76,28 @@ func get_candidate_points() -> Array[InteractionPoint]:
 			var screw := point as Screw
 			if is_instance_valid(screw) and screw.travel != Screw.Travel.HOME:
 				continue
-		candidates.append(point)
+		var candidate: InteractionPoint = _get_covering_grime(point)
+		if not is_instance_valid(candidate):
+			candidate = point
+		if (
+			candidate.mode != InteractionPoint.Mode.FINISHED
+			and candidate.is_exposed()
+			and not candidates.has(candidate)
+		):
+			candidates.append(candidate)
 	return candidates
+
+
+## The unfinished grime covering a point, or null. Screws and
+## sockets name theirs; anything else is never covered.
+func _get_covering_grime(point: InteractionPoint) -> GrimeSpot:
+	var screw := point as Screw
+	if is_instance_valid(screw) and screw.is_covered():
+		return screw.covering_grime
+	var part_socket := point as PartSocket
+	if is_instance_valid(part_socket) and part_socket.is_covered():
+		return part_socket.covering_grime
+	return null
 
 
 ## The resting screws of a RETURN_SCREW step that can come back now.

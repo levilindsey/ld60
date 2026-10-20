@@ -23,6 +23,12 @@ extends RefCounted
 var item: Repairable
 ## Every derived step, in intended order. The last one ships.
 var steps: Array[RepairStep] = []
+## Steps of optional work (dirt the item can ship without), one
+## per layer. They are not in `steps`: they never gate the
+## repair or its completion count. `get_current_steps()` adds
+## the reachable ones when no required step offers a point,
+## so leftover grime and dust can still take the idle hint.
+var _optional_steps: Array[RepairStep] = []
 
 
 ## Derives the sequence for an item from its layers and points.
@@ -79,6 +85,19 @@ func get_current_steps(level: Level) -> Array[RepairStep]:
 	for step in actionable:
 		if step.get_priority() == best_priority:
 			current.append(step)
+	# Optional dirt rides along only when no required step
+	# offers a point to act on: while a screw, socket or layer
+	# still claims the bench it keeps the hint, and the dirt
+	# lights only once it is the work that is left.
+	var has_candidates := false
+	for step in current:
+		if not step.get_candidate_points().is_empty():
+			has_candidates = true
+			break
+	if not has_candidates:
+		for step in _optional_steps:
+			if step.is_actionable(level):
+				current.append(step)
 	return current
 
 
@@ -136,14 +155,21 @@ func _add_fastener_step(
 
 ## Adds the fault steps of one layer: one REPAIR step grouping its
 ## tool faults, then the extraction, fetch and fitting steps of
-## each of its sockets, in authored order.
+## each of its sockets, in authored order. Optional dirt on the
+## layer gets a step of its own, kept aside in `_optional_steps`.
 func _add_layer_repair_steps(layer: RepairLayer) -> void:
 	var faults: Array[InteractionPoint] = []
 	var sockets: Array[PartSocket] = []
+	var optional_dirt: Array[InteractionPoint] = []
 	for point in layer.get_points():
 		if point.role != InteractionPoint.Role.REPAIR:
 			continue
 		if not point.is_required:
+			# Dirt the item can ship without still costs rating
+			# when left, so it earns a step the hint can offer
+			# once nothing required claims the bench.
+			if point is DirtSpot:
+				optional_dirt.append(point)
 			continue
 		if point is PartSocket:
 			sockets.append(point as PartSocket)
@@ -151,6 +177,14 @@ func _add_layer_repair_steps(layer: RepairLayer) -> void:
 			# A fan never finishes in the jam build, so it can
 			# never be a required step. See Fan.
 			faults.append(point)
+	if not optional_dirt.is_empty():
+		var optional_step := RepairStep.new()
+		optional_step.item = item
+		optional_step.kind = RepairStep.Kind.REPAIR
+		optional_step.layer = layer
+		optional_step.points = optional_dirt
+		optional_step.is_optional = true
+		_optional_steps.append(optional_step)
 	if not faults.is_empty():
 		var step := _add_step(RepairStep.Kind.REPAIR, layer)
 		step.points = faults

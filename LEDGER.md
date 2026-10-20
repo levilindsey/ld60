@@ -205,6 +205,21 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX77** · Grime takes the idle hint. It did not before: shipped
+  grime and dust are authored `is_required = false`, and the
+  repair sequence only built steps from required points, so
+  optional dirt was never a hint candidate — and a screw or
+  socket under grime lit *itself* (and its driver), though it
+  cannot be worked until the grime is scrubbed. Now a covered
+  point's unfinished `covering_grime` stands in as the step's
+  candidate (`RepairStep.get_candidate_points()`), so the
+  grime lights and the tool hint offers the rag. Optional
+  dirt also gets its own step per layer, kept out of the
+  sequence's step list (it never gates the repair or its
+  completion count) and only offered by
+  `get_current_steps()` when no required step offers a point;
+  the outbox still wins once the item is finished. Probe
+  `tests/hints/` (68 checks). Done (2026-10-20).
 - **LX76** · Post-jam round three on `postjam`: the Phillips
   drawn green is no longer clipped at the slowest turning
   speed and there is no speed floor on counting — the region

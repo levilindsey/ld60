@@ -4,8 +4,11 @@ extends "res://tests/probe_base.gd"
 ## each kind of step: the target lights after the short delay,
 ## the tool or socket after the longer one, every drawer for a
 ## fetch, and a correct interaction or a finished step restarts
-## the count. The screw microgames have their own probes, so
-## screws are finished directly here.
+## the count. Grime gets its turn two ways: grime covering a
+## screw stands in as that screw's target (with the rag as its
+## tool), and optional dirt left over lights once no required
+## step offers a point. The screw microgames have their own
+## probes, so screws are finished directly here.
 ##
 ## Run it with `tests/run.ps1 -Name hints`, or from the repo root
 ## (PowerShell):
@@ -69,6 +72,7 @@ func _run() -> void:
 	await _check_socket_hint()
 	await _check_fetch_hints()
 	await _check_install_hints()
+	await _check_optional_dirt_hints()
 	await _check_reassembly_hints()
 	await _check_ship_hint()
 
@@ -163,6 +167,55 @@ func _check_screw_hints() -> void:
 		_tracker.get_hint_level() == 0,
 		"no hint before the first delay",
 	)
+	# One cover screw sits under grime: the screw cannot be
+	# worked until the grime is scrubbed, so the grime is the
+	# target, and the rag is its tool.
+	var covered: Screw = null
+	for fastener in _cover_fasteners():
+		var fastener_screw := fastener as Screw
+		if (
+			is_instance_valid(fastener_screw)
+			and fastener_screw.is_covered()
+		):
+			covered = fastener_screw
+	if not _expect(
+		is_instance_valid(covered), "a cover screw sits under grime"
+	):
+		return
+	var grime := covered.covering_grime
+	_expect(
+		await _wait_until(
+			func() -> bool: return _tracker.get_hint_level() >= 1,
+		),
+		"a target lights after the hint delay",
+	)
+	_expect(
+		_tracker.get_target_point() == grime
+		and grime.is_hint_active(),
+		"the grime over the screw lights, not the screw",
+	)
+	_expect(
+		not covered.is_hint_active(),
+		"the covered screw itself stays dark",
+	)
+	var rag := _level.tools_by_type[Tool.Type.RAG]
+	_expect(
+		await _wait_until(
+			func() -> bool: return _tracker.get_hint_level() >= 2,
+		),
+		"a tool lights after the longer delay",
+	)
+	_expect(
+		rag.is_hint_active(),
+		"the lit tool for covered grime is the rag",
+	)
+	grime.finish()
+	await _physics_frames(3)
+	_expect(
+		_tracker.get_hint_level() == 0 and not rag.is_hint_active(),
+		"scrubbing the grime clears the hint",
+	)
+	# With the grime gone the screw itself is the target.
 	_expect(
 		await _wait_until(
 			func() -> bool: return _tracker.get_hint_level() >= 1,
@@ -171,8 +224,9 @@ func _check_screw_hints() -> void:
 	)
 	var screw := _tracker.get_target_point()
 	if not _expect(
-		is_instance_valid(screw) and screw.is_hint_active(),
-		"the highlighted thing is a cover screw",
+		is_instance_valid(screw) and screw == covered
+		and screw.is_hint_active(),
+		"the highlighted thing is the uncovered cover screw",
 	):
 		return
 	for fastener in _cover_fasteners():
@@ -393,6 +447,49 @@ func _check_install_hints() -> void:
 				),
 		),
 		"a fitted socket moves to replacing the cover",
+	)
+
+
+## Dirt the item can ship without never gates the repair,
+## but left behind it costs rating: once no required step
+## offers a point, it takes the hint like any other work.
+func _check_optional_dirt_hints() -> void:
+	var grime: InteractionPoint = null
+	for layer in _item.layers:
+		for point in layer.get_points():
+			if (
+				point is GrimeSpot and not point.is_required
+				and point.mode != InteractionPoint.Mode.FINISHED
+			):
+				grime = point
+	if not _expect(
+		is_instance_valid(grime),
+		"the item has leftover optional grime",
+	):
+		return
+	_expect(
+		await _wait_until(
+			func() -> bool:
+				var target := _tracker.get_target_point()
+				return target == grime and grime.is_hint_active(),
+		),
+		"leftover optional grime lights after the delay",
+	)
+	var rag := _level.tools_by_type[Tool.Type.RAG]
+	_expect(
+		await _wait_until(
+			func() -> bool: return rag.is_hint_active(),
+		),
+		"the rag lights for it after the longer delay",
+	)
+	for layer in _item.layers:
+		for point in layer.get_points():
+			if point is DirtSpot and not point.is_required:
+				point.finish()
+	await _physics_frames(3)
+	_expect(
+		_tracker.get_hint_level() == 0,
+		"cleaning the optional dirt clears the hint",
 	)
 
 
