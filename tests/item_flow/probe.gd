@@ -586,6 +586,9 @@ func _check_second_item() -> void:
 
 
 func _check_credits() -> void:
+	# The last receipt is still up: tap it away the way the
+	# first one went (its own hold runs longer than a wait).
+	await _press_at(_home())
 	var has_won := await _wait_until(
 		func() -> bool: return _level.has_won,
 		5.0,
@@ -695,6 +698,13 @@ func _finish_item(item: Repairable) -> bool:
 	if not is_ready:
 		return false
 	var layer := item.get_next_layer_to_put_back()
+	# A layer dropped outside the workable area flies back to
+	# its set-aside spot first, and a press while it flies is
+	# spent. Wait for it to rest before dragging it back on.
+	await _wait_until(
+		func() -> bool: return not layer.is_returning,
+		3.0,
+	)
 	await _drag_layer(layer, layer.get_home_global_position())
 	var is_back := await _wait_until(
 		func() -> bool: return layer.is_on and not layer.is_moving,

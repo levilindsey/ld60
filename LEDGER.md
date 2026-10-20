@@ -228,9 +228,11 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   at HEAD for that reason; the check now spawns the real
   mixed box). Still failing at HEAD, untouched: `screws`
   (24–33, tip-gap family), `full_loop` (~30), `shapes` (3–4),
-  `workable` (1), `drawers` (1–2, seed-dependent spacing) and
-  `item_flow` (step-3 finish choreography; fails the same at
-  LX74, so older than this round). A finished repairable no
+  `workable` (1) and `drawers` (1–2, seed-dependent spacing).
+  `item_flow` passes again: its staged finish died on two
+  probe timing bugs (a press spent on a layer still flying
+  back to its set-aside spot, and a 5 s wait against the
+  receipt's longer hold), both fixed in the probe. A finished repairable no
   longer shows the finish outline on itself, only on the
   outbox (sparkle burst still marks the moment). Done
   (2026-10-20).
