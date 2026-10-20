@@ -2293,8 +2293,10 @@ func _send_to_outbox(item: Repairable) -> void:
 	)
 
 
-## The shop radio breaks on the shelf. After a beat it flies down to the
-## bench as the item, which starts out lined up with it.
+## The shop radio's sound goes wonky on the shelf. After it has
+## warbled for `shop_radio_wonk_sec` it falls silent, and a beat
+## later it flies down to the bench as the item, which starts out
+## lined up with it.
 func _break_shop_radio(item: Repairable) -> void:
 	var bench_scale := item.scale
 	_shop_radio_pose = _get_shop_radio_pose(item)
@@ -2302,9 +2304,11 @@ func _break_shop_radio(item: Repairable) -> void:
 	item.global_position = _shop_radio_pose.origin
 	item.visible = false
 	item.finished.connect(G.audio.restore_main_theme)
-	%Radio.break_away()
+	%Radio.set_glitching(true)
 	var tween := create_tween()
 	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	tween.tween_interval(G.settings.shop_radio_wonk_sec)
+	tween.tween_callback(%Radio.break_away)
 	tween.tween_interval(G.settings.shop_radio_break_sec)
 	tween.tween_callback(_fly_in_shop_radio.bind(bench_scale))
 

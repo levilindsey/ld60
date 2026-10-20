@@ -235,7 +235,13 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   receipt's longer hold), both fixed in the probe. A finished repairable no
   longer shows the finish outline on itself, only on the
   outbox (sparkle burst still marks the moment). Done
-  (2026-10-20).
+  (2026-10-20). Later the same day: a hard yank no longer
+  costs points (`YANKED_PART` removed end to end; probe
+  `tests/yank_tap/`), the finish sparkle is gone (payoff is
+  the ding and the hum), and the shop radio's arrival is
+  staged: when its turn comes its sound goes wonky on the
+  shelf for `shop_radio_wonk_sec` (3 s), falls silent, then
+  flies to the bench (probe `tests/radio/`).
 - **LX74** · Post-jam fixes on `postjam`: finish confetti at world
   scale and centred on the item's art; bad parts show real bad art
   (keyboard spacebar/letter, shrink-ray crystal; probe

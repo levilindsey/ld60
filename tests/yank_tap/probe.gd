@@ -85,4 +85,30 @@ func _ready() -> void:
 		not _socket.is_yank_indicator_visible(),
 		"the yank arrows hide once the part is out",
 	)
+
+	# A hard yank (one long drag, not swings) pulls a part
+	# out too, and costs nothing: no defect, full score.
+	var yank_socket := (
+		(load(_SOCKET_SCENE_PATH) as PackedScene).instantiate()
+		as PartSocket
+	)
+	_cover.add_child(yank_socket)
+	yank_socket.position = Vector2(-80, 30)
+	await _physics_frames(2)
+	await _press_down(yank_socket.global_position)
+	await _move_to(
+		yank_socket.global_position + Vector2(-400.0, 0.0)
+	)
+	_expect(
+		not yank_socket.has_broken_part,
+		"one long drag yanks the part out",
+	)
+	await _release_at(
+		yank_socket.global_position + Vector2(-400.0, 0.0)
+	)
+	_expect(
+		_item.quality.get_defect_points_total() == 0
+		and _item.quality.get_summary().is_empty(),
+		"a hard yank charges no defect",
+	)
 	_finish(0 if _failures.is_empty() else 1)

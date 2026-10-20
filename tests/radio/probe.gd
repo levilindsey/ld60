@@ -133,3 +133,38 @@ func _run() -> void:
 		_radio.is_glitching,
 		"the radio glitches again on the next scheduled item",
 	)
+	await _check_radio_item_arrival()
+
+
+## The radio as the item: its sound goes wonky on the shelf,
+## holds for the wonk's length, falls silent, and only then
+## flies down to the bench.
+func _check_radio_item_arrival() -> void:
+	_radio.set_glitching(false)
+	G.settings.shop_radio_wonk_sec = 1.2
+	var current := G.level.active_repairable
+	G.level.active_repairable = null
+	current.queue_free()
+	await _physics_frames(4)
+	G.level.spawn_repairable(Repairable.Type.RADIO)
+	_expect(
+		_radio.is_glitching,
+		"the shelf radio goes wonky when its turn comes",
+	)
+	_expect(
+		not _radio.is_away and _radio.visible,
+		"the radio is still on the shelf while it wonks",
+	)
+	await _seconds(2.0)
+	_expect(
+		_radio.is_away and not _radio.is_glitching,
+		"the wonk ends in silence before the radio leaves",
+	)
+	_expect(
+		await _wait_for_landing(),
+		"the silent radio flies down to the bench",
+	)
+	_expect(
+		not _radio.visible,
+		"the shelf is empty once the radio is the item",
+	)

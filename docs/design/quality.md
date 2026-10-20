@@ -23,7 +23,6 @@ Defaults, tuned in settings (a "Quality" export group):
 | Small dent | -8 | The hammer, a bit over the band |
 | Large dent | -12 | The hammer, far over the band |
 | Crack | -15 | The hammer on plastic or glass |
-| Yanked part | -8 | Pulling a part out too hard (the socket gets a scratch) |
 | Smear on a sensitive surface, minor | -3 | The rag, about 30% wiped |
 | Smear, ruined (replaces the minor one) | -10 | The rag, fully wiped |
 | Oil drip or stain | -4 | Over-oiling, a drop off target |
@@ -71,7 +70,6 @@ enum Defect {
 	DENT_SMALL,
 	DENT_LARGE,
 	CRACK,
-	YANKED_PART,
 	SMEAR_MINOR,
 	SMEAR_RUINED,
 	OIL_DRIP,

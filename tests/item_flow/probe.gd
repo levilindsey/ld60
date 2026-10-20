@@ -110,10 +110,6 @@ func _check_configuration() -> void:
 			+ " (%.1f world px wide at any sprite scale)"
 			% outline_width_px,
 		)
-	_expect(
-		is_instance_valid(G.settings.finish_sparkle_scene),
-		"settings.tres loads the sparkle scene",
-	)
 	# The probe plays a queue of two.
 	var queue: Array[Repairable.Type] = [
 		Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE,
@@ -299,10 +295,6 @@ func _check_finish() -> void:
 		and _events.count("finished") == 1,
 		"3. finishing its points finishes the item, once",
 	)
-	_expect(
-		_has_sparkle(_item),
-		"3. a sparkle bursts from the finished item",
-	)
 	var stopped_sec := _item.quality.repair_time_sec
 	await _seconds(0.5)
 	# A finished item lights the outbox, not itself: no
@@ -337,8 +329,6 @@ func _check_finish() -> void:
 		"empty hand over the finished item",
 	)
 	await _shot("2_finished")
-	await _seconds(0.8)
-	_expect(not _has_sparkle(_item), "the sparkle frees itself")
 
 
 func _check_drag_and_return() -> void:
@@ -737,13 +727,6 @@ func _drag_layer(layer: RepairLayer, target: Vector2) -> void:
 func _is_next_layer_ready(item: Repairable) -> bool:
 	var layer := item.get_next_layer_to_put_back()
 	return is_instance_valid(layer) and layer.is_ready_to_go_back()
-
-
-func _has_sparkle(item: Repairable) -> bool:
-	for child in item.get_children():
-		if child is CPUParticles2D:
-			return true
-	return false
 
 
 ## Polls once per physics frame until the condition holds or the limit

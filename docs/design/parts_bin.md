@@ -106,9 +106,9 @@ Earlier plans, kept for the record:
   After `swings_needed` (6 by default) the part pops out and is
   flung fast, up and off the nearest side of the screen with a
   spin, unfaded, and removed once it is past the edge.
-- **Yank:** dragging further than 60 px from the press point pulls
-  it out at once: a yanked part defect (-8). (A fast-drag yank, at
-  about 2500 px/s, is not built yet.)
+- **Yank:** dragging further than 300 px from the press point pulls
+  it out at once, free: no defect is charged for a hard yank.
+  (A fast-drag yank, at about 2500 px/s, is not built yet.)
 - Code: a `Wiggle` helper (a `RefCounted`, shared with the pliers).
   Feed it the drag deltas; it reports swings, the rocking angle and
   yanks.

@@ -141,8 +141,6 @@ enum PhysicsLayer {
 @export var outline_hint_material: ShaderMaterial
 ## Opacity of the bench drop shadows (DropShadow). 0 turns them off.
 @export var drop_shadow_alpha := 0.45
-## The burst of sparkles when an item is finished.
-@export var finish_sparkle_scene: PackedScene
 @export_group("")
 
 
@@ -395,6 +393,9 @@ enum FirstRepairable {
 ## When the radio is the item, how long it crackles on the shelf before it
 ## flies down to the bench.
 @export var shop_radio_break_sec := 0.6
+## When the radio is the item, how long its sound goes wonky on the
+## shelf before it falls silent and flies down to the bench.
+@export var shop_radio_wonk_sec := 3.0
 ## How long the radio takes to fly between the shelf and the bench.
 @export var shop_radio_fly_sec := 0.7
 @export_group("")
@@ -451,7 +452,6 @@ enum FirstRepairable {
 @export var small_dent_points := 8
 @export var large_dent_points := 12
 @export var crack_points := 15
-@export var yanked_part_points := 8
 @export var minor_smear_points := 3
 @export var ruined_smear_points := 10
 @export var oil_drip_points := 4
@@ -600,8 +600,6 @@ func get_defect_points(defect: RepairQuality.Defect) -> int:
 			points = large_dent_points
 		RepairQuality.Defect.CRACK:
 			points = crack_points
-		RepairQuality.Defect.YANKED_PART:
-			points = yanked_part_points
 		RepairQuality.Defect.SMEAR_MINOR:
 			points = minor_smear_points
 		RepairQuality.Defect.SMEAR_RUINED:

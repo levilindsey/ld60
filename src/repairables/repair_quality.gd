@@ -22,7 +22,6 @@ enum Defect {
 	DENT_SMALL,
 	DENT_LARGE,
 	CRACK,
-	YANKED_PART,
 	SMEAR_MINOR,
 	SMEAR_RUINED,
 	OIL_DRIP,
@@ -170,7 +169,6 @@ func get_receipt_tags() -> Array[String]:
 		["dust", [Defect.LEFTOVER_DUST, Defect.BENCH_DUST_LEFT]],
 		["smudged", [Defect.SMEAR_MINOR, Defect.SMEAR_RUINED]],
 		["scratched", [Defect.PLIERS_SCRATCH]],
-		["yanked", [Defect.YANKED_PART]],
 		["oil stain", [Defect.OIL_DRIP]],
 		["messy desk", [Defect.PART_LEFT_OUT]],
 	]
@@ -218,8 +216,6 @@ static func get_defect_name(defect: Defect) -> String:
 			return "Large dent"
 		Defect.CRACK:
 			return "Crack"
-		Defect.YANKED_PART:
-			return "Yanked part"
 		Defect.SMEAR_MINOR:
 			return "Smudge"
 		Defect.SMEAR_RUINED:

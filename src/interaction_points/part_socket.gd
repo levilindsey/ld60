@@ -491,23 +491,15 @@ func _place_yank_indicator() -> void:
 	)
 
 
-## The broken part pops out and flies off as scrap. A yank costs a
-## defect and still leaves the socket empty.
+## The broken part pops out and flies off as scrap. A hard
+## yank (one long drag) pulls it out the same way, free: the
+## socket is empty either way and no defect is charged.
 func _pop_out() -> void:
-	var was_yanked := _wiggle.is_yanked
 	has_broken_part = false
 	%Outline.visible = shows_ghost_outline
 	_refresh_yank_indicator()
 	_stop_wiggle()
 	G.audio.play_sound(&"lid_pop", true)
-	if was_yanked:
-		var item := get_item()
-		if is_instance_valid(item):
-			item.quality.add_defect(
-				RepairQuality.Defect.YANKED_PART,
-				global_position,
-				self,
-			)
 	%BrokenPart.rotation = 0.0
 	var scrap: Node2D = %BrokenPart
 	var start_position := scrap.global_position
