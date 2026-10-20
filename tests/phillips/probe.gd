@@ -191,20 +191,14 @@ func _check_gauge_needle_wrap() -> void:
 		not _left._is_speed_in_zone(gauge_max + 9.0),
 		"a wrapped speed outside the drawn zone does not count",
 	)
-	# With the zone wrapped low, a needle creeping inside its
-	# slow end still does not count (it is barely moving),
-	# while the same band just above the slowest turning
-	# speed does: the floor is about motion, not position.
+	# The band is the whole cycle, slow end included: a
+	# needle resting in the zone's slow end is in range (it
+	# just turns nothing until the drag starts; see the
+	# cam-out checks).
 	_left._zone_center_rad_per_sec = 1.0
 	_expect(
-		not _left._is_speed_in_zone(1.0),
-		"creeping at the zone's slow end does not count",
-	)
-	_expect(
-		_left._is_speed_in_zone(
-			G.settings.phillips_speed_min_rad_per_sec + 0.1
-		),
-		"just above the slowest turning speed counts",
+		_left._is_speed_in_zone(1.0),
+		"the zone's slow end is in range",
 	)
 
 
@@ -364,25 +358,29 @@ func _check_cam_outs() -> void:
 		"circling too fast cams the bit out",
 	)
 	await _seconds(0.7)
-	# The zone can wrap down over a barely-moving needle:
-	# creeping inside the green still turns nothing until
-	# the needle is really moving at turning speed.
+	# The zone's slow end is a valid part of the band: a
+	# needle sitting in it before any drag reads in range.
+	# But nothing turns and no grip moves until the needle
+	# has started moving.
 	await _press_tool_at(_driver, _left.global_position)
 	_left._zone_center_rad_per_sec = 1.0
 	_left._zone_climb_rad_per_sec = 0.0
 	_left._zone_target_climb_rad_per_sec = 0.0
 	_left._zone_retarget_left_sec = 10.0
+	_left.pressure_rad_per_sec = 0.0
 	var slide_before := _left.slide
-	await _drag_circle(_left.global_position, 0.4, 3.0, -1.0)
+	var grip_before := _left.grip_meter
+	await _seconds(1.0)
 	_expect(
-		not _left.is_in_range(),
-		"a creeping needle reads out of range even in the zone"
+		_left.is_in_range(),
+		"a needle resting in the zone's slow end reads in range"
 		+ " (needle %.2f, zone %.2f)"
 		% [_left.pressure_rad_per_sec, _left._zone_center_rad_per_sec],
 	)
 	_expect(
-		is_equal_approx(_left.slide, slide_before),
-		"creeping in the green does not turn the screw",
+		is_equal_approx(_left.slide, slide_before)
+		and is_equal_approx(_left.grip_meter, grip_before),
+		"sitting in the green turns nothing before the needle moves",
 	)
 	await _release_at(_left.global_position)
 	# Put the zone back where an engaged screw starts with it.
@@ -402,15 +400,29 @@ func _check_removals() -> void:
 	# The removal check is about turning, not health.
 	_left.health = _left.max_health
 	await _press_tool_at(_driver, _left.global_position)
-	# Sample the animation mid-drag: with the eased zone a
-	# fixed-length tracked drag can take the screw all the
-	# way out, and a finished screw puts the driver down.
-	await _drag_circle(_left.global_position, 5.0, 0.5, -1.0, _left)
+	# Sample the animation mid-drag, once the needle has had
+	# time to settle into the zone it is tracking: the needle
+	# carries the game's only momentum (0.65 s smoothing over
+	# a 0.45 s turn window), so a fixed short drag samples it
+	# still climbing and out of the green. Drag in steps and
+	# sample the first step that finds the screw in range and
+	# turning, the way a player settled into the zone would.
 	var driver_sprite := (
 		_driver.get_node("%AnimatedSprite2D") as AnimatedSprite2D
 	)
+	var saw_twisting := false
+	for step in 12:
+		await _drag_circle(_left.global_position, 5.0, 0.4, -1.0, _left)
+		if (
+			_left.is_in_range()
+			and driver_sprite.animation == &"twisting"
+		):
+			saw_twisting = true
+			break
+		if _left.mode != InteractionPoint.Mode.ACTIVE:
+			break
 	_expect(
-		driver_sprite.animation == &"twisting",
+		saw_twisting,
 		"the driver animation plays while the screw makes progress"
 		+ " (anim %s, slide %.2f, mode %s, needle %.2f, zone %.2f)"
 		% [

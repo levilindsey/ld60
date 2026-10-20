@@ -78,6 +78,13 @@ func is_effect_tool() -> bool:
 	return true
 
 
+## The rag acts by dragging, so the press that takes it off
+## the rack starts the wipe: the player keeps the button down
+## and scrubs straight away, no second press.
+func acts_on_pickup() -> bool:
+	return true
+
+
 ## A press with the rag starts a wipe where it lands.
 func on_effect_pressed(_global_point: Vector2) -> void:
 	_is_wiping = true

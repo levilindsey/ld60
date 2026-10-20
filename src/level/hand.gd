@@ -682,6 +682,15 @@ func _press_rack(global_point: Vector2) -> bool:
 		# A point has the tool. Let it finish first.
 		return true
 	grab(rack_tool)
+	# A tool that acts by dragging (the rag) starts acting on
+	# this same press: the player pressed once, still holds
+	# the button down, and drags straight into the work.
+	# Without this the press only took the tool, and the drag
+	# that followed did nothing until a second press. Tools
+	# that act somewhere (the glue, the hammer, the blower)
+	# keep waiting for their own press in the hand.
+	if rack_tool.acts_on_pickup():
+		rack_tool.on_effect_pressed(global_point)
 	return true
 
 

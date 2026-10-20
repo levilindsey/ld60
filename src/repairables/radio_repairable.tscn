@@ -47,10 +47,20 @@ monitorable = false
 position = Vector2(-16.666664, 3.1789143e-05)
 polygon = PackedVector2Array(-1400, -783.3333, -1366.6666, -899.99994, -1291.6666, -924.99994, 1266.6666, -883.3333, 1391.6666, -849.99994, 1416.6666, -750, 1300, 658.3333, 733.3333, 708.3333, -1225, 708.3333, -1350, 666.6666)
 
-[node name="Bulb" parent="Layers/Inside" unique_id=1846858400 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
+[node name="Bulb" parent="Layers/Inside" unique_id=1846858400 node_paths=PackedStringArray("installed_art", "good_part_shape") instance=ExtResource("5_socket")]
 position = Vector2(592, 444)
 accepted_part = 1
 installed_art = NodePath("GoodBulb")
+good_part_shape = NodePath("GoodPartShape")
+
+[node name="GoodPartShape" type="Area2D" parent="Layers/Inside/Bulb"]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Inside/Bulb/GoodPartShape"]
+polygon = PackedVector2Array(-25, -497, 25, -497, 60, -460, 150, -420, 195, -320, 205, -120, 185, 120, 165, 215, 150, 250, 150, 400, 110, 435, -110, 435, -150, 400, -150, 250, -165, 215, -185, 120, -205, -120, -195, -320, -150, -420, -60, -460)
 
 [node name="GoodBulb" type="Sprite2D" parent="Layers/Inside/Bulb" unique_id=162835107]
 scale = Vector2(2, 2)

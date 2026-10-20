@@ -205,6 +205,35 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX76** · Post-jam round three on `postjam`: the Phillips
+  drawn green is no longer clipped at the slowest turning
+  speed and there is no speed floor on counting — the region
+  the clip removed is valid green. A needle resting in the
+  green reads in range and turns nothing until the drag
+  starts (`_has_started_dragging` remains the only gate;
+  probe `tests/phillips/`, whose driver-animation check now
+  samples mid-drag once the needle settles into the zone —
+  it failed the same way with the floor restored, so the
+  game code was never the problem). The radio bulb's empty
+  socket ghost traced the fitted sprite's bounding rect and
+  read as a phantom slab; it now has an authored
+  `GoodPartShape`, as does the shrink ray's crystal. The
+  highlight audit checks every ghost for this: a rect ghost
+  fails unless the part's art truly fills its region (key
+  caps and the piano LED strip do; verified from their
+  alpha). The glue hold ignores the player's own drag for
+  its first 0.3 s (`broken_hold_input_grace_sec`): the hold
+  can start while the carrying drag is still settling, and
+  the dot's anchor re-bases where the hand is when the
+  grace ends. The rag starts wiping on the press that takes
+  it off the rack (`Tool.acts_on_pickup()`, the rag only —
+  the glue, hammer and blower still wait for a press in the
+  hand). Probes: `tests/phillips/` 48, `tests/highlight_audit/`
+  243, `tests/broken_glue/` 46, `tests/radio/` 20,
+  `tests/badparts/` 16, `tests/glue/` 8, `tests/grime_screw/`
+  12, `tests/rayglue/` 13, `tests/hints/` 57. `tests/tools/`
+  is flaky at HEAD both ways (holder-return timing, 2 of 44
+  about half the runs). Done (2026-10-20).
 - **LX75** · Post-jam round two on `postjam`: indicators raised
   (yank arrows 64→88 px, glue hold ring 96→124 px, Phillips
   gauge node −100→−132; hammer reticle deliberately left as

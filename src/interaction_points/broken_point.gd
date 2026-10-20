@@ -40,6 +40,13 @@ var _drift_retarget_left_sec := 0.0
 ## it onto the centre, so the start is forgiven while that
 ## tween runs.
 var _hold_grace_left_sec := 0.0
+## Time left in which the player's own drag motion does not
+## move the dot (`broken_hold_input_grace_sec`). The hold can
+## start while the drag that carried the piece is still
+## settling; that leftover motion is ignored, and when the
+## grace ends the pointer anchor re-bases where the hand is
+## then, so the dot does not jump.
+var _hold_input_grace_left_sec := 0.0
 ## Where the player's hand was when the hold started. The
 ## dot reads hand movement from here, not the piece.
 var _hold_pointer_anchor := Vector2.ZERO
@@ -233,9 +240,13 @@ func get_dot_offset() -> Vector2:
 		and is_instance_valid(G.level)
 		and is_instance_valid(G.level.hand)
 	):
-		offset = (
-			G.level.hand.pointer_position - _hold_pointer_anchor
-		)
+		# During the input grace the hand's own motion does
+		# not move the dot yet: the drag that started the hold
+		# may still be settling onto the piece.
+		if _hold_input_grace_left_sec <= 0.0:
+			offset = (
+				G.level.hand.pointer_position - _hold_pointer_anchor
+			)
 	elif is_instance_valid(piece):
 		offset = piece.global_position - global_position
 	return (
@@ -295,6 +306,9 @@ func _try_start_hold() -> void:
 	is_holding = true
 	hold_progress_sec = 0.0
 	_hold_grace_left_sec = G.settings.broken_hold_align_sec
+	_hold_input_grace_left_sec = (
+		G.settings.broken_hold_input_grace_sec
+	)
 	_dot_drift = Vector2.ZERO
 	_dot_drift_velocity = Vector2.ZERO
 	_drift_retarget_left_sec = 0.0
@@ -318,6 +332,13 @@ func _step_hold(delta: float) -> void:
 	):
 		_end_hold()
 		return
+	if _hold_input_grace_left_sec > 0.0:
+		_hold_input_grace_left_sec -= delta
+		if _hold_input_grace_left_sec <= 0.0:
+			# The grace is over: the dot reads hand movement
+			# from where the hand is now, so the settling
+			# motion spent during the grace moves nothing.
+			_hold_pointer_anchor = G.level.hand.pointer_position
 	if _hold_grace_left_sec > 0.0:
 		# The hand is still easing the piece onto the
 		# centre: the dot cannot fail, bank progress or
@@ -372,6 +393,7 @@ func _end_hold() -> void:
 		piece.is_in_hold = false
 	hold_progress_sec = 0.0
 	_hold_grace_left_sec = 0.0
+	_hold_input_grace_left_sec = 0.0
 	_dot_drift = Vector2.ZERO
 	_dot_drift_velocity = Vector2.ZERO
 	_restore_draw_order()

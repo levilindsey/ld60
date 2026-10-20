@@ -125,17 +125,12 @@ func _draw_zone(center: Vector2, screw: PhillipsScrew) -> void:
 
 ## One arc of the zone, between two speeds inside the dial's
 ## cycle. The sweep maps the faster speed to the smaller angle,
-## so the ends are ordered before drawing. The green starts at
-## the slowest turning speed: slower than that cannot count,
-## so it is never painted as if it could.
+## so the ends are ordered before drawing.
 func _draw_zone_segment(
 	center: Vector2,
 	from_speed: float,
 	to_speed: float,
 ) -> void:
-	from_speed = maxf(
-		from_speed, G.settings.phillips_speed_min_rad_per_sec
-	)
 	if to_speed - from_speed < 0.01:
 		return
 	draw_arc(

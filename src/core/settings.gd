@@ -429,6 +429,13 @@ enum FirstRepairable {
 ## Seconds the piece takes to settle onto the point's exact
 ## centre when the hold game starts.
 @export var broken_hold_align_sec := 0.18
+## Seconds after the hold game starts during which the
+## player's own drag motion does not move the dot. The hold
+## can start while the drag that carried the piece is still
+## settling, and that leftover motion must not throw the dot
+## out of the ring. When the grace ends the dot's anchor
+## re-bases where the hand is then, so nothing jumps.
+@export var broken_hold_input_grace_sec := 0.3
 ## How much the player's hand movement from where the hold
 ## started moves the dot, so a small hand movement reads
 ## clearly in the ring.

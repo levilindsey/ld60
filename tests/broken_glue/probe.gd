@@ -70,7 +70,9 @@ func _run() -> void:
 		is_instance_valid(_point), "the fallen point exists"
 	):
 		return
-	_point.hold_sec = 0.6
+	# Long enough that the grace checks below and the lean
+	# and fail checks all fit inside one hold.
+	_point.hold_sec = 2.5
 	_expect(
 		await _wait_for_piece_rest(),
 		"the fallen piece comes to rest",
@@ -150,8 +152,14 @@ func _run() -> void:
 		)
 		await _put_tool_away(glue)
 		var rag := G.level.tools_by_type[Tool.Type.RAG]
-		await _grab_tool_inside(rag)
-		await _press_down(smear.global_position)
+		# One press takes the rag and starts the wipe: no
+		# release, no second press. The drag that follows
+		# the pickup scrubs straight away.
+		await _press_down(rag.global_position)
+		_expect(
+			_hand.held == rag and (rag as Rag)._is_wiping,
+			"the pickup press starts the rag wiping",
+		)
 		for step in 12:
 			var sway := 16.0 if step % 2 == 0 else -16.0
 			await _move_to(
@@ -207,6 +215,38 @@ func _run() -> void:
 		_point.z_index == 40 and not _point.z_as_relative,
 		"the hold game draws over everything else",
 	)
+	# The drag that carried the piece may still be settling
+	# when the hold starts: for the first 0.3 s the player's
+	# own motion must not move the dot or fail the hold, and
+	# when the grace ends the dot reads from where the hand
+	# is then, so nothing jumps.
+	await _move_to(_point.global_position + Vector2(140, 0))
+	await _physics_frames(4)
+	_expect(
+		_point.is_holding
+		and _point.get_dot_offset().length() < 6.0,
+		"settling drag motion moves no dot in the input grace"
+		+ " (dot %s)" % [_point.get_dot_offset()],
+	)
+	await _move_to(_point.global_position + Vector2(20, 0))
+	await _seconds(0.35)
+	await _physics_frames(2)
+	_expect(
+		_point.is_holding
+		and _point.get_dot_offset().length() < 6.0,
+		"the dot stays centred where the grace ends"
+		+ " (dot %s)" % [_point.get_dot_offset()],
+	)
+	await _move_to(_point.global_position + Vector2(44, 0))
+	await _physics_frames(4)
+	_expect(
+		_point.is_holding
+		and _point.get_dot_offset().length() > 10.0,
+		"hand motion moves the dot again after the grace"
+		+ " (dot %s)" % [_point.get_dot_offset()],
+	)
+	await _move_to(_point.global_position + Vector2(20, 0))
+	await _physics_frames(2)
 	_expect(
 		_point.get_ring_global_position().y
 		< _point.global_position.y - 50.0,

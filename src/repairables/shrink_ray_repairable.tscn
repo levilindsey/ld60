@@ -64,12 +64,22 @@ unique_name_in_owner = true
 position = Vector2(2, -31)
 hits_needed = 4
 
-[node name="Crystal" parent="Layers/Body" unique_id=896112778 node_paths=PackedStringArray("installed_art", "covering_grime") instance=ExtResource("6_socket")]
+[node name="Crystal" parent="Layers/Body" unique_id=896112778 node_paths=PackedStringArray("installed_art", "covering_grime", "good_part_shape") instance=ExtResource("6_socket")]
 unique_name_in_owner = true
 position = Vector2(53.7, -41.1)
 accepted_part = 8
 installed_art = NodePath("GoodCrystal")
 covering_grime = NodePath("../CrystalGrime")
+good_part_shape = NodePath("GoodPartShape")
+
+[node name="GoodPartShape" type="Area2D" parent="Layers/Body/Crystal"]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Crystal/GoodPartShape"]
+polygon = PackedVector2Array(-5, -16, 5, -16, 13, -10, 15, 0, 13, 10, 4, 17, -4, 17, -13, 10, -15, 0, -13, -10)
 
 [node name="GoodCrystal" type="Sprite2D" parent="Layers/Body/Crystal" unique_id=1100441439]
 scale = Vector2(0.6, 0.6)

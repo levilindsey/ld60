@@ -44,9 +44,10 @@ turn, and the grip drains. An empty grip cams the bit out.
   turns. The check is the dial itself: the needle draws wrapped
   past the top of the sweep, and a speed is in the zone when
   where its needle sits is in the green, one wrap or not. The
-  drawn green never covers speeds below the slowest turning
-  speed (2.5 rad/s): sitting or creeping there turns nothing,
-  and the green no longer claims otherwise.
+  band covers the whole cycle, slow end included: a needle
+  sitting in the green before the drag starts reads in range
+  (green), but progress waits until the needle has started
+  moving (the start latch under Getting started).
 - **Getting started:** the microgame only starts once the
   drags add up to 1.5 radians of turning. Before that the grip
   and the screw hold still: sitting with the driver seated,

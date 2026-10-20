@@ -364,14 +364,12 @@ func _zone_distance(speed_rad_per_sec: float) -> float:
 ## dial: the needle draws wrapped past the top of the sweep,
 ## so the band is judged around the cycle the same way (a
 ## speed one wrap past the top sits where the slow end is).
-## What the player sees in the green is what counts.
+## What the player sees in the green is what counts. Being
+## in the green is not by itself progress: the screw only
+## turns once the drag has started (see `_advance`), so a
+## needle sitting in the green before the player moves
+## shows green and turns nothing.
 func _is_speed_in_zone(speed_rad_per_sec: float) -> bool:
-	# Below the slowest turning speed the needle has not
-	# started moving in any way that counts: the zone can
-	# wrap down past it, but sitting (or barely creeping)
-	# inside the green never turns the screw.
-	if speed_rad_per_sec < G.settings.phillips_speed_min_rad_per_sec:
-		return false
 	return absf(_zone_distance(speed_rad_per_sec)) <= (
 		_get_zone_width() / 2.0
 	)

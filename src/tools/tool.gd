@@ -270,6 +270,16 @@ func is_effect_tool() -> bool:
 	return false
 
 
+## True when taking this tool off the rack with a press should
+## also start its effect on that same press, so the drag that
+## follows the pickup works at once. Only drag-acting tools
+## (the rag) opt in: a tool that acts somewhere (the glue,
+## the hammer, the blower) must wait for a press in the hand,
+## or picking it up would fire it at the rack.
+func acts_on_pickup() -> bool:
+	return false
+
+
 ## Called by the hand when a press lands while this effect tool is
 ## held. The tool acts at the press point. It may register as the
 ## hand's input owner to keep the drag and the release.

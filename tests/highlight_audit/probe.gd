@@ -179,12 +179,27 @@ func _check_socket(item_name: String, socket: PartSocket) -> void:
 	var label := "%s %s" % [item_name, socket.name]
 	# The ghost of the good part shows exactly when the
 	# socket is empty and the socket opts in.
-	var ghost := socket.get_node("Outline") as CanvasItem
+	var ghost := socket.get_node("Outline") as Polygon2D
 	_expect(
 		ghost.visible
 		== (not socket.has_broken_part and socket.shows_ghost_outline),
 		"%s: the ghost outline matches the socket's state" % label,
 	)
+	# And it must trace the part, not fall back to the fitted
+	# sprite's bounding rectangle: a filled rect reads as a
+	# phantom slab where the part should be (the radio's
+	# bulb). A traced silhouette has more than a rect's
+	# corners to say it with. A part whose art really is a
+	# rectangle (a key cap, the piano's LED strip) fills its
+	# region, and for it the rect is the true silhouette.
+	if socket.shows_ghost_outline:
+		_expect(
+			is_instance_valid(socket.good_part_shape)
+			or ghost.polygon.size() > 4
+			or _art_fills_its_region(socket),
+			"%s: the ghost traces a part shape (%d points)"
+			% [label, ghost.polygon.size()],
+		)
 	# The mid-yank highlight paints on the broken part's
 	# sprite. A starts-broken socket with no sprite has
 	# nothing to light while it is pulled.
@@ -193,6 +208,45 @@ func _check_socket(item_name: String, socket: PartSocket) -> void:
 			is_instance_valid(socket._get_broken_sprite()),
 			"%s: the broken part has a sprite to highlight" % label,
 		)
+
+
+## True when the socket's fitted sprite fills the corners
+## of its own region: its bounding rectangle is then the
+## part's true silhouette, not a phantom slab over empty
+## corners (the radio's bulb again). Samples a coarse grid
+## of the region's alpha; a shaped part leaves at least one
+## corner sample empty.
+func _art_fills_its_region(socket: PartSocket) -> bool:
+	var fitted := socket.installed_art as Sprite2D
+	if not is_instance_valid(fitted):
+		return false
+	if not is_instance_valid(fitted.texture):
+		return false
+	var image := fitted.texture.get_image()
+	if not is_instance_valid(image):
+		return false
+	# The sampled area, in texture pixels: the region when
+	# the sprite draws one, the whole texture otherwise.
+	var area := Rect2(Vector2.ZERO, image.get_size())
+	if fitted.region_enabled:
+		area = fitted.region_rect
+	var grid := 6
+	var empty := 0
+	var total := 0
+	for gx in grid:
+		for gy in grid:
+			var point := area.position + Vector2(
+				area.size.x * (float(gx) + 0.5) / grid,
+				area.size.y * (float(gy) + 0.5) / grid,
+			)
+			total += 1
+			var pixel := Vector2i(
+				clampi(int(point.x), 0, image.get_width() - 1),
+				clampi(int(point.y), 0, image.get_height() - 1),
+			)
+			if image.get_pixelv(pixel).a < 0.25:
+				empty += 1
+	return total > 0 and float(empty) / float(total) < 0.2
 
 
 func _check_tools() -> void:
