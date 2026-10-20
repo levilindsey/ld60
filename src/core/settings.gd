@@ -182,6 +182,12 @@ enum PhysicsLayer {
 ## How close a press may land to a loose part's center and still
 ## grab it, in world pixels.
 @export var part_grab_radius_px := 38.0
+## Extra reach around a part's authored Shape that still grabs
+## it, in world pixels: the press may miss the silhouette by
+## this much. The bigger touch value follows the hammer
+## reticle's pair: a finger lands less precisely than a mouse.
+@export var part_grab_margin_px := 12.0
+@export var part_grab_margin_touch_px := 28.0
 @export_group("")
 
 @export_group("Parts")
@@ -414,7 +420,7 @@ enum FirstRepairable {
 @export var broken_hold_dot_radius_px := 8.0
 ## How far above the point the hold ring draws, in world
 ## pixels, so the player's finger is not over the game.
-@export var broken_hold_ring_offset_px := 96.0
+@export var broken_hold_ring_offset_px := 124.0
 ## How close the held piece's centre must be to its point,
 ## in world pixels, before the hold game starts at all. On
 ## starting, the piece tweens to the exact centre.

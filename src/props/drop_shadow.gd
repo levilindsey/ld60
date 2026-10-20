@@ -130,12 +130,21 @@ static func _make(
 	shadow._host = host
 	shadow.offset_px = shadow_offset
 	shadow.show_when = should_show
-	host.add_sibling.call_deferred(shadow)
-	# Sit immediately behind the host in the draw order.
-	host.get_parent().move_child.call_deferred(
-		shadow,
-		host.get_index(),
-	)
+	# Sit immediately behind the host in the draw order. The
+	# index is read when the deferred call runs, not when it
+	# is queued: children come and go in between (an item
+	# leaving takes its parts with it), and a stale index
+	# only errors. A host gone by then needs no shadow.
+	var place := func() -> void:
+		if (
+			not is_instance_valid(host)
+			or not is_instance_valid(host.get_parent())
+		):
+			shadow.queue_free()
+			return
+		host.add_sibling(shadow)
+		host.get_parent().move_child(shadow, host.get_index())
+	place.call_deferred()
 	# No tree_exiting cleanup here: hosts get reparented (a screw's
 	# bench art leaves its hole), and that must not kill the shadow.
 	# _process frees the shadow once the host itself is gone.

@@ -82,6 +82,7 @@ func _run() -> void:
 	await _check_drawer_switch()
 	await _check_wiggle_out()
 	await _check_grab_right_part()
+	await _check_grab_margin()
 	await _check_right_part_fits()
 	await _check_wrong_part()
 	await _check_cleanup()
@@ -764,6 +765,109 @@ func _check_dropped_part_shadow() -> void:
 	await _physics_frames(2)
 
 
+## A press just past a part's silhouette still grabs it: the
+## margin follows the Shape, it is not a wider disc around the
+## center. Between two parts a press crosses, the one it sits
+## squarely on wins; but a part a current step is waiting for
+## wins even against a press squarely on a decoy, as long as
+## the press crosses its margin too.
+func _check_grab_margin() -> void:
+	var wanted := _find_loose_part(_socket.accepted_part)
+	if not _expect(
+		is_instance_valid(wanted), "the wanted part is out",
+	):
+		return
+	wanted.global_position = Vector2(-200.0, 40.0)
+	wanted.rotation = 0.0
+	var decoy := _find_grabbable_decoy()
+	if not _expect(is_instance_valid(decoy), "a decoy part is stocked"):
+		return
+	decoy.is_stored = false
+	decoy.is_installed = false
+	decoy.drawer_index = -1
+	decoy.rotation = 0.0
+	decoy.show()
+
+	# Just outside the wanted part's silhouette, within the
+	# mouse margin: the press still takes it.
+	var outside := _margin_point(wanted)
+	_expect(
+		wanted.get_grab_distance(outside) > 0.0
+		and wanted.get_grab_distance(outside)
+		<= G.settings.part_grab_margin_px,
+		"the staged press lands in the grab margin",
+	)
+	_expect(
+		_level.get_loose_part_at(outside) == wanted,
+		"a press in the margin past the silhouette finds the part",
+	)
+	await _press_down(outside)
+	_expect(
+		_hand.get_loose_part() == wanted,
+		"pressing in the margin grabs the part",
+	)
+	await _release_at(outside)
+	_expect(
+		await _wait_until(
+			func() -> bool: return not wanted.is_returning
+		),
+		"the wanted part comes to rest after the margin press",
+	)
+
+	# The decoy staged so the wanted part only reaches the
+	# press through its margin: squarely on the decoy loses
+	# to the part the socket is waiting for.
+	wanted.global_position = Vector2(-200.0, 40.0)
+	wanted.rotation = 0.0
+	decoy.global_position = outside
+	await _physics_frames(4)
+	_expect(
+		not wanted.is_stored and not wanted.is_returning
+		and _level.get_loose_part_at(wanted.global_position)
+		== wanted,
+		"the wanted part rests loose on the bench for staging",
+	)
+	var on_decoy := decoy.global_position
+	_expect(
+		decoy.get_grab_distance(on_decoy) == 0.0
+		and wanted.get_grab_distance(on_decoy) > 0.0
+		and wanted.get_grab_distance(on_decoy)
+		<= G.settings.part_grab_margin_px,
+		"the staged press is on the decoy, in the wanted margin",
+	)
+	_expect(
+		_level.get_loose_part_at(on_decoy) == wanted,
+		"the wanted part wins a press squarely on a decoy",
+	)
+
+	# Clear of the wanted part's halo, the press takes the
+	# part it actually touches again: the wanted part wins
+	# only presses that cross it at all.
+	decoy.global_position = outside + Vector2(120.0, 0.0)
+	await _physics_frames(4)
+	_expect(
+		_level.get_loose_part_at(decoy.global_position) == decoy,
+		"a press clear of the wanted part takes what it touches",
+	)
+
+	decoy.queue_free()
+	await _physics_frames(2)
+
+
+## A point in the part's grab margin: walk right from its
+## middle until the game's own grab distance first reaches
+## half the mouse margin. Works for any shape kind.
+func _margin_point(part: Part) -> Vector2:
+	var half := G.settings.part_grab_margin_px * 0.5
+	for step in range(1, 121):
+		var point := (
+			part.global_position + Vector2(float(step) * 2.0, 0.0)
+		)
+		if part.get_grab_distance(point) >= half:
+			return point
+	return part.global_position
+
+
 ## A loose part is grabbed by its authored Shape, not by how
 ## near the press lands to its center: a press out on the part,
 ## well past the old center reach, still takes it. Its hint
@@ -886,6 +990,15 @@ func _stored_parts() -> Array[Part]:
 func _find_stored_part(part_type: Part.Type) -> Part:
 	for part in _stored_parts():
 		if part.type == part_type:
+			return part
+	return null
+
+
+## A stocked part that does not fit the socket, for staging
+## on the bench next to the wanted one.
+func _find_grabbable_decoy() -> Part:
+	for part in _stored_parts():
+		if part.type != _socket.accepted_part:
 			return part
 	return null
 

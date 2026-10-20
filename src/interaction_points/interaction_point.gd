@@ -234,6 +234,15 @@ func pulse() -> void:
 	_pulse_tween.tween_property(self, "scale", _home_scale, half_sec)
 
 
+## A hint smaller than this across, in world pixels, marks
+## nothing: a fault's hit circle on a much scaled item (the
+## keyboard at a sixth of its authored size) traces a ring a
+## few pixels wide. Small hint polygons grow around their
+## middle until they reach this, so every point kind reads
+## at the same world size. Bigger shapes keep their trace.
+const _MIN_HINT_WORLD_PX := 30.0
+
+
 ## Shows or hides the idle hint outline around this point. The
 ## hint tracker calls it after its delay, and clears it as soon as
 ## the player works on the point. The outline follows the point's
@@ -247,10 +256,33 @@ func set_hint_active(is_active: bool) -> void:
 		if not is_instance_valid(_hint_hint):
 			_hint_hint = OutlineHint.new()
 			add_child(_hint_hint)
-		_hint_hint.polygon = points
+		_hint_hint.polygon = _grown_to_readable(points)
 		_hint_hint.set_active(true)
 	elif is_instance_valid(_hint_hint):
 		_hint_hint.set_active(false)
+
+
+## `points` scaled up around their middle until their world
+## size reaches `_MIN_HINT_WORLD_PX` across. Returned as-is
+## when they already read, or cannot be measured.
+func _grown_to_readable(
+	points: PackedVector2Array,
+) -> PackedVector2Array:
+	var transform := global_transform
+	var rect := Rect2(transform * points[0], Vector2.ZERO)
+	var middle := Vector2.ZERO
+	for point in points:
+		rect = rect.expand(transform * point)
+		middle += point
+	middle /= points.size()
+	var biggest := maxf(rect.size.x, rect.size.y)
+	if biggest <= 0.001 or biggest >= _MIN_HINT_WORLD_PX:
+		return points
+	var factor := _MIN_HINT_WORLD_PX / biggest
+	var grown := PackedVector2Array()
+	for point in points:
+		grown.append(middle + (point - middle) * factor)
+	return grown
 
 
 ## True while the idle hint outline shows on this point.

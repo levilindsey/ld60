@@ -34,7 +34,7 @@ func _ready() -> void:
 func _run() -> void:
 	await _seconds(0.3)
 	var probe_queue: Array[Repairable.Type] = [
-		Repairable.Type.TEST_PHILLIPS_REPAIRABLE,
+		Repairable.Type.TEST_FLAT_HEAD_SCREW_REPAIRABLE,
 	]
 	G.settings.item_queue = probe_queue
 	G.state.transition(StateMain.State.GAME)
@@ -44,7 +44,9 @@ func _run() -> void:
 	_item = G.level.active_repairable
 	_cover = _item.layers[_item.layers.size() - 1]
 	await _check_mixed_types_do_not_swap()
-	await _swap_to_phillips_item()
+	await _swap_item_to(
+		Repairable.Type.TEST_PHILLIPS_REPAIRABLE,
+	)
 	if not is_instance_valid(_item):
 		return
 	await _check_same_type_swaps()
@@ -66,6 +68,12 @@ func _check_mixed_types_do_not_swap() -> void:
 	await _remove_screw(flat)
 	await _remove_screw(phillips)
 	await _prepare_cover_for_return()
+	# Both screws rested on their own holes when the cover
+	# went back, so both seated themselves (see the Phillips
+	# box check). Take them out again: this check plays the
+	# drags with both resting on the bench.
+	await _remove_screw(flat)
+	await _remove_screw(phillips)
 	await _drag_screw_to(flat, phillips_home)
 	await _seconds(1.0)
 	_expect(
@@ -113,7 +121,34 @@ func _check_same_type_swaps() -> void:
 	var right_home := right.global_position
 	await _remove_screw(left)
 	await _remove_screw(right)
+	# Stage the left screw already resting on its own hole
+	# (placed, not played: where it lies is the point, not how
+	# it got there) before the cover goes back on.
+	left.bench_art.global_position = (
+		left_home - left.rest_hit_offset
+	)
+	left.bench_art.reset_physics_interpolation()
+	await _physics_frames(2)
+	_expect(
+		left._get_rest_middle().distance_to(left_home) < 1.0,
+		"the staged screw rests on its own hole",
+	)
 	await _prepare_cover_for_return()
+	# No press on it: its return came due with the cover back
+	# on, and it was already over its hole, so it seats itself.
+	_expect(
+		await _wait_for_travel(left, Screw.Travel.HOME, 3.0),
+		"a screw already resting on its hole seats itself",
+	)
+	_expect(
+		left.slide == 1.0,
+		"the self-seated screw sits loose, ready to drive in",
+	)
+	# The right screw self-seated too (it rested on its own
+	# hole). Take both out again: the swap plays with both
+	# resting on the bench.
+	await _remove_screw(left)
+	await _remove_screw(right)
 	await _drag_screw_to(left, right_home)
 	_expect(
 		await _wait_for_travel(left, Screw.Travel.HOME, 3.0),
@@ -180,17 +215,14 @@ func _wait_for_cover_rest() -> void:
 		await get_tree().physics_frame
 
 
-## Puts the Phillips test box on the bench in place of the item
-## on it, which this probe has already seated its screws into.
-func _swap_to_phillips_item() -> void:
+## Puts an item on the bench in place of the one on it.
+func _swap_item_to(item_type: Repairable.Type) -> void:
 	var old := G.level.active_repairable
 	G.level.active_repairable = null
 	old.queue_free()
 	await _physics_frames(2)
-	_item = G.level.spawn_repairable(
-		Repairable.Type.TEST_PHILLIPS_REPAIRABLE
-	)
-	if not _expect(await _wait_for_landing(), "the Phillips box lands"):
+	_item = G.level.spawn_repairable(item_type)
+	if not _expect(await _wait_for_landing(), "the item lands"):
 		_item = null
 		return
 	_cover = _item.layers[_item.layers.size() - 1]

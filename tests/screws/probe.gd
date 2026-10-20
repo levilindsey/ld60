@@ -1002,9 +1002,10 @@ func _check_install_after_strip() -> void:
 	_expect(_item.has_finished, "the item is finished again")
 
 
-## Puts the driver back, puts the set-aside cover back on and takes the
-## driver again. Then a press on each screw resting on the bench brings it
-## back to its hole, loose and raised.
+## Puts the driver back and puts the set-aside cover back on. A
+## screw that was resting on its hole seats itself as the cover
+## returns; one still resting on the bench waits for a press to
+## bring it back to its hole, loose and raised.
 func _put_cover_back() -> void:
 	# LX15: the gear swap under the cover has to happen first, or the
 	# cover will not go back and the item cannot finish. The drawer
@@ -1014,16 +1015,24 @@ func _put_cover_back() -> void:
 	await _press_at(_cover.global_position)
 	await _seconds(0.6)
 	_expect(
-		_cover.is_on
-		and not _cover.is_moving
-		and _screw_left.can_come_back()
-		and _screw_right.can_come_back(),
-		"the cover goes back on, and its screws wait on the bench to come back",
+		_cover.is_on and not _cover.is_moving,
+		"the cover goes back on",
 	)
+	for screw: FlatHeadScrew in [_screw_left, _screw_right]:
+		_expect(
+			await _wait_for_travel(screw, Screw.Travel.HOME, 1.0)
+			or screw.can_come_back(),
+			"%s seated itself or waits on the bench to come back"
+			% screw.name,
+		)
 	await _grab_tool(_tool)
 	await _seconds(0.4)
 	_expect(_hand.held == _tool, "take the driver again")
 	for screw: FlatHeadScrew in [_screw_left, _screw_right]:
+		if screw.travel == Screw.Travel.HOME:
+			# Already in its hole, loose and raised: nothing
+			# to press back.
+			continue
 		_pull_out.watch(screw)
 		await _press_resting_screw(screw)
 		await _wait_for_travel(screw, Screw.Travel.HOME)

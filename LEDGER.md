@@ -205,6 +205,31 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX75** · Post-jam round two on `postjam`: indicators raised
+  (yank arrows 64→88 px, glue hold ring 96→124 px, Phillips
+  gauge node −100→−132; hammer reticle deliberately left as
+  is, and the gauge's curved arrow was tried and cut). A
+  highlight audit (new probe `tests/highlight_audit/`, 236
+  checks over every point/layer/socket of every shipped item)
+  found idle hints tracing hit circles at 3–7 world px on the
+  scaled items; `InteractionPoint` hints now grow small
+  polygons to a 30 px world minimum. Part grabbing follows
+  the part's Shape with a margin (12 px mouse / 28 px touch,
+  `part_grab_margin_*`); among overlapping parts the one a
+  current FETCH/INSTALL step waits for wins, then nearest
+  body, then topmost. A resting screw already within its
+  seat's reach when its layer goes back seats itself, loose
+  and ready to drive (probes `tests/screw_swap/`,
+  `tests/screws/`, `tests/atari/`). Also fixed on the way:
+  `DropShadow` captured a child index for a deferred
+  `move_child` and errored when the parent changed first,
+  and `tests/screw_swap/`'s mixed-type check had always run
+  on the Phillips box (its two does-not-seat checks failed
+  at HEAD for that reason; the check now spawns the real
+  mixed box). Still failing at HEAD, untouched: `screws`
+  (24–33, tip-gap family), `full_loop` (~30), `shapes` (3–4),
+  `workable` (1), `drawers` (1–2, seed-dependent spacing) and
+  `item_flow` (a `ScrewLeft` node path). Done (2026-10-20).
 - **LX74** · Post-jam fixes on `postjam`: finish confetti at world
   scale and centred on the item's art; bad parts show real bad art
   (keyboard spacebar/letter, shrink-ray crystal; probe

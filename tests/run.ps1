@@ -82,6 +82,7 @@ $Runs = @(
     @{ Name = "misuse"; Probe = "misuse"; UserArguments = @(); TimeoutSeconds = 180; WindowedArguments = @() }
     @{ Name = "badparts"; Probe = "badparts"; UserArguments = @(); TimeoutSeconds = 90; WindowedArguments = @() }
     @{ Name = "tvorder"; Probe = "tvorder"; UserArguments = @(); TimeoutSeconds = 120; WindowedArguments = @() }
+    @{ Name = "highlight_audit"; Probe = "highlight_audit"; UserArguments = @(); TimeoutSeconds = 120; WindowedArguments = @() }
 )
 
 

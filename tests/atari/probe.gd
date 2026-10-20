@@ -193,9 +193,15 @@ func _rescrew_stick() -> void:
 	await _wait_until(
 		func() -> bool: return not G.level.are_drawers_busy()
 	)
+	var is_back_or_waiting := func() -> bool:
+		return (
+			_screw.can_come_back()
+			or _screw.travel == Screw.Travel.HOME
+		)
 	_expect(
-		_screw.can_come_back(),
-		"the screw waits on the bench to come back",
+		await _wait_until(is_back_or_waiting),
+		"the screw waits on the bench to come back"
+		+ " (or already seated itself)",
 	)
 	_expect(
 		not _item.has_finished,

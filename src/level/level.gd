@@ -859,43 +859,76 @@ func cleanup_loose_parts() -> void:
 	drawers[randi_range(0, drawers.size() - 1)].store_parts(loose)
 
 
-## The loose part nearest a world position within grab range, or
-## null.
+## The part a press at a world position grabs, or null. A
+## press grabs a part anywhere on its grab body (the authored
+## Shape, or the center disc of a shapeless part), or within
+## the grab margin past it: wider for a finger than a mouse.
+## Among the parts a press crosses, the one a current step
+## is waiting for wins outright: fetching the right part out
+## of a pile is the game's own next move. Otherwise the part
+## the press sits most directly on wins (nearest the body,
+## on it before merely near it), and parts the press covers
+## alike go to the one drawn on top: highest effective z,
+## then latest in the tree, so the player grabs what they
+## see.
 func _get_part_at(global_point: Vector2) -> Part:
-	# A press on a part's authored Shape takes it, wherever on
-	# the part it lands. Among the parts the press crosses,
-	# the one drawn on top wins (highest effective z, then
-	# latest in the tree): the player grabbed what they see.
-	# Only parts tied on both fall back to the nearest center.
-	# A part with no Shape keeps the old center reach.
-	var shaped: Part = null
-	var shaped_distance := INF
+	var margin := G.settings.part_grab_margin_px
+	if is_instance_valid(hand) and hand.is_touch:
+		margin = G.settings.part_grab_margin_touch_px
+	var wanted := _get_wanted_part_types()
 	var best: Part = null
-	var best_distance := G.settings.part_grab_radius_px
+	var best_wanted := false
+	var best_distance := INF
 	for entry: Variant in _drawer_parts:
 		if not is_instance_valid(entry):
 			continue
 		var part := entry as Part
 		if part.is_installed or not part.is_visible_in_tree():
 			continue
-		var distance := part.global_position.distance_to(global_point)
-		if part.is_point_in_shape(global_point):
-			if not is_instance_valid(shaped):
-				shaped = part
-				shaped_distance = distance
-			elif _is_part_above(part, shaped):
-				shaped = part
-				shaped_distance = distance
-			elif (
-				not _is_part_above(shaped, part)
-				and distance < shaped_distance
-			):
-				shaped = part
-				shaped_distance = distance
-		elif not part.has_shape() and distance <= best_distance:
-			best_distance = distance
+		var distance := part.get_grab_distance(global_point)
+		if distance > margin:
+			continue
+		var is_wanted := wanted.has(part.type)
+		if not is_instance_valid(best):
 			best = part
-	return shaped if is_instance_valid(shaped) else best
+			best_wanted = is_wanted
+			best_distance = distance
+			continue
+		if is_wanted != best_wanted:
+			if is_wanted:
+				best = part
+				best_wanted = is_wanted
+				best_distance = distance
+			continue
+		if distance < best_distance - 0.5:
+			best = part
+			best_distance = distance
+		elif (
+			distance <= best_distance + 0.5
+			and _is_part_above(part, best)
+		):
+			best = part
+			best_distance = distance
+	return best
+
+
+## The part kinds a current step is waiting on: the sockets
+## of the fetch and install steps the hint tracker is
+## showing. Empty between items and on steps no part
+## satisfies.
+func _get_wanted_part_types() -> Array:
+	var wanted: Array = []
+	if not is_instance_valid(hint_tracker):
+		return wanted
+	for step in hint_tracker.get_current_steps():
+		if (
+			step.kind == RepairStep.Kind.FETCH_PART
+			or step.kind == RepairStep.Kind.INSTALL_PART
+		) and is_instance_valid(step.socket):
+			var part_type: Part.Type = step.socket.accepted_part
+			if not wanted.has(part_type):
+				wanted.append(part_type)
+	return wanted
 
 
 ## True when `a` draws over `b` on the canvas: the higher

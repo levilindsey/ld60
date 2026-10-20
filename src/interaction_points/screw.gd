@@ -358,6 +358,28 @@ func set_install_mode() -> void:
 		_snap_slide(1.0)
 	elif travel == Travel.RESTING:
 		_start_outline()
+		# Its return is due: a screw already resting within
+		# its seat's reach goes back by itself instead of
+		# waiting for a press. Deferred, so the subclass
+		# overrides of this mode change run first.
+		call_deferred("_seat_if_resting_on_hole")
+
+
+## The screw's return is due and it already rests within a
+## seat's reach (dropped there, or slid there coming out):
+## it flies in loose, ready to be driven home.
+func _seat_if_resting_on_hole() -> void:
+	if not can_come_back() or is_returning or is_carried:
+		return
+	var target := find_seat_target(_get_rest_middle())
+	if is_instance_valid(target):
+		come_back(target)
+
+
+## Where a resting screw's middle sits, in world pixels:
+## where a press on it lands.
+func _get_rest_middle() -> Vector2:
+	return bench_art.global_position + rest_hit_offset
 	if is_stripped():
 		# Stand-in until LX19. A pried screw is scrap, and a new one comes
 		# from the parts bin. Until then the old one comes back as new.
@@ -485,7 +507,7 @@ func is_showing_outline() -> bool:
 func has_rest_point(global_point: Vector2) -> bool:
 	if travel != Travel.RESTING:
 		return false
-	var middle := bench_art.global_position + rest_hit_offset
+	var middle := _get_rest_middle()
 	return (
 		middle.distance_squared_to(global_point)
 		<= rest_hit_radius_px * rest_hit_radius_px

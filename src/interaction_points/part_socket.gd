@@ -18,7 +18,7 @@ const _ROCK_SHIFT_PX := 20.0
 ## being tugged, in world pixels, like the glue hold's ring.
 ## They only show mid-tug, and they keep world size and
 ## heading whatever the item's scale and turn.
-const _INDICATOR_OFFSET_PX := 64.0
+const _INDICATOR_OFFSET_PX := 88.0
 const _INDICATOR_HALF_SPAN_PX := 30.0
 ## How long the popped scrap's flight off screen takes.
 const _FLING_SEC := 0.55
