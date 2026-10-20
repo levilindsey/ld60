@@ -205,6 +205,20 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX78** · Socket parts win presses over the item body and its
+  layers. On the keyboard the spacebar's art is a few world
+  pixels tall, so a press landing just off it grabbed the
+  whole keyboard and dragged it instead of tugging the bar.
+  `PartSocket.get_part_distance()` measures world distance to
+  the part footprint the ghost already traces, and
+  `Hand._find_socket()` now takes a socket within the loose
+  parts' grab margin of the press (12 px mouse / 28 px touch,
+  nearest part winning), so the grabs that defer to it — the
+  loose-layer take-off and the item body drag — yield to the
+  part. New probe `tests/partgrab/` drives the real keyboard:
+  a press 12 px below the bar tugs the bar and never holds
+  the item; a press clear of every part still drags it.
+  Done (2026-10-20).
 - **LX77** · Grime takes the idle hint. It did not before: shipped
   grime and dust are authored `is_required = false`, and the
   repair sequence only built steps from required points, so

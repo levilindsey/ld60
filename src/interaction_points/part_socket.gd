@@ -249,14 +249,40 @@ func is_point_in_part_shape(world_point: Vector2) -> bool:
 ## at 0.13) it is a few world pixels across, and a new key
 ## dropped on its outline missed by a mile.
 func is_point_on_part(world_point: Vector2) -> bool:
+	return get_part_distance(world_point) <= 0.0
+
+
+## How far a world point sits from the part in this socket,
+## in world pixels: 0 on the part itself, growing past its
+## edge. Measured against the same footprint `is_point_on_part`
+## tests, so a press that only just misses the part still
+## reads as close. The hand grabs socket parts with the loose
+## parts' margin around this, so a part (and not the item
+## body under it) takes presses that land a little off it.
+func get_part_distance(world_point: Vector2) -> float:
 	if is_point_in_part_shape(world_point):
-		return true
+		return 0.0
 	var polygon := _get_hint_polygon()
 	if polygon.size() < 3:
-		return false
-	return Geometry2D.is_point_in_polygon(
-		to_local(world_point), polygon
-	)
+		return INF
+	var local := to_local(world_point)
+	if Geometry2D.is_point_in_polygon(local, polygon):
+		return 0.0
+	# Local units shrink on a scaled item, so the distance is
+	# measured between world points, edge by edge.
+	var best := INF
+	for index in polygon.size():
+		var from_point := to_global(polygon[index])
+		var to_point := to_global(
+			polygon[(index + 1) % polygon.size()]
+		)
+		best = minf(
+			best,
+			Geometry2D.get_closest_point_to_segment(
+				world_point, from_point, to_point
+			).distance_to(world_point),
+		)
+	return best
 
 
 ## The bad part shape's first polygon, in world points.

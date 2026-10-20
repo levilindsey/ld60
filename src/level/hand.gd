@@ -1237,21 +1237,36 @@ func _find_socket(
 	var item := G.level.active_repairable
 	if not is_instance_valid(item):
 		return null
+	# The part's footprint, grown by the same margin a loose
+	# part grabs with: a press that only just misses the part
+	# still takes the part, so it cannot slip through to the
+	# layer or the item body under it. The nearest part wins
+	# where margins overlap (keys packed side by side).
+	var margin := (
+		G.settings.part_grab_margin_touch_px
+		if is_touch
+		else G.settings.part_grab_margin_px
+	)
+	var nearest: PartSocket = null
+	var nearest_distance := INF
 	for layer in item.layers:
 		for point in layer.get_points():
 			var socket := point as PartSocket
 			if (
-				is_instance_valid(socket)
-				and socket.is_visible_in_tree()
-				and socket.is_exposed()
-				and (
-					not is_instance_valid(fitting_part)
-					or socket.can_fit(fitting_part)
+				not is_instance_valid(socket)
+				or not socket.is_visible_in_tree()
+				or not socket.is_exposed()
+				or (
+					is_instance_valid(fitting_part)
+					and not socket.can_fit(fitting_part)
 				)
-				and socket.is_point_on_part(global_point)
 			):
-				return socket
-	return null
+				continue
+			var distance := socket.get_part_distance(global_point)
+			if distance <= margin and distance < nearest_distance:
+				nearest = socket
+				nearest_distance = distance
+	return nearest
 
 
 func _find_tool_owner(node: Node) -> Tool:
