@@ -41,7 +41,12 @@ turn, and the grip drains. An empty grip cams the bit out.
   the driver turn with the drag and the slide follows the turn,
   like the flathead. Progress counts only at the window's own
   edges: there is no grace past them, and outside it nothing
-  turns.
+  turns. The check is the dial itself: the needle draws wrapped
+  past the top of the sweep, and a speed is in the zone when
+  where its needle sits is in the green, one wrap or not. The
+  drawn green never covers speeds below the slowest turning
+  speed (2.5 rad/s): sitting or creeping there turns nothing,
+  and the green no longer claims otherwise.
 - **Getting started:** the microgame only starts once the
   drags add up to 1.5 radians of turning. Before that the grip
   and the screw hold still: sitting with the driver seated,

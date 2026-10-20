@@ -178,6 +178,34 @@ func _check_gauge_needle_wrap() -> void:
 		not _left._is_speed_in_zone(gauge_max + 4.0),
 		"a speed way past the top does not wrap into the low zone",
 	)
+	# The check is the dial, not the raw speed: with the zone
+	# sitting mid-dial and not straddling either seam, a speed
+	# one wrap past the top draws at the slow end of the zone
+	# and counts, exactly where the needle sits in the green.
+	_left._zone_center_rad_per_sec = 5.0
+	_expect(
+		_left._is_speed_in_zone(gauge_max + 5.0),
+		"a wrapped speed counts where its needle draws in the zone",
+	)
+	_expect(
+		not _left._is_speed_in_zone(gauge_max + 9.0),
+		"a wrapped speed outside the drawn zone does not count",
+	)
+	# With the zone wrapped low, a needle creeping inside its
+	# slow end still does not count (it is barely moving),
+	# while the same band just above the slowest turning
+	# speed does: the floor is about motion, not position.
+	_left._zone_center_rad_per_sec = 1.0
+	_expect(
+		not _left._is_speed_in_zone(1.0),
+		"creeping at the zone's slow end does not count",
+	)
+	_expect(
+		_left._is_speed_in_zone(
+			G.settings.phillips_speed_min_rad_per_sec + 0.1
+		),
+		"just above the slowest turning speed counts",
+	)
 
 
 ## The needle is the only momentum in the gauge: the frame it

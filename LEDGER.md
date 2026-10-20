@@ -241,7 +241,12 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   the ding and the hum), and the shop radio's arrival is
   staged: when its turn comes its sound goes wonky on the
   shelf for `shop_radio_wonk_sec` (3 s), falls silent, then
-  flies to the bench (probe `tests/radio/`).
+  flies to the bench (probe `tests/radio/`). The Phillips
+  needle check is now the dial itself: a speed counts where
+  its wrapped needle position sits in the green (the old
+  faster-than-the-top exception is gone), and the drawn green
+  is clipped at the slowest turning speed so it never paints
+  speeds that cannot count (probe `tests/phillips/`).
 - **LX74** · Post-jam fixes on `postjam`: finish confetti at world
   scale and centred on the item's art; bad parts show real bad art
   (keyboard spacebar/letter, shrink-ray crystal; probe

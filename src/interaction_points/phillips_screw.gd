@@ -360,14 +360,11 @@ func _zone_distance(speed_rad_per_sec: float) -> float:
 
 
 ## True while a speed sits inside the green window itself.
-## Circling the wrong way never counts. Neither does circling
-## faster than the dial's top, with one exception: the needle
-## wraps around the seam when it draws, so when the zone itself
-## straddles the seam, a speed that lands just past the top is
-## inside the zone's wrapped segment and counts. The exception
-## reaches only as far past the top as the zone does: a merely
-## fast circle whose needle happens to sweep through the green
-## on its way around is still too fast.
+## Circling the wrong way never counts. The check is the
+## dial: the needle draws wrapped past the top of the sweep,
+## so the band is judged around the cycle the same way (a
+## speed one wrap past the top sits where the slow end is).
+## What the player sees in the green is what counts.
 func _is_speed_in_zone(speed_rad_per_sec: float) -> bool:
 	# Below the slowest turning speed the needle has not
 	# started moving in any way that counts: the zone can
@@ -375,24 +372,9 @@ func _is_speed_in_zone(speed_rad_per_sec: float) -> bool:
 	# inside the green never turns the screw.
 	if speed_rad_per_sec < G.settings.phillips_speed_min_rad_per_sec:
 		return false
-	var cycle := maxf(G.settings.phillips_gauge_max_rad_per_sec, 0.01)
-	var half_width := _get_zone_width() / 2.0
-	if speed_rad_per_sec > cycle:
-		# The needle draws one wrap past the top. It counts
-		# only inside the zone's own wrapped segment, on
-		# whichever side of the seam the zone straddles.
-		var wrapped_speed := speed_rad_per_sec - cycle
-		var low := _zone_center_rad_per_sec - half_width
-		var high := _zone_center_rad_per_sec + half_width
-		if high > cycle:
-			if wrapped_speed > high - cycle:
-				return false
-		elif low < 0.0:
-			if wrapped_speed > high:
-				return false
-		else:
-			return false
-	return absf(_zone_distance(speed_rad_per_sec)) <= half_width
+	return absf(_zone_distance(speed_rad_per_sec)) <= (
+		_get_zone_width() / 2.0
+	)
 
 
 ## True while the speed sits inside the green window's own edges.
