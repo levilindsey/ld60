@@ -57,17 +57,6 @@ const _ARRIVAL_BOUNCE_DECAY := 0.4
 ## Above the level's drawers (z_index 15), so a leaving item slides over
 ## them into the outbox.
 const _LEAVING_Z_INDEX := 16
-## World width of the finished item's outline. Wider than
-## the shared hint rim: the hint width reads thin around a
-## whole item, and the band fades across its depth, so the
-## strong part is thinner than the number says. On a
-## scaled-down item (the Game & Watch at 0.13) 14 px read
-## as a whisper; 13 with a stronger gradient (see
-## `_get_finish_outline_material()`) carries. (Wider read
-## as too much on the piano and the shrink ray, which stack
-## this rim on the hard shape rim as well.)
-const _FINISH_OUTLINE_WIDTH_PX := 13.0
-
 @export var item_name := ""
 ## The object's own outline, an Area2D with polygon/shape
 ## children tracing the art. It carries no collision state
@@ -120,13 +109,9 @@ var _arrival_target_position := Vector2.ZERO
 var _arrival_start_rotation := 0.0
 ## How many times the arriving item has hit the bench.
 var _arrival_impact_count := 0
-var _outline_hint: OutlineHint
 var _is_whack_highlighted := false
 var _whack_art: Sprite2D
 var _whack_material_before: Material
-var _outlined_art: Sprite2D
-var _art_material_before_outline: Material
-var _finish_outline_material: Material
 
 
 func _ready() -> void:
@@ -745,8 +730,8 @@ func _update_state() -> void:
 		set_physics_process(mode == Mode.UNDER_REPAIR)
 
 
-## A ding, a burst of sparkles and an outline that lasts until the
-## item goes. The clock stops.
+## A ding, a burst of sparkles, and the outbox lighting up
+## until the item goes. The clock stops.
 func _play_finish_payoff() -> void:
 	set_physics_process(false)
 	G.audio.play_sound(&"ding")
@@ -778,17 +763,10 @@ func _play_finish_payoff() -> void:
 	_start_outline()
 
 
-## True while the finished item shows its outline.
-func is_showing_outline() -> bool:
-	if is_instance_valid(_outline_hint) and _outline_hint.is_active():
-		return true
-	return is_instance_valid(_outlined_art)
-
-
 ## The hammer-this-item highlight (the TV's final whack): the
-## shared hint outline on the exposed layer's art, thinner
-## than the finished outline below. The StuckPart offering
-## the whack turns it on while it is the only step left.
+## shared hint outline on the exposed layer's art. The
+## StuckPart offering the whack turns it on while it is the
+## only step left.
 func set_whack_highlight(shown: bool) -> void:
 	if shown == _is_whack_highlighted:
 		return
@@ -815,98 +793,16 @@ func is_whack_highlighted() -> bool:
 	return _is_whack_highlighted
 
 
-## The finished item and the outbox get the outline. The item's top
-## layer carries the item's share of it.
+## A finished item lights the outbox, not itself: the
+## sparkle burst marks the moment, and the outbox outline
+## says where the item goes. It stays lit until the item
+## ships (see `Level._send_to_outbox()`).
 func _start_outline() -> void:
 	set_whack_highlight(false)
-	_stop_outline()
-	var layer := get_exposed_layer()
-	if is_instance_valid(layer):
-		if layer.art is Sprite2D:
-			if is_instance_valid(G.settings.outline_hint_material):
-				_outlined_art = layer.art as Sprite2D
-				_art_material_before_outline = (
-					OutlineHint.apply_to_sprite(
-						_outlined_art,
-						_get_finish_outline_material(),
-					)
-				)
-				_add_finish_shape_rim_if_clipped(layer)
-		else:
-			if not is_instance_valid(_outline_hint):
-				var points := OutlineHint.get_art_polygon(layer.art)
-				if not points.is_empty():
-					_outline_hint = OutlineHint.new()
-					layer.art.add_child(_outline_hint)
-					_outline_hint.polygon = points
-			if is_instance_valid(_outline_hint):
-				_outline_hint.width_scale = (
-					_FINISH_OUTLINE_WIDTH_PX
-					/ OutlineHint.get_shared_width()
-				)
-				_outline_hint.set_active(true)
 	if is_instance_valid(G.level):
 		G.level.set_outbox_outline_shown(true)
 
 
-## The finished item's rim, a copy of the shared outline
-## material with a wider band: the shared hint width reads
-## thin around a whole item. The copy also holds its color
-## longer across the band (a higher gradient power), so
-## more of the band is at full strength instead of fading
-## out. Duplicated once, the first time an item finishes.
-func _get_finish_outline_material() -> Material:
-	if not is_instance_valid(_finish_outline_material):
-		var shared := G.settings.outline_hint_material
-		if is_instance_valid(shared):
-			_finish_outline_material = shared.duplicate()
-			(_finish_outline_material as ShaderMaterial
-			).set_shader_parameter(
-				&"outline_width_px", _FINISH_OUTLINE_WIDTH_PX
-			)
-			(_finish_outline_material as ShaderMaterial
-			).set_shader_parameter(
-				&"gradient_power", 1.6
-			)
-	return _finish_outline_material
-
-
-## Like the layers' own clipped-rim fallback: if the finished
-## art's texture fits less than the (wider) finished rim,
-## the outlined layer's authored Shape carries an outside
-## rim too.
-func _add_finish_shape_rim_if_clipped(layer: RepairLayer) -> void:
-	if not is_instance_valid(_outlined_art):
-		return
-	if (
-		OutlineHint.get_sprite_rim_world(_outlined_art)
-		>= _FINISH_OUTLINE_WIDTH_PX
-	):
-		return
-	var world_points := layer.get_shape_world_polygon()
-	if world_points.size() < 3:
-		return
-	if not is_instance_valid(_outline_hint):
-		_outline_hint = OutlineHint.new()
-		_outlined_art.add_child(_outline_hint)
-	_outline_hint.polygon = OutlineHint.world_polygon_to_local(
-		_outlined_art, world_points
-	)
-	_outline_hint.width_scale = (
-		_FINISH_OUTLINE_WIDTH_PX / OutlineHint.get_shared_width()
-	)
-	_outline_hint.set_active(true)
-
-
 func _stop_outline() -> void:
-	if is_instance_valid(_outline_hint):
-		_outline_hint.set_active(false)
-	if is_instance_valid(_outlined_art):
-		OutlineHint.remove_from_sprite(
-			_outlined_art,
-			_art_material_before_outline,
-		)
-	_outlined_art = null
-	_art_material_before_outline = null
 	if is_instance_valid(G.level):
 		G.level.set_outbox_outline_shown(false)

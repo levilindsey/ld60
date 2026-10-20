@@ -229,7 +229,11 @@ next, brief, env (`.claude/rules/ledger.md`). -->
   mixed box). Still failing at HEAD, untouched: `screws`
   (24–33, tip-gap family), `full_loop` (~30), `shapes` (3–4),
   `workable` (1), `drawers` (1–2, seed-dependent spacing) and
-  `item_flow` (a `ScrewLeft` node path). Done (2026-10-20).
+  `item_flow` (step-3 finish choreography; fails the same at
+  LX74, so older than this round). A finished repairable no
+  longer shows the finish outline on itself, only on the
+  outbox (sparkle burst still marks the moment). Done
+  (2026-10-20).
 - **LX74** · Post-jam fixes on `postjam`: finish confetti at world
   scale and centred on the item's art; bad parts show real bad art
   (keyboard spacebar/letter, shrink-ray crystal; probe

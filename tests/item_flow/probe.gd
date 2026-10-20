@@ -305,31 +305,26 @@ func _check_finish() -> void:
 	)
 	var stopped_sec := _item.quality.repair_time_sec
 	await _seconds(0.5)
+	# A finished item lights the outbox, not itself: no
+	# outline material lands on its art, and no rim rides it.
+	var top_art: CanvasItem = _item.layers.back().art
+	var has_rim := false
+	for child in top_art.get_children():
+		if child is OutlineHint and (child as OutlineHint).is_active():
+			has_rim = true
 	_expect(
-		_item.is_showing_outline() and _item.modulate == Color.WHITE,
-		"3. the finished item shows the outline, not a modulate glow",
-	)
-	var celebration_is_wide := false
-	if (
-		is_instance_valid(_item._outlined_art)
-		and _item._outlined_art.material is ShaderMaterial
-	):
-		var finish_width: float = (
-			(_item._outlined_art.material as ShaderMaterial
-			).get_shader_parameter("outline_width_px")
+		not (
+			top_art is Sprite2D
+			and (top_art as Sprite2D).material
+			== G.settings.outline_hint_material
 		)
-		celebration_is_wide = (
-			finish_width > OutlineHint.get_shared_width()
-		)
-	elif is_instance_valid(_item._outline_hint):
-		celebration_is_wide = _item._outline_hint.width_scale > 1.5
-	_expect(
-		celebration_is_wide,
-		"3. the finished item's outline is wider than a hint rim",
+		and not has_rim
+		and _item.modulate == Color.WHITE,
+		"3. the finished item itself shows no outline",
 	)
 	_expect(
 		G.level.is_outbox_outline_shown(),
-		"3. the outbox shows the outline too",
+		"3. the outbox shows the outline",
 	)
 	_expect(
 		is_equal_approx(_item.quality.repair_time_sec, stopped_sec),
