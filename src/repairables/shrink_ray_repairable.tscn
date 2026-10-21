@@ -82,6 +82,7 @@ monitorable = false
 polygon = PackedVector2Array(-5, -16, 5, -16, 13, -10, 15, 0, 13, 10, 4, 17, -4, 17, -13, 10, -15, 0, -13, -10)
 
 [node name="GoodCrystal" type="Sprite2D" parent="Layers/Body/Crystal" unique_id=1100441439]
+visible = false
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("5_crystal_good")
 region_enabled = true

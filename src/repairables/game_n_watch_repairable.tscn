@@ -72,6 +72,7 @@ polygon = PackedVector2Array(-250, -360, 250, -360, 250, 360, -250, 360)
 polygon = PackedVector2Array(-250, -360, 250, -360, 250, 360, -250, 360)
 
 [node name="GoodChip" type="Sprite2D" parent="Layers/Inside/Chip" unique_id=580524989]
+visible = false
 scale = Vector2(2, 2)
 texture = ExtResource("good_tex")
 region_enabled = true

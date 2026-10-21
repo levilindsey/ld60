@@ -63,6 +63,7 @@ monitorable = false
 polygon = PackedVector2Array(-25, -497, 25, -497, 60, -460, 150, -420, 195, -320, 205, -120, 185, 120, 165, 215, 150, 250, 150, 400, 110, 435, -110, 435, -150, 400, -150, 250, -165, 215, -185, 120, -205, -120, -195, -320, -150, -420, -60, -460)
 
 [node name="GoodBulb" type="Sprite2D" parent="Layers/Inside/Bulb" unique_id=162835107]
+visible = false
 scale = Vector2(2, 2)
 texture = ExtResource("good_tex")
 region_enabled = true

@@ -180,6 +180,104 @@ func is_point_in_shape(world_point: Vector2) -> bool:
 	return false
 
 
+## How far a world point sits from this piece's grab body,
+## in world pixels: zero on the body, growing outside it.
+## The body is the authored Shape when the piece has one
+## (the grab follows the silhouette, not a disc), else the
+## disc of `grab_radius_px` around the middle, which is a
+## shapeless piece's whole reach (INF past it): pieces sit
+## near their points by design, and a wider disc would
+## steal presses meant for the point. A press grabs the
+## piece while this stays within the loose parts' grab
+## margin, so even a thin shaped piece (the piano's broken
+## key, a sliver a finger wide) can be caught by a near miss.
+func get_grab_distance(world_point: Vector2) -> float:
+	if has_shape():
+		var best := INF
+		for child in shape.get_children():
+			if child is CollisionPolygon2D:
+				var polygon_node := child as CollisionPolygon2D
+				if polygon_node.polygon.size() < 3:
+					continue
+				best = minf(
+					best,
+					_polygon_distance(polygon_node, world_point),
+				)
+			elif child is CollisionShape2D:
+				var shape_node := child as CollisionShape2D
+				if not is_instance_valid(shape_node.shape):
+					continue
+				best = minf(
+					best,
+					_shape_distance(shape_node, world_point),
+				)
+		return best
+	if global_position.distance_to(world_point) <= grab_radius_px:
+		return 0.0
+	return INF
+
+
+## World distance from a point to one outline polygon: zero
+## inside it, else the nearest edge's distance.
+func _polygon_distance(
+	polygon_node: CollisionPolygon2D, world_point: Vector2
+) -> float:
+	var local := (
+		polygon_node.global_transform.affine_inverse()
+		* world_point
+	)
+	if Geometry2D.is_point_in_polygon(local, polygon_node.polygon):
+		return 0.0
+	var best := INF
+	var count := polygon_node.polygon.size()
+	for index in count:
+		var from_point := polygon_node.global_transform * (
+			polygon_node.polygon[index]
+		)
+		var to_point := polygon_node.global_transform * (
+			polygon_node.polygon[(index + 1) % count]
+		)
+		best = minf(
+			best,
+			Geometry2D.get_closest_point_to_segment(
+				world_point, from_point, to_point
+			).distance_to(world_point),
+		)
+	return best
+
+
+## World distance from a point to one collision shape: zero
+## inside it, else how far past its edge the point sits.
+func _shape_distance(
+	shape_node: CollisionShape2D, world_point: Vector2
+) -> float:
+	var local := (
+		shape_node.global_transform.affine_inverse()
+		* world_point
+	)
+	if _is_point_in_collision_shape(local, shape_node.shape):
+		return 0.0
+	var outline := OutlineHint.get_shape_polygon(shape_node)
+	if outline.size() < 3:
+		return INF
+	var best := INF
+	var count := outline.size()
+	for index in count:
+		var from_point := shape_node.global_transform * (
+			outline[index]
+		)
+		var to_point := shape_node.global_transform * (
+			outline[(index + 1) % count]
+		)
+		best = minf(
+			best,
+			Geometry2D.get_closest_point_to_segment(
+				world_point, from_point, to_point
+			).distance_to(world_point),
+		)
+	return best
+
+
 ## The Shape's first polygon, in world points, for outlines
 ## and hints that want the piece's real outline.
 func get_shape_world_polygon() -> PackedVector2Array:

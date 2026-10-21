@@ -102,7 +102,13 @@ func _grab_driver() -> void:
 ## slow end and keeps climbing the same way.
 ## The gauge face stays plain while the strip-out meter has room
 ## and only reddens in its low end: progress never greens it.
+## The gauge floats high over the screw, clear of the
+## circling finger on a touch screen.
 func _check_gauge_tint() -> void:
+	_expect(
+		_left.gauge.position.y <= -170.0,
+		"the gauge floats clear of the circling finger",
+	)
 	_left.grip_meter = 1.0
 	_left._turned_rad = _left._get_total_rad() * 0.9
 	var success_color := _left.gauge._get_background_color(_left)

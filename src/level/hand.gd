@@ -396,6 +396,93 @@ func find_point_for_tool(tool: Tool) -> InteractionPoint:
 	return nearest
 
 
+## The point a touch press lands on that this tool acts on,
+## or null. The press counts when it sits on the point's
+## area or authored Shape, on a crack's line, or within a
+## finger's reach of the point's middle: a point's hit
+## circle on a scaled item can be a few world pixels across,
+## far smaller than the finger that taps it. Only points
+## this tool accepts count, so the cursor only wins over
+## the tool's working end when it truly lines up with work
+## for this tool. The nearest such point to the press wins.
+func _find_cursor_point_for_tool(
+	tool: Tool, global_point: Vector2,
+) -> InteractionPoint:
+	var queried: Array[InteractionPoint] = []
+	for area in _query(
+		global_point, Settings.PhysicsLayer.INTERACTION_POINTS
+	):
+		var queried_point := area as InteractionPoint
+		if is_instance_valid(queried_point):
+			queried.append(queried_point)
+	var candidates := queried.duplicate()
+	if is_instance_valid(G.level):
+		var item := G.level.active_repairable
+		if is_instance_valid(item):
+			for layer in item.layers:
+				for point in layer.get_points():
+					if not candidates.has(point):
+						candidates.append(point)
+	var best: InteractionPoint = null
+	var best_distance := INF
+	for point in candidates:
+		if not _is_valid_cursor_point(point, tool):
+			continue
+		var distance := _cursor_point_distance(
+			point, global_point, queried.has(point)
+		)
+		if distance < best_distance:
+			best = point
+			best_distance = distance
+	return best
+
+
+## True while a point may take a touch tap for this tool:
+## shown, exposed, unfinished and accepting it. An engage
+## tool also needs the point ready to engage; an effect
+## tool may tap a point it is already working (a half
+## wiped grime spot, a crack half covered).
+func _is_valid_cursor_point(
+	point: InteractionPoint, tool: Tool
+) -> bool:
+	if (
+		not is_instance_valid(point)
+		or not point.is_visible_in_tree()
+		or not point.is_exposed()
+		or point.mode == InteractionPoint.Mode.FINISHED
+		or not point.accepts(tool)
+	):
+		return false
+	if tool.is_effect_tool():
+		return true
+	return point.mode == InteractionPoint.Mode.UNSTARTED
+
+
+## How well a press lines up with a point, in world pixels:
+## 0 when the press is on the point (its area, its authored
+## Shape, or a crack's line), else how far the press sits
+## from the point's middle. A line up by the middle only
+## counts within a finger's reach, the touch grab margin.
+func _cursor_point_distance(
+	point: InteractionPoint,
+	global_point: Vector2,
+	is_queried: bool,
+) -> float:
+	if is_queried or point.is_point_in_shape(global_point):
+		return 0.0
+	if point is Crack:
+		for sample in (point as Crack).get_samples():
+			if (
+				point.to_global(sample).distance_to(global_point)
+				<= G.settings.glue_radius_px
+			):
+				return 0.0
+	var distance := point.global_position.distance_to(global_point)
+	if distance <= G.settings.part_grab_margin_touch_px:
+		return distance
+	return INF
+
+
 ## The first active surface under a world position, or null.
 func find_surface(global_point: Vector2) -> Surface:
 	for area in _query(global_point, Settings.PhysicsLayer.SURFACES):
@@ -697,10 +784,38 @@ func _press_rack(global_point: Vector2) -> bool:
 ## 6. Holding a tool: its tip goes to the press, then it acts there.
 ## Effect tools act at the press point and stay in the hand. Engage
 ## tools go IN_USE on the point lined up with their working end.
+## A touch tap is the exception: when the finger itself lands
+## on a point this tool acts on, the tool works at the finger,
+## working end first. A finger cannot aim the working end by
+## its offset from the tip the way a mouse can (the glue
+## nozzle sits a long way from the bottle's tip), so tapping
+## the point has to count. A tap that lines up with no such
+## point keeps the rules below, working end and all.
 func _press_with_tool(global_point: Vector2) -> bool:
 	var held_tool := get_held_tool()
 	if not is_instance_valid(held_tool) or held_tool.mode != Tool.Mode.HELD:
 		return false
+	if is_touch:
+		var cursor_point := _find_cursor_point_for_tool(
+			held_tool, global_point
+		)
+		if is_instance_valid(cursor_point):
+			if held_tool.is_effect_tool():
+				held_tool.snap_work_end_to(global_point)
+				held_tool.on_effect_pressed(global_point)
+				return true
+			var covered_screw := cursor_point as Screw
+			if (
+				is_instance_valid(covered_screw)
+				and covered_screw.is_covered()
+			):
+				held_tool.nope()
+				return true
+			if cursor_point.can_engage():
+				cursor_point.engage(held_tool)
+				return true
+			# Not engageable right now: fall through to the
+			# working end handling below, unchanged.
 	if held_tool.is_effect_tool():
 		held_tool.snap_tip_to(global_point)
 		held_tool.on_effect_pressed(global_point)

@@ -596,34 +596,30 @@ func get_broken_pieces() -> Array[BrokenPiece]:
 
 
 ## The grabbable broken piece nearest a world position, or
-## null. A press on a piece's authored Shape takes it, wherever
-## on the piece it lands; the nearest middle wins among
-## overlaps. A piece with no Shape keeps the old middle reach.
+## null. A press grabs a piece anywhere on its grab body
+## (the authored Shape, or the middle disc of a shapeless
+## piece), or within the loose parts' grab margin past it:
+## wider for a finger than a mouse, the way a loose part
+## grabs. Among overlaps the piece the press sits most
+## directly on wins. A thin shaped piece (the piano's
+## broken key) needs the margin most: its silhouette is a
+## sliver, and a press had to land inside it exactly.
 func get_loose_broken_piece_at(
 	global_point: Vector2,
 ) -> BrokenPiece:
-	var shaped: BrokenPiece = null
-	var shaped_distance := INF
+	var margin := G.settings.part_grab_margin_px
+	if is_instance_valid(hand) and hand.is_touch:
+		margin = G.settings.part_grab_margin_touch_px
 	var best: BrokenPiece = null
 	var best_distance := INF
 	for piece in get_broken_pieces():
 		if piece.is_installed or not piece.can_grab():
 			continue
-		var distance := piece.global_position.distance_to(
-			global_point
-		)
-		if piece.is_point_in_shape(global_point):
-			if distance < shaped_distance:
-				shaped_distance = distance
-				shaped = piece
-		elif (
-			not piece.has_shape()
-			and distance <= piece.grab_radius_px
-			and distance < best_distance
-		):
+		var distance := piece.get_grab_distance(global_point)
+		if distance <= margin and distance < best_distance:
 			best_distance = distance
 			best = piece
-	return shaped if is_instance_valid(shaped) else best
+	return best
 
 
 ## Starts a detached piece's own fall to its landing spot,

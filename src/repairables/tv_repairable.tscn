@@ -107,6 +107,7 @@ bad_part_shape = NodePath("BrokenPart/BadPartShape")
 good_part_shape = NodePath("GoodPartShape")
 
 [node name="GoodControls" type="Sprite2D" parent="Layers/Body/Controls" unique_id=1312169053]
+visible = false
 scale = Vector2(2, 2)
 texture = ExtResource("good_tex")
 region_enabled = true

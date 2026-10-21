@@ -59,6 +59,12 @@ func _ready() -> void:
 		_socket.is_yank_indicator_visible(),
 		"the yank arrows show while the part is being tugged",
 	)
+	await _physics_frames(2)
+	_expect(
+		_socket._yank_indicator.global_position.y
+		< _socket.global_position.y - 120.0,
+		"the yank arrows float clear of the tugging finger",
+	)
 	await _release_at(_socket.global_position)
 	_expect(
 		_socket._wiggle.swings == 1,

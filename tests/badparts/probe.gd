@@ -78,15 +78,30 @@ func _check_socket(item_name: String, socket: PartSocket) -> void:
 		"%s: the broken part has authored bad art" % label,
 	):
 		return
-	# The runtime fallback adds exactly one sprite: the good
-	# part's art, darkened. That (or an authored copy of it)
-	# is what must never be the whole display.
+	# What the player sees at spawn is the bad part, never
+	# the good one: the broken art is on show, and the fitted
+	# art stays hidden until a new part lands.
+	var is_bad_shown := false
+	for sprite in sprites:
+		if sprite.is_visible_in_tree():
+			is_bad_shown = true
+	_expect(
+		is_bad_shown,
+		"%s: the bad part shows at spawn" % label,
+	)
 	var fitted := socket.installed_art as Sprite2D
-	if sprites.size() == 1 and is_instance_valid(fitted):
-		var only := sprites[0]
+	if is_instance_valid(fitted):
 		_expect(
-			only.texture != fitted.texture
-			or only.region_rect != fitted.region_rect,
+			not fitted.is_visible_in_tree(),
+			"%s: the good part stays hidden at spawn" % label,
+		)
+		# The runtime fallback adds exactly one sprite: the
+		# good part's art, darkened. That (or an authored
+		# copy of it) is what must never be the display.
+		var first := sprites[0]
+		_expect(
+			first.texture != fitted.texture
+			or first.region_rect != fitted.region_rect,
 			"%s: the broken part is not just the good part's art"
 			% label,
 		)

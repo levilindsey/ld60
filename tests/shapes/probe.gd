@@ -291,6 +291,37 @@ func _check_authored_shapes() -> void:
 					absf(key.get_radius_px() - expected_radius) < 0.5,
 					"the key's radius comes from its Shape",
 				)
+				# The key is a sliver: a press just past its
+				# edge still grabs it, within the loose
+				# parts' margin, and a press well clear
+				# does not.
+				var bounds := Rect2(points[0], Vector2.ZERO)
+				for point in points:
+					bounds = bounds.expand(point)
+				var centre := _polygon_centre(points)
+				var near_miss := Vector2(
+					bounds.end.x + 8.0, centre.y
+				)
+				_expect(
+					key.get_grab_distance(centre) == 0.0
+					and key.get_grab_distance(near_miss)
+					<= G.settings.part_grab_margin_px,
+					"a near miss still grabs the piano key",
+				)
+				G.level.register_broken_piece(key)
+				_expect(
+					G.level.get_loose_broken_piece_at(near_miss)
+					== key,
+					"the level hands the key to a near miss press",
+				)
+				_expect(
+					not is_instance_valid(
+						G.level.get_loose_broken_piece_at(
+							Vector2(bounds.end.x + 80.0, centre.y)
+						)
+					),
+					"a press well clear of the key grabs nothing",
+				)
 		piano.queue_free()
 		await _physics_frames(1)
 	var atari := _spawn_item(

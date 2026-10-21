@@ -58,6 +58,7 @@ func _run() -> void:
 	)
 	await _check_holder_shadows()
 	_check_driver_art()
+	await _check_touch_tap_uses_cursor()
 	await _check_tap_keeps_hover()
 	await _check_holder_return()
 	await _check_rag()
@@ -277,8 +278,75 @@ func _check_tap_keeps_hover() -> void:
 	screw.queue_free()
 
 
+## A touch tap on a screw the driver is not hovering over
+## still engages it: the finger is on the screw, so the
+## driver works there. The same tap with a mouse (the
+## hover check below, and the hammer's cursor miss) keeps
+## the old working end rules.
+func _check_touch_tap_uses_cursor() -> void:
+	var screw := _spawn_point(
+		"res://src/interaction_points/flat_head_screw.tscn",
+		Vector2(-60, -100),
+	) as FlatHeadScrew
+	if not _expect(
+		is_instance_valid(screw) and screw.can_engage(),
+		"a flathead screw waits for the touch tap",
+	):
+		return
+	var driver := await _grab(Tool.Type.FLAT_HEAD_SCREW_DRIVER)
+	for frame in 30:
+		if driver.mode == Tool.Mode.HELD:
+			break
+		await _physics_frames(1)
+	_expect(
+		driver.mode == Tool.Mode.HELD,
+		"the driver is in hand for the touch tap",
+	)
+	# Park the driver well away, so its working end is
+	# nowhere near the screw when the tap lands.
+	await _move_to(Vector2(220, 160))
+	await _physics_frames(10)
+	_expect(
+		driver.mode == Tool.Mode.HELD
+		and not is_instance_valid(_hand.find_point_for_tool(driver)),
+		"the parked driver overlaps no screw",
+	)
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.device = InputEvent.DEVICE_ID_EMULATION
+	_push_mouse(press, screw.global_position)
+	await _physics_frames(2)
+	_expect(
+		screw.mode == InteractionPoint.Mode.ACTIVE,
+		"a touch tap on the screw engages it",
+	)
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	release.device = InputEvent.DEVICE_ID_EMULATION
+	_push_mouse(release, screw.global_position)
+	await _physics_frames(2)
+	# The engaged screw holds the driver until its twists
+	# run out; wait for the put-away to land before the
+	# screw goes, so nothing keeps a freed point.
+	await _put_tool_away(driver)
+	for frame in 600:
+		if driver.mode == Tool.Mode.STORED:
+			break
+		await _physics_frames(1)
+	if driver.mode == Tool.Mode.STORED:
+		screw.queue_free()
+
+
 func _check_holder_return() -> void:
 	var driver := await _grab(Tool.Type.FLAT_HEAD_SCREW_DRIVER)
+	# Wait out the pickup glide (see _check_seized_screw):
+	# until it lands, the driver is still ENTERING.
+	for frame in 30:
+		if driver.mode == Tool.Mode.HELD:
+			break
+		await _physics_frames(1)
 	# Off the rack and away from the holders first.
 	await _move_to(Vector2(-100.0, 100.0))
 	await _physics_frames(4)

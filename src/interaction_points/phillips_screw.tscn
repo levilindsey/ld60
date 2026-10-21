@@ -231,5 +231,5 @@ libraries/ = SubResource("AnimationLibrary_h67g2")
 
 [node name="Gauge" type="Node2D" parent="."]
 z_index = 60
-position = Vector2(100, -132)
+position = Vector2(100, -176)
 script = ExtResource("6_gauge")

@@ -17,8 +17,9 @@ const _ROCK_SHIFT_PX := 20.0
 ## How far above the part the yank arrows float while it is
 ## being tugged, in world pixels, like the glue hold's ring.
 ## They only show mid-tug, and they keep world size and
-## heading whatever the item's scale and turn.
-const _INDICATOR_OFFSET_PX := 88.0
+## heading whatever the item's scale and turn. High enough
+## that the finger doing the tugging does not cover them.
+const _INDICATOR_OFFSET_PX := 128.0
 const _INDICATOR_HALF_SPAN_PX := 30.0
 ## How long the popped scrap's flight off screen takes.
 const _FLING_SEC := 0.55

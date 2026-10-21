@@ -205,6 +205,50 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX81** · Bad parts read as good at spawn, thin broken pieces were
+  hard to grab, the yank arrows and Phillips gauge sat where a finger
+  covers them, and a touch tap with a held tool only acted where the
+  tool's working end was, not where the finger landed (the glue
+  nozzle offset). Resolved: the fitted good art is authored hidden in
+  every item scene, so the bad part is the spawn display in the editor
+  and the game alike, and the keyboard's busted letter key has its own
+  cracked texture (`keyss_bad_letter_key.png`) instead of the good
+  key's art with a decal over it. `tests/badparts/` now checks what
+  shows, not just what exists: the bad part visible in the tree, the
+  good part hidden, and the broken sprite never just the good sprite.
+  A shaped broken piece grabs within the loose parts' margin past its
+  silhouette (`BrokenPiece.get_grab_distance()`, used by
+  `Level.get_loose_broken_piece_at()`); a shapeless piece keeps its
+  old disc reach exactly, so presses near a point are never stolen
+  (the first margin cut broke `tests/parts/` and `tests/hints/` that
+  way; both pass again). The yank arrows float 128 world px over the
+  part (was 88) and the Phillips gauge sits at (100, -176) (was -132).
+  On touch only, a tap that lands on a point the held tool accepts
+  (its area, its Shape, a crack's line, or a finger's reach of its
+  middle) acts at the tap: effect tools put their working end on the
+  finger and keep it there while held (`Tool.snap_work_end_to()`),
+  engage tools engage that point; any other tap keeps the old
+  working-end rules, mouse included (`tests/tools/` also waits out
+  the pickup glide in the holder-return check, the timing flake
+  LX76 noted).
+  owner: Levi (Muse Code)
+  files: `src/interaction_points/broken_piece.gd`,
+    `src/interaction_points/part_socket.gd`,
+    `src/interaction_points/phillips_screw.tscn`,
+    `src/level/hand.gd`, `src/level/level.gd`, `src/tools/tool.gd`,
+    the seven item scenes under `src/repairables/`,
+    `assets/images/repairables/keyss_bad_letter_key.png`,
+    `tests/badparts/`, `tests/broken_glue/`, `tests/phillips/`,
+    `tests/shapes/`, `tests/tools/`, `tests/yank_tap/`.
+  probes: `scripts/check.ps1` OK; badparts (33), broken_glue (47),
+    parts (169), hints (68), phillips (49), tools (48 twice),
+    yank_tap (12) and glue pass. The full suite's remaining reds are
+    HEAD's own, confirmed by baseline runs with the change stashed:
+    shapes (3, same labels), workable (1) and full_loop_booklet (3
+    warnings); full_loop (30) and screws (24) match the counts
+    LX75 recorded at HEAD.
+  commit: this commit.
+
 - **LX80** · The radio's dial knob glues on before anything
   else, and now a probe says so. Nothing orders the radio's
   front-layer work: `DialPoint` is exposed from the start,

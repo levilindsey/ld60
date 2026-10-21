@@ -95,6 +95,7 @@ accepted_part = 5
 installed_art = NodePath("GoodLed")
 
 [node name="GoodLed" type="Sprite2D" parent="Layers/Body/Led" unique_id=2041530734]
+visible = false
 scale = Vector2(2, 2)
 texture = ExtResource("good_led_tex")
 region_enabled = true

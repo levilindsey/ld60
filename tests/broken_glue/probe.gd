@@ -119,6 +119,27 @@ func _run() -> void:
 		not _point.has_glue,
 		"a click the nozzle misses glues nothing",
 	)
+	# A touch tap on the point itself glues it anyway: the
+	# finger is on the point, so the nozzle works there
+	# despite its offset from the bottle's tip. Only a tap
+	# that lines up with the point earns this; the mouse
+	# click above, at the same spot, glued nothing.
+	var touch_press := InputEventMouseButton.new()
+	touch_press.button_index = MOUSE_BUTTON_LEFT
+	touch_press.pressed = true
+	touch_press.device = InputEvent.DEVICE_ID_EMULATION
+	_push_mouse(touch_press, _point.global_position)
+	await _physics_frames(2)
+	_expect(
+		_point.has_glue,
+		"a touch tap on the point glues it",
+	)
+	var touch_release := InputEventMouseButton.new()
+	touch_release.button_index = MOUSE_BUTTON_LEFT
+	touch_release.pressed = false
+	touch_release.device = InputEvent.DEVICE_ID_EMULATION
+	_push_mouse(touch_release, _point.global_position)
+	await _physics_frames(2)
 	await _squeeze_glue_at(glue, _point.global_position, 0.6)
 	_expect(_point.has_glue, "glue sticks to the broken point")
 	_expect(

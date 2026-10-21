@@ -48,6 +48,7 @@ bad_part_shape = NodePath("BrokenPart/BadPartShape")
 good_part_shape = NodePath("GoodPartShape")
 
 [node name="GoodStick" type="Sprite2D" parent="Layers/Body/Joystick" unique_id=536495873]
+visible = false
 position = Vector2(-18, -44)
 scale = Vector2(0.32, 0.32)
 texture = ExtResource("good_tex")

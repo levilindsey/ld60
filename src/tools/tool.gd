@@ -394,6 +394,23 @@ func snap_tip_to(global_point: Vector2) -> void:
 	place_tip(global_point)
 
 
+## Puts the working end at a press point and keeps it under
+## the pointer while held: the follow offset holds the gap
+## between the tip and the working end, so a drag moves the
+## working end with the pointer instead of the tip. A touch
+## tap on a point this tool acts on lands this way (see
+## `Hand._press_with_tool()`): the finger is on the point,
+## so the tool works there, not a tip's length away. The
+## next ordinary press snaps the tip back as usual.
+func snap_work_end_to(global_point: Vector2) -> void:
+	_cancel_follow_offset()
+	place_work_end(global_point)
+	if is_instance_valid(G.level) and is_instance_valid(G.level.hand):
+		follow_offset = (
+			get_tip_position() - G.level.hand.pointer_position
+		)
+
+
 ## Starts the follow offset at a value and eases it to zero.
 func ease_follow_offset_from(offset: Vector2) -> void:
 	_cancel_follow_offset()
