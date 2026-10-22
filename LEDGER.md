@@ -205,6 +205,51 @@ next, brief, env (`.claude/rules/ledger.md`). -->
 
 ## Done
 
+- **LX83** · The peeking bird after the window smack played on
+  schedule but never showed: `BirdPeak` sat at (520, -473) in
+  `level.tscn`, which puts the bird (top-right of its frames)
+  above the window, outside `OutsideStuff`'s clip mask
+  (`window_clip_region.png` clips its children to the panes).
+  Resolved: `BirdPeak` moved to (361, -100), in the right
+  pane's foliage, and `tests/bird/` now checks the bird's spot
+  lands on an opaque mask texel (fails at the old spot). The
+  loop itself was verified unattended: four peeks, 32 to 38 s
+  apart (20 to 45 s re-rolled interval + 3.4 s animation +
+  0.5 s fade), each starting opaque and fading to hidden;
+  windowed capture shows the bandaged head in the right pane.
+  Levi's eye still owns the exact placement.
+  owner: Levi (Muse Code)
+  files: `src/level/level.tscn`, `tests/bird/`.
+  probes: bird (18) and bird_start (16) pass; the mask check
+    fails with the old position restored.
+  commit: this commit.
+
+- **LX82** · Exported builds (web and Windows alike) showed the
+  good part on every socket at spawn instead of the bad one:
+  nodes authored under the socket instance's own `BrokenPart`
+  (every `Busted*` sprite, the `BadPartShape` outlines) are
+  dropped when Godot converts scenes for export, so
+  `PartSocket._ready` fell back to a darkened clone of the
+  good art. Editor play and the headless probes load the text
+  scenes and never saw it (LX81's fix was editor-true only).
+  Resolved: the bad art and bad shape are authored beside the
+  socket like the fitted art (`PartSocket.bad_art`), and
+  `_ready()` adopts them into `BrokenPart` before anything
+  reads them. `tests/badparts/` now also checks the packed
+  scene: the bad art and shape must sit beside the socket,
+  which fails on the old authoring. Verified in a fresh web
+  export in Chrome (busted stick at spawn, matching desktop)
+  and by packed-tree dump (all eight `Busted*` sprites ship).
+  owner: Levi (Muse Code)
+  files: `src/interaction_points/part_socket.gd`, the seven
+    item scenes under `src/repairables/`, `tests/badparts/`.
+  probes: `scripts/check.ps1` OK; badparts (44) passes and
+    fails (11) with the old authoring restored; the full
+    suite's remaining reds (full_loop 30, screws 24, shapes 3,
+    workable 1, full_loop_booklet 5) match stash-baseline runs
+    at HEAD label for label.
+  commit: this commit.
+
 - **LX81** · Bad parts read as good at spawn, thin broken pieces were
   hard to grab, the yank arrows and Phillips gauge sat where a finger
   covers them, and a touch tap with a held tool only acted where the

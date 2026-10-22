@@ -43,6 +43,16 @@ const _FLING_SPIN_RAD := 9.0
 ## part itself is a small placeholder shape; this sprite is
 ## the real fitted piece at scene scale. Hidden until then.
 @export var installed_art: Node2D
+## Optional art of the broken part, as it sits in the socket
+## at spawn. Author it as a direct child of the socket, NOT
+## under `BrokenPart`: an exported build drops nodes a scene
+## adds under an instanced scene's own children, so anything
+## authored under `BrokenPart` (which lives in
+## `part_socket.tscn`) never reaches a shipped build (LX82).
+## `_ready()` moves this (and `bad_part_shape`) into
+## `BrokenPart`, which sits at the socket's origin, so the
+## authored transform reads the same in both spots.
+@export var bad_art: Node2D
 ## Optional fastener that locks this socket while it is
 ## fastened (the Atari's stick is screwed down through its
 ## base tab). The broken part cannot be tugged, and the
@@ -59,7 +69,9 @@ const _FLING_SPIN_RAD := 9.0
 ## anywhere inside it, not just on the socket's own circle, and
 ## the hint follows it while the broken part sits here. It carries
 ## no collision state of its own: the socket strips it at ready
-## and tests points against it by hand.
+## and tests points against it by hand. Author it as a direct
+## child of the socket, like `bad_art` (LX82); `_ready()` moves
+## it under `BrokenPart` with the broken part it outlines.
 @export var bad_part_shape: Area2D
 ## Optional outline of the fitted part, the good one from the
 ## drawer, as it sits in the socket. A drop of that part is judged
@@ -91,6 +103,7 @@ var _yank_time := 0.0
 
 func _ready() -> void:
 	super._ready()
+	_adopt_bad_part_nodes()
 	_configure_shape_area(bad_part_shape)
 	_configure_shape_area(good_part_shape)
 	type = Type.PART_SOCKET
@@ -152,6 +165,25 @@ func _ready() -> void:
 	_broken_part_home_position = %BrokenPart.position
 	_build_yank_indicator()
 	_refresh_yank_indicator()
+
+
+## Moves the authored bad art and bad part shape under
+## `BrokenPart`, where the wiggle, pop-out and hint code
+## expects them. Scenes author both beside the socket (see
+## `bad_art`), and `BrokenPart` sits at the socket's origin,
+## so each keeps its authored transform as it moves.
+func _adopt_bad_part_nodes() -> void:
+	var broken_part := %BrokenPart as Node2D
+	if (
+		is_instance_valid(bad_art)
+		and bad_art.get_parent() != broken_part
+	):
+		bad_art.reparent(broken_part, false)
+	if (
+		is_instance_valid(bad_part_shape)
+		and bad_part_shape.get_parent() != broken_part
+	):
+		bad_part_shape.reparent(broken_part, false)
 
 
 func _process(delta: float) -> void:

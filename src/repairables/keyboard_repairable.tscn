@@ -53,10 +53,11 @@ script = ExtResource("3_surface")
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/CaseSurface" unique_id=1503974964]
 polygon = PackedVector2Array(-1246.1539, -46.153847, -338.46155, -76.92308, 1092.3077, -115.38462, 1253.8462, 246.15385, 1238.4615, 300, -1284.6155, 361.53848, -1307.6924, 315.3846)
 
-[node name="LetterKey" parent="Layers/Body" unique_id=1490118301 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
+[node name="LetterKey" parent="Layers/Body" unique_id=1490118301 node_paths=PackedStringArray("installed_art", "bad_art") instance=ExtResource("5_socket")]
 position = Vector2(-574, 308)
 accepted_part = 3
 installed_art = NodePath("GoodLetter")
+bad_art = NodePath("BustedLetter")
 
 [node name="GoodLetter" type="Sprite2D" parent="Layers/Body/LetterKey" unique_id=590498116]
 visible = false
@@ -65,17 +66,18 @@ texture = ExtResource("letter_tex")
 region_enabled = true
 region_rect = Rect2(560, 750.5, 60, 47)
 
-[node name="BustedLetter" type="Sprite2D" parent="Layers/Body/LetterKey/BrokenPart" unique_id=590498117]
+[node name="BustedLetter" type="Sprite2D" parent="Layers/Body/LetterKey" unique_id=590498117]
 scale = Vector2(2, 2)
 texture = ExtResource("bad_letter_tex")
 region_enabled = true
 region_rect = Rect2(560, 750.5, 60, 47)
 
 
-[node name="Spacebar" parent="Layers/Body" unique_id=1223335619 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
+[node name="Spacebar" parent="Layers/Body" unique_id=1223335619 node_paths=PackedStringArray("installed_art", "bad_art") instance=ExtResource("5_socket")]
 position = Vector2(-4, 372)
 accepted_part = 4
 installed_art = NodePath("GoodSpacebar")
+bad_art = NodePath("BustedSpacebar")
 
 [node name="GoodSpacebar" type="Sprite2D" parent="Layers/Body/Spacebar" unique_id=1968967572]
 visible = false
@@ -84,7 +86,7 @@ texture = ExtResource("good_space_tex")
 region_enabled = true
 region_rect = Rect2(648, 781, 454, 50)
 
-[node name="BustedSpacebar" type="Sprite2D" parent="Layers/Body/Spacebar/BrokenPart" unique_id=1968967573]
+[node name="BustedSpacebar" type="Sprite2D" parent="Layers/Body/Spacebar" unique_id=1968967573]
 scale = Vector2(2, 2)
 texture = ExtResource("bad_space_tex")
 region_enabled = true

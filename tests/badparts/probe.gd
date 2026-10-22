@@ -56,15 +56,21 @@ func _check_item(item_type: Repairable.Type) -> void:
 	item.global_position = Vector2(0, 180)
 	await _physics_frames(2)
 	var item_name := item.item_name
+	var state := scene.get_state()
 	for layer in item.layers:
 		for point in layer.get_points():
 			if point is PartSocket:
-				_check_socket(item_name, point as PartSocket)
+				_check_socket(item_name, point as PartSocket, item, state)
 	item.queue_free()
 	await _physics_frames(2)
 
 
-func _check_socket(item_name: String, socket: PartSocket) -> void:
+func _check_socket(
+	item_name: String,
+	socket: PartSocket,
+	item: Repairable,
+	state: SceneState,
+) -> void:
 	if not socket.starts_with_broken_part:
 		return
 	var label := "%s %s" % [item_name, socket.name]
@@ -105,3 +111,37 @@ func _check_socket(item_name: String, socket: PartSocket) -> void:
 			"%s: the broken part is not just the good part's art"
 			% label,
 		)
+	# An exported build drops nodes a scene adds under an
+	# instanced scene's own children (LX82): authored under
+	# the socket's `BrokenPart`, the bad art never ships and
+	# the fallback above is what exported players see. The
+	# bad art (and the bad shape, where one is authored) must
+	# sit beside the socket in the packed scene; `_ready()`
+	# moves them under `BrokenPart` at runtime.
+	_expect_authored_beside_socket(
+		state, item, socket, sprites[0].name,
+		"%s: the bad art is authored beside the socket" % label,
+	)
+	if is_instance_valid(socket.bad_part_shape):
+		_expect_authored_beside_socket(
+			state, item, socket, socket.bad_part_shape.name,
+			"%s: the bad shape is authored beside the socket" % label,
+		)
+
+
+## True when the packed scene authors `node_name` as a direct
+## child of the socket (see the LX82 note in `_check_socket`).
+func _expect_authored_beside_socket(
+	state: SceneState,
+	item: Repairable,
+	socket: PartSocket,
+	node_name: String,
+	label: String,
+) -> void:
+	var socket_path := "./" + str(item.get_path_to(socket))
+	var authored_path := socket_path + "/" + node_name
+	var is_authored := false
+	for index in state.get_node_count():
+		if str(state.get_node_path(index)) == authored_path:
+			is_authored = true
+	_expect(is_authored, label)

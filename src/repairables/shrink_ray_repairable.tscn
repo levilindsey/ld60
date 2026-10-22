@@ -64,11 +64,12 @@ unique_name_in_owner = true
 position = Vector2(2, -31)
 hits_needed = 4
 
-[node name="Crystal" parent="Layers/Body" unique_id=896112778 node_paths=PackedStringArray("installed_art", "covering_grime", "good_part_shape") instance=ExtResource("6_socket")]
+[node name="Crystal" parent="Layers/Body" unique_id=896112778 node_paths=PackedStringArray("installed_art", "bad_art", "covering_grime", "good_part_shape") instance=ExtResource("6_socket")]
 unique_name_in_owner = true
 position = Vector2(53.7, -41.1)
 accepted_part = 8
 installed_art = NodePath("GoodCrystal")
+bad_art = NodePath("BustedCrystal")
 covering_grime = NodePath("../CrystalGrime")
 good_part_shape = NodePath("GoodPartShape")
 
@@ -88,7 +89,7 @@ texture = ExtResource("5_crystal_good")
 region_enabled = true
 region_rect = Rect2(326, 160, 60, 68)
 
-[node name="BustedCrystal" type="Sprite2D" parent="Layers/Body/Crystal/BrokenPart" unique_id=1100441440]
+[node name="BustedCrystal" type="Sprite2D" parent="Layers/Body/Crystal" unique_id=1100441440]
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("12_crystal_bad")
 region_enabled = true

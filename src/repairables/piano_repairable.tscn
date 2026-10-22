@@ -89,10 +89,11 @@ amount = 3.0
 position = Vector2(646, -240)
 toughness = 2.0
 
-[node name="Led" parent="Layers/Body" unique_id=984844396 node_paths=PackedStringArray("installed_art") instance=ExtResource("5_socket")]
+[node name="Led" parent="Layers/Body" unique_id=984844396 node_paths=PackedStringArray("installed_art", "bad_art") instance=ExtResource("5_socket")]
 position = Vector2(-1319, -466)
 accepted_part = 5
 installed_art = NodePath("GoodLed")
+bad_art = NodePath("BustedLed")
 
 [node name="GoodLed" type="Sprite2D" parent="Layers/Body/Led" unique_id=2041530734]
 visible = false
@@ -101,7 +102,7 @@ texture = ExtResource("good_led_tex")
 region_enabled = true
 region_rect = Rect2(113.5, 359, 209, 55)
 
-[node name="BustedLed" type="Sprite2D" parent="Layers/Body/Led/BrokenPart" unique_id=2041530735]
+[node name="BustedLed" type="Sprite2D" parent="Layers/Body/Led" unique_id=2041530735]
 scale = Vector2(2, 2)
 texture = ExtResource("bad_led_tex")
 region_enabled = true

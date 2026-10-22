@@ -44,26 +44,27 @@ monitorable = false
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Inside/Shape" unique_id=1781783181]
 polygon = PackedVector2Array(1084.6155, -576.9231, 1123.0769, -546.1539, 1123.0769, 446.15387, 1023.07697, 500.00003, -1030.7693, 507.69232, -1084.6155, 484.6154, -1084.6155, -538.46155, -1015.38464, -592.30774)
 
-[node name="Chip" parent="Layers/Inside" unique_id=2042927819 node_paths=PackedStringArray("installed_art", "bad_part_shape", "good_part_shape") instance=ExtResource("5_socket")]
+[node name="Chip" parent="Layers/Inside" unique_id=2042927819 node_paths=PackedStringArray("installed_art", "bad_art", "bad_part_shape", "good_part_shape") instance=ExtResource("5_socket")]
 position = Vector2(-647, -49)
 accepted_part = 7
 installed_art = NodePath("GoodChip")
-bad_part_shape = NodePath("BrokenPart/BadPartShape")
+bad_art = NodePath("BustedChip")
+bad_part_shape = NodePath("BadPartShape")
 good_part_shape = NodePath("GoodPartShape")
 
-[node name="BustedChip" type="Sprite2D" parent="Layers/Inside/Chip/BrokenPart" unique_id=580524990]
+[node name="BustedChip" type="Sprite2D" parent="Layers/Inside/Chip" unique_id=580524990]
 scale = Vector2(2, 2)
 texture = ExtResource("bad_tex")
 region_enabled = true
 region_rect = Rect2(419.5, 404.5, 268.5, 382.5)
 
-[node name="BadPartShape" type="Area2D" parent="Layers/Inside/Chip/BrokenPart" unique_id=580524991]
+[node name="BadPartShape" type="Area2D" parent="Layers/Inside/Chip" unique_id=580524991]
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Inside/Chip/BrokenPart/BadPartShape" unique_id=580524992]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Inside/Chip/BadPartShape" unique_id=580524992]
 polygon = PackedVector2Array(-250, -360, 250, -360, 250, 360, -250, 360)
 
 [node name="GoodPartShape" type="Area2D" parent="Layers/Inside/Chip" unique_id=717497200]

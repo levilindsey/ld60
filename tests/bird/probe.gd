@@ -128,6 +128,33 @@ func _run() -> void:
 		"the bird-smack cleans itself up after the fall",
 	)
 	_expect(_controller._has_smacked, "the smack is marked as shown")
+	# The bird only shows where `OutsideStuff`'s clip mask
+	# lets it: its children are clipped to the window panes,
+	# so a peek placed outside them plays invisibly (LX83).
+	# The bird's spot in its 1754x1240 frames (head and bush,
+	# around (1358, 280)) must land on an opaque mask texel.
+	var peak_sprite := _peak.get_node(
+		"AnimatedSprite2D"
+	) as AnimatedSprite2D
+	var blob_world: Vector2 = peak_sprite.global_transform * (
+		Vector2(1358, 280) - Vector2(877, 620)
+	)
+	var outside := G.level.get_node(
+		"Background/OutsideStuff"
+	) as Sprite2D
+	var mask_local: Vector2 = (
+		outside.global_transform.affine_inverse() * blob_world
+	)
+	var mask_image := Image.load_from_file(
+		"res://assets/images/room/window_clip_region.png"
+	)
+	var texel := Vector2i(
+		(mask_local + Vector2(877, 620)).round()
+	)
+	_expect(
+		mask_image.get_pixel(texel.x, texel.y).a > 0.5,
+		"the peek bird sits inside the window clip mask",
+	)
 	# The peek loop is armed now; play one peek directly rather
 	# than wait out the random interval.
 	_controller._play_peak()

@@ -56,7 +56,7 @@ texture = ExtResource("4_gj0ym")
 [node name="BirdPeak" parent="Background/OutsideStuff" unique_id=2100001022 instance=ExtResource("21_bird_peak")]
 unique_name_in_owner = true
 visible = false
-position = Vector2(520.00464, -473.19147)
+position = Vector2(361, -100)
 scale = Vector2(0.8, 1)
 
 [node name="BirdSmack" parent="Background/OutsideStuff" unique_id=2100001001 node_paths=PackedStringArray("fall_to") instance=ExtResource("20_bird_smack")]

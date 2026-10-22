@@ -47,10 +47,11 @@ monitorable = false
 position = Vector2(-16.666664, 3.1789143e-05)
 polygon = PackedVector2Array(-1400, -783.3333, -1366.6666, -899.99994, -1291.6666, -924.99994, 1266.6666, -883.3333, 1391.6666, -849.99994, 1416.6666, -750, 1300, 658.3333, 733.3333, 708.3333, -1225, 708.3333, -1350, 666.6666)
 
-[node name="Bulb" parent="Layers/Inside" unique_id=1846858400 node_paths=PackedStringArray("installed_art", "good_part_shape") instance=ExtResource("5_socket")]
+[node name="Bulb" parent="Layers/Inside" unique_id=1846858400 node_paths=PackedStringArray("installed_art", "bad_art", "good_part_shape") instance=ExtResource("5_socket")]
 position = Vector2(592, 444)
 accepted_part = 1
 installed_art = NodePath("GoodBulb")
+bad_art = NodePath("BustedBulb")
 good_part_shape = NodePath("GoodPartShape")
 
 [node name="GoodPartShape" type="Area2D" parent="Layers/Inside/Bulb"]
@@ -69,7 +70,7 @@ texture = ExtResource("good_tex")
 region_enabled = true
 region_rect = Rect2(1059, 587.5, 227.5, 497)
 
-[node name="BustedBulb" type="Sprite2D" parent="Layers/Inside/Bulb/BrokenPart" unique_id=162835108]
+[node name="BustedBulb" type="Sprite2D" parent="Layers/Inside/Bulb" unique_id=162835108]
 scale = Vector2(2, 2)
 texture = ExtResource("bad_tex")
 region_enabled = true

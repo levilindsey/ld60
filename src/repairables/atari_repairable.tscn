@@ -38,13 +38,14 @@ monitorable = false
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Shape" unique_id=1806204762]
 polygon = PackedVector2Array(-91, -13, -2, -64, 18, -64, 96, -9, 100, 2, 93, 45, 7, 108, -1, 107, -87, 44, -93, 5)
 
-[node name="Joystick" parent="Layers/Body" unique_id=967882368 node_paths=PackedStringArray("installed_art", "locking_fastener", "bad_part_shape", "good_part_shape") instance=ExtResource("5_socket")]
+[node name="Joystick" parent="Layers/Body" unique_id=967882368 node_paths=PackedStringArray("installed_art", "bad_art", "locking_fastener", "bad_part_shape", "good_part_shape") instance=ExtResource("5_socket")]
 position = Vector2(2, 0)
 accepted_part = 6
 shows_ghost_outline = false
 installed_art = NodePath("GoodStick")
+bad_art = NodePath("BustedStick")
 locking_fastener = NodePath("../Screw")
-bad_part_shape = NodePath("BrokenPart/BadPartShape")
+bad_part_shape = NodePath("BadPartShape")
 good_part_shape = NodePath("GoodPartShape")
 
 [node name="GoodStick" type="Sprite2D" parent="Layers/Body/Joystick" unique_id=536495873]
@@ -55,21 +56,21 @@ texture = ExtResource("good_tex")
 region_enabled = true
 region_rect = Rect2(617.5, 233.5, 418, 497.5)
 
-[node name="BustedStick" type="Sprite2D" parent="Layers/Body/Joystick/BrokenPart" unique_id=536495874]
+[node name="BustedStick" type="Sprite2D" parent="Layers/Body/Joystick" unique_id=536495874]
 position = Vector2(1.7, -30.2)
 scale = Vector2(0.32, 0.32)
 texture = ExtResource("bad_tex")
 region_enabled = true
 region_rect = Rect2(615, 317, 546, 417)
 
-[node name="BadPartShape" type="Area2D" parent="Layers/Body/Joystick/BrokenPart" unique_id=536495876]
+[node name="BadPartShape" type="Area2D" parent="Layers/Body/Joystick" unique_id=536495876]
 position = Vector2(1.7, -30.2)
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 monitorable = false
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Joystick/BrokenPart/BadPartShape" unique_id=536495877]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layers/Body/Joystick/BadPartShape" unique_id=536495877]
 polygon = PackedVector2Array(-68, -66, 68, -66, 87, -47, 87, 47, 68, 66, -68, 66, -87, 47, -87, -47)
 
 [node name="GoodPartShape" type="Area2D" parent="Layers/Body/Joystick" unique_id=536495874]
